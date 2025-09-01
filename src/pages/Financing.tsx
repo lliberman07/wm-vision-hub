@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import FranchiseSimulator from "@/components/FranchiseSimulator";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Calculator, 
   PiggyBank, 
@@ -17,6 +18,8 @@ import {
 } from "lucide-react";
 
 const Financing = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -25,13 +28,13 @@ const Financing = () => {
       <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
-            Financing Solutions
+            {t('financing.hero.badge')}
           </Badge>
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
-            Smart Financing for Your Success
+            {t('financing.hero.title')}
           </h1>
           <p className="text-xl text-primary-foreground/90 leading-relaxed">
-            Our financing solutions are crafted to break down barriers and accelerate growth, offering clear and accessible options for every project.
+            {t('financing.hero.subtitle')}
           </p>
         </div>
       </section>

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Mail, 
   Phone, 
@@ -19,6 +20,7 @@ import {
 
 const Contact = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -52,13 +54,13 @@ const Contact = () => {
       <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
-            Contact Us
+            {t('contact.hero.badge')}
           </Badge>
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
-            Get in Touch
+            {t('contact.hero.title')}
           </h1>
           <p className="text-xl text-primary-foreground/90 leading-relaxed">
-            We are here to help you transform your ideas into actionable success. Whether you have questions about our services, financing options, or need personalized advice, please reach out.
+            {t('contact.hero.subtitle')}
           </p>
         </div>
       </section>
