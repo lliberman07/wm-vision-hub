@@ -48,7 +48,10 @@ const Index = () => {
                   </Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
-                  <Link to="/financing">{t('home.hero.cta2')}</Link>
+                  <Link to="/financing">
+                    {t('home.hero.cta2')}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
                 </Button>
               </div>
             </div>
