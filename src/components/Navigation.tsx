@@ -40,12 +40,12 @@ const Navigation = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-1 ml-auto">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary ${
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary whitespace-nowrap ${
                   isActive(item.href)
                     ? "text-primary bg-primary/10"
                     : "text-muted-foreground"
@@ -55,7 +55,7 @@ const Navigation = () => {
               </Link>
             ))}
             <LanguageSwitcher variant="header" />
-            <Button variant="default" size="sm" className="ml-4" asChild>
+            <Button variant="default" size="sm" className="ml-4 whitespace-nowrap" asChild>
               <Link to="/financing/signup">{t('nav.getStarted')}</Link>
             </Button>
           </div>
