@@ -47,7 +47,7 @@ const Index = () => {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
+                <Button size="lg" variant="secondary" asChild>
                   <Link to="/financing">{t('home.hero.cta2')}</Link>
                 </Button>
               </div>
