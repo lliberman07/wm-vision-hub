@@ -21,67 +21,67 @@ const Services = () => {
   const services = [
     {
       icon: Building2,
-      title: "Property Management",
-      description: "Managing your property shouldn't be complicated. Our property management service covers everything from lease administration and routine maintenance to strategic performance optimization.",
+      title: t('services.property.title'),
+      description: t('services.property.description'),
       features: [
-        "Lease Administration",
-        "Maintenance Management", 
-        "Performance Optimization",
-        "Financial Reporting"
+        t('services.property.features.lease'),
+        t('services.property.features.maintenance'),
+        t('services.property.features.performance'),
+        t('services.property.features.reporting')
       ],
-      cta: "Learn How We Maximize Property Value",
+      cta: t('services.property.cta'),
       href: "/services/property-management"
     },
     {
       icon: TrendingUp,
-      title: "Brokerage",
-      description: "Real estate transactions demand precision and transparency. Our brokerage services connect buyers, sellers, and lessees with the best opportunities available.",
+      title: t('services.brokerage.title'),
+      description: t('services.brokerage.description'),
       features: [
-        "Market Analysis",
-        "Transaction Management",
-        "Expert Negotiations",
-        "Due Diligence Support"
+        t('services.brokerage.features.analysis'),
+        t('services.brokerage.features.transaction'),
+        t('services.brokerage.features.negotiations'),
+        t('services.brokerage.features.diligence')
       ],
-      cta: "Explore Current Opportunities",
+      cta: t('services.brokerage.cta'),
       href: "/services/brokerage"
     },
     {
       icon: Users,
-      title: "Consulting Services",
-      description: "When complexity meets clarity, success follows. Our consulting services break down real estate challenges into clear, actionable strategies.",
+      title: t('services.consulting.title'),
+      description: t('services.consulting.description'),
       features: [
-        "Feasibility Studies",
-        "Legal Advisory",
-        "Strategic Planning",
-        "Market Research"
+        t('services.consulting.features.feasibility'),
+        t('services.consulting.features.legal'),
+        t('services.consulting.features.planning'),
+        t('services.consulting.features.research')
       ],
-      cta: "Request Your Consultation",
+      cta: t('services.consulting.cta'),
       href: "/services/consulting"
     },
     {
       icon: Hammer,
-      title: "Real Estate Development",
-      description: "Turning vision into reality—our real estate development team manages projects from concept through completion with innovative design and strategic planning.",
+      title: t('services.development.title'),
+      description: t('services.development.description'),
       features: [
-        "Project Management",
-        "Design Integration",
-        "Construction Oversight",
-        "Quality Assurance"
+        t('services.development.features.project'),
+        t('services.development.features.design'),
+        t('services.development.features.construction'),
+        t('services.development.features.quality')
       ],
-      cta: "Discover Our Development Projects",
+      cta: t('services.development.cta'),
       href: "/services/development"
     },
     {
       icon: Shield,
-      title: "Trust & Investments",
-      description: "Invest with assurance. Our trust and investment services provide a secure and transparent framework for managing real estate assets.",
+      title: t('services.investments.title'),
+      description: t('services.investments.description'),
       features: [
-        "Portfolio Management",
-        "Risk Assessment",
-        "Investment Strategy",
-        "Performance Monitoring"
+        t('services.investments.features.portfolio'),
+        t('services.investments.features.risk'),
+        t('services.investments.features.strategy'),
+        t('services.investments.features.monitoring')
       ],
-      cta: "Find Out More About Our Investment Solutions",
+      cta: t('services.investments.cta'),
       href: "/services/investments"
     }
   ];
@@ -146,7 +146,7 @@ const Services = () => {
                     <div className="text-center">
                       <h3 className="text-xl font-bold mb-2">{service.title}</h3>
                       <p className="text-muted-foreground text-sm">
-                        Professional {service.title.toLowerCase()} services tailored to your specific needs and objectives.
+                        {t('services.card.description').replace('{service}', service.title.toLowerCase())}
                       </p>
                     </div>
                   </CardContent>
@@ -162,12 +162,12 @@ const Services = () => {
         <div className="container mx-auto max-w-4xl">
           <Card className="shadow-medium">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">News & Updates – March 2025</CardTitle>
-              <CardDescription className="text-center">Latest developments in our services</CardDescription>
+              <CardTitle className="text-2xl text-center">{t('services.news.title')}</CardTitle>
+              <CardDescription className="text-center">{t('services.news.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-center">
-                <strong>Case Study Release:</strong> Discover our new case study on digital transformation in property management, showcasing how innovative solutions drive efficiency and value.
+                {t('services.news.content')}
               </p>
             </CardContent>
           </Card>
@@ -179,7 +179,7 @@ const Services = () => {
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl font-bold mb-4">{t('common.readyToStart')}</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Permítanos ayudarle a transformar sus desafíos inmobiliarios en oportunidades estratégicas.
+            {t('services.cta.description')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild>
