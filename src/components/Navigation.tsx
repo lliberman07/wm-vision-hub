@@ -32,7 +32,7 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center">
           {/* Logo - Fixed width */}
-          <div className="w-64 flex-shrink-0">
+          <div className="w-48 flex-shrink-0">
             <Link to="/" className="flex items-center space-x-2">
               <div className="h-8 w-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">W</span>
@@ -42,13 +42,13 @@ const Navigation = () => {
           </div>
 
           {/* Desktop Navigation - Centered with fixed positioning */}
-          <div className="hidden md:flex items-center justify-center flex-1 max-w-4xl mx-auto">
+          <div className="hidden md:flex items-center justify-center flex-1">
             <div className="flex items-center space-x-1">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
-                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary whitespace-nowrap min-w-[80px] text-center ${
+                  className={`px-2 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary whitespace-nowrap min-w-[70px] text-center ${
                     isActive(item.href)
                       ? "text-primary bg-primary/10"
                       : "text-muted-foreground"
@@ -60,8 +60,8 @@ const Navigation = () => {
             </div>
           </div>
 
-          {/* Right side controls - Fixed width */}
-          <div className="hidden md:flex items-center space-x-2 w-64 justify-end flex-shrink-0">
+          {/* Right side controls - Reduced width */}
+          <div className="hidden md:flex items-center space-x-2 w-48 justify-end flex-shrink-0">
             <LanguageSwitcher variant="header" />
             <Button variant="default" size="sm" className="whitespace-nowrap" asChild>
               <Link to="/financing/signup">{t('nav.getStarted')}</Link>
