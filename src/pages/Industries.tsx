@@ -77,15 +77,34 @@ const Industries = () => {
         </div>
       </section>
 
-      {/* Industries Grid */}
+      {/* Overview Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-              {t('industries.sections.title')}
+              {t('industries.overview.title')}
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              {t('industries.overview.subtitle')}
+            </p>
+            <div className="bg-gradient-subtle p-8 rounded-lg">
+              <p className="text-lg text-foreground leading-relaxed">
+                {t('industries.overview.description')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Industries Grid */}
+      <section className="bg-muted py-20 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+              {t('industries.sectors.title')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              {t('industries.sections.subtitle')}
+              {t('industries.sectors.subtitle')}
             </p>
           </div>
 
@@ -119,7 +138,7 @@ const Industries = () => {
       </section>
 
       {/* Statistics Section */}
-      <section className="bg-muted py-20 px-4">
+      <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">
