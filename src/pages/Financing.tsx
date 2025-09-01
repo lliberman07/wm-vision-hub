@@ -46,49 +46,49 @@ const Financing = () => {
             <div className="space-y-6">
               <div className="flex items-center space-x-3">
                 <PiggyBank className="h-10 w-10 text-primary" />
-                <h2 className="text-3xl font-bold">The Program</h2>
+                <h2 className="text-3xl font-bold">{t('financing.program.title')}</h2>
               </div>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Our financing program is designed with simplicity and efficiency in mind. With competitive setup fees and interest-free financing for 50% of your remodeling costs, we remove obstacles and empower you to move forward with confidence.
+                {t('financing.program.description1')}
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We believe in creating clear pathways to success by eliminating unnecessary financial complexity.
+                {t('financing.program.description2')}
               </p>
               
-              <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6">
                 <div className="flex items-center space-x-3">
                   <Percent className="h-6 w-6 text-accent" />
                   <div>
-                    <div className="font-semibold">0% Interest</div>
-                    <div className="text-sm text-muted-foreground">On approved financing</div>
+                    <div className="font-semibold">{t('financing.program.features.interest')}</div>
+                    <div className="text-sm text-muted-foreground">{t('financing.program.features.interest.desc')}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Clock className="h-6 w-6 text-accent" />
                   <div>
-                    <div className="font-semibold">Flexible Terms</div>
-                    <div className="text-sm text-muted-foreground">Up to 60 months</div>
+                    <div className="font-semibold">{t('financing.program.features.terms')}</div>
+                    <div className="text-sm text-muted-foreground">{t('financing.program.features.terms.desc')}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Shield className="h-6 w-6 text-accent" />
                   <div>
-                    <div className="font-semibold">Secure Process</div>
-                    <div className="text-sm text-muted-foreground">Fast approval</div>
+                    <div className="font-semibold">{t('financing.program.features.secure')}</div>
+                    <div className="text-sm text-muted-foreground">{t('financing.program.features.secure.desc')}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="h-6 w-6 text-accent" />
                   <div>
-                    <div className="font-semibold">50% Coverage</div>
-                    <div className="text-sm text-muted-foreground">Of remodeling costs</div>
+                    <div className="font-semibold">{t('financing.program.features.coverage')}</div>
+                    <div className="text-sm text-muted-foreground">{t('financing.program.features.coverage.desc')}</div>
                   </div>
                 </div>
               </div>
 
               <Button size="lg" asChild>
                 <Link to="/financing/program">
-                  Discover the Program
+                  {t('financing.program.cta')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -96,30 +96,30 @@ const Financing = () => {
             
             <Card className="shadow-strong">
               <CardHeader>
-                <CardTitle className="text-2xl">Program Benefits</CardTitle>
-                <CardDescription>Why choose our financing solution</CardDescription>
+                <CardTitle className="text-2xl">{t('financing.program.benefits.title')}</CardTitle>
+                <CardDescription>{t('financing.program.benefits.subtitle')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
                     <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <div className="font-medium">No Hidden Fees</div>
-                      <div className="text-sm text-muted-foreground">Transparent pricing with competitive setup costs</div>
+                      <div className="font-medium">{t('financing.program.benefits.noFees')}</div>
+                      <div className="text-sm text-muted-foreground">{t('financing.program.benefits.noFees.desc')}</div>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <div className="font-medium">Quick Approval</div>
-                      <div className="text-sm text-muted-foreground">Streamlined process with fast decision making</div>
+                      <div className="font-medium">{t('financing.program.benefits.quickApproval')}</div>
+                      <div className="text-sm text-muted-foreground">{t('financing.program.benefits.quickApproval.desc')}</div>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <div className="font-medium">Flexible Payments</div>
-                      <div className="text-sm text-muted-foreground">Customized payment schedules to fit your cash flow</div>
+                      <div className="font-medium">{t('financing.program.benefits.flexible')}</div>
+                      <div className="text-sm text-muted-foreground">{t('financing.program.benefits.flexible.desc')}</div>
                     </div>
                   </div>
                 </div>
@@ -135,10 +135,10 @@ const Financing = () => {
           <div className="text-center mb-16">
             <div className="flex items-center justify-center space-x-3 mb-4">
               <Calculator className="h-10 w-10 text-primary" />
-              <h2 className="text-3xl lg:text-4xl font-bold">Interactive Simulator</h2>
+              <h2 className="text-3xl lg:text-4xl font-bold">{t('financing.simulator.title')}</h2>
             </div>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Transparency is key to smart financing. Our interactive simulator lets you experiment with different financing scenarios in real-time.
+              {t('financing.simulator.description')}
             </p>
           </div>
 
@@ -153,48 +153,48 @@ const Financing = () => {
             <Card className="shadow-strong">
               <CardHeader>
                 <UserPlus className="h-10 w-10 text-primary mb-4" />
-                <CardTitle className="text-2xl">Ready to Get Started?</CardTitle>
+                <CardTitle className="text-2xl">{t('financing.signup.ready')}</CardTitle>
                 <CardDescription>
-                  Whether you're an investor, franchisee, or property owner, sign up for our financing program
+                  {t('financing.signup.subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  Ready to turn potential into performance? Sign up for our financing program and receive personalized guidance from our experts. We're committed to making your vision a reality through clear, supportive steps.
+                  {t('financing.signup.description2')}
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Personalized consultation</span>
+                    <span className="text-sm">{t('financing.signup.benefits.consultation')}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Custom financing solutions</span>
+                    <span className="text-sm">{t('financing.signup.benefits.solutions')}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Expert guidance throughout the process</span>
+                    <span className="text-sm">{t('financing.signup.benefits.guidance')}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <div className="space-y-6">
-              <h2 className="text-3xl font-bold">Sign Up Today</h2>
+              <h2 className="text-3xl font-bold">{t('financing.signup.title')}</h2>
               <p className="text-lg text-muted-foreground">
-                Join our financing program and take the first step toward achieving your real estate goals with confidence and clarity.
+                {t('financing.signup.description')}
               </p>
               
               <div className="space-y-4">
                 <Button size="lg" className="w-full" asChild>
                   <Link to="/financing/signup">
-                    Sign Up for Financing Program
+                    {t('financing.signup.cta1')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="w-full" asChild>
                   <Link to="/financing/simulator">
-                    Try the Simulator First
+                    {t('financing.signup.cta2')}
                     <Calculator className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -210,15 +210,15 @@ const Financing = () => {
           <Card className="bg-white/10 backdrop-blur border-white/20">
             <CardHeader>
               <CardTitle className="text-2xl text-center text-primary-foreground">
-                News & Updates – March 2025
+                {t('financing.news.title')}
               </CardTitle>
               <CardDescription className="text-center text-primary-foreground/80">
-                Latest enhancements to our financing solutions
+                {t('financing.news.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-primary-foreground/90 text-center">
-                <strong>Enhanced Simulator:</strong> Our tool now includes the latest economic data to provide even more precise investment projections. Explore the new features and see the difference today!
+                {t('financing.news.content')}
               </p>
             </CardContent>
           </Card>
