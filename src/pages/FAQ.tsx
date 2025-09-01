@@ -1,6 +1,7 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import faqHeroBackground from "@/assets/faq-hero-background.jpg";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -71,7 +72,12 @@ const FAQ = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
+      <section 
+        className="relative text-primary-foreground py-20 px-4 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url(${faqHeroBackground})`
+        }}
+      >
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
             {t('faq.hero.badge')}
