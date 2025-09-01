@@ -30,32 +30,40 @@ const Navigation = () => {
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">W</span>
-            </div>
-            <span className="font-bold text-xl text-foreground">WM Management</span>
-          </Link>
+        <div className="flex h-16 items-center">
+          {/* Logo - Fixed width */}
+          <div className="w-64 flex-shrink-0">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="h-8 w-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-lg">W</span>
+              </div>
+              <span className="font-bold text-xl text-foreground">WM Management</span>
+            </Link>
+          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 justify-center flex-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary whitespace-nowrap ${
-                  isActive(item.href)
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          {/* Desktop Navigation - Centered with fixed positioning */}
+          <div className="hidden md:flex items-center justify-center flex-1 max-w-4xl mx-auto">
+            <div className="flex items-center space-x-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary whitespace-nowrap min-w-[80px] text-center ${
+                    isActive(item.href)
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Right side controls - Fixed width */}
+          <div className="hidden md:flex items-center space-x-2 w-64 justify-end flex-shrink-0">
             <LanguageSwitcher variant="header" />
-            <Button variant="default" size="sm" className="ml-4 whitespace-nowrap" asChild>
+            <Button variant="default" size="sm" className="whitespace-nowrap" asChild>
               <Link to="/financing/signup">{t('nav.getStarted')}</Link>
             </Button>
           </div>
