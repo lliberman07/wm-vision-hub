@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
-import industriesComposite from "@/assets/industries-composite.jpg";
+import industriesHeroBackground from "@/assets/industries-hero-background.jpg";
 import { 
   Building2, 
   Heart, 
@@ -72,7 +72,12 @@ const Industries = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
+      <section 
+        className="relative text-primary-foreground py-20 px-4 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url(${industriesHeroBackground})`
+        }}
+      >
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
             {t('industries.hero.badge')}
@@ -100,15 +105,6 @@ const Industries = () => {
               <p className="text-lg text-foreground leading-relaxed">
                 {t('industries.overview.description')}
               </p>
-            </div>
-            
-            {/* Industries Visual Representation */}
-            <div className="mt-12">
-              <img 
-                src={industriesComposite} 
-                alt="Different property types we manage: residential, commercial, healthcare, industrial, logistics, and government"
-                className="w-full max-w-5xl mx-auto rounded-lg shadow-strong"
-              />
             </div>
           </div>
         </div>
