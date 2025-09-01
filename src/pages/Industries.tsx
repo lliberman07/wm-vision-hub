@@ -11,6 +11,7 @@ import {
   Factory, 
   Truck, 
   Building,
+  Home,
   ArrowRight,
   TrendingUp,
   Users,
@@ -21,6 +22,13 @@ const Industries = () => {
   const { t } = useLanguage();
 
   const industries = [
+    {
+      icon: Home,
+      title: t('industries.residential.title'),
+      description: t('industries.residential.description'),
+      cta: t('industries.residential.cta'),
+      href: "/industries/residential"
+    },
     {
       icon: Building2,
       title: t('industries.commercial.title'),
@@ -108,7 +116,7 @@ const Industries = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {industries.map((industry, index) => {
               const Icon = industry.icon;
               return (
