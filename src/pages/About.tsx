@@ -2,9 +2,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Target, Eye, Users, TrendingUp } from "lucide-react";
 
 const About = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -13,13 +16,13 @@ const About = () => {
       <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
-            About WM Management
+            {t('about.hero.badge')}
           </Badge>
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
-            Transforming Real Estate Challenges into Opportunities
+            {t('about.hero.title')}
           </h1>
           <p className="text-xl text-primary-foreground/90 leading-relaxed">
-            We leverage data-driven insights and deep industry expertise to deliver solutions that add real value to every client relationship.
+            {t('about.hero.subtitle')}
           </p>
         </div>
       </section>
@@ -32,23 +35,23 @@ const About = () => {
               <div>
                 <div className="flex items-center space-x-3 mb-4">
                   <Target className="h-8 w-8 text-primary" />
-                  <h2 className="text-3xl font-bold">Our Mission</h2>
+                  <h2 className="text-3xl font-bold">{t('about.mission.title')}</h2>
                 </div>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  At WM Management & Investments, our mission is to convert real estate challenges into tangible opportunities. We leverage data-driven insights and deep industry expertise to deliver solutions that add real value.
+                  {t('about.mission.content1')}
                 </p>
                 <p className="text-lg text-muted-foreground leading-relaxed mt-4">
-                  We believe that by embracing transparency, integrity, and a pragmatic approach, we can empower every investor to reach their full potential.
+                  {t('about.mission.content2')}
                 </p>
               </div>
 
               <div>
                 <div className="flex items-center space-x-3 mb-4">
                   <Eye className="h-8 w-8 text-primary" />
-                  <h2 className="text-3xl font-bold">Our Vision</h2>
+                  <h2 className="text-3xl font-bold">{t('about.vision.title')}</h2>
                 </div>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Our vision is to be the trusted partner that simplifies the complex world of real estate, enabling our clients to make informed decisions and achieve lasting success.
+                  {t('about.vision.content')}
                 </p>
               </div>
             </div>
@@ -74,10 +77,10 @@ const About = () => {
           <div className="text-center mb-16">
             <div className="flex items-center justify-center space-x-3 mb-4">
               <Users className="h-8 w-8 text-primary" />
-              <h2 className="text-3xl lg:text-4xl font-bold">Meet Our Team</h2>
+              <h2 className="text-3xl lg:text-4xl font-bold">{t('about.team.title')}</h2>
             </div>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our team is our cornerstone. Composed of industry veterans and innovative strategists, we bring together a wealth of experience and fresh ideas to drive success.
+              {t('about.team.subtitle')}
             </p>
           </div>
 
@@ -139,9 +142,9 @@ const About = () => {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Our Core Values</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">{t('about.values.title')}</h2>
             <p className="text-xl text-muted-foreground">
-              The principles that guide every decision and drive our success
+              {t('about.values.subtitle')}
             </p>
           </div>
 

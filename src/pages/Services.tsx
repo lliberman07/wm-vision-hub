@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Building2, 
   TrendingUp, 
@@ -15,6 +16,8 @@ import {
 } from "lucide-react";
 
 const Services = () => {
+  const { t } = useLanguage();
+  
   const services = [
     {
       icon: Building2,
@@ -91,13 +94,13 @@ const Services = () => {
       <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
-            Professional Services
+            {t('services.hero.badge')}
           </Badge>
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
-            Comprehensive Real Estate Solutions
+            {t('services.hero.title')}
           </h1>
           <p className="text-xl text-primary-foreground/90 leading-relaxed">
-            Our services are at the heart of what we do. Each offering is designed to deliver clarity, drive value, and provide measurable results.
+            {t('services.hero.subtitle')}
           </p>
         </div>
       </section>
@@ -117,7 +120,7 @@ const Services = () => {
                     {service.description}
                   </p>
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-lg">Key Features:</h3>
+                    <h3 className="font-semibold text-lg">{t('common.keyFeatures')}</h3>
                     <div className="grid grid-cols-2 gap-3">
                       {service.features.map((feature) => (
                         <div key={feature} className="flex items-center space-x-2">
@@ -174,16 +177,16 @@ const Services = () => {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <h2 className="text-3xl font-bold mb-4">{t('common.readyToStart')}</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Let us help you transform your real estate challenges into strategic opportunities.
+            Permítanos ayudarle a transformar sus desafíos inmobiliarios en oportunidades estratégicas.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild>
-              <Link to="/contact">Contact Our Team</Link>
+              <Link to="/contact">{t('common.contactTeam')}</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link to="/financing/simulator">Try Our Simulator</Link>
+              <Link to="/financing/simulator">{t('common.trySimulator')}</Link>
             </Button>
           </div>
         </div>

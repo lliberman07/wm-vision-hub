@@ -3,19 +3,22 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
 
   const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/about", label: "About Us" },
-    { href: "/services", label: "Services" },
-    { href: "/industries", label: "Industries & Programs" },
-    { href: "/financing", label: "Financing" },
-    { href: "/contact", label: "Contact" },
-    { href: "/faq", label: "FAQ" },
+    { href: "/", label: t('nav.home') },
+    { href: "/about", label: t('nav.about') },
+    { href: "/services", label: t('nav.services') },
+    { href: "/industries", label: t('nav.industries') },
+    { href: "/financing", label: t('nav.financing') },
+    { href: "/contact", label: t('nav.contact') },
+    { href: "/faq", label: t('nav.faq') },
   ];
 
   const isActive = (href: string) => {
@@ -51,8 +54,9 @@ const Navigation = () => {
                 {item.label}
               </Link>
             ))}
+            <LanguageSwitcher variant="header" />
             <Button variant="default" size="sm" className="ml-4" asChild>
-              <Link to="/financing/signup">Get Started</Link>
+              <Link to="/financing/signup">{t('nav.getStarted')}</Link>
             </Button>
           </div>
 
@@ -79,11 +83,14 @@ const Navigation = () => {
                     {item.label}
                   </Link>
                 ))}
-                <Button className="mt-4" asChild>
-                  <Link to="/financing/signup" onClick={() => setIsOpen(false)}>
-                    Get Started
-                  </Link>
-                </Button>
+                <div className="mt-4 space-y-3">
+                  <LanguageSwitcher variant="header" />
+                  <Button className="w-full" asChild>
+                    <Link to="/financing/signup" onClick={() => setIsOpen(false)}>
+                      {t('nav.getStarted')}
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </SheetContent>
           </Sheet>

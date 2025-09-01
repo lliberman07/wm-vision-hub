@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Building2, 
   TrendingUp, 
@@ -16,6 +17,8 @@ import {
 } from "lucide-react";
 
 const Index = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -26,47 +29,47 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <Badge variant="secondary" className="w-fit">
-                Real Estate Excellence
+                {t('home.hero.badge')}
               </Badge>
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                Welcome to WM Management & Investments
+                {t('home.hero.title')}
               </h1>
               <p className="text-xl text-primary-foreground/90 leading-relaxed">
-                At WM, we transform complexity into clarity. We are passionate about embracing your visions and challenges, transforming the way we live, work, and develop our communities.
+                {t('home.hero.subtitle')}
               </p>
               <p className="text-lg text-primary-foreground/80">
-                Our experienced team and digital solutions turn intricate real estate challenges into straightforward, actionable opportunities with measurable success.
+                {t('home.hero.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button size="lg" variant="secondary" asChild>
                   <Link to="/services">
-                    Explore Our Services
+                    {t('home.hero.cta1')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
-                  <Link to="/financing">Discover Financing Solutions</Link>
+                  <Link to="/financing">{t('home.hero.cta2')}</Link>
                 </Button>
               </div>
             </div>
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 shadow-strong">
-                <div className="space-y-4">
+                  <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-accent" />
-                    <span>Property Management Excellence</span>
+                    <span>{t('home.hero.feature1')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-accent" />
-                    <span>Strategic Investment Solutions</span>
+                    <span>{t('home.hero.feature2')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-accent" />
-                    <span>Real Estate Development</span>
+                    <span>{t('home.hero.feature3')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-accent" />
-                    <span>Expert Consulting Services</span>
+                    <span>{t('home.hero.feature4')}</span>
                   </div>
                 </div>
               </div>
@@ -80,10 +83,10 @@ const Index = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Integrated Solutions for Real Estate Success
+              {t('home.services.title')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              From property management to investment trust services, we deliver clarity and results across every aspect of real estate.
+              {t('home.services.subtitle')}
             </p>
           </div>
           
@@ -91,14 +94,14 @@ const Index = () => {
             <Card className="shadow-medium hover:shadow-strong transition-all duration-300">
               <CardHeader>
                 <Building2 className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Property Management</CardTitle>
+                <CardTitle>{t('home.services.property.title')}</CardTitle>
                 <CardDescription>
-                  Comprehensive property care from lease administration to strategic optimization.
+                  {t('home.services.property.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/services/property-management">Learn More</Link>
+                  <Link to="/services/property-management">{t('home.learnMore')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -106,14 +109,14 @@ const Index = () => {
             <Card className="shadow-medium hover:shadow-strong transition-all duration-300">
               <CardHeader>
                 <TrendingUp className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Brokerage</CardTitle>
+                <CardTitle>{t('home.services.brokerage.title')}</CardTitle>
                 <CardDescription>
-                  Expert guidance connecting opportunities with precision and transparency.
+                  {t('home.services.brokerage.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/services/brokerage">Learn More</Link>
+                  <Link to="/services/brokerage">{t('home.learnMore')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -121,14 +124,14 @@ const Index = () => {
             <Card className="shadow-medium hover:shadow-strong transition-all duration-300">
               <CardHeader>
                 <Users className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Consulting Services</CardTitle>
+                <CardTitle>{t('home.services.consulting.title')}</CardTitle>
                 <CardDescription>
-                  Strategic insights that transform complex challenges into clear opportunities.
+                  {t('home.services.consulting.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/services/consulting">Learn More</Link>
+                  <Link to="/services/consulting">{t('home.learnMore')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -136,14 +139,14 @@ const Index = () => {
             <Card className="shadow-medium hover:shadow-strong transition-all duration-300">
               <CardHeader>
                 <BarChart3 className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Real Estate Development</CardTitle>
+                <CardTitle>{t('home.services.development.title')}</CardTitle>
                 <CardDescription>
-                  From vision to reality—comprehensive development management and execution.
+                  {t('home.services.development.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/services/development">Learn More</Link>
+                  <Link to="/services/development">{t('home.learnMore')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -151,14 +154,14 @@ const Index = () => {
             <Card className="shadow-medium hover:shadow-strong transition-all duration-300">
               <CardHeader>
                 <Shield className="h-8 w-8 text-primary mb-2" />
-                <CardTitle>Trust & Investments</CardTitle>
+                <CardTitle>{t('home.services.investments.title')}</CardTitle>
                 <CardDescription>
-                  Secure, transparent investment frameworks with risk-adjusted returns.
+                  {t('home.services.investments.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/services/investments">Learn More</Link>
+                  <Link to="/services/investments">{t('home.learnMore')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -166,14 +169,14 @@ const Index = () => {
             <Card className="shadow-medium hover:shadow-strong transition-all duration-300 bg-gradient-accent text-accent-foreground">
               <CardHeader>
                 <Calculator className="h-8 w-8 text-accent-foreground mb-2" />
-                <CardTitle>Financing Solutions</CardTitle>
+                <CardTitle>{t('home.services.financing.title')}</CardTitle>
                 <CardDescription className="text-accent-foreground/80">
-                  Competitive financing with interest-free options for your remodeling projects.
+                  {t('home.services.financing.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="secondary" size="sm" asChild>
-                  <Link to="/financing/simulator">Try Our Simulator</Link>
+                  <Link to="/financing/simulator">{t('home.simulator.cta')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -184,9 +187,9 @@ const Index = () => {
       {/* News & Updates */}
       <section className="bg-muted py-16 px-4">
         <div className="container mx-auto max-w-4xl text-center">
-          <h3 className="text-2xl font-bold mb-4">News & Updates – March 2025</h3>
+          <h3 className="text-2xl font-bold mb-4">{t('home.news.title')}</h3>
           <p className="text-lg text-muted-foreground">
-            New Market Insights: Our latest research highlights emerging trends in property management that are revolutionizing the industry. Check back monthly for fresh updates and actionable strategies.
+            {t('home.news.content')}
           </p>
         </div>
       </section>

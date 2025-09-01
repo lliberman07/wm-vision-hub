@@ -2,8 +2,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Building2, Mail, Phone, MapPin } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const Footer = () => {
+  const { t } = useLanguage();
+  
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-12">
@@ -15,7 +19,7 @@ const Footer = () => {
               <span className="font-bold text-lg">WM Management</span>
             </div>
             <p className="text-primary-foreground/80 text-sm">
-              Transforming complexity into clarity. Your trusted partner in real estate consulting, investment, and development.
+              {t('footer.description') || 'Transforming complexity into clarity. Your trusted partner in real estate consulting, investment, and development.'}
             </p>
             <div className="space-y-2">
               <div className="flex items-center space-x-2 text-sm">
@@ -35,7 +39,7 @@ const Footer = () => {
 
           {/* Services */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Services</h3>
+            <h3 className="font-semibold text-lg">{t('nav.services')}</h3>
             <div className="space-y-2">
               <Link to="/services/property-management" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
                 Property Management
@@ -57,7 +61,7 @@ const Footer = () => {
 
           {/* Industries */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Industries</h3>
+            <h3 className="font-semibold text-lg">Industrias</h3>
             <div className="space-y-2">
               <Link to="/industries/commercial" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
                 Commercial
@@ -79,27 +83,30 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Quick Links</h3>
+            <h3 className="font-semibold text-lg">Enlaces Rápidos</h3>
             <div className="space-y-2">
               <Link to="/about" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                About Us
+                {t('nav.about')}
               </Link>
               <Link to="/financing" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Financing
+                {t('nav.financing')}
               </Link>
               <Link to="/financing/simulator" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Simulator
+                Simulador
               </Link>
               <Link to="/contact" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Contact
+                {t('nav.contact')}
               </Link>
               <Link to="/faq" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                FAQ
+                {t('nav.faq')}
               </Link>
             </div>
-            <Button variant="secondary" size="sm" className="mt-4" asChild>
-              <Link to="/financing/signup">Get Started Today</Link>
-            </Button>
+            <div className="mt-4 space-y-3">
+              <LanguageSwitcher variant="footer" />
+              <Button variant="secondary" size="sm" asChild>
+                <Link to="/financing/signup">{t('nav.getStarted')} Hoy</Link>
+              </Button>
+            </div>
           </div>
         </div>
 
