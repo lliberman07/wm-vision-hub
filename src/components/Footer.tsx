@@ -101,11 +101,8 @@ const Footer = () => {
                 {t('nav.faq')}
               </Link>
             </div>
-            <div className="mt-4 space-y-3">
+            <div className="mt-4">
               <LanguageSwitcher variant="footer" />
-              <Button variant="secondary" size="sm" asChild>
-                <Link to="/financing/signup">{t('nav.getStarted')} Hoy</Link>
-              </Button>
             </div>
           </div>
         </div>
