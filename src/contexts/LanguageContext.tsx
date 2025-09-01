@@ -21,7 +21,7 @@ const translations = {
     'nav.financing': 'Financing',
     'nav.contact': 'Contact',
     'nav.faq': 'FAQ',
-    'nav.getStarted': 'Get Started Today',
+    'nav.getStarted': 'Get Started',
     
     // Home page
     'home.hero.badge': 'Real Estate Excellence',
@@ -217,7 +217,7 @@ const translations = {
     'nav.financing': 'Financiamiento',
     'nav.contact': 'Contacto',
     'nav.faq': 'Preguntas Frecuentes',
-    'nav.getStarted': 'Comenzar Hoy',
+    'nav.getStarted': 'Comenzar',
     
     // Home page
     'home.hero.badge': 'Excelencia Inmobiliaria',
