@@ -40,7 +40,7 @@ const Navigation = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 ml-auto">
+          <div className="hidden md:flex items-center space-x-1 justify-center flex-1">
             {navItems.map((item) => (
               <Link
                 key={item.href}
