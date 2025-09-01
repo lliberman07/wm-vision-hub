@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import industriesComposite from "@/assets/industries-composite.jpg";
 import { 
   Building2, 
   Heart, 
@@ -99,6 +100,15 @@ const Industries = () => {
               <p className="text-lg text-foreground leading-relaxed">
                 {t('industries.overview.description')}
               </p>
+            </div>
+            
+            {/* Industries Visual Representation */}
+            <div className="mt-12">
+              <img 
+                src={industriesComposite} 
+                alt="Different property types we manage: residential, commercial, healthcare, industrial, logistics, and government"
+                className="w-full max-w-5xl mx-auto rounded-lg shadow-strong"
+              />
             </div>
           </div>
         </div>
