@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import servicesHeroBackground from "@/assets/services-hero-background.jpg";
 import { 
   Building2, 
   TrendingUp, 
@@ -91,7 +92,12 @@ const Services = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
+      <section 
+        className="relative text-primary-foreground py-20 px-4 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)), url(${servicesHeroBackground})`
+        }}
+      >
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
             {t('services.hero.badge')}
