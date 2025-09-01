@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { Calculator, Download, Save } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SimulatorState {
   totalCost: number;
@@ -25,6 +26,7 @@ interface SimulatorState {
 }
 
 const FranchiseSimulator = () => {
+  const { t } = useLanguage();
   const [state, setState] = useState<SimulatorState>({
     totalCost: 100000,
     entranceFeePercentage: 20,
@@ -79,42 +81,42 @@ const FranchiseSimulator = () => {
   };
 
   const chartData = [
-    { name: "Entrance Fee", value: calculations.entranceFee, color: "#3b82f6" },
-    { name: "Infrastructure", value: calculations.infrastructureCost, color: "#f59e0b" },
-    { name: "Equipment", value: calculations.equipmentCost, color: "#10b981" },
-    { name: "Working Capital", value: calculations.workingCapital, color: "#8b5cf6" },
+    { name: t('simulator.breakdown.entranceFee'), value: calculations.entranceFee, color: "#3b82f6" },
+    { name: t('simulator.breakdown.infrastructure'), value: calculations.infrastructureCost, color: "#f59e0b" },
+    { name: t('simulator.breakdown.equipment'), value: calculations.equipmentCost, color: "#10b981" },
+    { name: t('simulator.breakdown.workingCapital'), value: calculations.workingCapital, color: "#8b5cf6" },
   ];
 
   const barData = [
-    { name: "Financed", amount: calculations.financedAmount },
-    { name: "Out of Pocket", amount: calculations.outOfPocketInfrastructure },
+    { name: t('simulator.chart.financed'), amount: calculations.financedAmount },
+    { name: t('simulator.chart.outOfPocket'), amount: calculations.outOfPocketInfrastructure },
   ];
 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold">Franchise Investment Simulator</h2>
+        <h2 className="text-3xl font-bold">{t('simulator.title')}</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Plan your franchise investment with our interactive tool. Adjust variables to see real-time projections of costs and financing options.
+          {t('simulator.description')}
         </p>
       </div>
 
       <Tabs defaultValue="basic" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="basic">Basic Settings</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced Settings</TabsTrigger>
-          <TabsTrigger value="results">Results & Analysis</TabsTrigger>
+          <TabsTrigger value="basic">{t('simulator.tabs.basic')}</TabsTrigger>
+          <TabsTrigger value="advanced">{t('simulator.tabs.advanced')}</TabsTrigger>
+          <TabsTrigger value="results">{t('simulator.tabs.results')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Total Franchise Cost</CardTitle>
-                <CardDescription>Enter the overall investment required for the franchise</CardDescription>
+                <CardTitle>{t('simulator.totalCost.title')}</CardTitle>
+                <CardDescription>{t('simulator.totalCost.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Label htmlFor="totalCost">Total Cost ($)</Label>
+                <Label htmlFor="totalCost">{t('simulator.totalCost.label')}</Label>
                 <Input
                   id="totalCost"
                   type="number"
@@ -126,13 +128,13 @@ const FranchiseSimulator = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Cost Breakdown Percentages</CardTitle>
-                <CardDescription>Adjust the allocation of your total investment</CardDescription>
+                <CardTitle>{t('simulator.breakdown.title')}</CardTitle>
+                <CardDescription>{t('simulator.breakdown.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <Label>Entrance Fee</Label>
+                    <Label>{t('simulator.breakdown.entranceFee')}</Label>
                     <span className="text-sm text-muted-foreground">{state.entranceFeePercentage}%</span>
                   </div>
                   <Slider
@@ -145,7 +147,7 @@ const FranchiseSimulator = () => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <Label>Infrastructure & Remodeling</Label>
+                    <Label>{t('simulator.breakdown.infrastructure')}</Label>
                     <span className="text-sm text-muted-foreground">{state.infrastructurePercentage}%</span>
                   </div>
                   <Slider
@@ -158,7 +160,7 @@ const FranchiseSimulator = () => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <Label>Equipment & Assets</Label>
+                    <Label>{t('simulator.breakdown.equipment')}</Label>
                     <span className="text-sm text-muted-foreground">{state.equipmentPercentage}%</span>
                   </div>
                   <Slider
@@ -171,7 +173,7 @@ const FranchiseSimulator = () => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <Label>Working Capital</Label>
+                    <Label>{t('simulator.breakdown.workingCapital')}</Label>
                     <span className="text-sm text-muted-foreground">{state.workingCapitalPercentage}%</span>
                   </div>
                   <Slider
@@ -190,13 +192,13 @@ const FranchiseSimulator = () => {
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Financing Details</CardTitle>
-                <CardDescription>Configure your financing options for infrastructure costs</CardDescription>
+                <CardTitle>{t('simulator.financing.title')}</CardTitle>
+                <CardDescription>{t('simulator.financing.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <Label>Financed Percentage</Label>
+                    <Label>{t('simulator.financing.percentage')}</Label>
                     <span className="text-sm text-muted-foreground">{state.financedPercentage}%</span>
                   </div>
                   <Slider
@@ -209,7 +211,7 @@ const FranchiseSimulator = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="term">Financing Term (months)</Label>
+                    <Label htmlFor="term">{t('simulator.financing.term')}</Label>
                     <Input
                       id="term"
                       type="number"
@@ -219,7 +221,7 @@ const FranchiseSimulator = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="rate">Interest Rate (%)</Label>
+                    <Label htmlFor="rate">{t('simulator.financing.rate')}</Label>
                     <Input
                       id="rate"
                       type="number"
@@ -234,13 +236,13 @@ const FranchiseSimulator = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Property Details</CardTitle>
-                <CardDescription>Specific details about your franchise location</CardDescription>
+                <CardTitle>{t('simulator.property.title')}</CardTitle>
+                <CardDescription>{t('simulator.property.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="size">Local Size (m²)</Label>
+                    <Label htmlFor="size">{t('simulator.property.size')}</Label>
                     <Input
                       id="size"
                       type="number"
@@ -250,7 +252,7 @@ const FranchiseSimulator = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="costM2">Cost per m² ($)</Label>
+                    <Label htmlFor="costM2">{t('simulator.property.costM2')}</Label>
                     <Input
                       id="costM2"
                       type="number"
@@ -261,7 +263,7 @@ const FranchiseSimulator = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="insurance">Insurance Cost ($)</Label>
+                  <Label htmlFor="insurance">{t('simulator.property.insurance')}</Label>
                   <Input
                     id="insurance"
                     type="number"
@@ -278,8 +280,8 @@ const FranchiseSimulator = () => {
           <div className="grid lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Cost Breakdown</CardTitle>
-                <CardDescription>Visual representation of your investment allocation</CardDescription>
+                <CardTitle>{t('simulator.results.costBreakdown')}</CardTitle>
+                <CardDescription>{t('simulator.results.costBreakdown.desc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -304,8 +306,8 @@ const FranchiseSimulator = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Financing Breakdown</CardTitle>
-                <CardDescription>Infrastructure financing vs out-of-pocket costs</CardDescription>
+                <CardTitle>{t('simulator.results.financingBreakdown')}</CardTitle>
+                <CardDescription>{t('simulator.results.financingBreakdown.desc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -323,28 +325,28 @@ const FranchiseSimulator = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Financial Summary</CardTitle>
-              <CardDescription>Complete breakdown of your franchise investment</CardDescription>
+              <CardTitle>{t('simulator.results.summary')}</CardTitle>
+              <CardDescription>{t('simulator.results.summary.desc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Total Investment</Label>
+                  <Label className="text-sm text-muted-foreground">{t('simulator.results.totalInvestment')}</Label>
                   <div className="text-2xl font-bold">${state.totalCost.toLocaleString()}</div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Upfront Payment</Label>
+                  <Label className="text-sm text-muted-foreground">{t('simulator.results.upfrontPayment')}</Label>
                   <div className="text-2xl font-bold text-destructive">${calculations.totalUpfront.toLocaleString()}</div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Financed Amount</Label>
+                  <Label className="text-sm text-muted-foreground">{t('simulator.results.financedAmount')}</Label>
                   <div className="text-2xl font-bold text-primary">${calculations.financedAmount.toLocaleString()}</div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Monthly Payment</Label>
+                  <Label className="text-sm text-muted-foreground">{t('simulator.results.monthlyPayment')}</Label>
                   <div className="text-2xl font-bold text-accent">${calculations.monthlyPayment.toLocaleString()}</div>
                 </div>
               </div>
@@ -352,22 +354,22 @@ const FranchiseSimulator = () => {
               <Separator className="my-6" />
 
               <div className="space-y-4">
-                <h4 className="font-semibold">Detailed Breakdown:</h4>
+                <h4 className="font-semibold">{t('simulator.results.detailedBreakdown')}</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div className="space-y-1">
-                    <div className="text-muted-foreground">Entrance Fee ({state.entranceFeePercentage}%)</div>
+                    <div className="text-muted-foreground">{t('simulator.breakdown.entranceFee')} ({state.entranceFeePercentage}%)</div>
                     <div className="font-medium">${calculations.entranceFee.toLocaleString()}</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-muted-foreground">Infrastructure ({state.infrastructurePercentage}%)</div>
+                    <div className="text-muted-foreground">{t('simulator.breakdown.infrastructure')} ({state.infrastructurePercentage}%)</div>
                     <div className="font-medium">${calculations.infrastructureCost.toLocaleString()}</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-muted-foreground">Equipment ({state.equipmentPercentage}%)</div>
+                    <div className="text-muted-foreground">{t('simulator.breakdown.equipment')} ({state.equipmentPercentage}%)</div>
                     <div className="font-medium">${calculations.equipmentCost.toLocaleString()}</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-muted-foreground">Working Capital ({state.workingCapitalPercentage}%)</div>
+                    <div className="text-muted-foreground">{t('simulator.breakdown.workingCapital')} ({state.workingCapitalPercentage}%)</div>
                     <div className="font-medium">${calculations.workingCapital.toLocaleString()}</div>
                   </div>
                 </div>
@@ -376,11 +378,11 @@ const FranchiseSimulator = () => {
               <div className="flex flex-col sm:flex-row gap-4 mt-6">
                 <Button className="flex-1">
                   <Save className="mr-2 h-4 w-4" />
-                  Save Scenario
+                  {t('simulator.results.save')}
                 </Button>
                 <Button variant="outline" className="flex-1">
                   <Download className="mr-2 h-4 w-4" />
-                  Export Report
+                  {t('simulator.results.export')}
                 </Button>
               </div>
             </CardContent>
