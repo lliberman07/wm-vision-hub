@@ -4,7 +4,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Target, Eye, Users, TrendingUp } from "lucide-react";
-import teamWorking from "@/assets/team-working.jpg";
+import aboutHeroBackground from "@/assets/about-hero-background.jpg";
 
 const About = () => {
   const { t } = useLanguage();
@@ -14,7 +14,12 @@ const About = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
+      <section 
+        className="relative text-primary-foreground py-20 px-4 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url(${aboutHeroBackground})`
+        }}
+      >
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
             {t('about.hero.badge')}
@@ -83,15 +88,6 @@ const About = () => {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               {t('about.team.subtitle')}
             </p>
-          </div>
-
-          {/* Team Working Image */}
-          <div className="mb-16">
-            <img 
-              src={teamWorking} 
-              alt="Professional team collaborating and solving problems"
-              className="w-full max-w-4xl mx-auto rounded-lg shadow-strong"
-            />
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
