@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
-import dashboardMonitor from "@/assets/dashboard-monitor.jpg";
 import { 
   Building2, 
   TrendingUp, 
@@ -103,25 +102,6 @@ const Services = () => {
           <p className="text-xl text-primary-foreground/90 leading-relaxed">
             {t('services.hero.subtitle')}
           </p>
-        </div>
-      </section>
-
-      {/* Technology Dashboard */}
-      <section className="py-16 px-4 bg-muted">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Advanced Analytics & Technology</h2>
-            <p className="text-xl text-muted-foreground">
-              Our cutting-edge dashboard systems provide real-time insights and comprehensive analytics
-            </p>
-          </div>
-          <div className="relative">
-            <img 
-              src={dashboardMonitor} 
-              alt="Modern dashboard with analytics and real estate data"
-              className="w-full max-w-4xl mx-auto rounded-lg shadow-strong"
-            />
-          </div>
         </div>
       </section>
 
