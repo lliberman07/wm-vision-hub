@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import wmLogo from "@/assets/wm-logo.svg";
+import wmLogo from "@/assets/wm-logo.png";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
