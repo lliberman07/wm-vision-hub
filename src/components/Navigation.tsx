@@ -38,7 +38,7 @@ const Navigation = () => {
               <img 
                 src={wmLogo} 
                 alt="WM Management Logo" 
-                className="h-8 w-auto"
+                className="h-12 w-auto"
               />
             </Link>
           </div>
