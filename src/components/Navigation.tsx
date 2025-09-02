@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-// import wmLogo from "@/assets/wm-logo.png";
+import wmLogo from "@/assets/wm-logo.png";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +35,11 @@ const Navigation = () => {
           {/* Logo - Fixed width */}
           <div className="w-48 flex-shrink-0">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="text-xl font-bold text-primary">WM</div>
+              <img 
+                src={wmLogo} 
+                alt="WM Management Logo" 
+                className="h-12 w-auto"
+              />
             </Link>
           </div>
 
