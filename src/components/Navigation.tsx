@@ -35,7 +35,9 @@ const Navigation = () => {
           {/* Logo - Fixed width */}
           <div className="w-48 flex-shrink-0">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="text-xl font-bold text-primary ml-10">WM management</div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent ml-10 tracking-wide hover:scale-105 transition-transform duration-300 cursor-pointer select-none">
+                WM management
+              </div>
             </Link>
           </div>
 
