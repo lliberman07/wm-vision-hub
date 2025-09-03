@@ -64,12 +64,12 @@ const About = () => {
 
             <Card className="shadow-strong">
               <CardHeader>
-                <CardTitle className="text-2xl">News & Updates – March 2025</CardTitle>
-                <CardDescription>Latest developments in our mission</CardDescription>
+                <CardTitle className="text-2xl">{t('about.news.title')}</CardTitle>
+                <CardDescription>{t('about.news.subtitle')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  <strong>New Sustainability Benchmarks:</strong> We have refined our performance metrics to better reflect our commitment to responsible growth. Our latest initiatives ensure every project contributes to a sustainable future.
+                  {t('about.news.content')}
                 </p>
               </CardContent>
             </Card>
@@ -96,9 +96,9 @@ const About = () => {
                 <div className="w-20 h-20 bg-gradient-primary rounded-full mx-auto mb-4 flex items-center justify-center">
                   <span className="text-primary-foreground font-bold text-2xl">WM</span>
                 </div>
-                <CardTitle>Leadership Team</CardTitle>
+                <CardTitle>{t('about.team.leadership')}</CardTitle>
                 <CardDescription>
-                  Industry veterans with decades of combined experience in real estate management and investment.
+                  {t('about.team.leadership.desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -108,9 +108,9 @@ const About = () => {
                 <div className="w-20 h-20 bg-gradient-accent rounded-full mx-auto mb-4 flex items-center justify-center">
                   <TrendingUp className="h-8 w-8 text-accent-foreground" />
                 </div>
-                <CardTitle>Strategy Experts</CardTitle>
+                <CardTitle>{t('about.team.strategy')}</CardTitle>
                 <CardDescription>
-                  Data analysts and strategic planners who transform market insights into actionable opportunities.
+                  {t('about.team.strategy.desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -120,9 +120,9 @@ const About = () => {
                 <div className="w-20 h-20 bg-gradient-primary rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Users className="h-8 w-8 text-primary-foreground" />
                 </div>
-                <CardTitle>Client Partners</CardTitle>
+                <CardTitle>{t('about.team.client')}</CardTitle>
                 <CardDescription>
-                  Dedicated professionals who work side by side with clients to craft effective, innovative solutions.
+                  {t('about.team.client.desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -130,14 +130,14 @@ const About = () => {
 
           <Card className="mt-12 shadow-strong bg-primary text-primary-foreground">
             <CardHeader>
-              <CardTitle className="text-2xl">Team Expansion – March 2025</CardTitle>
+              <CardTitle className="text-2xl">{t('about.expansion.title')}</CardTitle>
               <CardDescription className="text-primary-foreground/80">
-                Growing our capabilities with new expertise
+                {t('about.expansion.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-primary-foreground/90">
-                We are pleased to announce the addition of two new experts in data analytics and technology, further enhancing our ability to deliver strategic insights and innovative solutions.
+                {t('about.expansion.content')}
               </p>
             </CardContent>
           </Card>
@@ -157,27 +157,27 @@ const About = () => {
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="shadow-medium text-center">
               <CardHeader>
-                <CardTitle className="text-xl">Transparency</CardTitle>
+                <CardTitle className="text-xl">{t('about.values.transparency')}</CardTitle>
                 <CardDescription>
-                  Clear communication and honest reporting in every interaction and transaction.
+                  {t('about.values.transparency.desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
 
             <Card className="shadow-medium text-center">
               <CardHeader>
-                <CardTitle className="text-xl">Integrity</CardTitle>
+                <CardTitle className="text-xl">{t('about.values.integrity')}</CardTitle>
                 <CardDescription>
-                  Ethical practices and principled decision-making that builds lasting trust.
+                  {t('about.values.integrity.desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
 
             <Card className="shadow-medium text-center">
               <CardHeader>
-                <CardTitle className="text-xl">Excellence</CardTitle>
+                <CardTitle className="text-xl">{t('about.values.excellence')}</CardTitle>
                 <CardDescription>
-                  Committed to delivering exceptional results through continuous improvement and innovation.
+                  {t('about.values.excellence.desc')}
                 </CardDescription>
               </CardHeader>
             </Card>

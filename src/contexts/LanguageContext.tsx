@@ -78,6 +78,12 @@ const translations = {
     'about.values.integrity.desc': 'Ethical practices and principled decision-making that builds lasting trust.',
     'about.values.excellence': 'Excellence',
     'about.values.excellence.desc': 'Committed to delivering exceptional results through continuous improvement and innovation.',
+    'about.news.title': 'News & Updates – March 2025',
+    'about.news.subtitle': 'Latest developments in our mission',
+    'about.news.content': 'New Sustainability Benchmarks: We have refined our performance metrics to better reflect our commitment to responsible growth. Our latest initiatives ensure every project contributes to a sustainable future.',
+    'about.expansion.title': 'Team Expansion – March 2025',
+    'about.expansion.subtitle': 'Growing our capabilities with new expertise',
+    'about.expansion.content': 'We are pleased to announce the addition of two new experts in data analytics and technology, further enhancing our ability to deliver strategic insights and innovative solutions.',
     
     // Services page
     'services.hero.badge': 'Professional Services',
@@ -366,6 +372,12 @@ const translations = {
     'about.values.integrity.desc': 'Prácticas éticas y toma de decisiones basada en principios que construye confianza duradera.',
     'about.values.excellence': 'Excelencia',
     'about.values.excellence.desc': 'Comprometidos a entregar resultados excepcionales a través de la mejora continua e innovación.',
+    'about.news.title': 'Noticias y Actualizaciones – Marzo 2025',
+    'about.news.subtitle': 'Últimos desarrollos en nuestra misión',
+    'about.news.content': 'Nuevos Estándares de Sostenibilidad: Hemos refinado nuestras métricas de rendimiento para reflejar mejor nuestro compromiso con el crecimiento responsable. Nuestras últimas iniciativas aseguran que cada proyecto contribuya a un futuro sostenible.',
+    'about.expansion.title': 'Expansión del Equipo – Marzo 2025',
+    'about.expansion.subtitle': 'Ampliando nuestras capacidades con nueva experiencia',
+    'about.expansion.content': 'Nos complace anunciar la incorporación de dos nuevos expertos en análisis de datos y tecnología, mejorando aún más nuestra capacidad de entregar insights estratégicos y soluciones innovadoras.',
     
     // Services page
     'services.hero.badge': 'Servicios Profesionales',
