@@ -29,41 +29,24 @@ const Contact = () => {
     company: "",
     message: ""
   });
-  const [errors, setErrors] = useState({
-    name: "",
-    email: "",
-    message: ""
-  });
-
-  const validateForm = () => {
-    const newErrors = {
-      name: "",
-      email: "",
-      message: ""
-    };
-
-    if (!formData.name.trim()) {
-      newErrors.name = t('contact.form.validation.name');
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = t('contact.form.validation.email');
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = t('contact.form.validation.email');
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = t('contact.form.validation.message');
-    }
-
-    setErrors(newErrors);
-    return !newErrors.name && !newErrors.email && !newErrors.message;
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    // Set custom validation messages before submitting
+    const form = e.target as HTMLFormElement;
+    const nameInput = form.querySelector('#name') as HTMLInputElement;
+    const emailInput = form.querySelector('#email') as HTMLInputElement;
+    const messageInput = form.querySelector('#message') as HTMLTextAreaElement;
+
+    // Set custom validation messages
+    nameInput.setCustomValidity(nameInput.value ? '' : t('contact.form.validation.name'));
+    emailInput.setCustomValidity(emailInput.value ? '' : t('contact.form.validation.email'));
+    messageInput.setCustomValidity(messageInput.value ? '' : t('contact.form.validation.message'));
+
+    // Check if form is valid
+    if (!form.checkValidity()) {
+      form.reportValidity();
       return;
     }
 
@@ -72,7 +55,6 @@ const Contact = () => {
       description: t('contact.form.successDesc'),
     });
     setFormData({ name: "", email: "", phone: "", company: "", message: "" });
-    setErrors({ name: "", email: "", message: "" });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -82,12 +64,24 @@ const Contact = () => {
       [name]: value
     }));
     
-    // Clear error when user starts typing
-    if (errors[name as keyof typeof errors]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ""
-      }));
+    // Clear custom validation message when user types
+    (e.target as HTMLInputElement | HTMLTextAreaElement).setCustomValidity('');
+  };
+
+  // Set validation messages when language changes
+  const handleInputInvalid = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    if (target.name === 'name' && !target.value) {
+      target.setCustomValidity(t('contact.form.validation.name'));
+    } else if (target.name === 'email' && !target.value) {
+      target.setCustomValidity(t('contact.form.validation.email'));
+    }
+  };
+
+  const handleTextareaInvalid = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const target = e.target as HTMLTextAreaElement;
+    if (target.name === 'message' && !target.value) {
+      target.setCustomValidity(t('contact.form.validation.message'));
     }
   };
 
@@ -142,10 +136,10 @@ const Contact = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
+                        onInvalid={handleInputInvalid}
+                        required
                         placeholder={t('contact.form.namePlaceholder')}
-                        className={errors.name ? "border-red-500" : ""}
                       />
-                      {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">{t('contact.form.email')} *</Label>
@@ -155,10 +149,10 @@ const Contact = () => {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
+                        onInvalid={handleInputInvalid}
+                        required
                         placeholder={t('contact.form.emailPlaceholder')}
-                        className={errors.email ? "border-red-500" : ""}
                       />
-                      {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                     </div>
                   </div>
 
@@ -193,11 +187,11 @@ const Contact = () => {
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
+                      onInvalid={handleTextareaInvalid}
+                      required
                       placeholder={t('contact.form.messagePlaceholder')}
                       rows={6}
-                      className={errors.message ? "border-red-500" : ""}
                     />
-                    {errors.message && <p className="text-sm text-red-500">{errors.message}</p>}
                   </div>
 
                   <Button type="submit" size="lg" className="w-full">
