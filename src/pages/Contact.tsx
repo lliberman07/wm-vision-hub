@@ -29,22 +29,66 @@ const Contact = () => {
     company: "",
     message: ""
   });
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    message: ""
+  });
+
+  const validateForm = () => {
+    const newErrors = {
+      name: "",
+      email: "",
+      message: ""
+    };
+
+    if (!formData.name.trim()) {
+      newErrors.name = t('contact.form.validation.name');
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = t('contact.form.validation.email');
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = t('contact.form.validation.email');
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = t('contact.form.validation.message');
+    }
+
+    setErrors(newErrors);
+    return !newErrors.name && !newErrors.email && !newErrors.message;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
+    
+    if (!validateForm()) {
+      return;
+    }
+
     toast({
       title: t('contact.form.success'),
       description: t('contact.form.successDesc'),
     });
     setFormData({ name: "", email: "", phone: "", company: "", message: "" });
+    setErrors({ name: "", email: "", message: "" });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
   };
 
   return (
@@ -98,9 +142,10 @@ const Contact = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        required
                         placeholder={t('contact.form.namePlaceholder')}
+                        className={errors.name ? "border-red-500" : ""}
                       />
+                      {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">{t('contact.form.email')} *</Label>
@@ -110,9 +155,10 @@ const Contact = () => {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        required
                         placeholder={t('contact.form.emailPlaceholder')}
+                        className={errors.email ? "border-red-500" : ""}
                       />
+                      {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                     </div>
                   </div>
 
@@ -147,10 +193,11 @@ const Contact = () => {
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      required
                       placeholder={t('contact.form.messagePlaceholder')}
                       rows={6}
+                      className={errors.message ? "border-red-500" : ""}
                     />
+                    {errors.message && <p className="text-sm text-red-500">{errors.message}</p>}
                   </div>
 
                   <Button type="submit" size="lg" className="w-full">
