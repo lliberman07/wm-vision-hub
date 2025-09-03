@@ -435,7 +435,7 @@ const translations = {
     
     // Industries & Programs page
     'industries.hero.badge': 'Industrias y Programas',
-    'industries.hero.title': 'Gestión de Propiedades Across Industrias',
+    'industries.hero.title': 'Gestión de Propiedades a través de Industrias',
     'industries.hero.subtitle': 'Desde bases residenciales hasta sectores comerciales especializados, entregamos soluciones integrales de gestión de propiedades adaptadas a los requisitos únicos de cada industria.',
     'industries.overview.title': 'Desde Residencial a Sectores Especializados',
     'industries.overview.subtitle': 'Nuestra experiencia en gestión abarca desde propiedades residenciales hasta instalaciones comerciales e institucionales complejas',
