@@ -34,8 +34,8 @@ const Contact = () => {
     e.preventDefault();
     // Handle form submission here
     toast({
-      title: "Message Sent!",
-      description: "We'll get back to you within 48 hours.",
+      title: t('contact.form.success'),
+      description: t('contact.form.successDesc'),
     });
     setFormData({ name: "", email: "", phone: "", company: "", message: "" });
   };
@@ -81,9 +81,9 @@ const Contact = () => {
                 <div className="flex items-center space-x-3">
                   <MessageSquare className="h-8 w-8 text-primary" />
                   <div>
-                    <CardTitle className="text-2xl">Send us a Message</CardTitle>
+                    <CardTitle className="text-2xl">{t('contact.form.title')}</CardTitle>
                     <CardDescription>
-                      Fill out the form and our team will get back to you within 48 hours
+                      {t('contact.form.subtitle')}
                     </CardDescription>
                   </div>
                 </div>
@@ -92,18 +92,18 @@ const Contact = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Full Name *</Label>
+                      <Label htmlFor="name">{t('contact.form.name')} *</Label>
                       <Input
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        placeholder="Your full name"
+                        placeholder={t('contact.form.namePlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address *</Label>
+                      <Label htmlFor="email">{t('contact.form.email')} *</Label>
                       <Input
                         id="email"
                         name="email"
@@ -111,51 +111,51 @@ const Contact = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        placeholder="your.email@example.com"
+                        placeholder={t('contact.form.emailPlaceholder')}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="phone">{t('contact.form.phone')}</Label>
                       <Input
                         id="phone"
                         name="phone"
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="+1 (555) 123-4567"
+                        placeholder={t('contact.form.phonePlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="company">Company (Optional)</Label>
+                      <Label htmlFor="company">{t('contact.form.company')}</Label>
                       <Input
                         id="company"
                         name="company"
                         value={formData.company}
                         onChange={handleChange}
-                        placeholder="Your company name"
+                        placeholder={t('contact.form.companyPlaceholder')}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
+                    <Label htmlFor="message">{t('contact.form.message')} *</Label>
                     <Textarea
                       id="message"
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
                       required
-                      placeholder="Tell us about your project or how we can help you..."
+                      placeholder={t('contact.form.messagePlaceholder')}
                       rows={6}
                     />
                   </div>
 
                   <Button type="submit" size="lg" className="w-full">
                     <Send className="mr-2 h-4 w-4" />
-                    Send Message
+                    {t('contact.form.send')}
                   </Button>
                 </form>
               </CardContent>
@@ -164,9 +164,9 @@ const Contact = () => {
             {/* Contact Information */}
             <div className="space-y-8">
               <div>
-                <h2 className="text-3xl font-bold mb-6">Contact Information</h2>
+                <h2 className="text-3xl font-bold mb-6">{t('contact.info.title')}</h2>
                 <p className="text-lg text-muted-foreground mb-8">
-                  Our team is ready to provide clear, prompt assistance. Your success is our priority.
+                  {t('contact.info.subtitle')}
                 </p>
               </div>
 
@@ -176,9 +176,9 @@ const Contact = () => {
                     <div className="flex items-start space-x-4">
                       <Phone className="h-6 w-6 text-primary mt-1" />
                       <div>
-                        <h3 className="font-semibold text-lg">Phone</h3>
+                        <h3 className="font-semibold text-lg">{t('contact.info.phone')}</h3>
                         <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                        <p className="text-sm text-muted-foreground">Monday - Friday, 9:00 AM - 6:00 PM EST</p>
+                        <p className="text-sm text-muted-foreground">{t('contact.info.phoneHours')}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -189,9 +189,9 @@ const Contact = () => {
                     <div className="flex items-start space-x-4">
                       <Mail className="h-6 w-6 text-primary mt-1" />
                       <div>
-                        <h3 className="font-semibold text-lg">Email</h3>
+                        <h3 className="font-semibold text-lg">{t('contact.info.email')}</h3>
                         <p className="text-muted-foreground">info@wmmanagement.com</p>
-                        <p className="text-sm text-muted-foreground">We respond within 24 hours</p>
+                        <p className="text-sm text-muted-foreground">{t('contact.info.emailResponse')}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -202,7 +202,7 @@ const Contact = () => {
                     <div className="flex items-start space-x-4">
                       <MapPin className="h-6 w-6 text-primary mt-1" />
                       <div>
-                        <h3 className="font-semibold text-lg">Office Address</h3>
+                        <h3 className="font-semibold text-lg">{t('contact.info.address')}</h3>
                         <p className="text-muted-foreground">
                           123 Business District<br />
                           Suite 456<br />
@@ -218,11 +218,11 @@ const Contact = () => {
                     <div className="flex items-start space-x-4">
                       <Clock className="h-6 w-6 text-primary mt-1" />
                       <div>
-                        <h3 className="font-semibold text-lg">Office Hours</h3>
+                        <h3 className="font-semibold text-lg">{t('contact.info.hours')}</h3>
                         <div className="text-muted-foreground space-y-1">
-                          <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                          <p>Saturday: 10:00 AM - 4:00 PM</p>
-                          <p>Sunday: Closed</p>
+                          <p>{t('contact.info.hoursWeekday')}</p>
+                          <p>{t('contact.info.hoursSaturday')}</p>
+                          <p>{t('contact.info.hoursSunday')}</p>
                         </div>
                       </div>
                     </div>
@@ -239,12 +239,12 @@ const Contact = () => {
         <div className="container mx-auto max-w-4xl">
           <Card className="shadow-medium">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">News & Updates – March 2025</CardTitle>
-              <CardDescription className="text-center">Enhanced support options</CardDescription>
+              <CardTitle className="text-2xl text-center">{t('contact.news.title')}</CardTitle>
+              <CardDescription className="text-center">{t('contact.news.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-center">
-                <strong>Live Chat Now Available:</strong> We've extended our live support hours to ensure you receive immediate assistance whenever you need it.
+                <strong>Live Chat Now Available:</strong> {t('contact.news.content')}
               </p>
             </CardContent>
           </Card>
