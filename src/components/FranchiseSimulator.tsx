@@ -5,8 +5,10 @@ import { ItemSelection } from "@/components/investment/ItemSelection";
 import { FinancingSources } from "@/components/investment/FinancingSources";
 import { ResultsAnalysis } from "@/components/investment/ResultsAnalysis";
 import { useInvestmentCalculations } from "@/hooks/useInvestmentCalculations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FranchiseSimulator = () => {
+  const { t } = useLanguage();
   const [items, setItems] = useState<InvestmentItem[]>(() =>
     DEFAULT_ITEMS.map((item, index) => ({ ...item, id: `item-${index}` }))
   );
@@ -58,17 +60,17 @@ const FranchiseSimulator = () => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold">Simulador de Plan de Inversión de Negocio</h2>
+        <h2 className="text-3xl font-bold">{t('simulator.title')}</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Planifique y analice escenarios de inversión con métricas avanzadas de rentabilidad
+          {t('simulator.description')}
         </p>
       </div>
 
       <Tabs defaultValue="items" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="items">Configuración</TabsTrigger>
-          <TabsTrigger value="financing">Financiamiento</TabsTrigger>
-          <TabsTrigger value="results">Resultados</TabsTrigger>
+          <TabsTrigger value="items">{t('simulator.tabs.configuration')}</TabsTrigger>
+          <TabsTrigger value="financing">{t('simulator.tabs.financing')}</TabsTrigger>
+          <TabsTrigger value="results">{t('simulator.tabs.results')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="items" className="space-y-6">

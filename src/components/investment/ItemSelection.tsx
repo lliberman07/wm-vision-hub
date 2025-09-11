@@ -31,7 +31,7 @@ const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
 };
 
 export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveItem }: ItemSelectionProps) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customItem, setCustomItem] = useState({
     name: '',
@@ -111,13 +111,13 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-xl font-semibold">Selección de Ítems de Inversión</h3>
+          <h3 className="text-xl font-semibold">{t('simulator.items.title')}</h3>
           <p className="text-muted-foreground">
-            Seleccione los ítems que componen su plan de inversión
+            {t('simulator.items.description')}
           </p>
         </div>
         <div className="text-right">
-          <Label className="text-sm text-muted-foreground">Total de Inversión</Label>
+          <Label className="text-sm text-muted-foreground">{t('simulator.items.totalInvestment')}</Label>
           <div className="text-2xl font-bold text-primary">
             {formatCurrency(totalInvestment, language)}
           </div>

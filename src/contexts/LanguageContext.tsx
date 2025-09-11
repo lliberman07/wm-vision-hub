@@ -324,7 +324,131 @@ const translations = {
     'simulator.results.export': 'Export Report',
     'simulator.chart.financed': 'Financed',
     'simulator.chart.outOfPocket': 'Out of Pocket',
-  },
+    
+    // Investment Simulator
+    'simulator.title': 'Simulador de Plan de Inversión de Negocio',
+    'simulator.description': 'Planifique y analice escenarios de inversión con métricas avanzadas de rentabilidad',
+    'simulator.tabs.configuration': 'Configuración',
+    'simulator.tabs.financing': 'Financiamiento',
+    'simulator.tabs.results': 'Resultados',
+    
+    // Item Selection
+    'simulator.items.title': 'Selección de Ítems de Inversión',
+    'simulator.items.description': 'Seleccione los ítems que componen su plan de inversión',
+    'simulator.items.totalInvestment': 'Total de Inversión',
+    'simulator.items.addCustom': 'Agregar Ítem Personalizado',
+    'simulator.items.customName': 'Nombre del Ítem',
+    'simulator.items.customAmount': 'Monto Estimado',
+    'simulator.items.customType': 'Tipo de Crédito',
+    'simulator.items.totalAmount': 'Monto Total',
+    'simulator.items.advance': 'Adelanto (%)',
+    'simulator.items.advanceAmount': 'Adelanto ($)',
+    'simulator.items.toFinance': 'A Financiar',
+    'simulator.items.creditType': 'Tipo de Crédito',
+    'simulator.items.add': 'Agregar',
+    'simulator.items.cancel': 'Cancelar',
+    'simulator.items.placeholder': 'Ej: Equipamiento especializado',
+    
+    // Credit Types
+    'simulator.credit.personal': 'Crédito Personal',
+    'simulator.credit.capital': 'Bienes de Capital',
+    'simulator.credit.mortgage': 'Crédito Hipotecario',
+    
+    // Predefined Items
+    'simulator.predefined.commercialRental': 'Alquiler de Local Comercial',
+    'simulator.predefined.officeRental': 'Alquiler de Oficina',
+    'simulator.predefined.warehouseRental': 'Alquiler de Depósito',
+    'simulator.predefined.propertyPurchase': 'Compra de Propiedad',
+    'simulator.predefined.propertyRemodeling': 'Remodelación de Propiedad',
+    'simulator.predefined.equipmentAssets': 'Equipamiento y Activos',
+    'simulator.predefined.workingCapital': 'Capital de Trabajo',
+    'simulator.predefined.legalExpenses': 'Gastos Legales / Licencias',
+    'simulator.predefined.marketingLaunch': 'Marketing y Lanzamiento',
+    
+    // Financing Sources
+    'simulator.financing.title': 'Fuentes de Financiamiento',
+    'simulator.financing.description': 'Configure las condiciones de financiamiento por tipo de crédito',
+    'simulator.financing.totalFinanced': 'Total Financiado',
+    'simulator.financing.totalMonthlyPayment': 'Pago Mensual Total',
+    'simulator.financing.monthlyPayment': 'Pago Mensual',
+    'simulator.financing.amount': 'Monto a Financiar',
+    'simulator.financing.interestRate': 'Tasa de Interés (%)',
+    'simulator.financing.term': 'Plazo (meses)',
+    'simulator.financing.noItems': 'No hay ítems seleccionados para financiar. Vuelva al módulo anterior para seleccionar ítems de inversión.',
+    'simulator.financing.summary': 'Resumen del crédito:',
+    'simulator.financing.capital': 'Capital:',
+    'simulator.financing.installment': 'Cuota:',
+    'simulator.financing.totalToPay': 'Total a pagar:',
+    'simulator.financing.interests': 'Intereses:',
+    
+    // Results and Analysis
+    'simulator.results.title': 'Resultados y Análisis Financiero',
+    'simulator.results.description': 'Análisis completo del plan de inversión con métricas y proyecciones',
+    'simulator.results.incomeConfig': 'Configuración de Ingresos',
+    'simulator.results.estimatedIncome': 'Ingresos Mensuales Estimados',
+    'simulator.results.grossMargin': 'Margen Bruto (%)',
+    'simulator.results.netIncome': 'Ingreso Neto:',
+    'simulator.results.financialBurden': 'Carga Financiera:',
+    'simulator.results.freeFlow': 'Flujo Libre:',
+    'simulator.results.annualROI': 'ROI Anual:',
+    
+    // Results Tabs
+    'simulator.results.summary': 'Resumen',
+    'simulator.results.charts': 'Gráficos',
+    'simulator.results.analysis': 'Análisis',
+    'simulator.results.sensitivity': 'Sensibilidad',
+    
+    // Financial Summary
+    'simulator.summary.totalInvestment': 'Inversión Total',
+    'simulator.summary.requiredAdvances': 'Adelantos Requeridos',
+    'simulator.summary.totalFinanced': 'Total Financiado',
+    'simulator.summary.monthlyPayment': 'Pago Mensual',
+    'simulator.summary.itemDetail': 'Detalle por Ítem',
+    'simulator.summary.advance': 'Adelanto:',
+    'simulator.summary.financed': 'Financiado:',
+    
+    // Charts
+    'simulator.charts.investmentDistribution': 'Distribución de Inversión',
+    'simulator.charts.advanceVsFinancing': 'Adelanto vs Financiamiento',
+    'simulator.charts.monthlyPaymentsByType': 'Pagos Mensuales por Tipo de Crédito',
+    'simulator.charts.advance': 'Adelanto',
+    'simulator.charts.financed': 'Financiado',
+    
+    // Analysis
+    'simulator.analysis.breakEven': 'Punto de Equilibrio',
+    'simulator.analysis.paybackPeriod': 'Payback Period',
+    'simulator.analysis.breakEvenDesc': 'Tiempo para recuperar la inversión total con ingresos netos proyectados',
+    'simulator.analysis.paybackDesc': 'Tiempo para recuperar los adelantos realizados',
+    'simulator.analysis.roiDesc': 'Retorno sobre la inversión anualizado',
+    'simulator.analysis.months': 'meses',
+    'simulator.analysis.projectedCashFlow': 'Flujo de Caja Proyectado',
+    'simulator.analysis.grossMonthlyIncome': 'Ingresos mensuales brutos:',
+    'simulator.analysis.grossMarginAmount': 'Margen bruto',
+    'simulator.analysis.financingPayments': 'Pagos de financiamiento:',
+    'simulator.analysis.freeMonthlyFlow': 'Flujo libre mensual:',
+    'simulator.analysis.riskIndicators': 'Indicadores de Riesgo',
+    'simulator.analysis.debtToIncome': 'Relación deuda/ingresos:',
+    'simulator.analysis.leverage': 'Apalancamiento:',
+    'simulator.analysis.paymentCoverage': 'Cobertura de pagos:',
+    
+    // Sensitivity Analysis
+    'simulator.sensitivity.title': 'Análisis de Sensibilidad',
+    'simulator.sensitivity.description': 'Evalúe cómo cambios en variables clave afectan la rentabilidad del proyecto',
+    'simulator.sensitivity.interestVariation': 'Variación en Tasas de Interés (%)',
+    'simulator.sensitivity.incomeVariation': 'Variación en Ingresos (%)',
+    'simulator.sensitivity.variation': 'Variación:',
+    'simulator.sensitivity.breakEvenMonths': 'Punto de Equilibrio (meses)',
+    'simulator.sensitivity.annualROI': 'ROI Anual (%)',
+    
+    // Action Buttons
+    'simulator.actions.saveScenario': 'Guardar Escenario',
+    'simulator.actions.exportPDF': 'Exportar a PDF',
+    'simulator.actions.exportExcel': 'Exportar a Excel',
+    
+    // Alerts
+    'simulator.alerts.overdebt': 'La carga financiera mensual ({0}%) supera el 40% de los ingresos estimados. Riesgo de sobreendeudamiento.',
+    'simulator.alerts.highFinancing': '{0} se financia en {1}%. Considere aumentar el adelanto.',
+    'simulator.alerts.highRemodeling': 'Los costos de remodelación representan {0}% de la inversión total. Considere revisar el alcance.',
   es: {
     // Navigation
     'nav.home': 'Inicio',
@@ -560,6 +684,130 @@ const translations = {
     'financing.news.subtitle': 'Últimas mejoras a nuestras soluciones de financiamiento',
     'financing.news.content': 'Simulador Mejorado: Nuestra herramienta ahora incluye los últimos datos económicos para proporcionar proyecciones de inversión aún más precisas. ¡Explore las nuevas características y vea la diferencia hoy!',
     
+    // Investment Simulator
+    'simulator.title': 'Business Investment Plan Simulator',
+    'simulator.description': 'Plan and analyze investment scenarios with advanced profitability metrics',
+    'simulator.tabs.configuration': 'Configuration',
+    'simulator.tabs.financing': 'Financing',
+    'simulator.tabs.results': 'Results',
+    
+    // Item Selection
+    'simulator.items.title': 'Investment Items Selection',
+    'simulator.items.description': 'Select the items that compose your investment plan',
+    'simulator.items.totalInvestment': 'Total Investment',
+    'simulator.items.addCustom': 'Add Custom Item',
+    'simulator.items.customName': 'Item Name',
+    'simulator.items.customAmount': 'Estimated Amount',
+    'simulator.items.customType': 'Credit Type',
+    'simulator.items.totalAmount': 'Total Amount',
+    'simulator.items.advance': 'Advance (%)',
+    'simulator.items.advanceAmount': 'Advance ($)',
+    'simulator.items.toFinance': 'To Finance',
+    'simulator.items.creditType': 'Credit Type',
+    'simulator.items.add': 'Add',
+    'simulator.items.cancel': 'Cancel',
+    'simulator.items.placeholder': 'E.g: Specialized equipment',
+    
+    // Credit Types
+    'simulator.credit.personal': 'Personal Credit',
+    'simulator.credit.capital': 'Capital Goods',
+    'simulator.credit.mortgage': 'Mortgage Credit',
+    
+    // Predefined Items
+    'simulator.predefined.commercialRental': 'Commercial Property Rental',
+    'simulator.predefined.officeRental': 'Office Rental',
+    'simulator.predefined.warehouseRental': 'Warehouse Rental',
+    'simulator.predefined.propertyPurchase': 'Property Purchase',
+    'simulator.predefined.propertyRemodeling': 'Property Remodeling',
+    'simulator.predefined.equipmentAssets': 'Equipment and Assets',
+    'simulator.predefined.workingCapital': 'Working Capital',
+    'simulator.predefined.legalExpenses': 'Legal Expenses / Licenses',
+    'simulator.predefined.marketingLaunch': 'Marketing and Launch',
+    
+    // Financing Sources
+    'simulator.financing.title': 'Financing Sources',
+    'simulator.financing.description': 'Configure financing conditions by credit type',
+    'simulator.financing.totalFinanced': 'Total Financed',
+    'simulator.financing.totalMonthlyPayment': 'Total Monthly Payment',
+    'simulator.financing.monthlyPayment': 'Monthly Payment',
+    'simulator.financing.amount': 'Amount to Finance',
+    'simulator.financing.interestRate': 'Interest Rate (%)',
+    'simulator.financing.term': 'Term (months)',
+    'simulator.financing.noItems': 'No items selected for financing. Return to the previous module to select investment items.',
+    'simulator.financing.summary': 'Credit summary:',
+    'simulator.financing.capital': 'Principal:',
+    'simulator.financing.installment': 'Installment:',
+    'simulator.financing.totalToPay': 'Total to pay:',
+    'simulator.financing.interests': 'Interest:',
+    
+    // Results and Analysis
+    'simulator.results.title': 'Results and Financial Analysis',
+    'simulator.results.description': 'Complete analysis of the investment plan with metrics and projections',
+    'simulator.results.incomeConfig': 'Income Configuration',
+    'simulator.results.estimatedIncome': 'Estimated Monthly Income',
+    'simulator.results.grossMargin': 'Gross Margin (%)',
+    'simulator.results.netIncome': 'Net Income:',
+    'simulator.results.financialBurden': 'Financial Burden:',
+    'simulator.results.freeFlow': 'Free Flow:',
+    'simulator.results.annualROI': 'Annual ROI:',
+    
+    // Results Tabs
+    'simulator.results.summary': 'Summary',
+    'simulator.results.charts': 'Charts',
+    'simulator.results.analysis': 'Analysis',
+    'simulator.results.sensitivity': 'Sensitivity',
+    
+    // Financial Summary
+    'simulator.summary.totalInvestment': 'Total Investment',
+    'simulator.summary.requiredAdvances': 'Required Advances',
+    'simulator.summary.totalFinanced': 'Total Financed',
+    'simulator.summary.monthlyPayment': 'Monthly Payment',
+    'simulator.summary.itemDetail': 'Detail by Item',
+    'simulator.summary.advance': 'Advance:',
+    'simulator.summary.financed': 'Financed:',
+    
+    // Charts
+    'simulator.charts.investmentDistribution': 'Investment Distribution',
+    'simulator.charts.advanceVsFinancing': 'Advance vs Financing',
+    'simulator.charts.monthlyPaymentsByType': 'Monthly Payments by Credit Type',
+    'simulator.charts.advance': 'Advance',
+    'simulator.charts.financed': 'Financed',
+    
+    // Analysis
+    'simulator.analysis.breakEven': 'Break Even',
+    'simulator.analysis.paybackPeriod': 'Payback Period',
+    'simulator.analysis.breakEvenDesc': 'Time to recover total investment with projected net income',
+    'simulator.analysis.paybackDesc': 'Time to recover advances made',
+    'simulator.analysis.roiDesc': 'Annualized return on investment',
+    'simulator.analysis.months': 'months',
+    'simulator.analysis.projectedCashFlow': 'Projected Cash Flow',
+    'simulator.analysis.grossMonthlyIncome': 'Gross monthly income:',
+    'simulator.analysis.grossMarginAmount': 'Gross margin',
+    'simulator.analysis.financingPayments': 'Financing payments:',
+    'simulator.analysis.freeMonthlyFlow': 'Free monthly flow:',
+    'simulator.analysis.riskIndicators': 'Risk Indicators',
+    'simulator.analysis.debtToIncome': 'Debt/income ratio:',
+    'simulator.analysis.leverage': 'Leverage:',
+    'simulator.analysis.paymentCoverage': 'Payment coverage:',
+    
+    // Sensitivity Analysis
+    'simulator.sensitivity.title': 'Sensitivity Analysis',
+    'simulator.sensitivity.description': 'Evaluate how changes in key variables affect project profitability',
+    'simulator.sensitivity.interestVariation': 'Interest Rate Variation (%)',
+    'simulator.sensitivity.incomeVariation': 'Income Variation (%)',
+    'simulator.sensitivity.variation': 'Variation:',
+    'simulator.sensitivity.breakEvenMonths': 'Break Even (months)',
+    'simulator.sensitivity.annualROI': 'Annual ROI (%)',
+    
+    // Action Buttons
+    'simulator.actions.saveScenario': 'Save Scenario',
+    'simulator.actions.exportPDF': 'Export to PDF',
+    'simulator.actions.exportExcel': 'Export to Excel',
+    
+    // Alerts
+    'simulator.alerts.overdebt': 'Monthly financial burden ({0}%) exceeds 40% of estimated income. Risk of over-indebtedness.',
+    'simulator.alerts.highFinancing': '{0} is financed at {1}%. Consider increasing the advance.',
+    'simulator.alerts.highRemodeling': 'Remodeling costs represent {0}% of total investment. Consider reviewing the scope.',
     // Contact page translations
     'contact.hero.badge': 'Contáctanos',
     'contact.hero.title': 'Ponte en Contacto',
@@ -636,7 +884,7 @@ const translations = {
     'simulator.results.save': 'Guardar Escenario',
     'simulator.results.export': 'Exportar Reporte',
     'simulator.chart.financed': 'Financiado',
-    'simulator.chart.outOfPocket': 'De su Bolsillo',
+    'simulator.chart.outOfPocket': 'De su Bolsillo'
   }
 };
 
