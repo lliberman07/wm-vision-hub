@@ -36,8 +36,10 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
     const creditLine = creditLines.find(cl => cl.type === type);
     if (!creditLine) return;
     
-    const monthlyPayment = calculateMonthlyPayment(creditLine.totalAmount, rate, creditLine.termMonths);
-    onUpdateCreditLine(type, { interestRate: rate, monthlyPayment });
+    // Round to 2 decimal places
+    const roundedRate = Math.round(rate * 100) / 100;
+    const monthlyPayment = calculateMonthlyPayment(creditLine.totalAmount, roundedRate, creditLine.termMonths);
+    onUpdateCreditLine(type, { interestRate: roundedRate, monthlyPayment });
   };
 
   const handleTermChange = (type: CreditType, termMonths: number) => {
@@ -119,24 +121,32 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Tasa de Interés (%)</Label>
-                    <Input
-                      type="number"
-                      value={creditLine.interestRate}
-                      onChange={(e) => handleRateChange(creditLine.type, Number(e.target.value))}
-                      step="0.1"
-                      min="0"
-                    />
+                    <Label htmlFor={`rate-${creditLine.type}`}>Tasa de Interés (%)</Label>
+                    <div className="number-input-with-arrows">
+                      <Input
+                        id={`rate-${creditLine.type}`}
+                        type="number"
+                        value={creditLine.interestRate}
+                        onChange={(e) => handleRateChange(creditLine.type, Number(e.target.value))}
+                        step="0.01"
+                        min="0"
+                        max="100"
+                      />
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Plazo (meses)</Label>
-                    <Input
-                      type="number"
-                      value={creditLine.termMonths}
-                      onChange={(e) => handleTermChange(creditLine.type, Number(e.target.value))}
-                      min="1"
-                    />
+                    <Label htmlFor={`term-${creditLine.type}`}>Plazo (meses)</Label>
+                    <div className="number-input-with-arrows">
+                      <Input
+                        id={`term-${creditLine.type}`}
+                        type="number"
+                        value={creditLine.termMonths}
+                        onChange={(e) => handleTermChange(creditLine.type, Number(e.target.value))}
+                        min="1"
+                        max="360"
+                      />
+                    </div>
                   </div>
                 </div>
                 

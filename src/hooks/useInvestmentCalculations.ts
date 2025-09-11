@@ -36,9 +36,9 @@ export const useInvestmentCalculations = (
     };
 
     const defaultRates: Record<CreditType, { rate: number, term: number }> = {
-      personal: { rate: 35, term: 24 },
-      capital: { rate: 25, term: 60 },
-      mortgage: { rate: 12, term: 240 }
+      personal: { rate: 35.00, term: 24 },
+      capital: { rate: 25.00, term: 60 },
+      mortgage: { rate: 12.50, term: 240 }
     };
 
     let monthlyPaymentTotal = 0;
