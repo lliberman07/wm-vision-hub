@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2 } from 'lucide-react';
 import { InvestmentItem, CreditType } from '@/types/investment';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatCurrency } from '@/utils/numberFormat';
 
 interface ItemSelectionProps {
   items: InvestmentItem[];
@@ -29,6 +31,7 @@ const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
 };
 
 export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveItem }: ItemSelectionProps) => {
+  const { language } = useLanguage();
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customItem, setCustomItem] = useState({
     name: '',
@@ -44,13 +47,14 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
     const item = items.find(i => i.id === id);
     if (!item) return;
     
-    const advanceAmount = (amount * item.advancePercentage) / 100;
-    const financeBalance = amount - advanceAmount;
+    const roundedAmount = Math.round(amount);
+    const advanceAmount = Math.round((roundedAmount * item.advancePercentage) / 100);
+    const financeBalance = roundedAmount - advanceAmount;
     
     onUpdateItem(id, { 
-      amount, 
-      advanceAmount: Math.round(advanceAmount),
-      financeBalance: Math.round(financeBalance)
+      amount: roundedAmount, 
+      advanceAmount,
+      financeBalance
     });
   };
 
@@ -58,13 +62,13 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
     const item = items.find(i => i.id === id);
     if (!item) return;
     
-    const advanceAmount = (item.amount * percentage) / 100;
+    const advanceAmount = Math.round((item.amount * percentage) / 100);
     const financeBalance = item.amount - advanceAmount;
     
     onUpdateItem(id, { 
       advancePercentage: percentage,
-      advanceAmount: Math.round(advanceAmount),
-      financeBalance: Math.round(financeBalance)
+      advanceAmount,
+      financeBalance
     });
   };
 
@@ -72,13 +76,14 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
     const item = items.find(i => i.id === id);
     if (!item || item.amount === 0) return;
     
-    const percentage = (advanceAmount / item.amount) * 100;
-    const financeBalance = item.amount - advanceAmount;
+    const roundedAdvance = Math.round(advanceAmount);
+    const percentage = Math.round((roundedAdvance / item.amount) * 100);
+    const financeBalance = item.amount - roundedAdvance;
     
     onUpdateItem(id, { 
-      advancePercentage: Math.round(percentage),
-      advanceAmount,
-      financeBalance: Math.round(financeBalance)
+      advancePercentage: percentage,
+      advanceAmount: roundedAdvance,
+      financeBalance
     });
   };
 
@@ -86,10 +91,11 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
     if (customItem.name && customItem.amount > 0) {
       onAddCustomItem({
         ...customItem,
+        amount: Math.round(customItem.amount),
         isSelected: true,
         advancePercentage: 0,
         advanceAmount: 0,
-        financeBalance: customItem.amount,
+        financeBalance: Math.round(customItem.amount),
         isCustom: true
       });
       setCustomItem({ name: '', amount: 0, creditType: 'personal' });
@@ -113,7 +119,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
         <div className="text-right">
           <Label className="text-sm text-muted-foreground">Total de Inversión</Label>
           <div className="text-2xl font-bold text-primary">
-            ${totalInvestment.toLocaleString()}
+            {formatCurrency(totalInvestment, language)}
           </div>
         </div>
       </div>

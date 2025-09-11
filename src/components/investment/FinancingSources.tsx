@@ -3,6 +3,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { CreditLine, CreditType } from '@/types/investment';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatCurrency } from '@/utils/numberFormat';
 
 interface FinancingSourcesProps {
   creditLines: CreditLine[];
@@ -22,11 +24,12 @@ const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
 };
 
 export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingSourcesProps) => {
+  const { language } = useLanguage();
   const calculateMonthlyPayment = (amount: number, rate: number, months: number): number => {
-    if (rate === 0) return amount / months;
+    if (rate === 0) return Math.round(amount / months);
     const monthlyRate = rate / 100 / 12;
-    return amount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / 
-           (Math.pow(1 + monthlyRate, months) - 1);
+    return Math.round(amount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+           (Math.pow(1 + monthlyRate, months) - 1));
   };
 
   const handleRateChange = (type: CreditType, rate: number) => {
@@ -57,20 +60,20 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
             Configure las condiciones de financiamiento por tipo de crédito
           </p>
         </div>
-        <div className="text-right space-y-1">
-          <div>
-            <Label className="text-sm text-muted-foreground">Total Financiado</Label>
-            <div className="text-xl font-bold text-primary">
-              ${totalFinanced.toLocaleString()}
+          <div className="text-right space-y-1">
+            <div>
+              <Label className="text-sm text-muted-foreground">Total Financiado</Label>
+              <div className="text-xl font-bold text-primary">
+                {formatCurrency(totalFinanced, language)}
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm text-muted-foreground">Pago Mensual Total</Label>
+              <div className="text-xl font-bold text-accent">
+                {formatCurrency(totalMonthlyPayment, language)}
+              </div>
             </div>
           </div>
-          <div>
-            <Label className="text-sm text-muted-foreground">Pago Mensual Total</Label>
-            <div className="text-xl font-bold text-accent">
-              ${totalMonthlyPayment.toLocaleString()}
-            </div>
-          </div>
-        </div>
       </div>
 
       {creditLines.length === 0 ? (
@@ -91,13 +94,13 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                   <CardTitle className="flex items-center space-x-2">
                     <span>{CREDIT_TYPE_LABELS[creditLine.type]}</span>
                     <Badge className={CREDIT_TYPE_COLORS[creditLine.type]} variant="secondary">
-                      ${creditLine.totalAmount.toLocaleString()}
+                      {formatCurrency(creditLine.totalAmount, language)}
                     </Badge>
                   </CardTitle>
                   <div className="text-right">
                     <div className="text-sm text-muted-foreground">Pago Mensual</div>
                     <div className="text-lg font-semibold text-accent">
-                      ${creditLine.monthlyPayment.toLocaleString()}
+                      {formatCurrency(creditLine.monthlyPayment, language)}
                     </div>
                   </div>
                 </div>
@@ -141,16 +144,16 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                   <div className="text-sm text-muted-foreground">Resumen del crédito:</div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
                     <div>
-                      <span className="font-medium">Capital:</span> ${creditLine.totalAmount.toLocaleString()}
+                      <span className="font-medium">Capital:</span> {formatCurrency(creditLine.totalAmount, language)}
                     </div>
                     <div>
-                      <span className="font-medium">Cuota:</span> ${creditLine.monthlyPayment.toLocaleString()}
+                      <span className="font-medium">Cuota:</span> {formatCurrency(creditLine.monthlyPayment, language)}
                     </div>
                     <div>
-                      <span className="font-medium">Total a pagar:</span> ${(creditLine.monthlyPayment * creditLine.termMonths).toLocaleString()}
+                      <span className="font-medium">Total a pagar:</span> {formatCurrency(creditLine.monthlyPayment * creditLine.termMonths, language)}
                     </div>
                     <div>
-                      <span className="font-medium">Intereses:</span> ${((creditLine.monthlyPayment * creditLine.termMonths) - creditLine.totalAmount).toLocaleString()}
+                      <span className="font-medium">Intereses:</span> {formatCurrency((creditLine.monthlyPayment * creditLine.termMonths) - creditLine.totalAmount, language)}
                     </div>
                   </div>
                 </div>

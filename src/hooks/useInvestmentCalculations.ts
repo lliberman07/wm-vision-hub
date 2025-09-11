@@ -29,10 +29,10 @@ export const useInvestmentCalculations = (
 
     // Calculate monthly payments (default rates)
     const calculateMonthlyPayment = (amount: number, rate: number, months: number): number => {
-      if (rate === 0) return amount / months;
+      if (rate === 0) return Math.round(amount / months);
       const monthlyRate = rate / 100 / 12;
-      return amount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / 
-             (Math.pow(1 + monthlyRate, months) - 1);
+      return Math.round(amount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+             (Math.pow(1 + monthlyRate, months) - 1));
     };
 
     const defaultRates: Record<CreditType, { rate: number, term: number }> = {

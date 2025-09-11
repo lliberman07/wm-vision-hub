@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts';
 import { Download, Save, AlertTriangle, TrendingUp, Calculator, DollarSign } from 'lucide-react';
 import { InvestmentItem, CreditLine, FinancialAnalysis, Alert as AlertType } from '@/types/investment';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatCurrency, formatNumber } from '@/utils/numberFormat';
 
 interface ResultsAnalysisProps {
   items: InvestmentItem[];
@@ -35,6 +37,7 @@ export const ResultsAnalysis = ({
   onIncomeChange,
   onMarginChange
 }: ResultsAnalysisProps) => {
+  const { language } = useLanguage();
   const [sensitivityRate, setSensitivityRate] = useState([0]);
   const [sensitivityIncome, setSensitivityIncome] = useState([0]);
 
@@ -77,6 +80,9 @@ export const ResultsAnalysis = ({
 
   const netMonthlyIncome = estimatedMonthlyIncome * (grossMarginPercentage / 100);
   const debtToIncomeRatio = estimatedMonthlyIncome > 0 ? (analysis.monthlyPaymentTotal / estimatedMonthlyIncome) * 100 : 0;
+
+  // Custom tooltip formatter for charts
+  const tooltipFormatter = (value: number) => formatCurrency(value, language);
 
   return (
     <div className="space-y-6">
@@ -135,7 +141,7 @@ export const ResultsAnalysis = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Ingreso Neto:</span>
-                <div className="font-semibold">${netMonthlyIncome.toLocaleString()}</div>
+                <div className="font-semibold">{formatCurrency(netMonthlyIncome, language)}</div>
               </div>
               <div>
                 <span className="text-muted-foreground">Carga Financiera:</span>
@@ -143,7 +149,7 @@ export const ResultsAnalysis = ({
               </div>
               <div>
                 <span className="text-muted-foreground">Flujo Libre:</span>
-                <div className="font-semibold">${(netMonthlyIncome - analysis.monthlyPaymentTotal).toLocaleString()}</div>
+                <div className="font-semibold">{formatCurrency(netMonthlyIncome - analysis.monthlyPaymentTotal, language)}</div>
               </div>
               <div>
                 <span className="text-muted-foreground">ROI Anual:</span>
@@ -172,22 +178,22 @@ export const ResultsAnalysis = ({
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Inversión Total</Label>
-                  <div className="text-2xl font-bold">${analysis.totalInvestment.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{formatCurrency(analysis.totalInvestment, language)}</div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Adelantos Requeridos</Label>
-                  <div className="text-2xl font-bold text-destructive">${analysis.totalAdvances.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-destructive">{formatCurrency(analysis.totalAdvances, language)}</div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Total Financiado</Label>
-                  <div className="text-2xl font-bold text-primary">${analysis.totalFinanced.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-primary">{formatCurrency(analysis.totalFinanced, language)}</div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Pago Mensual</Label>
-                  <div className="text-2xl font-bold text-accent">${analysis.monthlyPaymentTotal.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-accent">{formatCurrency(analysis.monthlyPaymentTotal, language)}</div>
                 </div>
               </div>
             </CardContent>
@@ -215,9 +221,9 @@ export const ResultsAnalysis = ({
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">${item.amount.toLocaleString()}</div>
+                      <div className="font-semibold">{formatCurrency(item.amount, language)}</div>
                       <div className="text-sm text-muted-foreground">
-                        ${item.advanceAmount.toLocaleString()} + ${item.financeBalance.toLocaleString()}
+                        {formatCurrency(item.advanceAmount, language)} + {formatCurrency(item.financeBalance, language)}
                       </div>
                     </div>
                   </div>
@@ -249,7 +255,7 @@ export const ResultsAnalysis = ({
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
+                    <Tooltip formatter={tooltipFormatter} />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -266,7 +272,7 @@ export const ResultsAnalysis = ({
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
+                    <Tooltip formatter={tooltipFormatter} />
                     <Bar dataKey="adelanto" stackId="a" fill="#f59e0b" name="Adelanto" />
                     <Bar dataKey="financiado" stackId="a" fill="#3b82f6" name="Financiado" />
                   </BarChart>
@@ -286,7 +292,7 @@ export const ResultsAnalysis = ({
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" />
                   <YAxis dataKey="name" type="category" />
-                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
+                  <Tooltip formatter={tooltipFormatter} />
                   <Bar dataKey="cuota" fill="#10b981" />
                 </BarChart>
               </ResponsiveContainer>
@@ -361,21 +367,21 @@ export const ResultsAnalysis = ({
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Ingresos mensuales brutos:</span>
-                      <span className="font-medium">${estimatedMonthlyIncome.toLocaleString()}</span>
+                      <span className="font-medium">{formatCurrency(estimatedMonthlyIncome, language)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Margen bruto ({grossMarginPercentage}%):</span>
-                      <span className="font-medium">${netMonthlyIncome.toLocaleString()}</span>
+                      <span className="font-medium">{formatCurrency(netMonthlyIncome, language)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Pagos de financiamiento:</span>
-                      <span className="font-medium text-destructive">-${analysis.monthlyPaymentTotal.toLocaleString()}</span>
+                      <span className="font-medium text-destructive">-{formatCurrency(analysis.monthlyPaymentTotal, language)}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold">
                       <span>Flujo libre mensual:</span>
                       <span className={netMonthlyIncome - analysis.monthlyPaymentTotal >= 0 ? 'text-primary' : 'text-destructive'}>
-                        ${(netMonthlyIncome - analysis.monthlyPaymentTotal).toLocaleString()}
+                        {formatCurrency(netMonthlyIncome - analysis.monthlyPaymentTotal, language)}
                       </span>
                     </div>
                   </div>
