@@ -164,7 +164,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email with PDF using Puppeteer via service
     try {
       const emailResponse = await resend.emails.send({
-        from: 'WM Management <onboarding@resend.dev>',
+        from: 'WM Management <reports@wm.resend.dev>',
         to: [email],
         subject: `Investment Simulation Report - ${referenceNumber}`,
         html: `
