@@ -158,7 +158,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-4 gap-4">
                   <div className="space-y-2">
-                    <Label>Monto Total</Label>
+                    <Label>{t('simulator.items.totalAmount')}</Label>
                     <Input
                       type="number"
                       value={item.amount}
@@ -168,7 +168,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Adelanto (%)</Label>
+                    <Label>{t('simulator.items.advancePercentage')}</Label>
                     <Input
                       type="number"
                       value={item.advancePercentage}
@@ -179,7 +179,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Adelanto ($)</Label>
+                    <Label>{t('simulator.items.advanceAmount')}</Label>
                     <Input
                       type="number"
                       value={item.advanceAmount}
@@ -190,7 +190,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>A Financiar</Label>
+                    <Label>{t('simulator.items.financeBalance')}</Label>
                     <Input
                       type="number"
                       value={item.financeBalance}
@@ -201,7 +201,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Tipo de Crédito</Label>
+                  <Label>{t('simulator.items.creditType')}</Label>
                   <Select
                     value={item.creditType}
                     onValueChange={(value) => onUpdateItem(item.id, { creditType: value as CreditType })}
@@ -210,9 +210,9 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="personal">Crédito Personal</SelectItem>
-                      <SelectItem value="capital">Bienes de Capital</SelectItem>
-                      <SelectItem value="mortgage">Crédito Hipotecario</SelectItem>
+                      <SelectItem value="personal">{t('simulator.items.creditType.personal')}</SelectItem>
+                      <SelectItem value="capital">{t('simulator.items.creditType.capital')}</SelectItem>
+                      <SelectItem value="mortgage">{t('simulator.items.creditType.mortgage')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -226,21 +226,21 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
       {showCustomForm ? (
         <Card>
           <CardHeader>
-            <CardTitle>Agregar Ítem Personalizado</CardTitle>
+            <CardTitle>{t('simulator.items.customTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>Nombre del Ítem</Label>
+                <Label>{t('simulator.items.itemName')}</Label>
                 <Input
                   value={customItem.name}
                   onChange={(e) => setCustomItem(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Ej: Equipamiento especializado"
+                  placeholder={t('simulator.items.itemNamePlaceholder')}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label>Monto Estimado</Label>
+                <Label>{t('simulator.items.estimatedAmount')}</Label>
                 <Input
                   type="number"
                   value={customItem.amount}
@@ -250,7 +250,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
               </div>
               
               <div className="space-y-2">
-                <Label>Tipo de Crédito</Label>
+                <Label>{t('simulator.items.creditType')}</Label>
                 <Select
                   value={customItem.creditType}
                   onValueChange={(value) => setCustomItem(prev => ({ ...prev, creditType: value as CreditType }))}
@@ -259,18 +259,18 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="personal">Crédito Personal</SelectItem>
-                    <SelectItem value="capital">Bienes de Capital</SelectItem>
-                    <SelectItem value="mortgage">Crédito Hipotecario</SelectItem>
+                    <SelectItem value="personal">{t('simulator.items.creditType.personal')}</SelectItem>
+                    <SelectItem value="capital">{t('simulator.items.creditType.capital')}</SelectItem>
+                    <SelectItem value="mortgage">{t('simulator.items.creditType.mortgage')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             
             <div className="flex space-x-2">
-              <Button onClick={handleAddCustomItem}>Agregar</Button>
+              <Button onClick={handleAddCustomItem}>{t('simulator.items.add')}</Button>
               <Button variant="outline" onClick={() => setShowCustomForm(false)}>
-                Cancelar
+                {t('simulator.items.cancel')}
               </Button>
             </div>
           </CardContent>
@@ -278,7 +278,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
       ) : (
         <Button variant="outline" onClick={() => setShowCustomForm(true)} className="w-full">
           <Plus className="mr-2 h-4 w-4" />
-          Agregar Ítem Personalizado
+          {t('simulator.items.addCustom')}
         </Button>
       )}
     </div>
