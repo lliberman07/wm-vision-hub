@@ -93,9 +93,9 @@ export const ResultsAnalysis = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-xl font-semibold">Resultados y Análisis Financiero</h3>
+          <h3 className="text-xl font-semibold">{t('simulator.results.title')}</h3>
           <p className="text-muted-foreground">
-            Análisis completo del plan de inversión con métricas y proyecciones
+            {t('simulator.results.subtitle')}
           </p>
         </div>
       </div>
@@ -167,37 +167,37 @@ export const ResultsAnalysis = ({
 
       <Tabs defaultValue="summary" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="summary">Resumen</TabsTrigger>
-          <TabsTrigger value="charts">Gráficos</TabsTrigger>
-          <TabsTrigger value="analysis">Análisis</TabsTrigger>
-          <TabsTrigger value="sensitivity">Sensibilidad</TabsTrigger>
+          <TabsTrigger value="summary">{t('simulator.results.tabs.summary')}</TabsTrigger>
+          <TabsTrigger value="charts">{t('simulator.results.tabs.charts')}</TabsTrigger>
+          <TabsTrigger value="analysis">{t('simulator.results.tabs.analysis')}</TabsTrigger>
+          <TabsTrigger value="sensitivity">{t('simulator.results.tabs.sensitivity')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="summary" className="space-y-6">
           {/* Financial Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Resumen Financiero</CardTitle>
+              <CardTitle>{t('simulator.results.summary')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Inversión Total</Label>
+                  <Label className="text-sm text-muted-foreground">{t('simulator.results.totalInvestment')}</Label>
                   <div className="text-2xl font-bold">{formatCurrency(analysis.totalInvestment, language)}</div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Adelantos Requeridos</Label>
+                  <Label className="text-sm text-muted-foreground">{t('simulator.results.upfrontPayment')}</Label>
                   <div className="text-2xl font-bold text-destructive">{formatCurrency(analysis.totalAdvances, language)}</div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Total Financiado</Label>
+                  <Label className="text-sm text-muted-foreground">{t('simulator.results.financedAmount')}</Label>
                   <div className="text-2xl font-bold text-primary">{formatCurrency(analysis.totalFinanced, language)}</div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Pago Mensual</Label>
+                  <Label className="text-sm text-muted-foreground">{t('simulator.results.monthlyPayment')}</Label>
                   <div className="text-2xl font-bold text-accent">{formatCurrency(analysis.monthlyPaymentTotal, language)}</div>
                 </div>
               </div>
@@ -207,7 +207,7 @@ export const ResultsAnalysis = ({
           {/* Detailed Breakdown */}
           <Card>
             <CardHeader>
-              <CardTitle>Detalle por Ítem</CardTitle>
+              <CardTitle>{t('simulator.results.detailedBreakdown')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -221,7 +221,7 @@ export const ResultsAnalysis = ({
                       <div>
                         <div className="font-medium">{getItemName(item)}</div>
                         <div className="text-sm text-muted-foreground">
-                          Adelanto: {item.advancePercentage}% • Financiado: {((item.financeBalance / item.amount) * 100).toFixed(0)}%
+                          {t('simulator.results.upfrontPayment')}: {item.advancePercentage}% • {t('simulator.results.financedAmount')}: {((item.financeBalance / item.amount) * 100).toFixed(0)}%
                         </div>
                       </div>
                     </div>
@@ -242,9 +242,9 @@ export const ResultsAnalysis = ({
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Investment Distribution */}
             <Card>
-              <CardHeader>
-                <CardTitle>Distribución de Inversión</CardTitle>
-              </CardHeader>
+            <CardHeader>
+              <CardTitle>{t('simulator.results.costBreakdown')}</CardTitle>
+            </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
@@ -269,7 +269,7 @@ export const ResultsAnalysis = ({
             {/* Financing vs Advance */}
             <Card>
               <CardHeader>
-                <CardTitle>Adelanto vs Financiamiento</CardTitle>
+                <CardTitle>{t('simulator.results.financingBreakdown')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -278,8 +278,8 @@ export const ResultsAnalysis = ({
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip formatter={tooltipFormatter} />
-                    <Bar dataKey="adelanto" stackId="a" fill="#f59e0b" name="Adelanto" />
-                    <Bar dataKey="financiado" stackId="a" fill="#3b82f6" name="Financiado" />
+                    <Bar dataKey="adelanto" stackId="a" fill="#f59e0b" name={t('simulator.results.upfrontPayment')} />
+                    <Bar dataKey="financiado" stackId="a" fill="#3b82f6" name={t('simulator.chart.financed')} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -289,7 +289,7 @@ export const ResultsAnalysis = ({
           {/* Monthly Payments by Credit Type */}
           <Card>
             <CardHeader>
-              <CardTitle>Pagos Mensuales por Tipo de Crédito</CardTitle>
+              <CardTitle>{t('simulator.results.monthlyPaymentsByCreditType')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -312,15 +312,15 @@ export const ResultsAnalysis = ({
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <TrendingUp className="h-5 w-5" />
-                  <span>Punto de Equilibrio</span>
+                  <span>{t('simulator.results.breakEvenPoint')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-primary">
-                  {analysis.breakEvenMonths.toFixed(1)} meses
+                  {analysis.breakEvenMonths.toFixed(1)} {t('simulator.results.months')}
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Tiempo para recuperar la inversión total con ingresos netos proyectados
+                  {t('simulator.results.breakEvenDescription')}
                 </p>
               </CardContent>
             </Card>
@@ -329,15 +329,15 @@ export const ResultsAnalysis = ({
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Calculator className="h-5 w-5" />
-                  <span>Payback Period</span>
+                  <span>{t('simulator.results.paybackPeriod')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-accent">
-                  {analysis.paybackPeriod.toFixed(1)} meses
+                  {analysis.paybackPeriod.toFixed(1)} {t('simulator.results.months')}
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Tiempo para recuperar los adelantos realizados
+                  {t('simulator.results.paybackDescription')}
                 </p>
               </CardContent>
             </Card>
@@ -346,7 +346,7 @@ export const ResultsAnalysis = ({
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <DollarSign className="h-5 w-5" />
-                  <span>ROI Anual</span>
+                  <span>{t('simulator.results.annualROI')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -354,7 +354,7 @@ export const ResultsAnalysis = ({
                   {analysis.roi.toFixed(1)}%
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Retorno sobre la inversión anualizado
+                  {t('simulator.results.annualROIDescription')}
                 </p>
               </CardContent>
             </Card>
@@ -363,28 +363,28 @@ export const ResultsAnalysis = ({
           {/* Detailed Analysis */}
           <Card>
             <CardHeader>
-              <CardTitle>Análisis Detallado</CardTitle>
+              <CardTitle>{t('simulator.results.detailedAnalysis')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <h4 className="font-semibold">Flujo de Caja Proyectado</h4>
+                  <h4 className="font-semibold">{t('simulator.results.projectedCashFlow')}</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>Ingresos mensuales brutos:</span>
+                      <span>{t('simulator.results.grossMonthlyIncome')}</span>
                       <span className="font-medium">{formatCurrency(estimatedMonthlyIncome, language)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Margen bruto ({grossMarginPercentage}%):</span>
+                      <span>{t('simulator.results.grossMargin')} ({grossMarginPercentage}%):</span>
                       <span className="font-medium">{formatCurrency(netMonthlyIncome, language)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Pagos de financiamiento:</span>
+                      <span>{t('simulator.results.financingPayments')}</span>
                       <span className="font-medium text-destructive">-{formatCurrency(analysis.monthlyPaymentTotal, language)}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold">
-                      <span>Flujo libre mensual:</span>
+                      <span>{t('simulator.results.freeMonthlyCashFlow')}</span>
                       <span className={netMonthlyIncome - analysis.monthlyPaymentTotal >= 0 ? 'text-primary' : 'text-destructive'}>
                         {formatCurrency(netMonthlyIncome - analysis.monthlyPaymentTotal, language)}
                       </span>
@@ -393,22 +393,22 @@ export const ResultsAnalysis = ({
                 </div>
 
                 <div className="space-y-3">
-                  <h4 className="font-semibold">Indicadores de Riesgo</h4>
+                  <h4 className="font-semibold">{t('simulator.results.riskIndicators')}</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>Relación deuda/ingresos:</span>
+                      <span>{t('simulator.results.debtToIncome')}</span>
                       <Badge variant={debtToIncomeRatio > 40 ? 'destructive' : debtToIncomeRatio > 30 ? 'secondary' : 'default'}>
                         {debtToIncomeRatio.toFixed(1)}%
                       </Badge>
                     </div>
                     <div className="flex justify-between">
-                      <span>Apalancamiento:</span>
+                      <span>{t('simulator.results.leverage')}</span>
                       <span className="font-medium">
                         {analysis.totalInvestment > 0 ? ((analysis.totalFinanced / analysis.totalInvestment) * 100).toFixed(1) : 0}%
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Cobertura de pagos:</span>
+                      <span>{t('simulator.results.paymentCoverage')}</span>
                       <Badge variant={netMonthlyIncome / analysis.monthlyPaymentTotal > 1.5 ? 'default' : 'destructive'}>
                         {analysis.monthlyPaymentTotal > 0 ? (netMonthlyIncome / analysis.monthlyPaymentTotal).toFixed(1) : 'N/A'}x
                       </Badge>
@@ -423,15 +423,15 @@ export const ResultsAnalysis = ({
         <TabsContent value="sensitivity" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Análisis de Sensibilidad</CardTitle>
+              <CardTitle>{t('simulator.results.sensitivity.title')}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Evalúe cómo cambios en variables clave afectan la rentabilidad del proyecto
+                {t('simulator.results.sensitivity.description')}
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <Label>Variación en Tasas de Interés (%)</Label>
+                  <Label>{t('simulator.results.sensitivity.rateLabel')}</Label>
                   <Slider
                     value={sensitivityRate}
                     onValueChange={setSensitivityRate}
@@ -440,12 +440,12 @@ export const ResultsAnalysis = ({
                     step={1}
                   />
                   <div className="text-sm text-muted-foreground">
-                    Variación: {sensitivityRate[0] >= 0 ? '+' : ''}{sensitivityRate[0]}%
+                    {t('simulator.results.sensitivity.variation')} {sensitivityRate[0] >= 0 ? '+' : ''}{sensitivityRate[0]}%
                   </div>
                 </div>
                 
                 <div className="space-y-3">
-                  <Label>Variación en Ingresos (%)</Label>
+                  <Label>{t('simulator.results.sensitivity.incomeLabel')}</Label>
                   <Slider
                     value={sensitivityIncome}
                     onValueChange={setSensitivityIncome}
@@ -454,7 +454,7 @@ export const ResultsAnalysis = ({
                     step={5}
                   />
                   <div className="text-sm text-muted-foreground">
-                    Variación: {sensitivityIncome[0] >= 0 ? '+' : ''}{sensitivityIncome[0]}%
+                    {t('simulator.results.sensitivity.variation')} {sensitivityIncome[0] >= 0 ? '+' : ''}{sensitivityIncome[0]}%
                   </div>
                 </div>
               </div>
@@ -470,14 +470,14 @@ export const ResultsAnalysis = ({
                     dataKey="breakEven" 
                     stroke="#3b82f6" 
                     strokeWidth={2}
-                    name="Punto de Equilibrio (meses)"
+                    name={t('simulator.results.sensitivity.breakEvenLegend')}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="roi" 
                     stroke="#10b981" 
                     strokeWidth={2}
-                    name="ROI Anual (%)"
+                    name={t('simulator.results.sensitivity.annualROILegend')}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -490,15 +490,15 @@ export const ResultsAnalysis = ({
       <div className="flex flex-col sm:flex-row gap-4">
         <Button className="flex-1">
           <Save className="mr-2 h-4 w-4" />
-          Guardar Escenario
+          {t('simulator.results.saveScenario')}
         </Button>
         <Button variant="outline" className="flex-1">
           <Download className="mr-2 h-4 w-4" />
-          Exportar a PDF
+          {t('simulator.results.exportPDF')}
         </Button>
         <Button variant="outline" className="flex-1">
           <Download className="mr-2 h-4 w-4" />
-          Exportar a Excel
+          {t('simulator.results.exportExcel')}
         </Button>
       </div>
     </div>
