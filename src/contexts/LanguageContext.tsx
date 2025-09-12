@@ -508,7 +508,7 @@ const translations = {
     'home.services.investments.title': 'Fideicomiso e Inversiones',
     'home.services.investments.description': 'Marcos de inversión seguros y transparentes con retornos ajustados al riesgo.',
     'home.services.financing.title': 'Soluciones de Financiamiento',
-    'home.services.financing.description': 'Financiamiento competitivo con opciones sin intereses para sus proyectos de remodelación.',
+    'home.services.financing.description': 'Opciones de financiamiento para sus proyectos y negocios.',
     'home.news.title': 'Últimas Noticias y Actualizaciones',
     'home.news.content': 'Manténgase informado sobre las últimas tendencias, oportunidades e insights en el sector inmobiliario. Nuestro equipo comparte regularmente actualizaciones del mercado, consejos de inversión y experiencia de la industria para ayudarle a tomar decisiones informadas.',
     'home.learnMore': 'Saber Más',
