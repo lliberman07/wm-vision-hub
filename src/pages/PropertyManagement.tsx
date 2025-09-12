@@ -25,84 +25,84 @@ const PropertyManagement = () => {
   const features = [
     {
       icon: Building2,
-      title: "Administración de Propiedades en Alquiler",
+      title: t('propertyManagement.features.rental.title'),
       items: [
-        "Control de disponibilidad y agenda por propiedad",
-        "Actualización automática de tarifas",
-        "Gestión de propiedades con múltiples propietarios",
-        "Agrupación de propiedades por beneficiario",
-        "Integración con portales de alquileres"
+        t('propertyManagement.features.rental.item1'),
+        t('propertyManagement.features.rental.item2'),
+        t('propertyManagement.features.rental.item3'),
+        t('propertyManagement.features.rental.item4'),
+        t('propertyManagement.features.rental.item5')
       ]
     },
     {
       icon: FileText,
-      title: "Contratos",
+      title: t('propertyManagement.features.contracts.title'),
       items: [
-        "Creación y administración de contratos",
-        "Alertas de vencimiento",
-        "Seguimiento histórico por propiedad",
-        "Gestión documental digitalizada"
+        t('propertyManagement.features.contracts.item1'),
+        t('propertyManagement.features.contracts.item2'),
+        t('propertyManagement.features.contracts.item3'),
+        t('propertyManagement.features.contracts.item4')
       ]
     },
     {
       icon: Users,
-      title: "CRM Inmobiliario",
+      title: t('propertyManagement.features.crm.title'),
       items: [
-        "Registro y seguimiento de prospectos",
-        "Automatización de comunicación",
-        "Gestión de oportunidades"
+        t('propertyManagement.features.crm.item1'),
+        t('propertyManagement.features.crm.item2'),
+        t('propertyManagement.features.crm.item3')
       ]
     },
     {
       icon: Calculator,
-      title: "Administración de Servicios y Gastos",
+      title: t('propertyManagement.features.services.title'),
       items: [
-        "Control de facturas de proveedores",
-        "Administración de gastos comunes",
-        "Reportes de ingresos y egresos",
-        "Cálculo automático de rentabilidad"
+        t('propertyManagement.features.services.item1'),
+        t('propertyManagement.features.services.item2'),
+        t('propertyManagement.features.services.item3'),
+        t('propertyManagement.features.services.item4')
       ]
     },
     {
       icon: DollarSign,
-      title: "Finanzas y Contabilidad",
+      title: t('propertyManagement.features.finance.title'),
       items: [
-        "Reportes contables consolidados",
-        "Gestión multimoneda",
-        "Estados financieros segmentados"
+        t('propertyManagement.features.finance.item1'),
+        t('propertyManagement.features.finance.item2'),
+        t('propertyManagement.features.finance.item3')
       ]
     },
     {
       icon: Shield,
-      title: "Portal de Autogestión",
+      title: t('propertyManagement.features.portal.title'),
       items: [
-        "Propietarios: reportes financieros y contratos",
-        "Inquilinos: consulta de pagos y vencimientos",
-        "Proveedores: carga y seguimiento de facturas"
+        t('propertyManagement.features.portal.item1'),
+        t('propertyManagement.features.portal.item2'),
+        t('propertyManagement.features.portal.item3')
       ]
     }
   ];
 
   const benefits = [
-    "Optimización de procesos administrativos y financieros",
-    "Transparencia en la relación entre propietarios, inquilinos y proveedores",
-    "Reducción de errores y tiempos en la gestión",
-    "Información consolidada en tiempo real",
-    "Escalabilidad: desde una propiedad hasta portafolios completos"
+    t('propertyManagement.benefits.item1'),
+    t('propertyManagement.benefits.item2'),
+    t('propertyManagement.benefits.item3'),
+    t('propertyManagement.benefits.item4'),
+    t('propertyManagement.benefits.item5')
   ];
 
   const serviceModalities = [
     {
-      title: "Básico",
-      description: "Funcionalidades esenciales para pequeñas administraciones"
+      title: t('propertyManagement.modalities.basic.title'),
+      description: t('propertyManagement.modalities.basic.description')
     },
     {
-      title: "Intermedio",
-      description: "Gestión ampliada con reportes financieros y administración de servicios"
+      title: t('propertyManagement.modalities.intermediate.title'),
+      description: t('propertyManagement.modalities.intermediate.description')
     },
     {
-      title: "Full",
-      description: "Incluye todas las capacidades, con portal de autogestión y gestión avanzada multimoneda"
+      title: t('propertyManagement.modalities.full.title'),
+      description: t('propertyManagement.modalities.full.description')
     }
   ];
 
@@ -114,13 +114,13 @@ const PropertyManagement = () => {
       <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
-            Servicios Profesionales
+            {t('propertyManagement.hero.badge')}
           </Badge>
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
-            Property Management
+            {t('propertyManagement.hero.title')}
           </h1>
           <p className="text-xl text-primary-foreground/90 leading-relaxed">
-            Gestión integral, eficiente y escalable de inmuebles
+            {t('propertyManagement.hero.subtitle')}
           </p>
         </div>
       </section>
@@ -130,14 +130,11 @@ const PropertyManagement = () => {
         <div className="container mx-auto max-w-4xl">
           <Card className="shadow-medium">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Introducción</CardTitle>
+              <CardTitle className="text-2xl text-center">{t('propertyManagement.intro.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-lg text-muted-foreground leading-relaxed text-center">
-                Nuestro servicio de Property Management está diseñado para que la gestión de inmuebles sea integral, 
-                eficiente y escalable, centralizando en una única plataforma todos los procesos vinculados a propiedades 
-                en alquiler, contratos, finanzas y servicios. La solución permite que propietarios, inquilinos y 
-                proveedores interactúen de manera transparente, con información consolidada y accesible en tiempo real.
+                {t('propertyManagement.intro.content')}
               </p>
             </CardContent>
           </Card>
@@ -148,9 +145,9 @@ const PropertyManagement = () => {
       <section className="py-20 px-4 bg-muted">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Funcionalidades Principales</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('propertyManagement.features.title')}</h2>
             <p className="text-lg text-muted-foreground">
-              Herramientas completas para la gestión inmobiliaria moderna
+              {t('propertyManagement.features.subtitle')}
             </p>
           </div>
           
@@ -185,7 +182,7 @@ const PropertyManagement = () => {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Beneficios del Servicio</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('propertyManagement.benefits.title')}</h2>
           </div>
           
           <Card className="shadow-medium">
@@ -207,9 +204,9 @@ const PropertyManagement = () => {
       <section className="py-20 px-4 bg-muted">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Modalidades de Servicio</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('propertyManagement.modalities.title')}</h2>
             <p className="text-lg text-muted-foreground">
-              El sistema puede adaptarse a distintos niveles de necesidad
+              {t('propertyManagement.modalities.subtitle')}
             </p>
           </div>
           
@@ -234,21 +231,17 @@ const PropertyManagement = () => {
           <Card className="shadow-strong bg-gradient-primary text-primary-foreground">
             <CardContent className="p-12 text-center">
               <h2 className="text-3xl font-bold mb-6">
-                Transforme la Administración de sus Propiedades
+                {t('propertyManagement.cta.title')}
               </h2>
               <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
-                Descubra cómo nuestro servicio de Property Management puede transformar la administración 
-                de sus propiedades y maximizar su rentabilidad. Contáctenos para una demostración personalizada.
+                {t('propertyManagement.cta.subtitle')}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex justify-center">
                 <Button size="lg" variant="secondary" asChild>
                   <Link to="/contact">
-                    Contactar para Demo
+                    {t('propertyManagement.cta.contact')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
-                </Button>
-                <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
-                  <Link to="/financing/simulator">Simular Inversión</Link>
                 </Button>
               </div>
             </CardContent>
