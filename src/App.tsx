@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Services from "./pages/Services";
+import PropertyManagement from "./pages/PropertyManagement";
 import Industries from "./pages/Industries";
 import Financing from "./pages/Financing";
 import Contact from "./pages/Contact";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/services" element={<Services />} />
+            <Route path="/services/property-management" element={<PropertyManagement />} />
             <Route path="/industries" element={<Industries />} />
             <Route path="/financing" element={<Financing />} />
             <Route path="/financing/simulator" element={<Financing />} />
