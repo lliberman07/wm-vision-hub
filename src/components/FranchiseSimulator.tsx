@@ -102,6 +102,22 @@ const FranchiseSimulator = () => {
           />
         </TabsContent>
       </Tabs>
+      
+      <div className="mt-8 p-4 bg-muted/50 rounded-lg border text-center text-sm text-muted-foreground">
+        <p>
+          {t('simulator.disclaimer.text')}{' '}
+          <a 
+            href="#footer" 
+            className="text-primary hover:underline"
+            onClick={(e) => {
+              e.preventDefault();
+              document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            {t('simulator.disclaimer.seeMore')}
+          </a>
+        </p>
+      </div>
     </div>
   );
 };

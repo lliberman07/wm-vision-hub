@@ -333,6 +333,8 @@ const translations = {
     'simulator.tabs.configuration': 'Configuration',
     'simulator.tabs.financing': 'Financing',
     'simulator.tabs.results': 'Results & Analysis',
+    'simulator.disclaimer.text': 'Notice: The values shown are estimated simulations. WM Management S.A. does not guarantee their accuracy nor is responsible for decisions based on this tool.',
+    'simulator.disclaimer.seeMore': 'See more',
     // Financing Sources
     'simulator.financing.sourcesTitle': 'Financing Sources',
     'simulator.financing.sourcesDescription': 'Configure financing conditions by credit type',
@@ -763,6 +765,8 @@ const translations = {
     'simulator.tabs.configuration': 'Configuración',
     'simulator.tabs.financing': 'Financiamiento',
     'simulator.tabs.results': 'Resultados y Análisis',
+    'simulator.disclaimer.text': 'Aviso: Los valores mostrados son simulaciones estimativas. WM Management S.A. no garantiza su exactitud ni se responsabiliza por decisiones basadas en esta herramienta.',
+    'simulator.disclaimer.seeMore': 'Ver más',
     // Fuentes de Financiamiento
     'simulator.financing.sourcesTitle': 'Fuentes de Financiamiento',
     'simulator.financing.sourcesDescription': 'Configure las condiciones de financiamiento por tipo de crédito',
