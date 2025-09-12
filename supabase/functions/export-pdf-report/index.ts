@@ -190,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
         attachments: [
           {
             filename: `investment-report-${referenceNumber}.html`,
-            content: Buffer.from(htmlContent).toString('base64'),
+            content: btoa(htmlContent),
             content_type: 'text/html'
           }
         ]
