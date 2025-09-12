@@ -13,6 +13,7 @@ import { Download, Save, AlertTriangle, TrendingUp, Calculator, DollarSign } fro
 import { InvestmentItem, CreditLine, FinancialAnalysis, Alert as AlertType } from '@/types/investment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency, formatNumber } from '@/utils/numberFormat';
+import { ExportPDFDialog } from '@/components/ExportPDFDialog';
 
 interface ResultsAnalysisProps {
   items: InvestmentItem[];
@@ -492,10 +493,15 @@ export const ResultsAnalysis = ({
           <Save className="mr-2 h-4 w-4" />
           {t('simulator.results.saveScenario')}
         </Button>
-        <Button variant="outline" className="flex-1">
-          <Download className="mr-2 h-4 w-4" />
-          {t('simulator.results.exportPDF')}
-        </Button>
+        <ExportPDFDialog 
+          simulationData={items} 
+          analysisResults={analysis}
+        >
+          <Button variant="outline" className="flex-1">
+            <Download className="mr-2 h-4 w-4" />
+            {t('simulator.results.exportPDF')}
+          </Button>
+        </ExportPDFDialog>
         <Button variant="outline" className="flex-1">
           <Download className="mr-2 h-4 w-4" />
           {t('simulator.results.exportExcel')}
