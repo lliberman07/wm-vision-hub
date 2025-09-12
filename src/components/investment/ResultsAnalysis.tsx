@@ -117,13 +117,13 @@ export const ResultsAnalysis = ({
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <DollarSign className="h-5 w-5" />
-            <span>Configuración de Ingresos</span>
+            <span>{t('simulator.results.incomeConfig.title')}</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Ingresos Mensuales Estimados</Label>
+              <Label>{t('simulator.results.estimatedMonthlyIncome')}</Label>
               <Input
                 type="number"
                 value={estimatedMonthlyIncome}
@@ -132,7 +132,7 @@ export const ResultsAnalysis = ({
               />
             </div>
             <div className="space-y-2">
-              <Label>Margen Bruto (%)</Label>
+              <Label>{t('simulator.results.grossMarginPercentage')}</Label>
               <Input
                 type="number"
                 value={grossMarginPercentage}
@@ -145,19 +145,19 @@ export const ResultsAnalysis = ({
           <div className="mt-4 p-3 bg-muted rounded-lg">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">Ingreso Neto:</span>
+                <span className="text-muted-foreground">{t('simulator.results.netIncome')}</span>
                 <div className="font-semibold">{formatCurrency(netMonthlyIncome, language)}</div>
               </div>
               <div>
-                <span className="text-muted-foreground">Carga Financiera:</span>
+                <span className="text-muted-foreground">{t('simulator.results.debtToIncome')}</span>
                 <div className="font-semibold">{debtToIncomeRatio.toFixed(1)}%</div>
               </div>
               <div>
-                <span className="text-muted-foreground">Flujo Libre:</span>
+                <span className="text-muted-foreground">{t('simulator.results.freeCashFlow')}</span>
                 <div className="font-semibold">{formatCurrency(netMonthlyIncome - analysis.monthlyPaymentTotal, language)}</div>
               </div>
               <div>
-                <span className="text-muted-foreground">ROI Anual:</span>
+                <span className="text-muted-foreground">{t('simulator.results.annualROI')}</span>
                 <div className="font-semibold">{analysis.roi.toFixed(1)}%</div>
               </div>
             </div>
