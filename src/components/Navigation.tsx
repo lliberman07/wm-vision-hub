@@ -29,29 +29,32 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center">
-          {/* Logo - Fixed width */}
+    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 border-b border-border/50 shadow-sm">
+      <div className="container mx-auto px-4 lg:px-6">
+        <div className="flex h-20 items-center">
+          {/* Logo - Professional branding */}
           <div className="w-48 flex-shrink-0">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="text-xl font-bold text-primary ml-10 hover:scale-105 transition-transform duration-300 cursor-pointer">
-                WM management
+            <Link to="/" className="flex items-center space-x-3 group">
+              <div className="text-2xl font-display font-bold text-primary group-hover:text-primary-hover transition-colors duration-300">
+                WM<span className="text-accent">.</span>
+              </div>
+              <div className="hidden sm:block text-sm font-medium text-muted-foreground">
+                Management
               </div>
             </Link>
           </div>
 
-          {/* Desktop Navigation - Centered with fixed positioning */}
+          {/* Desktop Navigation - Professional spacing */}
           <div className="hidden md:flex items-center justify-center flex-1">
             <div className="flex items-center space-x-1">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
-                  className={`px-2 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary whitespace-nowrap min-w-[70px] text-center ${
+                  className={`nav-link text-sm font-medium whitespace-nowrap min-w-[80px] text-center ${
                     isActive(item.href)
-                      ? "text-primary bg-primary/10"
-                      : "text-muted-foreground"
+                      ? "text-primary active"
+                      : "text-foreground/80"
                   }`}
                 >
                   {item.label}
@@ -60,10 +63,10 @@ const Navigation = () => {
             </div>
           </div>
 
-          {/* Right side controls - Reduced width */}
-          <div className="hidden md:flex items-center space-x-2 w-48 justify-end flex-shrink-0">
+          {/* Right side controls - Premium styling */}
+          <div className="hidden md:flex items-center space-x-4 w-48 justify-end flex-shrink-0">
             <LanguageSwitcher variant="header" />
-            <Button variant="default" size="sm" className="whitespace-nowrap" asChild>
+            <Button variant="default" size="sm" className="btn-premium shadow-md" asChild>
               <Link to="/financing/signup">{t('nav.getStarted')}</Link>
             </Button>
           </div>

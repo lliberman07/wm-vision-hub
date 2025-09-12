@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'system-ui', 'sans-serif'],
+				display: ['Playfair Display', 'serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -28,6 +32,7 @@ export default {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))',
 					hover: 'hsl(var(--primary-hover))',
+					light: 'hsl(var(--primary-light))',
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -45,6 +50,15 @@ export default {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))',
 					hover: 'hsl(var(--accent-hover))',
+					light: 'hsl(var(--accent-light))',
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))',
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))',
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -65,10 +79,21 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+			spacing: {
+				'xs': 'var(--space-xs)',
+				'sm': 'var(--space-sm)',
+				'md': 'var(--space-md)',
+				'lg': 'var(--space-lg)',
+				'xl': 'var(--space-xl)',
+				'2xl': 'var(--space-2xl)',
+				'3xl': 'var(--space-3xl)',
+			},
 			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				'sm': 'var(--radius-sm)',
+				DEFAULT: 'var(--radius)',
+				'md': 'var(--radius-md)',
+				'lg': 'var(--radius-lg)',
+				'xl': 'var(--radius-xl)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -98,6 +123,13 @@ export default {
 				'gradient-accent': 'var(--gradient-accent)',
 			},
 			boxShadow: {
+				'xs': 'var(--shadow-xs)',
+				'sm': 'var(--shadow-sm)',
+				'md': 'var(--shadow-md)',
+				'lg': 'var(--shadow-lg)',
+				'xl': 'var(--shadow-xl)',
+				'2xl': 'var(--shadow-2xl)',
+				// Legacy support
 				'soft': 'var(--shadow-soft)',
 				'medium': 'var(--shadow-medium)',
 				'strong': 'var(--shadow-strong)',

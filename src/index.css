@@ -1,59 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @import './styles/number-inputs.css';
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Professional Design System - Corporate Real Estate Management
+   Following design methodology: typography scale, consistent spacing, professional color palette
 */
 
 @layer base {
   :root {
+    /* Brand Color Palette - Professional Blue & Gold */
     --background: 0 0% 100%;
-    --foreground: 220 15% 20%;
+    --foreground: 215 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 20%;
+    --card-foreground: 215 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 20%;
+    --popover-foreground: 215 25% 12%;
 
-    --primary: 220 70% 50%;
+    /* Primary: Professional Navy Blue */
+    --primary: 215 84% 19%;
     --primary-foreground: 0 0% 98%;
-    --primary-hover: 220 70% 45%;
+    --primary-hover: 215 84% 16%;
+    --primary-light: 215 84% 25%;
 
-    --secondary: 220 15% 96%;
-    --secondary-foreground: 220 15% 20%;
+    /* Secondary: Clean Light Gray */
+    --secondary: 220 10% 95%;
+    --secondary-foreground: 215 25% 12%;
 
-    --muted: 220 15% 96%;
-    --muted-foreground: 220 10% 46%;
+    /* Muted: Neutral Grays */
+    --muted: 220 8% 93%;
+    --muted-foreground: 215 12% 45%;
 
-    --accent: 35 85% 55%;
+    /* Accent: Premium Gold */
+    --accent: 43 89% 38%;
     --accent-foreground: 0 0% 98%;
-    --accent-hover: 35 85% 50%;
+    --accent-hover: 43 89% 35%;
+    --accent-light: 43 89% 45%;
 
-    --destructive: 0 84.2% 60.2%;
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 91%;
+    /* Interface Elements */
+    --border: 220 13% 88%;
     --input: 220 13% 91%;
-    --ring: 220 70% 50%;
+    --ring: 215 84% 19%;
 
-    /* Corporate gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(220 70% 50%), hsl(220 70% 40%));
-    --gradient-hero: linear-gradient(135deg, hsl(220 15% 20%), hsl(220 70% 50%));
-    --gradient-accent: linear-gradient(135deg, hsl(35 85% 55%), hsl(35 85% 45%));
+    /* Professional Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(215 84% 19%), hsl(215 84% 25%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 25% 12% / 0.95), hsl(215 84% 19% / 0.85));
+    --gradient-accent: linear-gradient(135deg, hsl(43 89% 38%), hsl(43 89% 45%));
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 8% 98%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 8% 97%));
     
-    /* Professional shadows */
-    --shadow-soft: 0 2px 10px hsl(220 15% 20% / 0.1);
-    --shadow-medium: 0 4px 20px hsl(220 15% 20% / 0.15);
-    --shadow-strong: 0 8px 30px hsl(220 15% 20% / 0.2);
+    /* Elevation System - Material Design Inspired */
+    --shadow-xs: 0 1px 2px hsl(215 25% 12% / 0.05);
+    --shadow-sm: 0 1px 3px hsl(215 25% 12% / 0.1), 0 1px 2px hsl(215 25% 12% / 0.06);
+    --shadow-md: 0 4px 6px hsl(215 25% 12% / 0.07), 0 2px 4px hsl(215 25% 12% / 0.06);
+    --shadow-lg: 0 10px 15px hsl(215 25% 12% / 0.1), 0 4px 6px hsl(215 25% 12% / 0.05);
+    --shadow-xl: 0 20px 25px hsl(215 25% 12% / 0.1), 0 10px 10px hsl(215 25% 12% / 0.04);
+    --shadow-2xl: 0 25px 50px hsl(215 25% 12% / 0.25);
     
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Legacy shadows for compatibility */
+    --shadow-soft: var(--shadow-sm);
+    --shadow-medium: var(--shadow-md);
+    --shadow-strong: var(--shadow-lg);
+    
+    /* Professional Animation System */
     --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
+    /* Spacing System - 8pt Grid */
+    --space-xs: 0.25rem;    /* 4px */
+    --space-sm: 0.5rem;     /* 8px */
+    --space-md: 1rem;       /* 16px */
+    --space-lg: 1.5rem;     /* 24px */
+    --space-xl: 2rem;       /* 32px */
+    --space-2xl: 3rem;      /* 48px */
+    --space-3xl: 4rem;      /* 64px */
+
+    /* Border Radius System */
+    --radius-sm: 0.25rem;
     --radius: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -73,41 +116,60 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark Mode - Professional Dark Theme */
+    --background: 215 28% 6%;
+    --foreground: 0 0% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 28% 8%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 28% 8%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 43 89% 45%;
+    --primary-foreground: 215 28% 6%;
+    --primary-hover: 43 89% 42%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 20% 15%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 20% 12%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 43 89% 45%;
+    --accent-foreground: 215 28% 6%;
+    --accent-hover: 43 89% 42%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --success: 142 76% 45%;
+    --warning: 38 92% 55%;
+    --destructive: 0 84% 65%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 215 20% 18%;
+    --input: 215 20% 15%;
+    --ring: 43 89% 45%;
+
+    /* Dark Mode Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(43 89% 45%), hsl(43 89% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 28% 6% / 0.95), hsl(215 28% 12% / 0.9));
+    --gradient-surface: linear-gradient(180deg, hsl(215 28% 8%), hsl(215 28% 6%));
+    --gradient-card: linear-gradient(145deg, hsl(215 28% 8%), hsl(215 20% 12%));
+
+    /* Dark Mode Shadows */
+    --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.1);
+    --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.2), 0 1px 2px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 4px 6px hsl(0 0% 0% / 0.15), 0 2px 4px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 10px 15px hsl(0 0% 0% / 0.2), 0 4px 6px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 20px 25px hsl(0 0% 0% / 0.2), 0 10px 10px hsl(0 0% 0% / 0.08);
+    --shadow-2xl: 0 25px 50px hsl(0 0% 0% / 0.4);
+
+    --sidebar-background: 215 28% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 43 89% 45%;
+    --sidebar-primary-foreground: 215 28% 6%;
+    --sidebar-accent: 215 20% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 215 20% 18%;
+    --sidebar-ring: 43 89% 45%;
   }
 }
 
@@ -117,6 +179,146 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  }
+
+  /* Typography Scale - Professional Hierarchy */
+  h1, .h1 {
+    @apply font-display font-bold tracking-tight;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+  }
+
+  h2, .h2 {
+    @apply font-display font-semibold tracking-tight;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    line-height: 1.2;
+  }
+
+  h3, .h3 {
+    @apply font-display font-semibold tracking-tight;
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    line-height: 1.3;
+  }
+
+  h4, .h4 {
+    @apply font-sans font-semibold;
+    font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+    line-height: 1.4;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /* Professional Button Variants */
+  .btn-premium {
+    @apply bg-gradient-accent text-accent-foreground shadow-md hover:shadow-lg;
+    @apply transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-glass {
+    @apply bg-white/10 backdrop-blur-sm border border-white/20;
+    @apply text-white hover:bg-white/20 transition-all duration-300;
+  }
+
+  /* Card Enhancements */
+  .card-elevated {
+    @apply bg-gradient-card shadow-lg hover:shadow-xl;
+    @apply transition-all duration-300 hover:-translate-y-1;
+  }
+
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+    @apply shadow-2xl;
+  }
+
+  /* Professional Navigation */
+  .nav-link {
+    @apply relative px-3 py-2 font-medium transition-all duration-300;
+    @apply hover:text-primary;
+  }
+
+  .nav-link::after {
+    @apply absolute bottom-0 left-0 h-0.5 w-0 bg-primary;
+    @apply transition-all duration-300;
+    content: '';
+  }
+
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    @apply w-full;
+  }
+
+  /* Hero Section Styling */
+  .hero-gradient {
+    background: linear-gradient(135deg, 
+      hsl(215 25% 12% / 0.9) 0%, 
+      hsl(215 84% 19% / 0.8) 50%, 
+      hsl(215 25% 12% / 0.9) 100%);
+  }
+
+  /* Section Spacing */
+  .section-padding {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  .container-padding {
+    @apply px-4 md:px-6 lg:px-8;
+  }
+
+  /* Animation Utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
