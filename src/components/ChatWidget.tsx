@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/LanguageContext';
-import buildoAvatar from '@/assets/buildo-avatar.png';
+import builderAvatar from '@/assets/builder-avatar.png';
 
 interface Message {
   id: string;
@@ -143,11 +143,11 @@ const ChatWidget = () => {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={buildoAvatar} alt="Buildo building avatar" />
+                    <AvatarImage src={builderAvatar} alt="Builder building assistant avatar" />
                     <AvatarFallback>B</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-semibold">Buildo</p>
+                    <p className="text-sm font-semibold">Builder</p>
                     <p className="text-xs text-muted-foreground">{t('chat.subtitle')}</p>
                   </div>
                 </CardTitle>

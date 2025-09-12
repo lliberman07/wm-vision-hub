@@ -297,7 +297,7 @@ const translations = {
     'faq.support.chat': 'Chat with Us',
     
     // Chat Widget
-    'chat.welcome': 'Hi! I\'m Buildo, your AI assistant. How can I help you with your real estate needs today?',
+    'chat.welcome': 'Hi! I\'m Builder, your AI assistant. How can I help you with your real estate needs today?',
     'chat.subtitle': 'Real Estate Assistant',
     'chat.placeholder': 'Ask me anything about our services...',
     'chat.responses.propertyManagement': 'Our Property Management services include comprehensive property care, lease administration, financial reporting, and strategic optimization. We help maximize your property\'s profitability while minimizing your administrative burden.',
@@ -305,7 +305,7 @@ const translations = {
     'chat.responses.investment': 'Our investment opportunities include direct property ownership, REITs, commercial development projects, and portfolio diversification strategies. We provide transparent frameworks with risk-adjusted returns.',
     'chat.responses.services': 'We offer comprehensive real estate services including Property Management, Brokerage, Consulting, Real Estate Development, Trust & Investments, and Financing Solutions. Each service is designed to maximize your real estate success.',
     'chat.responses.about': 'WM Management & Investments transforms complexity into clarity in real estate. With decades of combined experience, we provide integrated solutions that empower clients to make informed decisions and achieve their investment goals.',
-    'chat.responses.greeting': 'Hello! Welcome to WM Management & Investments. I\'m Buildo, your AI assistant. How can I help you today?',
+    'chat.responses.greeting': 'Hello! Welcome to WM Management & Investments. I\'m Builder, your AI assistant. How can I help you today?',
     'chat.responses.contact': 'You can contact us through our Contact page, call us directly, or continue chatting here! Our team is available to help with all your real estate needs.',
     'chat.responses.pricing': 'Our pricing varies depending on the specific services and scope of your project. I\'d recommend contacting our team for a personalized quote based on your needs. Would you like me to connect you with our contact information?',
     'chat.responses.location': 'We serve multiple locations with our real estate services. For specific location information and to see if we serve your area, please contact our team. Would you like our contact details?',
@@ -863,7 +863,7 @@ const translations = {
     'faq.support.chat': 'Chatear con Nosotros',
     
     // Chat Widget
-    'chat.welcome': '¡Hola! Soy Buildo, tu asistente de IA. ¿Cómo puedo ayudarte con tus necesidades inmobiliarias hoy?',
+    'chat.welcome': '¡Hola! Soy Builder, tu asistente de IA. ¿Cómo puedo ayudarte con tus necesidades inmobiliarias hoy?',
     'chat.subtitle': 'Asistente Inmobiliario',
     'chat.placeholder': 'Pregúntame sobre nuestros servicios...',
     'chat.responses.propertyManagement': 'Nuestros servicios de Administración de Propiedades incluyen cuidado integral de propiedades, administración de arrendamientos, reportes financieros y optimización estratégica. Ayudamos a maximizar la rentabilidad de su propiedad mientras minimizamos su carga administrativa.',
@@ -871,7 +871,7 @@ const translations = {
     'chat.responses.investment': 'Nuestras oportunidades de inversión incluyen propiedad directa de bienes raíces, REITs, proyectos de desarrollo comercial y estrategias de diversificación de portafolio. Proporcionamos marcos transparentes con retornos ajustados al riesgo.',
     'chat.responses.services': 'Ofrecemos servicios inmobiliarios integrales incluyendo Administración de Propiedades, Corretaje, Consultoría, Desarrollo Inmobiliario, Fideicomiso e Inversiones, y Soluciones de Financiamiento. Cada servicio está diseñado para maximizar su éxito inmobiliario.',
     'chat.responses.about': 'WM Management & Investments transforma la complejidad en claridad en bienes raíces. Con décadas de experiencia combinada, proporcionamos soluciones integradas que empoderan a los clientes para tomar decisiones informadas y alcanzar sus objetivos de inversión.',
-    'chat.responses.greeting': '¡Hola! Bienvenido a WM Management & Investments. Soy Buildo, tu asistente de IA. ¿Cómo puedo ayudarte hoy?',
+    'chat.responses.greeting': '¡Hola! Bienvenido a WM Management & Investments. Soy Builder, tu asistente de IA. ¿Cómo puedo ayudarte hoy?',
     'chat.responses.contact': '¡Puede contactarnos a través de nuestra página de Contacto, llamarnos directamente, o continuar chateando aquí! Nuestro equipo está disponible para ayudar con todas sus necesidades inmobiliarias.',
     'chat.responses.pricing': 'Nuestros precios varían dependiendo de los servicios específicos y el alcance de tu proyecto. Recomendaría contactar a nuestro equipo para una cotización personalizada basada en tus necesidades. ¿Te gustaría que te conecte con nuestra información de contacto?',
     'chat.responses.location': 'Servimos múltiples ubicaciones con nuestros servicios inmobiliarios. Para información específica de ubicación y ver si servimos tu área, por favor contacta a nuestro equipo. ¿Te gustaría nuestros datos de contacto?',
