@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import wmLogo from "@/assets/wm-logo.png";
+import wmLogoUploaded from "@/assets/wm-logo-uploaded.png";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,12 +35,19 @@ const Navigation = () => {
           {/* Logo - Professional branding */}
           <div className="w-48 flex-shrink-0">
             <Link to="/" className="flex items-center space-x-3 group">
+              <img 
+                src={wmLogoUploaded} 
+                alt="WM Management & Investments" 
+                className="h-12 w-auto transition-transform group-hover:scale-105"
+              />
+              {/* Fallback text logo - uncomment to revert:
               <div className="text-2xl font-display font-bold text-primary group-hover:text-primary-hover transition-colors duration-300">
                 WM<span className="text-accent">.</span>
               </div>
               <div className="hidden sm:block text-sm font-medium text-muted-foreground">
                 Management
               </div>
+              */}
             </Link>
           </div>
 
