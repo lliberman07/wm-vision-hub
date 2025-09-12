@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import propertyManagementHero from "@/assets/property-management-hero-background.jpg";
 import { 
   Building2, 
   Calendar, 
@@ -111,8 +112,16 @@ const PropertyManagement = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="bg-gradient-primary text-primary-foreground py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
+      <section 
+        className="relative bg-gradient-primary text-primary-foreground py-20 px-4 overflow-hidden"
+        style={{
+          backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.85), rgba(37, 99, 235, 0.85)), url(${propertyManagementHero})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="container mx-auto max-w-4xl text-center relative z-10">
           <Badge variant="secondary" className="mb-4">
             {t('propertyManagement.hero.badge')}
           </Badge>
