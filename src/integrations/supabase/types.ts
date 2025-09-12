@@ -14,13 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      investment_simulations: {
+        Row: {
+          analysis_results: Json
+          created_at: string
+          id: string
+          reference_number: string
+          simulation_data: Json
+          updated_at: string
+          user_email: string
+        }
+        Insert: {
+          analysis_results: Json
+          created_at?: string
+          id?: string
+          reference_number: string
+          simulation_data: Json
+          updated_at?: string
+          user_email: string
+        }
+        Update: {
+          analysis_results?: Json
+          created_at?: string
+          id?: string
+          reference_number?: string
+          simulation_data?: Json
+          updated_at?: string
+          user_email?: string
+        }
+        Relationships: []
+      }
+      pdf_report_requests: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          pdf_url: string | null
+          requested_at: string
+          simulation_id: string
+          status: string
+          user_email: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          pdf_url?: string | null
+          requested_at?: string
+          simulation_id: string
+          status?: string
+          user_email: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          pdf_url?: string | null
+          requested_at?: string
+          simulation_id?: string
+          status?: string
+          user_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_report_requests_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "investment_simulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_reference_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
