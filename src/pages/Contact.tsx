@@ -189,15 +189,17 @@ const Contact = () => {
                       onInvalid={handleTextareaInvalid}
                       required
                       placeholder={t('contact.form.messagePlaceholder')}
-                      rows={8}
-                      className="min-h-[200px]"
+                      rows={12}
+                      className="min-h-[280px]"
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full">
-                    <Send className="mr-2 h-4 w-4" />
-                    {t('contact.form.send')}
-                  </Button>
+                  <div className="pt-4">
+                    <Button type="submit" size="lg" className="w-full">
+                      <Send className="mr-2 h-4 w-4" />
+                      {t('contact.form.send')}
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
