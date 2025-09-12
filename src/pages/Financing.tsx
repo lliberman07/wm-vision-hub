@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import FranchiseSimulator from "@/components/FranchiseSimulator";
+import BusinessSimulator from "@/components/BusinessSimulator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import financingHeroBackground from "@/assets/financing-hero-background.jpg";
 import { 
@@ -148,7 +148,7 @@ const Financing = () => {
             </p>
           </div>
 
-          <FranchiseSimulator />
+          <BusinessSimulator />
         </div>
       </section>
 

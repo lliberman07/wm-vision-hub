@@ -7,7 +7,7 @@ import { ResultsAnalysis } from "@/components/investment/ResultsAnalysis";
 import { useInvestmentCalculations } from "@/hooks/useInvestmentCalculations";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const FranchiseSimulator = () => {
+const BusinessSimulator = () => {
   const { t } = useLanguage();
   const [items, setItems] = useState<InvestmentItem[]>(() =>
     DEFAULT_ITEMS.map((item, index) => ({ ...item, id: `item-${index}` }))
@@ -122,4 +122,4 @@ const FranchiseSimulator = () => {
   );
 };
 
-export default FranchiseSimulator;
+export default BusinessSimulator;
