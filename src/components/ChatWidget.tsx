@@ -39,24 +39,50 @@ const ChatWidget = () => {
 
   const generateBuildoResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
+    const { language } = useLanguage();
     
-    if (lowerMessage.includes('property management') || lowerMessage.includes('gestión de propiedades')) {
+    // Enhanced multilingual keyword detection
+    const keywords = {
+      propertyManagement: ['property management', 'gestión de propiedades', 'administración', 'management', 'propiedades'],
+      financing: ['financing', 'financiamiento', 'préstamo', 'crédito', 'loan', 'credit'],
+      investment: ['investment', 'inversión', 'invertir', 'invest', 'returns', 'retornos'],
+      services: ['services', 'servicios', 'service', 'servicio', 'help', 'ayuda'],
+      about: ['about', 'acerca', 'sobre', 'company', 'empresa', 'who are you', 'quién eres'],
+      contact: ['contact', 'contacto', 'phone', 'teléfono', 'email', 'correo'],
+      greeting: ['hello', 'hi', 'hola', 'buenos días', 'good morning', 'hey'],
+      pricing: ['price', 'precio', 'cost', 'costo', 'cuánto', 'how much'],
+      location: ['where', 'dónde', 'location', 'ubicación', 'address', 'dirección']
+    };
+
+    // Check greetings first
+    if (keywords.greeting.some(keyword => lowerMessage.includes(keyword))) {
+      return t('chat.responses.greeting');
+    }
+    
+    // Check for specific topics
+    if (keywords.propertyManagement.some(keyword => lowerMessage.includes(keyword))) {
       return t('chat.responses.propertyManagement');
     }
-    if (lowerMessage.includes('financing') || lowerMessage.includes('financiamiento')) {
+    if (keywords.financing.some(keyword => lowerMessage.includes(keyword))) {
       return t('chat.responses.financing');
     }
-    if (lowerMessage.includes('investment') || lowerMessage.includes('inversión')) {
+    if (keywords.investment.some(keyword => lowerMessage.includes(keyword))) {
       return t('chat.responses.investment');
     }
-    if (lowerMessage.includes('services') || lowerMessage.includes('servicios')) {
+    if (keywords.services.some(keyword => lowerMessage.includes(keyword))) {
       return t('chat.responses.services');
     }
-    if (lowerMessage.includes('about') || lowerMessage.includes('acerca')) {
+    if (keywords.about.some(keyword => lowerMessage.includes(keyword))) {
       return t('chat.responses.about');
     }
-    if (lowerMessage.includes('contact') || lowerMessage.includes('contacto')) {
+    if (keywords.contact.some(keyword => lowerMessage.includes(keyword))) {
       return t('chat.responses.contact');
+    }
+    if (keywords.pricing.some(keyword => lowerMessage.includes(keyword))) {
+      return t('chat.responses.pricing');
+    }
+    if (keywords.location.some(keyword => lowerMessage.includes(keyword))) {
+      return t('chat.responses.location');
     }
     
     return t('chat.responses.default');

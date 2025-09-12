@@ -305,7 +305,10 @@ const translations = {
     'chat.responses.investment': 'Our investment opportunities include direct property ownership, REITs, commercial development projects, and portfolio diversification strategies. We provide transparent frameworks with risk-adjusted returns.',
     'chat.responses.services': 'We offer comprehensive real estate services including Property Management, Brokerage, Consulting, Real Estate Development, Trust & Investments, and Financing Solutions. Each service is designed to maximize your real estate success.',
     'chat.responses.about': 'WM Management & Investments transforms complexity into clarity in real estate. With decades of combined experience, we provide integrated solutions that empower clients to make informed decisions and achieve their investment goals.',
+    'chat.responses.greeting': 'Hello! Welcome to WM Management & Investments. I\'m Buildo, your AI assistant. How can I help you today?',
     'chat.responses.contact': 'You can contact us through our Contact page, call us directly, or continue chatting here! Our team is available to help with all your real estate needs.',
+    'chat.responses.pricing': 'Our pricing varies depending on the specific services and scope of your project. I\'d recommend contacting our team for a personalized quote based on your needs. Would you like me to connect you with our contact information?',
+    'chat.responses.location': 'We serve multiple locations with our real estate services. For specific location information and to see if we serve your area, please contact our team. Would you like our contact details?',
     'chat.responses.default': 'I\'d be happy to help you with information about our real estate services, property management, financing options, or investment opportunities. What specific topic would you like to know more about?',
     
     'faq.news.title': 'FAQ Updates',
@@ -868,7 +871,10 @@ const translations = {
     'chat.responses.investment': 'Nuestras oportunidades de inversión incluyen propiedad directa de bienes raíces, REITs, proyectos de desarrollo comercial y estrategias de diversificación de portafolio. Proporcionamos marcos transparentes con retornos ajustados al riesgo.',
     'chat.responses.services': 'Ofrecemos servicios inmobiliarios integrales incluyendo Administración de Propiedades, Corretaje, Consultoría, Desarrollo Inmobiliario, Fideicomiso e Inversiones, y Soluciones de Financiamiento. Cada servicio está diseñado para maximizar su éxito inmobiliario.',
     'chat.responses.about': 'WM Management & Investments transforma la complejidad en claridad en bienes raíces. Con décadas de experiencia combinada, proporcionamos soluciones integradas que empoderan a los clientes para tomar decisiones informadas y alcanzar sus objetivos de inversión.',
+    'chat.responses.greeting': '¡Hola! Bienvenido a WM Management & Investments. Soy Buildo, tu asistente de IA. ¿Cómo puedo ayudarte hoy?',
     'chat.responses.contact': '¡Puede contactarnos a través de nuestra página de Contacto, llamarnos directamente, o continuar chateando aquí! Nuestro equipo está disponible para ayudar con todas sus necesidades inmobiliarias.',
+    'chat.responses.pricing': 'Nuestros precios varían dependiendo de los servicios específicos y el alcance de tu proyecto. Recomendaría contactar a nuestro equipo para una cotización personalizada basada en tus necesidades. ¿Te gustaría que te conecte con nuestra información de contacto?',
+    'chat.responses.location': 'Servimos múltiples ubicaciones con nuestros servicios inmobiliarios. Para información específica de ubicación y ver si servimos tu área, por favor contacta a nuestro equipo. ¿Te gustaría nuestros datos de contacto?',
     'chat.responses.default': 'Me complace ayudarle con información sobre nuestros servicios inmobiliarios, administración de propiedades, opciones de financiamiento u oportunidades de inversión. ¿Sobre qué tema específico le gustaría saber más?',
     
     'faq.news.title': 'Actualizaciones de FAQ',
