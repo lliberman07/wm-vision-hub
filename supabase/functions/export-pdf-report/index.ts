@@ -123,10 +123,23 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, simulationData, analysisResults }: ExportRequest = await req.json();
 
     console.log('Processing PDF export request for:', email);
+    console.log('Resend API key available:', !!resendApiKey);
+    console.log('Resend API key available:', !!resendApiKey);
+    console.log('Resend API key length:', resendApiKey?.length || 'undefined');
+
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
 
     // Generate reference number
-    const { data: refData } = await supabase.rpc('generate_reference_number');
+    console.log('Generating reference number...');
+    const { data: refData, error: refError } = await supabase.rpc('generate_reference_number');
+    if (refError) {
+      console.error('Reference number generation error:', refError);
+      throw new Error(`Failed to generate reference number: ${refError.message}`);
+    }
     const referenceNumber = refData || `SIM-${Date.now()}`;
+    console.log('Generated reference number:', referenceNumber);
 
     // Save simulation to database
     const { data: simulation, error: simError } = await supabase
@@ -242,8 +255,16 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Error in export-pdf-report function:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.name,
+        stack: error.stack
+      }),
       {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
