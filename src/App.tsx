@@ -11,6 +11,7 @@ import Industries from "./pages/Industries";
 import Financing from "./pages/Financing";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
+import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/financing/simulator" element={<Financing />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
