@@ -58,20 +58,20 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-xl font-semibold">Fuentes de Financiamiento</h3>
+          <h3 className="text-xl font-semibold">{t('simulator.financing.sourcesTitle')}</h3>
           <p className="text-muted-foreground">
-            Configure las condiciones de financiamiento por tipo de crédito
+            {t('simulator.financing.sourcesDescription')}
           </p>
         </div>
           <div className="text-right space-y-1">
             <div>
-              <Label className="text-sm text-muted-foreground">Total Financiado</Label>
+              <Label className="text-sm text-muted-foreground">{t('simulator.financing.totalFinanced')}</Label>
               <div className="text-xl font-bold text-primary">
                 {formatCurrency(totalFinanced, language)}
               </div>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Pago Mensual Total</Label>
+              <Label className="text-sm text-muted-foreground">{t('simulator.financing.totalMonthlyPayment')}</Label>
               <div className="text-xl font-bold text-accent">
                 {formatCurrency(totalMonthlyPayment, language)}
               </div>
@@ -83,8 +83,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-muted-foreground">
-              No hay ítems seleccionados para financiar. 
-              Vuelva al módulo anterior para seleccionar ítems de inversión.
+              {t('simulator.financing.noItemsSelected')}
             </p>
           </CardContent>
         </Card>
@@ -101,7 +100,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                     </Badge>
                   </CardTitle>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Pago Mensual</div>
+                    <div className="text-sm text-muted-foreground">{t('simulator.financing.monthlyPayment')}</div>
                     <div className="text-lg font-semibold text-accent">
                       {formatCurrency(creditLine.monthlyPayment, language)}
                     </div>
@@ -112,7 +111,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Monto a Financiar</Label>
+                    <Label>{t('simulator.financing.amountToFinance')}</Label>
                     <Input
                       type="number"
                       value={creditLine.totalAmount}
@@ -122,7 +121,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor={`rate-${creditLine.type}`}>Tasa de Interés (%)</Label>
+                    <Label htmlFor={`rate-${creditLine.type}`}>{t('simulator.financing.interestRate')}</Label>
                     <div className="number-input-with-arrows">
                       <Input
                         id={`rate-${creditLine.type}`}
@@ -137,7 +136,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor={`term-${creditLine.type}`}>Plazo (meses)</Label>
+                    <Label htmlFor={`term-${creditLine.type}`}>{t('simulator.financing.termMonths')}</Label>
                     <div className="number-input-with-arrows">
                       <Input
                         id={`term-${creditLine.type}`}
@@ -152,19 +151,19 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                 </div>
                 
                 <div className="mt-4 p-3 bg-muted rounded-lg">
-                  <div className="text-sm text-muted-foreground">Resumen del crédito:</div>
+                  <div className="text-sm text-muted-foreground">{t('simulator.financing.creditSummary')}</div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
                     <div>
-                      <span className="font-medium">Capital:</span> {formatCurrency(creditLine.totalAmount, language)}
+                      <span className="font-medium">{t('simulator.financing.principal')}</span> {formatCurrency(creditLine.totalAmount, language)}
                     </div>
                     <div>
-                      <span className="font-medium">Cuota:</span> {formatCurrency(creditLine.monthlyPayment, language)}
+                      <span className="font-medium">{t('simulator.financing.payment')}</span> {formatCurrency(creditLine.monthlyPayment, language)}
                     </div>
                     <div>
-                      <span className="font-medium">Total a pagar:</span> {formatCurrency(creditLine.monthlyPayment * creditLine.termMonths, language)}
+                      <span className="font-medium">{t('simulator.financing.totalToPay')}</span> {formatCurrency(creditLine.monthlyPayment * creditLine.termMonths, language)}
                     </div>
                     <div>
-                      <span className="font-medium">Intereses:</span> {formatCurrency((creditLine.monthlyPayment * creditLine.termMonths) - creditLine.totalAmount, language)}
+                      <span className="font-medium">{t('simulator.financing.interest')}</span> {formatCurrency((creditLine.monthlyPayment * creditLine.termMonths) - creditLine.totalAmount, language)}
                     </div>
                   </div>
                 </div>
