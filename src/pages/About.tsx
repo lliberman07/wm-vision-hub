@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Target, Eye, Users, TrendingUp } from "lucide-react";
 import aboutHeroBackground from "@/assets/about-hero-background.jpg";
@@ -186,6 +187,7 @@ const About = () => {
       </section>
 
       <Footer />
+      <ChatWidget />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import BusinessSimulator from "@/components/BusinessSimulator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import financingHeroBackground from "@/assets/financing-hero-background.jpg";
@@ -232,6 +233,7 @@ const Financing = () => {
       </section>
 
       <Footer />
+      <ChatWidget />
     </div>
   );
 };

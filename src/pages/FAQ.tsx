@@ -142,10 +142,10 @@ const FAQ = () => {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="tel:+15551234567">
-                <Phone className="mr-2 h-5 w-5" />
-                {t('faq.support.call')}
-              </a>
+              <Link to="/contact">
+                <MessageSquare className="mr-2 h-5 w-5" />
+                {t('faq.support.chat')}
+              </Link>
             </Button>
           </div>
         </div>

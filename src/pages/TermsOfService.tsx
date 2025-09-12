@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const TermsOfService = () => {
@@ -122,6 +123,7 @@ const TermsOfService = () => {
       </main>
       
       <Footer />
+      <ChatWidget />
     </div>
   );
 };

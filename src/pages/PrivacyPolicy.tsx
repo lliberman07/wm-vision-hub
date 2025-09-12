@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const PrivacyPolicy = () => {
@@ -128,6 +129,7 @@ const PrivacyPolicy = () => {
       </main>
       
       <Footer />
+      <ChatWidget />
     </div>
   );
 };

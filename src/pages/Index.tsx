@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { useLanguage } from "@/contexts/LanguageContext";
 import cityBackground from "@/assets/city-background.jpg";
 import { 
@@ -204,6 +205,7 @@ const Index = () => {
       </section>
 
       <Footer />
+      <ChatWidget />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { useLanguage } from "@/contexts/LanguageContext";
 import contactHeroBackground from "@/assets/contact-hero-background.jpg";
 import { 
@@ -293,6 +294,7 @@ const Contact = () => {
       </section>
 
       <Footer />
+      <ChatWidget />
     </div>
   );
 };
