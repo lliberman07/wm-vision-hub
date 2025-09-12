@@ -115,7 +115,7 @@ const PropertyManagement = () => {
       <section 
         className="relative bg-gradient-primary text-primary-foreground py-20 px-4 overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.85), rgba(37, 99, 235, 0.85)), url(${propertyManagementHero})`,
+          backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.5)), url(${propertyManagementHero})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
