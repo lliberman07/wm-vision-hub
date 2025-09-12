@@ -116,18 +116,16 @@ const Contact = () => {
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Contact Form */}
             <Card className="shadow-strong">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
+              <CardHeader className="pb-6">
+                <div className="flex items-center space-x-3 mb-4">
                   <MessageSquare className="h-8 w-8 text-primary" />
-                  <div>
-                    <CardTitle className="text-2xl">{t('contact.form.title')}</CardTitle>
-                    <CardDescription>
-                      {t('contact.form.subtitle')}
-                    </CardDescription>
-                  </div>
+                  <CardTitle className="text-2xl">{t('contact.form.title')}</CardTitle>
                 </div>
+                <CardDescription className="text-base">
+                  {t('contact.form.subtitle')}
+                </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-2">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -191,7 +189,8 @@ const Contact = () => {
                       onInvalid={handleTextareaInvalid}
                       required
                       placeholder={t('contact.form.messagePlaceholder')}
-                      rows={6}
+                      rows={4}
+                      className="min-h-[120px]"
                     />
                   </div>
 
