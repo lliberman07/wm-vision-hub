@@ -127,18 +127,18 @@ const Industries = () => {
             {industries.map((industry, index) => {
               const Icon = industry.icon;
               return (
-                <Card key={index} className="shadow-strong hover:shadow-glow transition-all duration-300 group">
+                <Card key={index} className="shadow-strong hover:shadow-glow transition-all duration-300 group flex flex-col h-full">
                   <CardHeader>
                     <div className="mb-4">
                       <Icon className="h-12 w-12 text-primary group-hover:scale-110 transition-transform duration-300" />
                     </div>
                     <CardTitle className="text-xl">{industry.title}</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground leading-relaxed">
+                  <CardContent className="flex flex-col flex-1 space-y-4">
+                    <p className="text-muted-foreground leading-relaxed flex-1">
                       {industry.description}
                     </p>
-                    <Button asChild className="w-full">
+                    <Button asChild className="w-full mt-auto">
                       <Link to={industry.href}>
                         {industry.cta}
                         <ArrowRight className="ml-2 h-4 w-4" />
