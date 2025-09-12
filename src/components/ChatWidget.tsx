@@ -95,32 +95,46 @@ const ChatWidget = () => {
 
   return (
     <>
-      {/* Chat Button */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button
-          onClick={() => setIsOpen(!isOpen)}
-          size="lg"
-          className="h-14 w-14 rounded-full shadow-elegant hover:shadow-glow transition-all duration-300"
-        >
-          {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
-        </Button>
-      </div>
+      {/* Chat Button - hidden when open to avoid overlap */}
+      {!isOpen && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <Button
+            onClick={() => setIsOpen(true)}
+            size="lg"
+            className="h-14 w-14 rounded-full shadow-elegant hover:shadow-glow transition-all duration-300"
+            aria-label="Open chat"
+          >
+            <MessageSquare className="h-6 w-6" />
+          </Button>
+        </div>
+      )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 h-96">
+        <div className="fixed bottom-24 right-6 z-[60] w-80 h-96">
           <Card className="h-full shadow-elegant">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center space-x-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={buildoAvatar} alt="Buildo" />
-                  <AvatarFallback>B</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-semibold">Buildo</p>
-                  <p className="text-xs text-muted-foreground">{t('chat.subtitle')}</p>
-                </div>
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={buildoAvatar} alt="Buildo building avatar" />
+                    <AvatarFallback>B</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-semibold">Buildo</p>
+                    <p className="text-xs text-muted-foreground">{t('chat.subtitle')}</p>
+                  </div>
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Close chat"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0 flex flex-col h-full">
               <ScrollArea className="flex-1 px-4">
