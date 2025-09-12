@@ -297,7 +297,11 @@ const translations = {
     'faq.support.chat': 'Chat with Us',
     
     // Chat Widget
-    'chat.welcome': 'Hi! I\'m Builder, your AI assistant. How can I help you with your real estate needs today?',
+    'chat.welcome': 'Hello! I\'m Builder, your real estate AI assistant. 🏗️\n\nHola! Soy Builder, tu asistente de IA inmobiliario. 🏗️\n\nWhich language would you prefer for our conversation?\n¿En qué idioma prefieres que continuemos nuestra conversación?',
+    'chat.languageSelection.english': 'English 🇺🇸',
+    'chat.languageSelection.spanish': 'Español 🇪🇸',
+    'chat.languageSelected.english': 'Perfect! I\'ll continue in English. How can I help you with your real estate needs today?',
+    'chat.languageSelected.spanish': '¡Perfecto! Continuaré en español. ¿Cómo puedo ayudarte con tus necesidades inmobiliarias hoy?',
     'chat.subtitle': 'Real Estate Assistant',
     'chat.placeholder': 'Ask me anything about our services...',
     'chat.responses.propertyManagement': 'Our Property Management services include comprehensive property care, lease administration, financial reporting, and strategic optimization. We help maximize your property\'s profitability while minimizing your administrative burden.',
@@ -863,7 +867,11 @@ const translations = {
     'faq.support.chat': 'Chatear con Nosotros',
     
     // Chat Widget
-    'chat.welcome': '¡Hola! Soy Builder, tu asistente de IA. ¿Cómo puedo ayudarte con tus necesidades inmobiliarias hoy?',
+    'chat.welcome': '¡Hola! Soy Builder, tu asistente de IA inmobiliario. 🏗️\n\nHello! I\'m Builder, your real estate AI assistant. 🏗️\n\n¿En qué idioma prefieres que continuemos nuestra conversación?\nWhich language would you prefer for our conversation?',
+    'chat.languageSelection.english': 'English 🇺🇸',
+    'chat.languageSelection.spanish': 'Español 🇪🇸',
+    'chat.languageSelected.english': '¡Perfecto! Continuaré en inglés. ¿Cómo puedo ayudarte con tus necesidades inmobiliarias hoy?',
+    'chat.languageSelected.spanish': '¡Perfecto! Continuaré en español. ¿Cómo puedo ayudarte con tus necesidades inmobiliarias hoy?',
     'chat.subtitle': 'Asistente Inmobiliario',
     'chat.placeholder': 'Pregúntame sobre nuestros servicios...',
     'chat.responses.propertyManagement': 'Nuestros servicios de Administración de Propiedades incluyen cuidado integral de propiedades, administración de arrendamientos, reportes financieros y optimización estratégica. Ayudamos a maximizar la rentabilidad de su propiedad mientras minimizamos su carga administrativa.',

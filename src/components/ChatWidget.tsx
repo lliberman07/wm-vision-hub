@@ -26,6 +26,7 @@ const ChatWidget = () => {
       timestamp: new Date()
     }
   ]);
+  const [languageSelected, setLanguageSelected] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +37,22 @@ const ChatWidget = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleLanguageSelection = (selectedLanguage: 'en' | 'es') => {
+    setLanguageSelected(true);
+    const { setLanguage } = useLanguage();
+    setLanguage(selectedLanguage);
+    
+    setTimeout(() => {
+      const languageResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: selectedLanguage === 'en' ? t('chat.languageSelected.english') : t('chat.languageSelected.spanish'),
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, languageResponse]);
+    }, 500);
+  };
 
   const generateBuildoResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
@@ -177,10 +194,33 @@ const ChatWidget = () => {
                             : 'bg-muted text-foreground'
                         }`}
                       >
-                        <p className="text-sm">{message.text}</p>
+                        <p className="text-sm whitespace-pre-line">{message.text}</p>
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Language selection buttons - show only for first message and when language not selected */}
+                  {!languageSelected && messages.length === 1 && (
+                    <div className="flex justify-center space-x-2 mt-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleLanguageSelection('en')}
+                        className="text-xs"
+                      >
+                        {t('chat.languageSelection.english')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleLanguageSelection('es')}
+                        className="text-xs"
+                      >
+                        {t('chat.languageSelection.spanish')}
+                      </Button>
+                    </div>
+                  )}
+                  
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
