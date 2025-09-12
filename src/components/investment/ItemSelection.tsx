@@ -18,11 +18,12 @@ interface ItemSelectionProps {
   onRemoveItem: (id: string) => void;
 }
 
-const CREDIT_TYPE_LABELS: Record<CreditType, string> = {
-  personal: 'Personal',
-  capital: 'Bienes de Capital',
-  mortgage: 'Hipotecario'
-};
+const getCreditLabel = (type: CreditType, t: (key: string) => string) =>
+  type === 'personal'
+    ? t('simulator.items.creditType.personal')
+    : type === 'capital'
+    ? t('simulator.items.creditType.capital')
+    : t('simulator.items.creditType.mortgage');
 
 const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
   personal: 'bg-blue-100 text-blue-800',
@@ -135,9 +136,9 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                     onCheckedChange={(checked) => handleItemToggle(item.id, !!checked)}
                   />
                   <div>
-                    <CardTitle className="text-base">{item.name}</CardTitle>
+                    <CardTitle className="text-base">{item.nameKey ? t(item.nameKey) : item.name}</CardTitle>
                     <Badge className={CREDIT_TYPE_COLORS[item.creditType]} variant="secondary">
-                      {CREDIT_TYPE_LABELS[item.creditType]}
+                      {getCreditLabel(item.creditType, t)}
                     </Badge>
                   </div>
                 </div>

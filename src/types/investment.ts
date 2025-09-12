@@ -1,6 +1,8 @@
 export interface InvestmentItem {
   id: string;
   name: string;
+  // i18n key to display localized item name
+  nameKey?: string;
   isSelected: boolean;
   amount: number;
   advancePercentage: number;
@@ -47,6 +49,7 @@ export interface Scenario {
 export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   {
     name: 'Alquiler de Local Comercial',
+    nameKey: 'simulator.item.retailLease',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,
@@ -56,6 +59,7 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   },
   {
     name: 'Alquiler de Oficina',
+    nameKey: 'simulator.item.officeLease',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,
@@ -65,6 +69,7 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   },
   {
     name: 'Alquiler de Depósito',
+    nameKey: 'simulator.item.warehouseLease',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,
@@ -74,6 +79,7 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   },
   {
     name: 'Compra de Propiedad',
+    nameKey: 'simulator.item.propertyPurchase',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,
@@ -83,6 +89,7 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   },
   {
     name: 'Remodelación de Propiedad',
+    nameKey: 'simulator.item.propertyRemodel',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,
@@ -92,6 +99,7 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   },
   {
     name: 'Equipamiento y Activos',
+    nameKey: 'simulator.item.equipmentAssets',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,
@@ -101,6 +109,7 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   },
   {
     name: 'Capital de Trabajo',
+    nameKey: 'simulator.item.workingCapital',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,
@@ -110,6 +119,7 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   },
   {
     name: 'Gastos Legales / Licencias',
+    nameKey: 'simulator.item.legalLicenses',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,
@@ -119,6 +129,7 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
   },
   {
     name: 'Marketing y Lanzamiento',
+    nameKey: 'simulator.item.marketingLaunch',
     isSelected: false,
     amount: 0,
     advancePercentage: 0,

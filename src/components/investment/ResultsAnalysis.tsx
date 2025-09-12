@@ -37,28 +37,33 @@ export const ResultsAnalysis = ({
   onIncomeChange,
   onMarginChange
 }: ResultsAnalysisProps) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [sensitivityRate, setSensitivityRate] = useState([0]);
   const [sensitivityIncome, setSensitivityIncome] = useState([0]);
 
   const selectedItems = items.filter(item => item.isSelected);
 
+  const getItemName = (item: InvestmentItem) => (item.nameKey ? t(item.nameKey) : item.name);
+
   // Chart data preparation
   const pieData = selectedItems.map((item, index) => ({
-    name: item.name,
+    name: getItemName(item),
     value: item.amount,
     color: COLORS[index % COLORS.length]
   }));
 
-  const financingData = selectedItems.map((item, index) => ({
-    name: item.name.length > 15 ? item.name.substring(0, 12) + '...' : item.name,
-    adelanto: item.advanceAmount,
-    financiado: item.financeBalance,
-    color: COLORS[index % COLORS.length]
-  }));
+  const financingData = selectedItems.map((item, index) => {
+    const label = getItemName(item);
+    return {
+      name: label.length > 15 ? label.substring(0, 12) + '...' : label,
+      adelanto: item.advanceAmount,
+      financiado: item.financeBalance,
+      color: COLORS[index % COLORS.length]
+    };
+  });
 
   const creditLineData = creditLines.map((cl, index) => ({
-    name: cl.type === 'personal' ? 'Personal' : cl.type === 'capital' ? 'Bienes Capital' : 'Hipotecario',
+    name: cl.type === 'personal' ? t('simulator.items.creditType.personal') : cl.type === 'capital' ? t('simulator.items.creditType.capital') : t('simulator.items.creditType.mortgage'),
     cuota: cl.monthlyPayment,
     color: COLORS[index % COLORS.length]
   }));
@@ -214,7 +219,7 @@ export const ResultsAnalysis = ({
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       />
                       <div>
-                        <div className="font-medium">{item.name}</div>
+                        <div className="font-medium">{getItemName(item)}</div>
                         <div className="text-sm text-muted-foreground">
                           Adelanto: {item.advancePercentage}% • Financiado: {((item.financeBalance / item.amount) * 100).toFixed(0)}%
                         </div>

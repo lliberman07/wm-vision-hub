@@ -11,11 +11,12 @@ interface FinancingSourcesProps {
   onUpdateCreditLine: (type: CreditType, updates: Partial<CreditLine>) => void;
 }
 
-const CREDIT_TYPE_LABELS: Record<CreditType, string> = {
-  personal: 'Crédito Personal',
-  capital: 'Bienes de Capital',
-  mortgage: 'Crédito Hipotecario'
-};
+const getCreditLabel = (type: CreditType, t: (key: string) => string) =>
+  type === 'personal'
+    ? t('simulator.items.creditType.personal')
+    : type === 'capital'
+    ? t('simulator.items.creditType.capital')
+    : t('simulator.items.creditType.mortgage');
 
 const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
   personal: 'bg-blue-100 text-blue-800',
@@ -24,7 +25,7 @@ const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
 };
 
 export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingSourcesProps) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const calculateMonthlyPayment = (amount: number, rate: number, months: number): number => {
     if (rate === 0) return Math.round(amount / months);
     const monthlyRate = rate / 100 / 12;
@@ -94,7 +95,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-2">
-                    <span>{CREDIT_TYPE_LABELS[creditLine.type]}</span>
+                    <span>{getCreditLabel(creditLine.type, t)}</span>
                     <Badge className={CREDIT_TYPE_COLORS[creditLine.type]} variant="secondary">
                       {formatCurrency(creditLine.totalAmount, language)}
                     </Badge>
