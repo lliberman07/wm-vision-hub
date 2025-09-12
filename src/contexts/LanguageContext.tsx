@@ -48,6 +48,10 @@ const translations = {
     'home.services.investments.description': 'Secure, transparent investment frameworks with risk-adjusted returns.',
     'home.services.financing.title': 'Financing Solutions',
     'home.services.financing.description': 'Competitive financing with interest-free options for your remodeling projects.',
+    'home.news.title': 'Latest News & Updates',
+    'home.news.content': 'Stay informed about the latest trends, opportunities, and insights in real estate. Our team regularly shares market updates, investment tips, and industry expertise to help you make informed decisions.',
+    'home.learnMore': 'Learn More',
+    'home.simulator.cta': 'Try Our Simulator',
 
     // Common
     'common.readyToStart': 'Ready to Get Started?',
@@ -156,6 +160,10 @@ const translations = {
     'home.services.investments.description': 'Marcos de inversión seguros y transparentes con retornos ajustados al riesgo.',
     'home.services.financing.title': 'Soluciones de Financiamiento',
     'home.services.financing.description': 'Financiamiento competitivo con opciones sin intereses para sus proyectos de remodelación.',
+    'home.news.title': 'Últimas Noticias y Actualizaciones',
+    'home.news.content': 'Manténgase informado sobre las últimas tendencias, oportunidades e insights en el sector inmobiliario. Nuestro equipo comparte regularmente actualizaciones del mercado, consejos de inversión y experiencia de la industria para ayudarle a tomar decisiones informadas.',
+    'home.learnMore': 'Saber Más',
+    'home.simulator.cta': 'Probar Nuestro Simulador',
 
     // Common
     'common.readyToStart': '¿Listo para Comenzar?',
