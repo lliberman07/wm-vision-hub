@@ -42,48 +42,48 @@ const Footer = () => {
             <h3 className="font-semibold text-lg">{t('nav.services')}</h3>
             <div className="space-y-2">
               <Link to="/services/property-management" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Property Management
+                {t('footer.services.propertyManagement')}
               </Link>
               <Link to="/services/brokerage" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Brokerage
+                {t('footer.services.brokerage')}
               </Link>
               <Link to="/services/consulting" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Consulting Services
+                {t('footer.services.consulting')}
               </Link>
               <Link to="/services/development" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Real Estate Development
+                {t('footer.services.development')}
               </Link>
               <Link to="/services/investments" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Trust & Investments
+                {t('footer.services.investments')}
               </Link>
             </div>
           </div>
 
           {/* Industries */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Industrias</h3>
+            <h3 className="font-semibold text-lg">{t('footer.industries.title')}</h3>
             <div className="space-y-2">
               <Link to="/industries/commercial" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Commercial
+                {t('footer.industries.commercial')}
               </Link>
               <Link to="/industries/health" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Health
+                {t('footer.industries.health')}
               </Link>
               <Link to="/industries/industrial" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Industrial
+                {t('footer.industries.industrial')}
               </Link>
               <Link to="/industries/logistics" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Logistics
+                {t('footer.industries.logistics')}
               </Link>
               <Link to="/industries/governments" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Governments
+                {t('footer.industries.governments')}
               </Link>
             </div>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Enlaces Rápidos</h3>
+            <h3 className="font-semibold text-lg">{t('footer.quickLinks.title')}</h3>
             <div className="space-y-2">
               <Link to="/about" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
                 {t('nav.about')}
@@ -92,7 +92,7 @@ const Footer = () => {
                 {t('nav.financing')}
               </Link>
               <Link to="/financing/simulator" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                Simulador
+                {t('footer.quickLinks.simulator')}
               </Link>
               <Link to="/contact" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
                 {t('nav.contact')}
@@ -111,14 +111,14 @@ const Footer = () => {
         
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <p className="text-sm text-primary-foreground/80">
-            © 2025 WM Management & Investments. All rights reserved.
+            {t('footer.copyright')}
           </p>
           <div className="flex space-x-4">
             <Link to="/privacy" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-              Privacy Policy
+              {t('footer.privacyPolicy')}
             </Link>
             <Link to="/terms" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-              Terms of Service
+              {t('footer.termsOfService')}
             </Link>
           </div>
         </div>

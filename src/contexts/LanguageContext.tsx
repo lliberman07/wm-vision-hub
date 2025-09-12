@@ -422,6 +422,25 @@ const translations = {
     'simulator.results.sensitivity.annualROILegend': 'Annual ROI (%)',
     'simulator.chart.financed': 'Financed',
     'simulator.chart.outOfPocket': 'Out of Pocket',
+    
+    // Footer
+    'footer.description': 'Transforming complexity into clarity. Your trusted partner in real estate consulting, investment, and development.',
+    'footer.services.propertyManagement': 'Property Management',
+    'footer.services.brokerage': 'Brokerage',
+    'footer.services.consulting': 'Consulting Services',
+    'footer.services.development': 'Real Estate Development',
+    'footer.services.investments': 'Trust & Investments',
+    'footer.industries.title': 'Industries',
+    'footer.industries.commercial': 'Commercial',
+    'footer.industries.health': 'Health',
+    'footer.industries.industrial': 'Industrial',
+    'footer.industries.logistics': 'Logistics',
+    'footer.industries.governments': 'Governments',
+    'footer.quickLinks.title': 'Quick Links',
+    'footer.quickLinks.simulator': 'Simulator',
+    'footer.copyright': '© 2025 WM Management & Investments. All rights reserved.',
+    'footer.privacyPolicy': 'Privacy Policy',
+    'footer.termsOfService': 'Terms of Service',
   },
   es: {
     // Navigation
@@ -833,6 +852,25 @@ const translations = {
     'simulator.results.sensitivity.annualROILegend': 'ROI Anual (%)',
     'simulator.chart.financed': 'Financiado',
     'simulator.chart.outOfPocket': 'De su Bolsillo',
+    
+    // Footer
+    'footer.description': 'Transformando la complejidad en claridad. Su socio de confianza en consultoría, inversión y desarrollo inmobiliario.',
+    'footer.services.propertyManagement': 'Gestión de Propiedades',
+    'footer.services.brokerage': 'Correduría',
+    'footer.services.consulting': 'Servicios de Consultoría',
+    'footer.services.development': 'Desarrollo Inmobiliario',
+    'footer.services.investments': 'Fideicomisos e Inversiones',
+    'footer.industries.title': 'Industrias',
+    'footer.industries.commercial': 'Comercial',
+    'footer.industries.health': 'Salud',
+    'footer.industries.industrial': 'Industrial',
+    'footer.industries.logistics': 'Logística',
+    'footer.industries.governments': 'Gobiernos',
+    'footer.quickLinks.title': 'Enlaces Rápidos',
+    'footer.quickLinks.simulator': 'Simulador',
+    'footer.copyright': '© 2025 WM Management & Investments. Todos los derechos reservados.',
+    'footer.privacyPolicy': 'Política de Privacidad',
+    'footer.termsOfService': 'Términos de Servicio',
   }
 };
 
