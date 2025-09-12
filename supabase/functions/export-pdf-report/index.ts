@@ -161,7 +161,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate PDF content
     const htmlContent = generatePDFContent(simulationData, analysisResults, referenceNumber);
 
-    // Send email with PDF using Puppeteer via service
+    // Send email with PDF report
     try {
       const emailResponse = await resend.emails.send({
         from: 'WM Management <reports@wm.resend.dev>',
@@ -196,7 +196,13 @@ const handler = async (req: Request): Promise<Response> => {
         ]
       });
 
-      console.log('Email sent successfully:', emailResponse);
+      console.log('Email response:', emailResponse);
+
+      // Check if email sending was successful
+      if (emailResponse.error) {
+        console.error('Resend API error:', emailResponse.error);
+        throw new Error(`Email sending failed: ${emailResponse.error.message || 'Unknown error'}`);
+      }
 
       // Update request status to completed
       await supabase
@@ -219,7 +225,7 @@ const handler = async (req: Request): Promise<Response> => {
         })
         .eq('simulation_id', simulation.id);
 
-      throw new Error('Failed to send email');
+      throw new Error(`Failed to send email: ${emailError.message}`);
     }
 
     return new Response(JSON.stringify({ 
