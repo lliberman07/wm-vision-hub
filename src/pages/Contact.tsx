@@ -78,9 +78,28 @@ const Contact = () => {
         return;
       }
 
+      // Send confirmation email
+      try {
+        await fetch(`https://jrzeabjpxkhccopxfwqa.supabase.co/functions/v1/send-contact-confirmation`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyemVhYmpweGtoY2NvcHhmd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDI0NjksImV4cCI6MjA3MzI3ODQ2OX0.UUIntagLOquAdC6iURCVgqIyKcaHqvtABmh_NBtFD7Y`,
+          },
+          body: JSON.stringify({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+          }),
+        });
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        // Don't fail the form submission if email fails
+      }
+
       toast({
-        title: t('contact.form.success'),
-        description: t('contact.form.successDesc'),
+        title: t('contact.form.successMessage'),
+        description: "",
       });
       setFormData({ firstName: "", lastName: "", email: "", phone: "", company: "", message: "" });
     } catch (error) {

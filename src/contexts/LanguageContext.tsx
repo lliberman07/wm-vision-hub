@@ -278,6 +278,7 @@ const translations = {
     'contact.form.validation.name': 'Please enter your name',
     'contact.form.validation.email': 'Please enter a valid email address',
     'contact.form.validation.message': 'Please enter your message',
+    'contact.form.successMessage': 'Thank you, we have received your inquiry.',
 
     // FAQ
     'faq.hero.badge': 'Frequently Asked Questions',
@@ -859,6 +860,7 @@ const translations = {
     'contact.form.validation.name': 'Por favor ingrese su nombre',
     'contact.form.validation.email': 'Por favor ingrese una dirección de correo válida',
     'contact.form.validation.message': 'Por favor ingrese su mensaje',
+    'contact.form.successMessage': 'Gracias, hemos recibido su consulta.',
 
     // FAQ
     'faq.hero.badge': 'Preguntas Frecuentes',
