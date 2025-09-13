@@ -11,15 +11,25 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface ExportPDFDialogProps {
   simulationData: any;
   analysisResults: any;
+  creditLines?: any[];
+  estimatedMonthlyIncome?: number;
+  grossMarginPercentage?: number;
   children: React.ReactNode;
 }
 
-export const ExportPDFDialog = ({ simulationData, analysisResults, children }: ExportPDFDialogProps) => {
+export const ExportPDFDialog = ({ 
+  simulationData, 
+  analysisResults, 
+  creditLines = [], 
+  estimatedMonthlyIncome = 0, 
+  grossMarginPercentage = 30, 
+  children 
+}: ExportPDFDialogProps) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const handleExport = async () => {
     if (!email) {
@@ -48,7 +58,11 @@ export const ExportPDFDialog = ({ simulationData, analysisResults, children }: E
         body: {
           email,
           simulationData,
-          analysisResults
+          analysisResults,
+          language,
+          creditLines,
+          estimatedMonthlyIncome,
+          grossMarginPercentage
         }
       });
 

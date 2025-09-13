@@ -496,6 +496,9 @@ export const ResultsAnalysis = ({
         <ExportPDFDialog 
           simulationData={items} 
           analysisResults={analysis}
+          creditLines={creditLines}
+          estimatedMonthlyIncome={estimatedMonthlyIncome}
+          grossMarginPercentage={grossMarginPercentage}
         >
           <Button variant="outline" className="flex-1">
             <Download className="mr-2 h-4 w-4" />
