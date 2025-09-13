@@ -169,9 +169,9 @@ const Contact = () => {
       {/* Contact Form & Info */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Contact Form */}
-            <Card className="shadow-strong">
+            <Card className="shadow-strong h-fit">
               <CardHeader className="pb-6">
                 <div className="flex items-center space-x-3 mb-4">
                   <MessageSquare className="h-8 w-8 text-primary" />
