@@ -258,8 +258,8 @@ const Contact = () => {
                       onInvalid={handleTextareaInvalid}
                       required
                       placeholder={t('contact.form.messagePlaceholder')}
-                      rows={6}
-                      className="min-h-[140px]"
+                      rows={4}
+                      className="min-h-[100px]"
                     />
                   </div>
 
