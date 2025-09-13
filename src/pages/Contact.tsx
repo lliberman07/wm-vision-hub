@@ -10,6 +10,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 import contactHeroBackground from "@/assets/contact-hero-background.jpg";
 import { 
   Mail, 
@@ -31,7 +32,7 @@ const Contact = () => {
     message: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Set custom validation messages before submitting
@@ -51,11 +52,41 @@ const Contact = () => {
       return;
     }
 
-    toast({
-      title: t('contact.form.success'),
-      description: t('contact.form.successDesc'),
-    });
-    setFormData({ name: "", email: "", phone: "", company: "", message: "" });
+    try {
+      // Save to Supabase
+      const { error } = await supabase
+        .from('contact_submissions')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          company: formData.company || null,
+          message: formData.message
+        });
+
+      if (error) {
+        console.error('Error saving contact form:', error);
+        toast({
+          title: "Error",
+          description: "There was a problem submitting your message. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: t('contact.form.success'),
+        description: t('contact.form.successDesc'),
+      });
+      setFormData({ name: "", email: "", phone: "", company: "", message: "" });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem submitting your message. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
