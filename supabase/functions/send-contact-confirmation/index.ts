@@ -13,6 +13,7 @@ interface ContactConfirmationRequest {
   firstName: string;
   lastName: string;
   email: string;
+  language: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,18 +23,35 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { firstName, lastName, email }: ContactConfirmationRequest = await req.json();
+    const { firstName, lastName, email, language }: ContactConfirmationRequest = await req.json();
+
+    // Email content based on language
+    const emailContent = language === 'es' 
+      ? {
+          subject: "Tu consulta ya está en WM Management !",
+          greeting: `Hola ${firstName} ${lastName},`,
+          message: "Ya recibimos su mensaje y nuestro equipo se pondrá en contacto con usted.",
+          thanks: "¡Gracias por su interés en WM Management!",
+          signature: "Atentamente,<br>El equipo de WM Management"
+        }
+      : {
+          subject: "Your inquiry has been received at WM Management!",
+          greeting: `Hello ${firstName} ${lastName},`,
+          message: "We have received your message and our team will contact you soon.",
+          thanks: "Thank you for your interest in WM Management!",
+          signature: "Best regards,<br>The WM Management Team"
+        };
 
     const emailResponse = await resend.emails.send({
       from: "WM Management <onboarding@resend.dev>",
       to: [email],
-      subject: "Tu consulta ya está en WM Management !",
+      subject: emailContent.subject,
       html: `
-        <h1>Hola ${firstName} ${lastName},</h1>
-        <p>Ya recibimos su mensaje y nuestro equipo se pondrá en contacto con usted.</p>
-        <p>¡Gracias por su interés en WM Management!</p>
+        <h1>${emailContent.greeting}</h1>
+        <p>${emailContent.message}</p>
+        <p>${emailContent.thanks}</p>
         <br>
-        <p>Atentamente,<br>El equipo de WM Management</p>
+        <p>${emailContent.signature}</p>
       `,
     });
 

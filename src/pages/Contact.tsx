@@ -23,7 +23,7 @@ import {
 
 const Contact = () => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -90,6 +90,7 @@ const Contact = () => {
             firstName: formData.firstName,
             lastName: formData.lastName,
             email: formData.email,
+            language: language,
           }),
         });
       } catch (emailError) {
