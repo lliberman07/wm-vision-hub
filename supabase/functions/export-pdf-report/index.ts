@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { Resend } from "npm:resend@4.0.0";
-
+import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -425,8 +425,8 @@ const handler = async (req: Request): Promise<Response> => {
         attachments: [
           {
             filename: `investment-report-${referenceNumber}.html`,
-            content: btoa(htmlContent),
-            content_type: 'text/html'
+            content: base64Encode(new TextEncoder().encode(htmlContent)),
+            contentType: 'text/html'
           }
         ]
       });
