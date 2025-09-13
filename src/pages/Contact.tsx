@@ -25,7 +25,8 @@ const Contact = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     company: "",
@@ -37,12 +38,14 @@ const Contact = () => {
     
     // Set custom validation messages before submitting
     const form = e.target as HTMLFormElement;
-    const nameInput = form.querySelector('#name') as HTMLInputElement;
+    const firstNameInput = form.querySelector('#firstName') as HTMLInputElement;
+    const lastNameInput = form.querySelector('#lastName') as HTMLInputElement;
     const emailInput = form.querySelector('#email') as HTMLInputElement;
     const messageInput = form.querySelector('#message') as HTMLTextAreaElement;
 
     // Set custom validation messages
-    nameInput.setCustomValidity(nameInput.value ? '' : t('contact.form.validation.name'));
+    firstNameInput.setCustomValidity(firstNameInput.value ? '' : t('contact.form.validation.firstName'));
+    lastNameInput.setCustomValidity(lastNameInput.value ? '' : t('contact.form.validation.lastName'));
     emailInput.setCustomValidity(emailInput.value ? '' : t('contact.form.validation.email'));
     messageInput.setCustomValidity(messageInput.value ? '' : t('contact.form.validation.message'));
 
@@ -57,7 +60,8 @@ const Contact = () => {
       const { error } = await supabase
         .from('contact_submissions')
         .insert({
-          name: formData.name,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
           email: formData.email,
           phone: formData.phone || null,
           company: formData.company || null,
@@ -78,7 +82,7 @@ const Contact = () => {
         title: t('contact.form.success'),
         description: t('contact.form.successDesc'),
       });
-      setFormData({ name: "", email: "", phone: "", company: "", message: "" });
+      setFormData({ firstName: "", lastName: "", email: "", phone: "", company: "", message: "" });
     } catch (error) {
       console.error('Error submitting contact form:', error);
       toast({
@@ -86,6 +90,7 @@ const Contact = () => {
         description: "There was a problem submitting your message. Please try again.",
         variant: "destructive"
       });
+      setFormData({ firstName: "", lastName: "", email: "", phone: "", company: "", message: "" });
     }
   };
 
@@ -103,8 +108,10 @@ const Contact = () => {
   // Set validation messages when language changes
   const handleInputInvalid = (e: React.FormEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement;
-    if (target.name === 'name' && !target.value) {
-      target.setCustomValidity(t('contact.form.validation.name'));
+    if (target.name === 'firstName' && !target.value) {
+      target.setCustomValidity(t('contact.form.validation.firstName'));
+    } else if (target.name === 'lastName' && !target.value) {
+      target.setCustomValidity(t('contact.form.validation.lastName'));
     } else if (target.name === 'email' && !target.value) {
       target.setCustomValidity(t('contact.form.validation.email'));
     }
@@ -160,30 +167,43 @@ const Contact = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">{t('contact.form.name')} *</Label>
+                      <Label htmlFor="firstName">{t('contact.form.firstName')} *</Label>
                       <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
+                        id="firstName"
+                        name="firstName"
+                        value={formData.firstName}
                         onChange={handleChange}
                         onInvalid={handleInputInvalid}
                         required
-                        placeholder={t('contact.form.namePlaceholder')}
+                        placeholder={t('contact.form.firstNamePlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">{t('contact.form.email')} *</Label>
+                      <Label htmlFor="lastName">{t('contact.form.lastName')} *</Label>
                       <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
+                        id="lastName"
+                        name="lastName"
+                        value={formData.lastName}
                         onChange={handleChange}
                         onInvalid={handleInputInvalid}
                         required
-                        placeholder={t('contact.form.emailPlaceholder')}
+                        placeholder={t('contact.form.lastNamePlaceholder')}
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{t('contact.form.email')} *</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onInvalid={handleInputInvalid}
+                      required
+                      placeholder={t('contact.form.emailPlaceholder')}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
