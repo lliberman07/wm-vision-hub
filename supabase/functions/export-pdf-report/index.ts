@@ -130,6 +130,9 @@ const handler = async (req: Request): Promise<Response> => {
     if (!resendApiKey) {
       throw new Error('RESEND_API_KEY environment variable is not set');
     }
+    if (!resendApiKey.startsWith('re_')) {
+      throw new Error('RESEND_API_KEY appears invalid. It must start with "re_".');
+    }
 
     // Generate reference number
     console.log('Generating reference number...');
@@ -177,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email with PDF report
     try {
       const emailResponse = await resend.emails.send({
-        from: 'WM Management <reports@wm.resend.dev>',
+        from: 'WM Management <onboarding@resend.dev>',
         to: [email],
         subject: `Investment Simulation Report - ${referenceNumber}`,
         html: `
