@@ -860,7 +860,7 @@ const translations = {
     'contact.form.validation.name': 'Por favor ingrese su nombre',
     'contact.form.validation.email': 'Por favor ingrese una dirección de correo válida',
     'contact.form.validation.message': 'Por favor ingrese su mensaje',
-    'contact.form.successMessage': 'Gracias, hemos recibido su consulta.',
+    'contact.form.successMessage': '¡Gracias por enviarnos su consulta!',
 
     // FAQ
     'faq.hero.badge': 'Preguntas Frecuentes',

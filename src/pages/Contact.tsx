@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +33,7 @@ const Contact = () => {
     company: "",
     message: ""
   });
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,10 +100,7 @@ const Contact = () => {
         // Don't fail the form submission if email fails
       }
 
-      toast({
-        title: t('contact.form.successMessage'),
-        description: "",
-      });
+      setShowSuccessDialog(true);
       setFormData({ firstName: "", lastName: "", email: "", phone: "", company: "", message: "" });
     } catch (error) {
       console.error('Error submitting contact form:', error);
@@ -367,6 +366,28 @@ const Contact = () => {
 
       <Footer />
       <ChatWidget />
+      
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl">
+              {t('contact.form.successMessage')}
+            </DialogTitle>
+            <DialogDescription className="text-center text-lg mt-4">
+              {language === 'es' 
+                ? 'Nuestro equipo se pondrá en contacto con usted pronto.'
+                : 'Our team will contact you soon.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center mt-6">
+            <Button onClick={() => setShowSuccessDialog(false)}>
+              {language === 'es' ? 'Cerrar' : 'Close'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
