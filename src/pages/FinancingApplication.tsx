@@ -31,7 +31,7 @@ interface ApplicationData {
 }
 
 export const FinancingApplication = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
@@ -172,7 +172,7 @@ export const FinancingApplication = () => {
           email,
           type,
           resumeCode,
-          language: 'en' // TODO: Get from language context
+          language: language
         }
       });
     } catch (error) {

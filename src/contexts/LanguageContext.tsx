@@ -287,6 +287,7 @@ const translations = {
 
     // Financial Info
     'Financial Information': 'Financial Information',
+    'Company Financial Information': 'Company Financial Information',
     'Please provide your financial details': 'Please provide your financial details',
     'Employment Status': 'Employment Status',
     'Select employment status': 'Select employment status',
@@ -1021,6 +1022,7 @@ const translations = {
 
     // Financial Info
     'Financial Information': 'Información Financiera',
+    'Company Financial Information': 'Información Financiera de la Empresa',
     'Please provide your financial details': 'Por favor proporcione sus detalles financieros',
     'Employment Status': 'Estado Laboral',
     'Select employment status': 'Seleccione estado laboral',
