@@ -94,8 +94,8 @@ const Financing = () => {
               </div>
 
               <Button size="lg" asChild>
-                <Link to="/financing/program">
-                  {t('financing.program.cta')}
+                <Link to="/financing/apply">
+                  Apply for Financing
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
