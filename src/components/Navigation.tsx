@@ -68,9 +68,6 @@ const Navigation = () => {
             <Button variant="outline" size="sm" className="shadow-sm" asChild>
               <Link to="/auth">Admin</Link>
             </Button>
-            <Button variant="default" size="sm" className="btn-premium shadow-md" asChild>
-              <Link to="/financing/signup">{t('nav.getStarted')}</Link>
-            </Button>
           </div>
 
           {/* Mobile Navigation */}
@@ -101,11 +98,6 @@ const Navigation = () => {
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/auth" onClick={() => setIsOpen(false)}>
                       Admin Access
-                    </Link>
-                  </Button>
-                  <Button className="w-full" asChild>
-                    <Link to="/financing/signup" onClick={() => setIsOpen(false)}>
-                      {t('nav.getStarted')}
                     </Link>
                   </Button>
                 </div>
