@@ -41,12 +41,12 @@ export const FinancingApplication = () => {
   const resumeCode = searchParams.get('resume');
 
   const steps = [
-    'Type Selection',
-    'Basic Information',
-    'Financial Information',
-    'Ownership & Directors',
-    'Financing Request',
-    'Document Upload'
+    t('Type Selection'),
+    t('Basic Information'), 
+    t('Financial Information'),
+    t('Ownership & Directors'),
+    t('Financing Request'),
+    t('Document Upload')
   ];
 
   // Load existing application if resume code is provided
@@ -149,8 +149,8 @@ export const FinancingApplication = () => {
 
       toast.success(
         step === steps.length - 1 
-          ? t('Application submitted successfully!')
-          : t('Progress saved successfully!')
+          ? t('application.submitted')
+          : t('progress.saved')
       );
 
       if (step === steps.length - 1) {
@@ -270,7 +270,7 @@ export const FinancingApplication = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading application...</p>
+            <p className="mt-4 text-muted-foreground">{t('loading.application')}</p>
           </div>
         </div>
         <Footer />
@@ -288,12 +288,12 @@ export const FinancingApplication = () => {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="text-center">
-                {t('Financing Application')} - {t(`Step ${currentStep + 1} of ${steps.length}`)}
+                {t('financing.application.title')} - {t('financing.application.step')} {currentStep + 1} {t('financing.application.of')} {steps.length}
               </CardTitle>
               <div className="space-y-2">
                 <Progress value={progressPercentage} className="w-full" />
                 <p className="text-sm text-muted-foreground text-center">
-                  {t(steps[currentStep])}
+                  {steps[currentStep]}
                 </p>
               </div>
             </CardHeader>
