@@ -199,12 +199,6 @@ const Financing = () => {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="w-full" asChild>
-                  <Link to="/financing/simulator">
-                    {t('financing.signup.cta2')}
-                    <Calculator className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
               </div>
             </div>
           </div>
