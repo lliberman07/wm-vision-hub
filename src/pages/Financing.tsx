@@ -194,8 +194,8 @@ const Financing = () => {
               
               <div className="space-y-4">
                 <Button size="lg" className="w-full" asChild>
-                  <Link to="/financing/signup">
-                    {t('financing.signup.cta1')}
+                  <Link to="/financing/apply">
+                    Apply for Financing
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
