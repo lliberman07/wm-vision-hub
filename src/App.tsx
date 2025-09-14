@@ -19,6 +19,7 @@ import Admin from "./pages/Admin";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
+import { FinancingApplication } from "./pages/FinancingApplication";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,8 @@ const App = () => (
               <Route path="/services" element={<Services />} />
               <Route path="/services/property-management" element={<PropertyManagement />} />
               <Route path="/industries" element={<Industries />} />
-              <Route path="/financing" element={<Financing />} />
+        <Route path="/financing" element={<Financing />} />
+        <Route path="/financing/apply" element={<FinancingApplication />} />
               <Route path="/financing/simulator" element={<Financing />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/faq" element={<FAQ />} />

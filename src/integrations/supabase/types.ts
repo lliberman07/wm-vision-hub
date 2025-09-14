@@ -14,6 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      applicants: {
+        Row: {
+          application_id: string
+          created_at: string
+          document_id: string | null
+          employment_status:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          full_name: string | null
+          id: string
+          income: number | null
+          ownership_percentage: number | null
+          role_in_company: string | null
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          document_id?: string | null
+          employment_status?:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          full_name?: string | null
+          id?: string
+          income?: number | null
+          ownership_percentage?: number | null
+          role_in_company?: string | null
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          document_id?: string | null
+          employment_status?:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          full_name?: string | null
+          id?: string
+          income?: number | null
+          ownership_percentage?: number | null
+          role_in_company?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicants_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applications: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          phone: string | null
+          resume_code: string
+          status: Database["public"]["Enums"]["application_status"]
+          type: Database["public"]["Enums"]["application_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          phone?: string | null
+          resume_code?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          type: Database["public"]["Enums"]["application_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          phone?: string | null
+          resume_code?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          type?: Database["public"]["Enums"]["application_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           company: string | null
@@ -46,6 +132,38 @@ export type Database = {
           phone?: string | null
         }
         Relationships: []
+      }
+      documents: {
+        Row: {
+          application_id: string
+          doc_type: string
+          file_url: string
+          id: string
+          uploaded_at: string
+        }
+        Insert: {
+          application_id: string
+          doc_type: string
+          file_url: string
+          id?: string
+          uploaded_at?: string
+        }
+        Update: {
+          application_id?: string
+          doc_type?: string
+          file_url?: string
+          id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investment_simulations: {
         Row: {
@@ -177,7 +295,15 @@ export type Database = {
       }
     }
     Enums: {
+      application_status:
+        | "draft"
+        | "pending"
+        | "completed"
+        | "approved"
+        | "denied"
+      application_type: "individual" | "company"
       approval_status: "pending" | "approved" | "denied"
+      employment_status: "employed" | "self-employed" | "other"
       user_role: "superadmin" | "admin"
     }
     CompositeTypes: {
@@ -306,7 +432,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      application_status: [
+        "draft",
+        "pending",
+        "completed",
+        "approved",
+        "denied",
+      ],
+      application_type: ["individual", "company"],
       approval_status: ["pending", "approved", "denied"],
+      employment_status: ["employed", "self-employed", "other"],
       user_role: ["superadmin", "admin"],
     },
   },
