@@ -120,24 +120,33 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approved_at: string | null
           created_at: string
+          denied_at: string | null
           email: string
           id: string
-          role: string
+          role: Database["public"]["Enums"]["user_role"]
+          status: Database["public"]["Enums"]["approval_status"]
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
           created_at?: string
+          denied_at?: string | null
           email: string
           id: string
-          role?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: Database["public"]["Enums"]["approval_status"]
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
           created_at?: string
+          denied_at?: string | null
           email?: string
           id?: string
-          role?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: Database["public"]["Enums"]["approval_status"]
           updated_at?: string
         }
         Relationships: []
@@ -147,13 +156,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_user: {
+        Args: { user_id_param: string }
+        Returns: undefined
+      }
+      deny_user: {
+        Args: { user_id_param: string }
+        Returns: undefined
+      }
       generate_reference_number: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_current_user_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          role: Database["public"]["Enums"]["user_role"]
+          status: Database["public"]["Enums"]["approval_status"]
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      approval_status: "pending" | "approved" | "denied"
+      user_role: "superadmin" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -280,6 +305,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      approval_status: ["pending", "approved", "denied"],
+      user_role: ["superadmin", "admin"],
+    },
   },
 } as const
