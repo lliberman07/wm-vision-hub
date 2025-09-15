@@ -28,6 +28,14 @@ interface UploadedDocument {
   uploadedAt: string;
 }
 
+interface DocumentRequirementConfig {
+  type: string;
+  label: string;
+  description: string;
+  required: boolean;
+  maxFiles: number;
+}
+
 export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) => {
   const { t } = useLanguage();
   const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>(
@@ -36,38 +44,43 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
   const [uploading, setUploading] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const getRequiredDocuments = (): DocumentRequirement[] => {
+  const getRequiredDocuments = (): DocumentRequirementConfig[] => {
     if (data.type === 'individual') {
       return [
         {
           type: 'id_front',
           label: t('ID Document (Front)'),
           description: t('Front side of your government-issued ID'),
-          required: true
+          required: true,
+          maxFiles: 1
         },
         {
           type: 'id_back',
           label: t('ID Document (Back)'),
           description: t('Back side of your government-issued ID'),
-          required: true
+          required: true,
+          maxFiles: 1
         },
         {
           type: 'pay_slips',
           label: t('Pay Slips (Last 3 months)'),
           description: t('Your last 3 monthly pay slips or income proof'),
-          required: true
+          required: true,
+          maxFiles: 3
         },
         {
           type: 'bank_statements',
           label: t('Bank Statements (Last 3 months)'),
           description: t('Your last 3 monthly bank statements'),
-          required: true
+          required: true,
+          maxFiles: 3
         },
         {
           type: 'proof_of_address',
           label: t('Proof of Address'),
           description: t('Utility bill or rental agreement'),
-          required: true
+          required: true,
+          maxFiles: 1
         }
       ];
     } else {
@@ -76,31 +89,36 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
           type: 'balance_sheets',
           label: t('Balance Sheets'),
           description: t('Latest audited balance sheets'),
-          required: true
+          required: true,
+          maxFiles: 2
         },
         {
           type: 'tax_returns',
           label: t('Tax Returns'),
           description: t('Last 2 years of tax returns'),
-          required: true
+          required: true,
+          maxFiles: 2
         },
         {
           type: 'bank_statements',
           label: t('Bank Statements (Last 3 months)'),
           description: t('Company bank statements for the last 3 months'),
-          required: true
+          required: true,
+          maxFiles: 3
         },
         {
           type: 'shareholder_ids',
           label: t('Shareholder IDs'),
           description: t('Government-issued IDs of all shareholders'),
-          required: true
+          required: true,
+          maxFiles: 5
         },
         {
           type: 'articles_incorporation',
           label: t('Articles of Incorporation'),
           description: t('Company registration documents'),
-          required: false
+          required: false,
+          maxFiles: 1
         }
       ];
     }
@@ -110,11 +128,28 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
 
   const uploadDocument = async (file: File, documentType: string) => {
     try {
+      // Validate file size (3MB limit)
+      const maxSize = 3 * 1024 * 1024; // 3MB in bytes
+      if (file.size > maxSize) {
+        toast.error(t('File size must be less than 3MB'));
+        return;
+      }
+
+      // Check max files limit
+      const docConfig = requiredDocuments.find(doc => doc.type === documentType);
+      const existingFiles = uploadedDocuments.filter(doc => doc.type === documentType);
+      
+      if (docConfig && existingFiles.length >= docConfig.maxFiles) {
+        toast.error(t('Maximum number of files reached for this document type'));
+        return;
+      }
+
       setUploading(documentType);
 
       // Create unique file name
       const fileExt = file.name.split('.').pop();
-      const fileName = `${data.resumeCode || 'temp'}_${documentType}_${Date.now()}.${fileExt}`;
+      const fileIndex = existingFiles.length + 1;
+      const fileName = `${data.resumeCode || 'temp'}_${documentType}_${fileIndex}_${Date.now()}.${fileExt}`;
 
       // Upload to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -141,7 +176,7 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
         if (dbError) throw dbError;
       }
 
-      // Update local state
+      // Update local state - add to existing documents instead of replacing
       const newDocument: UploadedDocument = {
         type: documentType,
         fileName: file.name,
@@ -149,10 +184,7 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
         uploadedAt: new Date().toISOString()
       };
 
-      setUploadedDocuments(prev => {
-        const filtered = prev.filter(doc => doc.type !== documentType);
-        return [...filtered, newDocument];
-      });
+      setUploadedDocuments(prev => [...prev, newDocument]);
 
       toast.success(t('Document uploaded successfully'));
       
@@ -169,13 +201,10 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
     }
   };
 
-  const removeDocument = async (documentType: string) => {
+  const removeDocument = async (documentToRemove: UploadedDocument) => {
     try {
-      const document = uploadedDocuments.find(doc => doc.type === documentType);
-      if (!document) return;
-
       // Remove from storage
-      const fileName = document.fileUrl.split('/').pop();
+      const fileName = documentToRemove.fileUrl.split('/').pop();
       if (fileName) {
         await supabase.storage
           .from('application-documents')
@@ -188,11 +217,14 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
           .from('documents')
           .delete()
           .eq('application_id', data.id)
-          .eq('doc_type', documentType);
+          .eq('doc_type', documentToRemove.type)
+          .eq('file_url', documentToRemove.fileUrl);
       }
 
       // Update local state
-      setUploadedDocuments(prev => prev.filter(doc => doc.type !== documentType));
+      setUploadedDocuments(prev => prev.filter(doc => 
+        !(doc.type === documentToRemove.type && doc.fileUrl === documentToRemove.fileUrl)
+      ));
       toast.success(t('Document removed successfully'));
 
     } catch (error) {
@@ -223,8 +255,8 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
     }
   };
 
-  const getUploadedDocument = (type: string) => {
-    return uploadedDocuments.find(doc => doc.type === type);
+  const getUploadedDocuments = (type: string) => {
+    return uploadedDocuments.filter(doc => doc.type === type);
   };
 
   return (
@@ -237,26 +269,35 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
       </CardHeader>
       <CardContent className="space-y-6">
         {requiredDocuments.map((docReq) => {
-          const uploadedDoc = getUploadedDocument(docReq.type);
+          const uploadedDocs = getUploadedDocuments(docReq.type);
           const isUploading = uploading === docReq.type;
+          const canUploadMore = uploadedDocs.length < docReq.maxFiles;
 
           return (
-            <div key={docReq.type} className="space-y-2">
+            <div key={docReq.type} className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-base font-medium">
                     {docReq.label}
                     {docReq.required && <span className="text-destructive ml-1">*</span>}
                   </Label>
-                  <p className="text-sm text-muted-foreground">{docReq.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {docReq.description}
+                    {docReq.maxFiles > 1 && (
+                      <span className="ml-2 text-xs text-primary">
+                        ({t('Max')}: {docReq.maxFiles} {t('files')})
+                      </span>
+                    )}
+                  </p>
                 </div>
-                {uploadedDoc && (
+                {uploadedDocs.length > 0 && (
                   <CheckCircle className="h-5 w-5 text-green-600" />
                 )}
               </div>
 
-              {uploadedDoc ? (
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              {/* Show uploaded documents */}
+              {uploadedDocs.map((uploadedDoc, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <FileText className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">{uploadedDoc.fileName}</span>
@@ -264,13 +305,16 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => removeDocument(docReq.type)}
+                    onClick={() => removeDocument(uploadedDoc)}
                     className="text-destructive hover:text-destructive"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
-              ) : (
+              ))}
+
+              {/* Upload button */}
+              {canUploadMore && (
                 <div className="space-y-2">
                   <div className="relative">
                     <Input
@@ -283,6 +327,7 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
                         if (file) {
                           uploadDocument(file, docReq.type);
                         }
+                        e.target.value = ''; // Reset input
                       }}
                       disabled={isUploading}
                     />
@@ -300,7 +345,9 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
                       ) : (
                         <div className="flex flex-col items-center space-y-2">
                           <Upload className="h-6 w-6 text-muted-foreground" />
-                          <span className="text-sm">{t('Click to upload')}</span>
+                          <span className="text-sm">
+                            {uploadedDocs.length === 0 ? t('Click to upload') : t('Add another file')}
+                          </span>
                         </div>
                       )}
                     </Button>
@@ -314,12 +361,21 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
           );
         })}
 
-        <div className="bg-blue-50 dark:bg-blue-950/50 p-4 rounded-lg">
-          <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+        {/* File formats info */}
+        <div className="bg-background border border-border p-4 rounded-lg">
+          <h4 className="font-medium text-foreground mb-2">
             {t('Accepted File Formats')}
           </h4>
-          <p className="text-sm text-blue-700 dark:text-blue-300">
-            {t('PDF, JPG, PNG, DOC, DOCX files up to 10MB each')}
+          <p className="text-sm text-muted-foreground">
+            {t('PDF, JPG, PNG, DOC, DOCX files up to 3MB each')}
+          </p>
+        </div>
+
+        {/* Privacy disclaimer */}
+        <div className="bg-muted/30 p-4 rounded-lg border-l-4 border-primary">
+          <p className="text-sm text-muted-foreground">
+            <strong className="text-foreground">{t('Confidentiality Notice')}:</strong> {' '}
+            {t('All information and documents provided will be treated confidentially and in accordance with our Privacy Policy and applicable data protection laws. Your personal data will only be used for the purpose of processing your financing application.')}
           </p>
         </div>
 
