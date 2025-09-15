@@ -293,10 +293,6 @@ export type Database = {
           status: Database["public"]["Enums"]["approval_status"]
         }[]
       }
-      is_superadmin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
     }
     Enums: {
       application_status:
