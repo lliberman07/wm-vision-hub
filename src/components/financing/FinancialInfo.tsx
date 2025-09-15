@@ -84,21 +84,21 @@ export const FinancialInfo = ({ data, onNext, onBack }: FinancialInfoProps) => {
                   <SelectValue placeholder={t('Select employment status')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="employed">{t('Employed')}</SelectItem>
-                  <SelectItem value="self-employed">{t('Self-employed')}</SelectItem>
-                  <SelectItem value="other">{t('Other')}</SelectItem>
+                  <SelectItem value="autonomous">{t('Autonomous')}</SelectItem>
+                  <SelectItem value="monotax">{t('Monotax')}</SelectItem>
+                  <SelectItem value="employee">{t('Employee')}</SelectItem>
                 </SelectContent>
               </Select>
               {errors.employmentStatus && <p className="text-sm text-destructive">{errors.employmentStatus}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="employerName">{t('Employer Name or Activity')} *</Label>
+              <Label htmlFor="employerName">{t('Activity')} *</Label>
               <Input
                 id="employerName"
                 value={formData.employerName}
                 onChange={(e) => handleInputChange('employerName', e.target.value)}
-                placeholder={t('Enter employer name or activity')}
+                placeholder={t('Enter activity')}
                 className={errors.employerName ? 'border-destructive' : ''}
               />
               {errors.employerName && <p className="text-sm text-destructive">{errors.employerName}</p>}
