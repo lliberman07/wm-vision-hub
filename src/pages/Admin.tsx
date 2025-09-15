@@ -8,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Mail, Phone, Building, Calendar, MessageSquare, User, Eye, Users } from "lucide-react";
+import { LogOut, Mail, Phone, Building, Calendar, MessageSquare, User, Eye, Users, FileText } from "lucide-react";
 import { format } from "date-fns";
 import UserApprovals from "@/components/UserApprovals";
+import { ApplicationManagement } from "@/components/ApplicationManagement";
 
 interface Contact {
   id: string;
@@ -128,10 +129,14 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto p-6">
         <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Contact Submissions
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Financing Applications
             </TabsTrigger>
             {userProfile?.role === 'superadmin' && (
               <TabsTrigger value="approvals" className="flex items-center gap-2">
@@ -293,6 +298,23 @@ const Admin = () => {
                     </Table>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="applications">
+            <Card className="shadow-strong">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <FileText className="h-5 w-5" />
+                  <span>Financing Applications</span>
+                </CardTitle>
+                <CardDescription>
+                  Manage individual and business financing applications
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ApplicationManagement />
               </CardContent>
             </Card>
           </TabsContent>
