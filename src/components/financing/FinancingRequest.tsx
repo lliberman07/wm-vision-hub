@@ -89,6 +89,7 @@ export const FinancingRequest = ({ data, onNext, onBack }: FinancingRequestProps
       'residential-mortgage': t('Residential Mortgage - Property Purchase (housing or investment)'),
       'home-remodeling': t('Home Remodeling / Renovation'),
       'asset-purchase': t('Asset Purchase (vehicles, appliances, etc.)'),
+      'commercial-franchise': t('Commercial Franchise'),
       'education': t('Education / Training'),
       'health': t('Health / Medical Expenses'),
       'personal-consumption': t('Personal Consumption'),
@@ -164,6 +165,7 @@ export const FinancingRequest = ({ data, onNext, onBack }: FinancingRequestProps
                   <SelectItem value="residential-mortgage">{t('Residential Mortgage - Property Purchase (housing or investment)')}</SelectItem>
                   <SelectItem value="home-remodeling">{t('Home Remodeling / Renovation')}</SelectItem>
                   <SelectItem value="asset-purchase">{t('Asset Purchase (vehicles, appliances, etc.)')}</SelectItem>
+                  <SelectItem value="commercial-franchise">{t('Commercial Franchise')}</SelectItem>
                   <SelectItem value="education">{t('Education / Training')}</SelectItem>
                   <SelectItem value="health">{t('Health / Medical Expenses')}</SelectItem>
                   <SelectItem value="personal-consumption">{t('Personal Consumption')}</SelectItem>
