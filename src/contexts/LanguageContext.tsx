@@ -1531,6 +1531,9 @@ const translations = {
     'footer.copyright': '© 2025 WM Management & Investments. Todos los derechos reservados.',
     'footer.privacyPolicy': 'Política de Privacidad',
     'footer.termsOfService': 'Términos de Servicio',
+    'Do you have other sources of income?': '¿Tiene otras fuentes de ingresos?',
+    'Other Income Amount': 'Monto de Otros Ingresos',
+    'Enter amount': 'Ingrese el monto',
   }
 };
 
