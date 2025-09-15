@@ -1534,6 +1534,19 @@ const translations = {
     'Do you have other sources of income?': '¿Tiene otras fuentes de ingresos?',
     'Other Income Amount': 'Monto de Otros Ingresos',
     'Enter amount': 'Ingrese el monto',
+    'Requested Term': 'Plazo solicitado',
+    'Purchase of Productive Assets (equipment, vehicles, commercial real estate)': 'Compra de Activos productivos (equipamiento, vehículos, inmuebles comerciales)',
+    'Commercial Mortgage Credit / Mortgage Guarantee': 'Crédito Hipotecario Comercial / Garantía Hipotecaria',
+    'Inventory / Stock': 'Inventario / Stock',
+    'Refinancing / Debt Consolidation': 'Refinanciamiento / Consolidación de deudas',
+    'Remodeling / Construction of Facilities': 'Remodelación / Construcción de instalaciones',
+    'Technology / Digitalization': 'Tecnología / Digitalización',
+    'Residential Mortgage - Property Purchase (housing or investment)': 'Crédito Hipotecario – Compra de Propiedad (vivienda o inversión)',
+    'Home Remodeling / Renovation': 'Remodelación / Refacción de vivienda',
+    'Asset Purchase (vehicles, appliances, etc.)': 'Compra de Activos (vehículos, electrodomésticos, etc.)',
+    'Education / Training': 'Educación / Capacitación',
+    'Health / Medical Expenses': 'Salud / Gastos médicos',
+    'Personal Consumption': 'Consumo personal',
   }
 };
 
