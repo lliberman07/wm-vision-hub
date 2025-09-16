@@ -301,6 +301,8 @@ export type Database = {
         | "completed"
         | "approved"
         | "denied"
+        | "under_analysis_fi"
+        | "under_analysis_wm"
       application_type: "individual" | "company"
       approval_status: "pending" | "approved" | "denied"
       employment_status: "employed" | "self-employed" | "other"
@@ -438,6 +440,8 @@ export const Constants = {
         "completed",
         "approved",
         "denied",
+        "under_analysis_fi",
+        "under_analysis_wm",
       ],
       application_type: ["individual", "company"],
       approval_status: ["pending", "approved", "denied"],

@@ -15,7 +15,7 @@ interface Application {
   type: 'individual' | 'company';
   email: string;
   phone: string;
-  status: 'draft' | 'pending' | 'completed' | 'approved' | 'denied';
+  status: 'draft' | 'pending' | 'completed' | 'approved' | 'denied' | 'under_analysis_fi' | 'under_analysis_wm';
   resume_code: string;
   created_at: string;
   updated_at: string;
@@ -57,7 +57,7 @@ export const ApplicationManagement = () => {
     }
   };
 
-  const updateApplicationStatus = async (applicationId: string, newStatus: 'approved' | 'denied') => {
+  const updateApplicationStatus = async (applicationId: string, newStatus: 'approved' | 'denied' | 'under_analysis_fi' | 'under_analysis_wm') => {
     try {
       const application = applications.find(app => app.id === applicationId);
       if (!application) return;
@@ -95,6 +95,8 @@ export const ApplicationManagement = () => {
       completed: { label: 'Completed', variant: 'default' as const, icon: FileText },
       approved: { label: 'Approved', variant: 'default' as const, icon: CheckCircle },
       denied: { label: 'Denied', variant: 'destructive' as const, icon: XCircle },
+      under_analysis_fi: { label: 'Under Analysis by FI', variant: 'secondary' as const, icon: Clock },
+      under_analysis_wm: { label: 'Under Analysis by WM', variant: 'secondary' as const, icon: Clock },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig];
@@ -139,6 +141,8 @@ export const ApplicationManagement = () => {
                 <SelectItem value="draft">{t('Draft')}</SelectItem>
                 <SelectItem value="pending">{t('Pending')}</SelectItem>
                 <SelectItem value="completed">{t('Completed')}</SelectItem>
+                <SelectItem value="under_analysis_fi">{t('Under Analysis by FI')}</SelectItem>
+                <SelectItem value="under_analysis_wm">{t('Under Analysis by WM')}</SelectItem>
                 <SelectItem value="approved">{t('Approved')}</SelectItem>
                 <SelectItem value="denied">{t('Denied')}</SelectItem>
               </SelectContent>
@@ -267,26 +271,42 @@ export const ApplicationManagement = () => {
                                   </div>
                                 )}
 
-                                {/* Actions */}
-                                {(selectedApplication.status === 'completed' || selectedApplication.status === 'pending') && (
-                                  <div className="flex justify-end space-x-2 pt-4 border-t">
-                                    <Button
-                                      variant="outline"
-                                      onClick={() => updateApplicationStatus(selectedApplication.id, 'denied')}
-                                      className="text-destructive hover:text-destructive"
-                                    >
-                                      <XCircle className="h-4 w-4 mr-2" />
-                                      {t('Deny')}
-                                    </Button>
-                                    <Button
-                                      onClick={() => updateApplicationStatus(selectedApplication.id, 'approved')}
-                                      className="bg-green-600 hover:bg-green-700"
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-2" />
-                                      {t('Approve')}
-                                    </Button>
-                                  </div>
-                                )}
+                {/* Actions */}
+                {(selectedApplication.status === 'completed' || selectedApplication.status === 'pending' || selectedApplication.status === 'under_analysis_fi' || selectedApplication.status === 'under_analysis_wm') && (
+                  <div className="flex justify-end space-x-2 pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={() => updateApplicationStatus(selectedApplication.id, 'under_analysis_fi')}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      {t('Under Analysis by FI')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => updateApplicationStatus(selectedApplication.id, 'under_analysis_wm')}
+                      className="text-purple-600 hover:text-purple-700"
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      {t('Under Analysis by WM')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => updateApplicationStatus(selectedApplication.id, 'denied')}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      {t('Deny')}
+                    </Button>
+                    <Button
+                      onClick={() => updateApplicationStatus(selectedApplication.id, 'approved')}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {t('Approve')}
+                    </Button>
+                  </div>
+                )}
                               </div>
                             </DialogContent>
                           )}
