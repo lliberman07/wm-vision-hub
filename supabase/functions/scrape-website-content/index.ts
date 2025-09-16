@@ -77,6 +77,33 @@ serve(async (req) => {
         contentEs: `Contacte a WM Management para todas sus necesidades de inversión inmobiliaria y gestión de propiedades. Ofrecemos consultas gratuitas para discutir sus objetivos de inversión y cómo podemos ayudarle a alcanzarlos. Nuestro equipo está disponible para responder preguntas sobre financiamiento, gestión de propiedades y oportunidades de inversión.`,
         summaryEn: 'Contact us for real estate investment and property management services with free consultations available.',
         summaryEs: 'Contáctenos para servicios de inversión inmobiliaria y gestión de propiedades con consultas gratuitas disponibles.'
+      },
+      {
+        pageUrl: '/industries',
+        pageTitle: 'WM Management - Industries',
+        section: 'industries',
+        contentEn: `WM Management serves various industries including residential real estate, commercial properties, retail spaces, office buildings, industrial facilities, and mixed-use developments. We have expertise in different property types and can provide specialized services for each industry sector. Our team understands the unique challenges and opportunities in each market segment.`,
+        contentEs: `WM Management atiende varias industrias incluyendo bienes raíces residenciales, propiedades comerciales, espacios de retail, edificios de oficinas, instalaciones industriales y desarrollos de uso mixto. Tenemos experiencia en diferentes tipos de propiedades y podemos proporcionar servicios especializados para cada sector industrial. Nuestro equipo entiende los desafíos y oportunidades únicos en cada segmento de mercado.`,
+        summaryEn: 'Serving various industries including residential, commercial, retail, office, and industrial properties.',
+        summaryEs: 'Atendiendo varias industrias incluyendo propiedades residenciales, comerciales, retail, oficinas e industriales.'
+      },
+      {
+        pageUrl: '/faq',
+        pageTitle: 'WM Management - FAQ',
+        section: 'faq',
+        contentEn: `Frequently asked questions about our services: What types of financing do we offer? We provide traditional loans, investment property financing, and business loans. How do we handle property management? We offer full-service management including tenant screening, rent collection, maintenance, and legal compliance. What are our fees? Our fees are competitive and transparent, varying based on the specific services required.`,
+        contentEs: `Preguntas frecuentes sobre nuestros servicios: ¿Qué tipos de financiamiento ofrecemos? Proporcionamos préstamos tradicionales, financiamiento de propiedades de inversión y préstamos comerciales. ¿Cómo manejamos la gestión de propiedades? Ofrecemos gestión de servicio completo incluyendo evaluación de inquilinos, cobro de alquileres, mantenimiento y cumplimiento legal. ¿Cuáles son nuestras tarifas? Nuestras tarifas son competitivas y transparentes, variando según los servicios específicos requeridos.`,
+        summaryEn: 'Common questions about financing options, property management services, and fee structure.',
+        summaryEs: 'Preguntas comunes sobre opciones de financiamiento, servicios de gestión de propiedades y estructura de tarifas.'
+      },
+      {
+        pageUrl: '/business-simulator',
+        pageTitle: 'WM Management - Business Simulator',
+        section: 'business-simulator',
+        contentEn: `Our business simulation tool helps investors analyze potential real estate investments. The simulator allows you to input various parameters such as property value, financing terms, rental income, expenses, and market conditions to calculate potential returns, cash flow, and ROI. This tool helps make informed investment decisions by modeling different scenarios and outcomes.`,
+        contentEs: `Nuestra herramienta de simulación empresarial ayuda a los inversionistas a analizar inversiones inmobiliarias potenciales. El simulador le permite ingresar varios parámetros como valor de la propiedad, términos de financiamiento, ingresos de alquiler, gastos y condiciones del mercado para calcular retornos potenciales, flujo de efectivo y ROI. Esta herramienta ayuda a tomar decisiones de inversión informadas modelando diferentes escenarios y resultados.`,
+        summaryEn: 'Investment analysis tool for calculating returns, cash flow, and ROI on real estate investments.',
+        summaryEs: 'Herramienta de análisis de inversión para calcular retornos, flujo de efectivo y ROI en inversiones inmobiliarias.'
       }
     ];
 
