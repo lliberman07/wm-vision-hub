@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import ChatWidget from '@/components/ChatWidget';
+import { EnhancedChatbot } from '@/components/EnhancedChatbot';
 import { TypeSelection } from '@/components/financing/TypeSelection';
 import { BasicInfo } from '@/components/financing/BasicInfo';
 import { FinancialInfo } from '@/components/financing/FinancialInfo';
@@ -310,7 +310,7 @@ export const FinancingApplication = () => {
       </main>
 
       <Footer />
-      <ChatWidget />
+      <EnhancedChatbot />
     </div>
   );
 };

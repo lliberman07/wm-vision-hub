@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
+import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
 import industriesHeroBackground from "@/assets/industries-hero-background.jpg";
 import { 
@@ -212,7 +212,7 @@ const Industries = () => {
       </section>
 
       <Footer />
-      <ChatWidget />
+      <EnhancedChatbot />
     </div>
   );
 };

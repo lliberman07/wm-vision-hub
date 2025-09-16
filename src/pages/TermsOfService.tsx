@@ -1,6 +1,6 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
+import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const TermsOfService = () => {
@@ -123,7 +123,7 @@ const TermsOfService = () => {
       </main>
       
       <Footer />
-      <ChatWidget />
+      <EnhancedChatbot />
     </div>
   );
 };

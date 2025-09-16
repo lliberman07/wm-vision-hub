@@ -133,6 +133,33 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          language: string
+          session_id: string
+          updated_at: string
+          user_email: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language?: string
+          session_id: string
+          updated_at?: string
+          user_email?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string
+          session_id?: string
+          updated_at?: string
+          user_email?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           application_id: string
@@ -194,6 +221,77 @@ export type Database = {
           user_email?: string
         }
         Relationships: []
+      }
+      knowledge_base: {
+        Row: {
+          content: string
+          id: string
+          indexed_at: string
+          language: string
+          page_title: string
+          page_url: string
+          section: string | null
+          summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          id?: string
+          indexed_at?: string
+          language?: string
+          page_title: string
+          page_url: string
+          section?: string | null
+          summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          indexed_at?: string
+          language?: string
+          page_title?: string
+          page_url?: string
+          section?: string | null
+          summary?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pdf_report_requests: {
         Row: {

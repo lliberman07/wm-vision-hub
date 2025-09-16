@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import UserApprovals from "@/components/UserApprovals";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { ApplicationManagement } from "@/components/ApplicationManagement";
+import { KnowledgeBaseInit } from "@/components/KnowledgeBaseInit";
 
 interface Contact {
   id: string;
@@ -131,7 +132,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto p-6">
         <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Contact Submissions
@@ -139,6 +140,10 @@ const Admin = () => {
             <TabsTrigger value="applications" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Financing Applications
+            </TabsTrigger>
+            <TabsTrigger value="chatbot" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              AI Chatbot
             </TabsTrigger>
             {userProfile?.role === 'superadmin' && (
               <TabsTrigger value="approvals" className="flex items-center gap-2">
@@ -317,6 +322,23 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <ApplicationManagement />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="chatbot">
+            <Card className="shadow-strong">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <MessageSquare className="h-5 w-5" />
+                  <span>AI Chatbot Management</span>
+                </CardTitle>
+                <CardDescription>
+                  Initialize and manage the AI chatbot knowledge base
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex justify-center py-8">
+                <KnowledgeBaseInit />
               </CardContent>
             </Card>
           </TabsContent>

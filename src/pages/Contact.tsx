@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
+import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import contactHeroBackground from "@/assets/contact-hero-background.jpg";
@@ -364,7 +364,7 @@ const Contact = () => {
       </section>
 
       <Footer />
-      <ChatWidget />
+      <EnhancedChatbot />
       
       {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
