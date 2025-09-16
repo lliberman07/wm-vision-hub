@@ -128,6 +128,198 @@ Tenemos chat en vivo disponible en nuestro sitio web para asistencia inmediata. 
         contentEs: `Nuestra herramienta de simulación empresarial ayuda a los inversionistas a analizar inversiones inmobiliarias potenciales. El simulador le permite ingresar varios parámetros como valor de la propiedad, términos de financiamiento, ingresos de alquiler, gastos y condiciones del mercado para calcular retornos potenciales, flujo de efectivo y ROI. Esta herramienta ayuda a tomar decisiones de inversión informadas modelando diferentes escenarios y resultados.`,
         summaryEn: 'Investment analysis tool for calculating returns, cash flow, and ROI on real estate investments.',
         summaryEs: 'Herramienta de análisis de inversión para calcular retornos, flujo de efectivo y ROI en inversiones inmobiliarias.'
+      },
+      {
+        pageUrl: '/conversation-schema',
+        pageTitle: 'WM Management - Conversation Guide',
+        section: 'conversation-schema',
+        contentEn: `CONVERSATION FLOW SCHEMA FOR WM MANAGEMENT AI ASSISTANT:
+
+GREETING & PROJECT DISCOVERY:
+1. Welcome the user warmly and introduce WM Management services
+2. Ask: "What type of real estate project are you currently working on or considering?"
+3. Listen for project types: residential investment, commercial property, property management needs, financing requirements, business planning
+
+PROJECT-BASED CONVERSATION PATHS:
+
+FOR RESIDENTIAL INVESTMENT PROJECTS:
+- Ask about budget range and investment goals
+- Suggest: Business Simulator tool for ROI analysis
+- Offer: Financing consultation and property management services
+- Next steps: Schedule consultation or use investment calculator
+
+FOR COMMERCIAL PROPERTY PROJECTS:
+- Ask about property type (office, retail, industrial, mixed-use)
+- Suggest: Market analysis and financing options
+- Offer: Specialized commercial property management
+- Next steps: Connect with commercial specialists
+
+FOR FINANCING NEEDS:
+- Ask about loan type needed (traditional, investment property, business loan)
+- Suggest: Financing application process
+- Offer: Free consultation to discuss terms and rates
+- Next steps: Begin financing application or schedule consultation
+
+FOR PROPERTY MANAGEMENT NEEDS:
+- Ask about property portfolio size and type
+- Suggest: Full-service management solutions
+- Offer: Tenant screening, rent collection, maintenance coordination
+- Next steps: Property management consultation
+
+FOR BUSINESS PLANNING:
+- Ask about business stage (startup, expansion, optimization)
+- Suggest: Business simulation and market analysis tools
+- Offer: Strategic planning consultation
+- Next steps: Use business simulator or schedule planning session
+
+CONVERSATION GUIDELINES:
+- Always ask follow-up questions to understand specific needs
+- Propose relevant WM Management services based on responses
+- Offer concrete next steps (tools, consultations, applications)
+- Provide contact information when requested
+- Be helpful, professional, and solution-oriented
+- Guide users toward appropriate WM Management services`,
+        contentEs: `ESQUEMA DE CONVERSACIÓN PARA ASISTENTE IA DE WM MANAGEMENT:
+
+SALUDO Y DESCUBRIMIENTO DE PROYECTOS:
+1. Dar la bienvenida al usuario y presentar los servicios de WM Management
+2. Preguntar: "¿En qué tipo de proyecto inmobiliario está trabajando o considerando actualmente?"
+3. Escuchar tipos de proyectos: inversión residencial, propiedad comercial, necesidades de gestión, requisitos de financiamiento, planificación empresarial
+
+RUTAS DE CONVERSACIÓN BASADAS EN PROYECTOS:
+
+PARA PROYECTOS DE INVERSIÓN RESIDENCIAL:
+- Preguntar sobre rango de presupuesto y objetivos de inversión
+- Sugerir: Herramienta de Simulador Empresarial para análisis de ROI
+- Ofrecer: Consultoría de financiamiento y servicios de gestión de propiedades
+- Próximos pasos: Programar consulta o usar calculadora de inversión
+
+PARA PROYECTOS DE PROPIEDAD COMERCIAL:
+- Preguntar sobre tipo de propiedad (oficina, retail, industrial, uso mixto)
+- Sugerir: Análisis de mercado y opciones de financiamiento
+- Ofrecer: Gestión especializada de propiedades comerciales
+- Próximos pasos: Conectar con especialistas comerciales
+
+PARA NECESIDADES DE FINANCIAMIENTO:
+- Preguntar sobre tipo de préstamo necesario (tradicional, propiedad de inversión, préstamo comercial)
+- Sugerir: Proceso de aplicación de financiamiento
+- Ofrecer: Consulta gratuita para discutir términos y tasas
+- Próximos pasos: Comenzar aplicación de financiamiento o programar consulta
+
+PARA NECESIDADES DE GESTIÓN DE PROPIEDADES:
+- Preguntar sobre tamaño y tipo de cartera de propiedades
+- Sugerir: Soluciones de gestión de servicio completo
+- Ofrecer: Evaluación de inquilinos, cobro de alquileres, coordinación de mantenimiento
+- Próximos pasos: Consulta de gestión de propiedades
+
+PARA PLANIFICACIÓN EMPRESARIAL:
+- Preguntar sobre etapa del negocio (startup, expansión, optimización)
+- Sugerir: Simulación empresarial y herramientas de análisis de mercado
+- Ofrecer: Consultoría de planificación estratégica
+- Próximos pasos: Usar simulador empresarial o programar sesión de planificación
+
+DIRECTRICES DE CONVERSACIÓN:
+- Siempre hacer preguntas de seguimiento para entender necesidades específicas
+- Proponer servicios relevantes de WM Management basados en respuestas
+- Ofrecer próximos pasos concretos (herramientas, consultas, aplicaciones)
+- Proporcionar información de contacto cuando se solicite
+- Ser útil, profesional y orientado a soluciones
+- Guiar a usuarios hacia servicios apropiados de WM Management`,
+        summaryEn: 'Structured conversation flow for AI assistant to discover user projects and propose relevant WM Management services and next steps.',
+        summaryEs: 'Flujo de conversación estructurado para que el asistente IA descubra proyectos de usuarios y proponga servicios relevantes de WM Management y próximos pasos.'
+      },
+      {
+        pageUrl: '/project-types',
+        pageTitle: 'WM Management - Project Types We Handle',
+        section: 'project-types',
+        contentEn: `TYPES OF PROJECTS WM MANAGEMENT SPECIALIZES IN:
+
+RESIDENTIAL INVESTMENT PROJECTS:
+- Single-family rental properties
+- Multi-family apartment buildings
+- Condominiums and townhomes
+- Fix-and-flip properties
+- Buy-and-hold investments
+- Vacation rental properties
+
+COMMERCIAL REAL ESTATE PROJECTS:
+- Office buildings and complexes
+- Retail shopping centers
+- Industrial warehouses and facilities
+- Mixed-use developments
+- Medical and professional buildings
+- Hospitality properties
+
+FINANCING PROJECTS:
+- First-time investment property purchases
+- Portfolio expansion financing
+- Refinancing existing properties
+- Business acquisition loans
+- Construction and development loans
+- Bridge financing solutions
+
+PROPERTY MANAGEMENT PROJECTS:
+- Full-service residential management
+- Commercial property management
+- Portfolio management for multiple properties
+- Tenant placement and screening
+- Maintenance and repair coordination
+- Financial reporting and analysis
+
+BUSINESS DEVELOPMENT PROJECTS:
+- Real estate investment business startup
+- Portfolio optimization and growth
+- Market analysis and expansion planning
+- Investment strategy development
+- Risk assessment and mitigation
+- Exit strategy planning
+
+Each project type requires different expertise, financing approaches, and management strategies. WM Management provides specialized services tailored to each project category.`,
+        contentEs: `TIPOS DE PROYECTOS EN LOS QUE SE ESPECIALIZA WM MANAGEMENT:
+
+PROYECTOS DE INVERSIÓN RESIDENCIAL:
+- Propiedades de alquiler unifamiliares
+- Edificios de apartamentos multifamiliares
+- Condominios y casas adosadas
+- Propiedades para renovar y vender
+- Inversiones de compra y retención
+- Propiedades de alquiler vacacional
+
+PROYECTOS INMOBILIARIOS COMERCIALES:
+- Edificios y complejos de oficinas
+- Centros comerciales
+- Almacenes e instalaciones industriales
+- Desarrollos de uso mixto
+- Edificios médicos y profesionales
+- Propiedades de hospitalidad
+
+PROYECTOS DE FINANCIAMIENTO:
+- Compras de primera propiedad de inversión
+- Financiamiento de expansión de cartera
+- Refinanciamiento de propiedades existentes
+- Préstamos de adquisición de negocios
+- Préstamos de construcción y desarrollo
+- Soluciones de financiamiento puente
+
+PROYECTOS DE GESTIÓN DE PROPIEDADES:
+- Gestión residencial de servicio completo
+- Gestión de propiedades comerciales
+- Gestión de cartera para múltiples propiedades
+- Colocación y evaluación de inquilinos
+- Coordinación de mantenimiento y reparaciones
+- Informes y análisis financieros
+
+PROYECTOS DE DESARROLLO EMPRESARIAL:
+- Startup de negocio de inversión inmobiliaria
+- Optimización y crecimiento de cartera
+- Análisis de mercado y planificación de expansión
+- Desarrollo de estrategia de inversión
+- Evaluación y mitigación de riesgos
+- Planificación de estrategia de salida
+
+Cada tipo de proyecto requiere diferente experiencia, enfoques de financiamiento y estrategias de gestión. WM Management proporciona servicios especializados adaptados a cada categoría de proyecto.`,
+        summaryEn: 'Comprehensive list of residential, commercial, financing, property management, and business development projects that WM Management specializes in.',
+        summaryEs: 'Lista completa de proyectos residenciales, comerciales, de financiamiento, gestión de propiedades y desarrollo empresarial en los que WM Management se especializa.'
       }
     ];
 
