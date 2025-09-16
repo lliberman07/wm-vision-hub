@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { LogIn, UserPlus, Shield } from "lucide-react";
 import { useEffect } from "react";
 
@@ -17,6 +18,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { signIn, signUp, user } = useAuth();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -72,33 +74,33 @@ const Auth = () => {
           <div className="mx-auto mb-4 p-3 bg-primary/10 rounded-full w-fit">
             <Shield className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Admin Access</CardTitle>
+          <CardTitle className="text-2xl">{t('Admin Access')}</CardTitle>
           <CardDescription>
-            Sign in to access the admin dashboard
+            {t('Sign in to access the admin dashboard')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">{t('Sign In')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('Sign Up')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email">{t('Email')}</Label>
                   <Input
                     id="signin-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@wmmanagement.com"
+                    placeholder=""
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password">{t('Password')}</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -114,7 +116,7 @@ const Auth = () => {
                 )}
                 <Button type="submit" className="w-full" disabled={loading}>
                   <LogIn className="mr-2 h-4 w-4" />
-                  {loading ? "Signing in..." : "Sign In"}
+                  {loading ? t('Signing in...') : t('Sign In')}
                 </Button>
               </form>
             </TabsContent>
@@ -122,18 +124,18 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">{t('Email')}</Label>
                   <Input
                     id="signup-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@wmmanagement.com"
+                    placeholder=""
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">{t('Password')}</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -150,7 +152,7 @@ const Auth = () => {
                 )}
                 <Button type="submit" className="w-full" disabled={loading}>
                   <UserPlus className="mr-2 h-4 w-4" />
-                  {loading ? "Creating account..." : "Create Account"}
+                  {loading ? t('Creating account...') : t('Create Account')}
                 </Button>
               </form>
             </TabsContent>
