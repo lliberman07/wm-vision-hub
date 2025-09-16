@@ -73,10 +73,34 @@ serve(async (req) => {
         pageUrl: '/contact',
         pageTitle: 'WM Management - Contact',
         section: 'contact',
-        contentEn: `Contact WM Management for all your real estate investment and property management needs. We offer free consultations to discuss your investment goals and how we can help you achieve them. Our team is available to answer questions about financing, property management, and investment opportunities.`,
-        contentEs: `Contacte a WM Management para todas sus necesidades de inversión inmobiliaria y gestión de propiedades. Ofrecemos consultas gratuitas para discutir sus objetivos de inversión y cómo podemos ayudarle a alcanzarlos. Nuestro equipo está disponible para responder preguntas sobre financiamiento, gestión de propiedades y oportunidades de inversión.`,
-        summaryEn: 'Contact us for real estate investment and property management services with free consultations available.',
-        summaryEs: 'Contáctenos para servicios de inversión inmobiliaria y gestión de propiedades con consultas gratuitas disponibles.'
+        contentEn: `Contact WM Management for all your real estate investment and property management needs. We offer free consultations to discuss your investment goals and how we can help you achieve them. Our team is available to answer questions about financing, property management, and investment opportunities.
+
+CONTACT INFORMATION:
+Phone: +1 (555) 123-4567 (Available Monday-Friday 9:00 AM - 6:00 PM)
+Email: info@wmmanagement.com (Response within 24 hours)
+Address: 123 Business District, Suite 456, City, State 12345
+
+BUSINESS HOURS:
+Monday - Friday: 9:00 AM - 6:00 PM
+Saturday: 10:00 AM - 2:00 PM  
+Sunday: Closed
+
+We have live chat available on our website for immediate assistance. Our team specializes in real estate investment consulting, property management services, financing solutions, and business planning. Contact us for free consultations and personalized service to help you achieve your investment goals.`,
+        contentEs: `Contacte a WM Management para todas sus necesidades de inversión inmobiliaria y gestión de propiedades. Ofrecemos consultas gratuitas para discutir sus objetivos de inversión y cómo podemos ayudarle a alcanzarlos. Nuestro equipo está disponible para responder preguntas sobre financiamiento, gestión de propiedades y oportunidades de inversión.
+
+INFORMACIÓN DE CONTACTO:
+Teléfono: +1 (555) 123-4567 (Disponible Lunes-Viernes 9:00 AM - 6:00 PM)
+Email: info@wmmanagement.com (Respuesta dentro de 24 horas)
+Dirección: 123 Business District, Suite 456, City, State 12345
+
+HORARIOS DE ATENCIÓN:
+Lunes - Viernes: 9:00 AM - 6:00 PM
+Sábado: 10:00 AM - 2:00 PM
+Domingo: Cerrado
+
+Tenemos chat en vivo disponible en nuestro sitio web para asistencia inmediata. Nuestro equipo se especializa en consultoría de inversión inmobiliaria, servicios de gestión de propiedades, soluciones de financiamiento y planificación empresarial. Contáctenos para consultas gratuitas y servicio personalizado para ayudarle a alcanzar sus objetivos de inversión.`,
+        summaryEn: 'Contact us at +1 (555) 123-4567 or info@wmmanagement.com. Office hours Monday-Friday 9AM-6PM, Saturday 10AM-2PM. Free consultations available.',
+        summaryEs: 'Contáctenos al +1 (555) 123-4567 o info@wmmanagement.com. Horarios Lunes-Viernes 9AM-6PM, Sábado 10AM-2PM. Consultas gratuitas disponibles.'
       },
       {
         pageUrl: '/industries',
