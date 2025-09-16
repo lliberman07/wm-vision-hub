@@ -57,12 +57,11 @@ serve(async (req) => {
       role: 'user'
     });
 
-    // Get relevant knowledge base content
+    // Get all knowledge base content for better context
     const { data: knowledgeContent } = await supabase
       .from('knowledge_base')
-      .select('content, page_title, summary')
-      .eq('language', language)
-      .limit(3);
+      .select('content, page_title, summary, section')
+      .eq('language', language);
 
     // Get recent conversation history
     const { data: recentMessages } = await supabase
@@ -72,20 +71,55 @@ serve(async (req) => {
       .order('created_at', { ascending: false })
       .limit(10);
 
+    // Find contact information specifically
+    const contactInfo = knowledgeContent?.find(kb => kb.section === 'contact');
+    const conversationSchema = knowledgeContent?.find(kb => kb.section === 'conversation-schema');
+    const projectTypes = knowledgeContent?.find(kb => kb.section === 'project-types');
+
     // Prepare context for AI
     const systemPrompt = language === 'es' 
-      ? `Eres Builder, un asistente de IA inmobiliario especializado. Solo puedes responder basándote en la información de WM Management proporcionada. Mantén respuestas concisas y profesionales. Si no tienes información específica, sugiere contactar directamente con WM Management.
+      ? `Eres un asistente de IA especializado de WM Management. Tu misión es ayudar a los usuarios con sus proyectos inmobiliarios siguiendo el esquema de conversación estructurado.
 
-Información disponible:
-${knowledgeContent?.map(kb => `${kb.page_title}: ${kb.summary || kb.content.substring(0, 200)}`).join('\n') || 'Información limitada disponible'}
+INFORMACIÓN DE CONTACTO ESPECÍFICA:
+${contactInfo ? contactInfo.content : 'Teléfono: +1 (555) 123-4567, Email: info@wmmanagement.com'}
 
-Responde en español y mantén un tono profesional y amigable.`
-      : `You are Builder, a specialized real estate AI assistant. You can only respond based on the provided WM Management information. Keep responses concise and professional. If you don't have specific information, suggest contacting WM Management directly.
+ESQUEMA DE CONVERSACIÓN:
+${conversationSchema ? conversationSchema.content : 'Preguntar sobre tipo de proyecto y proponer servicios relevantes'}
 
-Available information:
-${knowledgeContent?.map(kb => `${kb.page_title}: ${kb.summary || kb.content.substring(0, 200)}`).join('\n') || 'Limited information available'}
+TIPOS DE PROYECTOS QUE MANEJAMOS:
+${projectTypes ? projectTypes.content.substring(0, 1000) : 'Inversión residencial, comercial, financiamiento, gestión de propiedades'}
 
-Respond in English with a professional and friendly tone.`;
+TODA LA INFORMACIÓN DISPONIBLE:
+${knowledgeContent?.map(kb => `--- ${kb.page_title} ---\n${kb.content}`).join('\n\n') || 'Información limitada disponible'}
+
+INSTRUCCIONES IMPORTANTES:
+1. Cuando pregunten sobre contacto, proporciona SIEMPRE la información específica: teléfono, email, horarios
+2. Pregunta proactivamente sobre el tipo de proyecto del usuario
+3. Sugiere servicios específicos de WM Management según el proyecto
+4. Ofrece próximos pasos concretos (herramientas, consultas)
+5. Mantén un tono profesional y amigable
+6. Responde en español`
+      : `You are a specialized AI assistant for WM Management. Your mission is to help users with their real estate projects following the structured conversation schema.
+
+SPECIFIC CONTACT INFORMATION:
+${contactInfo ? contactInfo.content : 'Phone: +1 (555) 123-4567, Email: info@wmmanagement.com'}
+
+CONVERSATION SCHEMA:
+${conversationSchema ? conversationSchema.content : 'Ask about project type and propose relevant services'}
+
+PROJECT TYPES WE HANDLE:
+${projectTypes ? projectTypes.content.substring(0, 1000) : 'Residential investment, commercial, financing, property management'}
+
+ALL AVAILABLE INFORMATION:
+${knowledgeContent?.map(kb => `--- ${kb.page_title} ---\n${kb.content}`).join('\n\n') || 'Limited information available'}
+
+IMPORTANT INSTRUCTIONS:
+1. When asked about contact, ALWAYS provide specific information: phone, email, hours
+2. Proactively ask about the user's project type
+3. Suggest specific WM Management services based on the project
+4. Offer concrete next steps (tools, consultations)
+5. Maintain a professional and friendly tone
+6. Respond in English`;
 
     // Prepare conversation history
     const conversationHistory = recentMessages?.reverse().map(msg => ({
