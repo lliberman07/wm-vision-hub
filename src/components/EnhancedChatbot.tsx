@@ -197,7 +197,7 @@ export const EnhancedChatbot: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      <Card className="w-96 h-[600px] shadow-2xl border-0 bg-background/95 backdrop-blur-sm">
+      <Card className="w-96 h-[600px] shadow-2xl border-0 bg-background/95 backdrop-blur-sm flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
           <div className="flex items-center space-x-3">
@@ -227,7 +227,7 @@ export const EnhancedChatbot: React.FC = () => {
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 h-[400px] p-4" ref={scrollAreaRef}>
+        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef} style={{ height: 'calc(100% - 140px)' }}>
           <div className="space-y-4">
             {showLanguageSelection && (
               <div className="text-center space-y-3 p-4 bg-muted/50 rounded-lg">
@@ -293,7 +293,7 @@ export const EnhancedChatbot: React.FC = () => {
 
         {/* Quick Actions */}
         {!showLanguageSelection && messages.length <= 1 && (
-          <div className="px-4 py-2 border-t bg-muted/30">
+          <div className="px-4 py-2 border-t bg-muted/30 flex-shrink-0">
             <p className="text-xs text-muted-foreground mb-2">
               {language === 'es' ? 'Preguntas rápidas:' : 'Quick questions:'}
             </p>
@@ -308,7 +308,7 @@ export const EnhancedChatbot: React.FC = () => {
                   disabled={isLoading}
                 >
                   {action.icon}
-                  <span className="mt-1">
+                  <span className="mt-1 text-center leading-tight">
                     {language === 'es' ? action.labelEs : action.labelEn}
                   </span>
                 </Button>
@@ -318,7 +318,7 @@ export const EnhancedChatbot: React.FC = () => {
         )}
 
         {/* Input */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t flex-shrink-0">
           <div className="flex space-x-2">
             <Input
               value={inputValue}
