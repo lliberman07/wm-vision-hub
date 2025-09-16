@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LogOut, Mail, Phone, Building, Calendar, MessageSquare, User, Eye, Users, FileText } from "lucide-react";
 import { format } from "date-fns";
 import UserApprovals from "@/components/UserApprovals";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { ApplicationManagement } from "@/components/ApplicationManagement";
 
 interface Contact {
@@ -114,6 +115,7 @@ const Admin = () => {
             <p className="text-muted-foreground">WM Management Contact Leads</p>
           </div>
           <div className="flex items-center space-x-4">
+            <LanguageSwitcher />
             <Badge variant="outline" className="px-3 py-1">
               <User className="h-3 w-3 mr-1" />
               {user?.email}
