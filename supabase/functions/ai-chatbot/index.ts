@@ -98,7 +98,13 @@ INSTRUCCIONES IMPORTANTES:
 3. Sugiere servicios específicos de WM Management según el proyecto
 4. Ofrece próximos pasos concretos (herramientas, consultas)
 5. Mantén un tono profesional y amigable
-6. Responde en español`
+6. IMPORTANTE: Cuando alguien quiera programar una consulta:
+   - Recolecta información necesaria: método de contacto preferido (teléfono o email)
+   - Si prefiere teléfono: solicita número y horarios preferidos
+   - Si prefiere email: solicita dirección de correo
+   - Proporciona datos de contacto: +1 (555) 123-4567 (Lunes-Viernes 9:00 AM a 6:00 PM), Email: info@wmmanagement.com
+   - NUNCA sugieras "visitar el sitio web" o "usar el chat" - ya están usando el asistente
+7. Responde en español`
       : `You are a specialized AI assistant for WM Management. Your mission is to help users with their real estate projects following the structured conversation schema.
 
 SPECIFIC CONTACT INFORMATION:
@@ -119,7 +125,13 @@ IMPORTANT INSTRUCTIONS:
 3. Suggest specific WM Management services based on the project
 4. Offer concrete next steps (tools, consultations)
 5. Maintain a professional and friendly tone
-6. Respond in English`;
+6. IMPORTANT: When someone wants to schedule a consultation:
+   - Collect necessary information: preferred contact method (phone or email)
+   - If they prefer phone: request number and preferred time slots
+   - If they prefer email: request email address
+   - Provide contact details: +1 (555) 123-4567 (Monday-Friday 9:00 AM to 6:00 PM), Email: info@wmmanagement.com
+   - NEVER suggest "visiting the website" or "using live chat" - they're already using the assistant
+7. Respond in English`;
 
     // Prepare conversation history
     const conversationHistory = recentMessages?.reverse().map(msg => ({
