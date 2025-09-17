@@ -25,7 +25,7 @@ const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
 };
 
 export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingSourcesProps) => {
-  const { language, t } = useLanguage();
+  const { t, language, currency } = useLanguage();
   const calculateMonthlyPayment = (amount: number, rate: number, months: number): number => {
     if (rate === 0) return Math.round(amount / months);
     const monthlyRate = rate / 100 / 12;
@@ -67,13 +67,13 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
             <div>
               <Label className="text-sm text-muted-foreground">{t('simulator.financing.totalFinanced')}</Label>
               <div className="text-xl font-bold text-primary">
-                {formatCurrency(totalFinanced, language)}
+                {formatCurrency(totalFinanced, language, currency)}
               </div>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">{t('simulator.financing.totalMonthlyPayment')}</Label>
               <div className="text-xl font-bold text-accent">
-                {formatCurrency(totalMonthlyPayment, language)}
+                {formatCurrency(totalMonthlyPayment, language, currency)}
               </div>
             </div>
           </div>
@@ -96,13 +96,13 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                   <CardTitle className="flex items-center space-x-2">
                     <span>{getCreditLabel(creditLine.type, t)}</span>
                     <Badge className={CREDIT_TYPE_COLORS[creditLine.type]} variant="secondary">
-                      {formatCurrency(creditLine.totalAmount, language)}
+                      {formatCurrency(creditLine.totalAmount, language, currency)}
                     </Badge>
                   </CardTitle>
                   <div className="text-right">
                     <div className="text-sm text-muted-foreground">{t('simulator.financing.monthlyPayment')}</div>
                     <div className="text-lg font-semibold text-accent">
-                      {formatCurrency(creditLine.monthlyPayment, language)}
+                      {formatCurrency(creditLine.monthlyPayment, language, currency)}
                     </div>
                   </div>
                 </div>
@@ -152,16 +152,16 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                   <div className="text-sm text-muted-foreground">{t('simulator.financing.creditSummary')}</div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
                     <div>
-                      <span className="font-medium">{t('simulator.financing.principal')}</span> {formatCurrency(creditLine.totalAmount, language)}
+                      <span className="font-medium">{t('simulator.financing.principal')}</span> {formatCurrency(creditLine.totalAmount, language, currency)}
                     </div>
                     <div>
-                      <span className="font-medium">{t('simulator.financing.payment')}</span> {formatCurrency(creditLine.monthlyPayment, language)}
+                      <span className="font-medium">{t('simulator.financing.payment')}</span> {formatCurrency(creditLine.monthlyPayment, language, currency)}
                     </div>
                     <div>
-                      <span className="font-medium">{t('simulator.financing.totalToPay')}</span> {formatCurrency(creditLine.monthlyPayment * creditLine.termMonths, language)}
+                      <span className="font-medium">{t('simulator.financing.totalToPay')}</span> {formatCurrency(creditLine.monthlyPayment * creditLine.termMonths, language, currency)}
                     </div>
                     <div>
-                      <span className="font-medium">{t('simulator.financing.interest')}</span> {formatCurrency((creditLine.monthlyPayment * creditLine.termMonths) - creditLine.totalAmount, language)}
+                      <span className="font-medium">{t('simulator.financing.interest')}</span> {formatCurrency((creditLine.monthlyPayment * creditLine.termMonths) - creditLine.totalAmount, language, currency)}
                     </div>
                   </div>
                 </div>

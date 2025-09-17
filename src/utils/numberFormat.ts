@@ -10,8 +10,10 @@ export const formatNumber = (value: number, language: 'en' | 'es'): string => {
   }
 };
 
-export const formatCurrency = (value: number, language: 'en' | 'es'): string => {
-  return `$${formatNumber(value, language)}`;
+export const formatCurrency = (value: number, language: 'en' | 'es', currency: 'ARS' | 'USD' = 'ARS'): string => {
+  const formattedNumber = formatNumber(value, language);
+  const symbol = currency === 'USD' ? 'USD ' : '$';
+  return `${symbol}${formattedNumber}`;
 };
 
 export const parseFormattedNumber = (value: string): number => {

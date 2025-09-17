@@ -15,7 +15,7 @@ interface FranchiseFormProps {
 }
 
 export const FranchiseForm = ({ data, onUpdate }: FranchiseFormProps) => {
-  const { language, t } = useLanguage();
+  const { t, language, currency } = useLanguage();
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
 
@@ -236,7 +236,7 @@ export const FranchiseForm = ({ data, onUpdate }: FranchiseFormProps) => {
           <div className="flex justify-between items-center">
             <Label className="text-lg font-semibold">{t('franchise.financialInfo.total')}</Label>
             <div className="text-xl font-bold text-primary">
-              {formatCurrency(totalAmount, language)}
+              {formatCurrency(totalAmount, language, currency)}
             </div>
           </div>
         </CardContent>

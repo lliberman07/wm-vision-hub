@@ -1,10 +1,13 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 type Language = 'en' | 'es';
+type Currency = 'ARS' | 'USD';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
+  currency: Currency;
+  setCurrency: (currency: Currency) => void;
   t: (key: string) => string;
 }
 
@@ -778,9 +781,15 @@ const translations = {
     'simulator.financing.rate': 'Interest Rate (%)',
     'simulator.property.title': 'Property Details',
     'simulator.property.description': 'Specific details about your business location',
-    'simulator.property.size': 'Property Size (m²)',
-    'simulator.property.costM2': 'Cost per m² ($)',
-    'simulator.property.insurance': 'Insurance Cost ($)',
+     'simulator.property.size': 'Property Size (m²)',
+     'simulator.property.costM2': 'Cost per m² ($)',
+     'simulator.property.insurance': 'Insurance Cost ($)',
+     
+     // Currency
+     'currency': 'Currency',
+     'currency.ars': 'Argentine Peso (ARS)',
+     'currency.usd': 'US Dollar (USD)',
+     'currency.selector.label': 'Select Currency',
     'simulator.results.title': 'Financial Results & Analysis',
     'simulator.results.subtitle': 'Comprehensive plan analysis with metrics and projections',
     'simulator.results.costBreakdown': 'Cost Breakdown',
@@ -1616,9 +1625,15 @@ const translations = {
     'simulator.financing.rate': 'Tasa de Interés (%)',
     'simulator.property.title': 'Detalles de la Propiedad',
     'simulator.property.description': 'Detalles específicos sobre la ubicación de su proyecto y negocio',
-    'simulator.property.size': 'Tamaño del Local (m²)',
-    'simulator.property.costM2': 'Costo por m² ($)',
-    'simulator.property.insurance': 'Costo de Seguro ($)',
+     'simulator.property.size': 'Tamaño del Local (m²)',
+     'simulator.property.costM2': 'Costo por m² ($)',
+     'simulator.property.insurance': 'Costo de Seguro ($)',
+     
+     // Moneda
+     'currency': 'Moneda',
+     'currency.ars': 'Peso Argentino (ARS)',
+     'currency.usd': 'Dólar Estadounidense (USD)',
+     'currency.selector.label': 'Seleccionar Moneda',
     'simulator.results.title': 'Resultados y Análisis Financiero',
     'simulator.results.subtitle': 'Análisis completo del plan de inversión con métricas y proyecciones',
     'simulator.results.costBreakdown': 'Desglose de Costos',
@@ -1754,14 +1769,30 @@ const translations = {
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('language');
+    return (saved as Language) || 'en';
+  });
+
+  const [currency, setCurrency] = useState<Currency>(() => {
+    const saved = localStorage.getItem('currency');
+    return (saved as Currency) || 'ARS';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  useEffect(() => {
+    localStorage.setItem('currency', currency);
+  }, [currency]);
 
   const t = (key: string): string => {
     return translations[language][key] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, currency, setCurrency, t }}>
       {children}
     </LanguageContext.Provider>
   );

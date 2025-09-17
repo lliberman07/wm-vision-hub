@@ -38,7 +38,7 @@ export const ResultsAnalysis = ({
   onIncomeChange,
   onMarginChange
 }: ResultsAnalysisProps) => {
-  const { language, t } = useLanguage();
+  const { t, language, currency } = useLanguage();
   const [sensitivityRate, setSensitivityRate] = useState([0]);
   const [sensitivityIncome, setSensitivityIncome] = useState([0]);
 
@@ -88,7 +88,7 @@ export const ResultsAnalysis = ({
   const debtToIncomeRatio = estimatedMonthlyIncome > 0 ? (analysis.monthlyPaymentTotal / estimatedMonthlyIncome) * 100 : 0;
 
   // Custom tooltip formatter for charts
-  const tooltipFormatter = (value: number) => formatCurrency(value, language);
+  const tooltipFormatter = (value: number) => formatCurrency(value, language, currency);
 
   return (
     <div className="space-y-6">
@@ -149,7 +149,7 @@ export const ResultsAnalysis = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">{t('simulator.results.netIncome')}</span>
-                <div className="font-semibold">{formatCurrency(netMonthlyIncome, language)}</div>
+                <div className="font-semibold">{formatCurrency(netMonthlyIncome, language, currency)}</div>
               </div>
               <div>
                 <span className="text-muted-foreground">{t('simulator.results.debtToIncome')}</span>
@@ -157,7 +157,7 @@ export const ResultsAnalysis = ({
               </div>
               <div>
                 <span className="text-muted-foreground">{t('simulator.results.freeCashFlow')}</span>
-                <div className="font-semibold">{formatCurrency(netMonthlyIncome - analysis.monthlyPaymentTotal, language)}</div>
+                <div className="font-semibold">{formatCurrency(netMonthlyIncome - analysis.monthlyPaymentTotal, language, currency)}</div>
               </div>
               <div>
                 <span className="text-muted-foreground">{t('simulator.results.annualROI')}</span>
@@ -186,22 +186,22 @@ export const ResultsAnalysis = ({
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">{t('simulator.results.totalInvestment')}</Label>
-                  <div className="text-2xl font-bold">{formatCurrency(analysis.totalInvestment, language)}</div>
+                  <div className="text-2xl font-bold">{formatCurrency(analysis.totalInvestment, language, currency)}</div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">{t('simulator.results.upfrontPayment')}</Label>
-                  <div className="text-2xl font-bold text-destructive">{formatCurrency(analysis.totalAdvances, language)}</div>
+                  <div className="text-2xl font-bold text-destructive">{formatCurrency(analysis.totalAdvances, language, currency)}</div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">{t('simulator.results.financedAmount')}</Label>
-                  <div className="text-2xl font-bold text-primary">{formatCurrency(analysis.totalFinanced, language)}</div>
+                  <div className="text-2xl font-bold text-primary">{formatCurrency(analysis.totalFinanced, language, currency)}</div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">{t('simulator.results.monthlyPayment')}</Label>
-                  <div className="text-2xl font-bold text-accent">{formatCurrency(analysis.monthlyPaymentTotal, language)}</div>
+                  <div className="text-2xl font-bold text-accent">{formatCurrency(analysis.monthlyPaymentTotal, language, currency)}</div>
                 </div>
               </div>
             </CardContent>
@@ -229,9 +229,9 @@ export const ResultsAnalysis = ({
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">{formatCurrency(item.amount, language)}</div>
+                      <div className="font-semibold">{formatCurrency(item.amount, language, currency)}</div>
                       <div className="text-sm text-muted-foreground">
-                        {formatCurrency(item.advanceAmount, language)} + {formatCurrency(item.financeBalance, language)}
+                        {formatCurrency(item.advanceAmount, language, currency)} + {formatCurrency(item.financeBalance, language, currency)}
                       </div>
                     </div>
                   </div>
@@ -375,21 +375,21 @@ export const ResultsAnalysis = ({
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>{t('simulator.results.grossMonthlyIncome')}</span>
-                      <span className="font-medium">{formatCurrency(estimatedMonthlyIncome, language)}</span>
+                      <span className="font-medium">{formatCurrency(estimatedMonthlyIncome, language, currency)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>{t('simulator.results.grossMargin')} ({grossMarginPercentage}%):</span>
-                      <span className="font-medium">{formatCurrency(netMonthlyIncome, language)}</span>
+                      <span className="font-medium">{formatCurrency(netMonthlyIncome, language, currency)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>{t('simulator.results.financingPayments')}</span>
-                      <span className="font-medium text-destructive">-{formatCurrency(analysis.monthlyPaymentTotal, language)}</span>
+                      <span className="font-medium text-destructive">-{formatCurrency(analysis.monthlyPaymentTotal, language, currency)}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold">
                       <span>{t('simulator.results.freeMonthlyCashFlow')}</span>
                       <span className={netMonthlyIncome - analysis.monthlyPaymentTotal >= 0 ? 'text-primary' : 'text-destructive'}>
-                        {formatCurrency(netMonthlyIncome - analysis.monthlyPaymentTotal, language)}
+                        {formatCurrency(netMonthlyIncome - analysis.monthlyPaymentTotal, language, currency)}
                       </span>
                     </div>
                   </div>

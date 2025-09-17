@@ -33,7 +33,7 @@ const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
 };
 
 export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveItem }: ItemSelectionProps) => {
-  const { language, t } = useLanguage();
+  const { t, language, currency } = useLanguage();
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customItem, setCustomItem] = useState({
     name: '',
@@ -149,7 +149,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
         <div className="text-right">
           <Label className="text-sm text-muted-foreground">{t('simulator.items.totalInvestment')}</Label>
           <div className="text-2xl font-bold text-primary">
-            {formatCurrency(totalInvestment, language)}
+            {formatCurrency(totalInvestment, language, currency)}
           </div>
         </div>
       </div>

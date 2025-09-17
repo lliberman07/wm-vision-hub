@@ -6,6 +6,7 @@ import { FinancingSources } from "@/components/investment/FinancingSources";
 import { ResultsAnalysis } from "@/components/investment/ResultsAnalysis";
 import { useInvestmentCalculations } from "@/hooks/useInvestmentCalculations";
 import { useLanguage } from "@/contexts/LanguageContext";
+import CurrencySelector from "@/components/CurrencySelector";
 
 const BusinessSimulator = () => {
   const { t } = useLanguage();
@@ -64,6 +65,9 @@ const BusinessSimulator = () => {
         <p className="text-muted-foreground max-w-2xl mx-auto">
           {t('simulator.description')}
         </p>
+        <div className="flex justify-center">
+          <CurrencySelector variant="compact" />
+        </div>
       </div>
 
       <Tabs defaultValue="items" className="w-full">
