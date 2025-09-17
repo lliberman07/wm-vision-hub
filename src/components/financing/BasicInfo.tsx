@@ -63,7 +63,7 @@ export const BasicInfo = ({ data, onNext, onBack }: BasicInfoProps) => {
       newErrors.confirmEmail = t('Email addresses do not match');
     }
 
-    if (!formData.phone.trim()) newErrors.phone = t('Phone is required');
+    if (!formData.phone.trim()) newErrors.phone = t('Company phone is required');
     if (!formData.documentId.trim()) newErrors.documentId = t('Document ID is required');
     if (!formData.country) newErrors.country = t('Country is required');
     if (!formData.province) newErrors.province = t('Province is required');
@@ -214,12 +214,12 @@ export const BasicInfo = ({ data, onNext, onBack }: BasicInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phone">{t('Phone')} *</Label>
+          <Label htmlFor="phone">{t('Company Phone')} *</Label>
           <Input
             id="phone"
             value={formData.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
-            placeholder={t('Enter phone number')}
+            placeholder={t('Enter company phone number')}
             className={errors.phone ? 'border-destructive' : ''}
           />
           {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
