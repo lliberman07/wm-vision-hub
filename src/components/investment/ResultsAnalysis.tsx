@@ -127,19 +127,21 @@ export const ResultsAnalysis = ({
               <Label>{t('simulator.results.estimatedMonthlyIncome')}</Label>
               <Input
                 type="number"
-                value={estimatedMonthlyIncome}
-                onChange={(e) => onIncomeChange(Number(e.target.value))}
+                value={estimatedMonthlyIncome || ''}
+                onChange={(e) => onIncomeChange(Number(e.target.value) || 0)}
                 placeholder="0"
+                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
               />
             </div>
             <div className="space-y-2">
               <Label>{t('simulator.results.grossMarginPercentage')}</Label>
               <Input
                 type="number"
-                value={grossMarginPercentage}
-                onChange={(e) => onMarginChange(Number(e.target.value))}
+                value={grossMarginPercentage || ''}
+                onChange={(e) => onMarginChange(Number(e.target.value) || 0)}
                 min="0"
                 max="100"
+                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
               />
             </div>
           </div>

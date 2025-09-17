@@ -116,37 +116,35 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
                       type="number"
                       value={creditLine.totalAmount}
                       readOnly
-                      className="bg-muted"
+                      className="bg-muted [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                     />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor={`rate-${creditLine.type}`}>{t('simulator.financing.interestRate')}</Label>
-                    <div className="number-input-with-arrows">
-                      <Input
-                        id={`rate-${creditLine.type}`}
-                        type="number"
-                        value={creditLine.interestRate}
-                        onChange={(e) => handleRateChange(creditLine.type, Number(e.target.value))}
-                        step="0.01"
-                        min="0"
-                        max="100"
-                      />
-                    </div>
+                    <Input
+                      id={`rate-${creditLine.type}`}
+                      type="number"
+                      value={creditLine.interestRate || ''}
+                      onChange={(e) => handleRateChange(creditLine.type, Number(e.target.value) || 0)}
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                    />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor={`term-${creditLine.type}`}>{t('simulator.financing.termMonths')}</Label>
-                    <div className="number-input-with-arrows">
-                      <Input
-                        id={`term-${creditLine.type}`}
-                        type="number"
-                        value={creditLine.termMonths}
-                        onChange={(e) => handleTermChange(creditLine.type, Number(e.target.value))}
-                        min="1"
-                        max="360"
-                      />
-                    </div>
+                    <Input
+                      id={`term-${creditLine.type}`}
+                      type="number"
+                      value={creditLine.termMonths || ''}
+                      onChange={(e) => handleTermChange(creditLine.type, Number(e.target.value) || 0)}
+                      min="1"
+                      max="360"
+                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                    />
                   </div>
                 </div>
                 

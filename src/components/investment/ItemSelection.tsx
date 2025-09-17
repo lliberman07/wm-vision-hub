@@ -162,9 +162,10 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                     <Label>{t('simulator.items.totalAmount')}</Label>
                     <Input
                       type="number"
-                      value={item.amount}
-                      onChange={(e) => handleAmountChange(item.id, Number(e.target.value))}
+                      value={item.amount || ''}
+                      onChange={(e) => handleAmountChange(item.id, Number(e.target.value) || 0)}
                       placeholder="0"
+                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                     />
                   </div>
                   
@@ -172,10 +173,11 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                     <Label>{t('simulator.items.advancePercentage')}</Label>
                     <Input
                       type="number"
-                      value={item.advancePercentage}
-                      onChange={(e) => handleAdvanceChange(item.id, Number(e.target.value))}
+                      value={item.advancePercentage || ''}
+                      onChange={(e) => handleAdvanceChange(item.id, Number(e.target.value) || 0)}
                       min="0"
                       max="100"
+                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                     />
                   </div>
                   
@@ -183,10 +185,11 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                     <Label>{t('simulator.items.advanceAmount')}</Label>
                     <Input
                       type="number"
-                      value={item.advanceAmount}
-                      onChange={(e) => handleAdvanceAmountChange(item.id, Number(e.target.value))}
+                      value={item.advanceAmount || ''}
+                      onChange={(e) => handleAdvanceAmountChange(item.id, Number(e.target.value) || 0)}
                       min="0"
                       max={item.amount}
+                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                     />
                   </div>
                   
@@ -196,7 +199,7 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                       type="number"
                       value={item.financeBalance}
                       readOnly
-                      className="bg-muted"
+                      className="bg-muted [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                     />
                   </div>
                 </div>
@@ -244,9 +247,10 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                 <Label>{t('simulator.items.estimatedAmount')}</Label>
                 <Input
                   type="number"
-                  value={customItem.amount}
-                  onChange={(e) => setCustomItem(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                  value={customItem.amount || ''}
+                  onChange={(e) => setCustomItem(prev => ({ ...prev, amount: Number(e.target.value) || 0 }))}
                   placeholder="0"
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                 />
               </div>
               
