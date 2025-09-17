@@ -63,7 +63,7 @@ export const DocumentUpload = ({ data, onNext, onBack }: DocumentUploadProps) =>
         },
         {
           type: 'pay_slips',
-          label: t('Pay Slips (Last 3 months)'),
+          label: t('Recibos de Sueldo (últimos 3 meses) / Certificación de Ingresos (CPN)'),
           description: t('Your last 3 monthly pay slips or income proof'),
           required: true,
           maxFiles: 3
