@@ -23,7 +23,7 @@ export const BasicInfo = ({ data, onNext, onBack }: BasicInfoProps) => {
     // Company contact fields
     contactFirstName: data.basicInfo?.contactFirstName || '',
     contactLastName: data.basicInfo?.contactLastName || '',
-    contactEmail: data.basicInfo?.contactEmail || '',
+    
     contactPhone: data.basicInfo?.contactPhone || '',
     // Common fields
     email: data.email || '',
@@ -48,11 +48,6 @@ export const BasicInfo = ({ data, onNext, onBack }: BasicInfoProps) => {
       if (!formData.companyName.trim()) newErrors.companyName = t('Company name is required');
       if (!formData.contactFirstName.trim()) newErrors.contactFirstName = t('Contact first name is required');
       if (!formData.contactLastName.trim()) newErrors.contactLastName = t('Contact last name is required');
-      if (!formData.contactEmail.trim()) {
-        newErrors.contactEmail = t('Contact email is required');
-      } else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) {
-        newErrors.contactEmail = t('Contact email is invalid');
-      }
       if (!formData.contactPhone.trim()) newErrors.contactPhone = t('Contact phone is required');
     }
 
@@ -174,18 +169,6 @@ export const BasicInfo = ({ data, onNext, onBack }: BasicInfoProps) => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="contactEmail">{t('Contact Email')} *</Label>
-                <Input
-                  id="contactEmail"
-                  type="email"
-                  value={formData.contactEmail}
-                  onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                  placeholder={t('Enter contact email address')}
-                  className={errors.contactEmail ? 'border-destructive' : ''}
-                />
-                {errors.contactEmail && <p className="text-sm text-destructive">{errors.contactEmail}</p>}
-              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="contactPhone">{t('Contact Phone')} *</Label>
