@@ -1,3 +1,28 @@
+export interface FranchiseData {
+  // Información general
+  franchiseName: string;
+  businessSector: string;
+  franchiseManager: string;
+  
+  // Datos financieros
+  entryFee: number;
+  constructionAndRemodel: number;
+  equipment: number;
+  variousFees: number;
+  realEstateExpenses: number;
+  launchExpenses: number;
+  staffTraining: number;
+  initialStock: number;
+  others: number;
+  
+  // Ubicación del local
+  province: string;
+  city: string;
+  neighborhood: string;
+  address: string;
+  squareMeters: number;
+}
+
 export interface InvestmentItem {
   id: string;
   name: string;
@@ -10,6 +35,8 @@ export interface InvestmentItem {
   financeBalance: number;
   creditType: CreditType;
   isCustom?: boolean;
+  isFranchise?: boolean;
+  franchiseData?: FranchiseData;
 }
 
 export type CreditType = 'personal' | 'capital' | 'mortgage';
@@ -47,6 +74,36 @@ export interface Scenario {
 }
 
 export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
+  {
+    name: 'Franquicia',
+    nameKey: 'simulator.item.franchise',
+    isSelected: false,
+    amount: 0,
+    advancePercentage: 0,
+    advanceAmount: 0,
+    financeBalance: 0,
+    creditType: 'capital',
+    isFranchise: true,
+    franchiseData: {
+      franchiseName: '',
+      businessSector: '',
+      franchiseManager: '',
+      entryFee: 0,
+      constructionAndRemodel: 0,
+      equipment: 0,
+      variousFees: 0,
+      realEstateExpenses: 0,
+      launchExpenses: 0,
+      staffTraining: 0,
+      initialStock: 0,
+      others: 0,
+      province: '',
+      city: '',
+      neighborhood: '',
+      address: '',
+      squareMeters: 0
+    }
+  },
   {
     name: 'Alquiler de Local Comercial',
     nameKey: 'simulator.item.retailLease',

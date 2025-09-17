@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2 } from 'lucide-react';
-import { InvestmentItem, CreditType } from '@/types/investment';
+import { InvestmentItem, CreditType, FranchiseData } from '@/types/investment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '@/utils/numberFormat';
+import { FranchiseForm } from './FranchiseForm';
 
 interface ItemSelectionProps {
   items: InvestmentItem[];
@@ -42,6 +43,34 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
 
   const handleItemToggle = (id: string, checked: boolean) => {
     onUpdateItem(id, { isSelected: checked });
+  };
+
+  const handleFranchiseUpdate = (id: string, franchiseData: FranchiseData) => {
+    // Calculate total amount from franchise data
+    const totalAmount = 
+      franchiseData.entryFee + 
+      franchiseData.constructionAndRemodel + 
+      franchiseData.equipment + 
+      franchiseData.variousFees + 
+      franchiseData.realEstateExpenses + 
+      franchiseData.launchExpenses + 
+      franchiseData.staffTraining + 
+      franchiseData.initialStock + 
+      franchiseData.others;
+
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    
+    const roundedAmount = Math.round(totalAmount);
+    const advanceAmount = Math.round((roundedAmount * item.advancePercentage) / 100);
+    const financeBalance = roundedAmount - advanceAmount;
+    
+    onUpdateItem(id, { 
+      franchiseData,
+      amount: roundedAmount, 
+      advanceAmount,
+      financeBalance
+    });
   };
 
   const handleAmountChange = (id: string, amount: number) => {
@@ -157,52 +186,107 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
             
             {item.isSelected && (
               <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <Label>{t('simulator.items.totalAmount')}</Label>
-                    <Input
-                      type="number"
-                      value={item.amount || ''}
-                      onChange={(e) => handleAmountChange(item.id, Number(e.target.value) || 0)}
-                      placeholder="0"
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                    />
+                {item.isFranchise && item.franchiseData ? (
+                  <FranchiseForm 
+                    data={item.franchiseData}
+                    onUpdate={(data) => handleFranchiseUpdate(item.id, data)}
+                  />
+                ) : (
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('simulator.items.totalAmount')}</Label>
+                      <Input
+                        type="number"
+                        value={item.amount || ''}
+                        onChange={(e) => handleAmountChange(item.id, Number(e.target.value) || 0)}
+                        placeholder="0"
+                        className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>{t('simulator.items.advancePercentage')}</Label>
+                      <Input
+                        type="number"
+                        value={item.advancePercentage || ''}
+                        onChange={(e) => handleAdvanceChange(item.id, Number(e.target.value) || 0)}
+                        min="0"
+                        max="100"
+                        className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>{t('simulator.items.advanceAmount')}</Label>
+                      <Input
+                        type="number"
+                        value={item.advanceAmount || ''}
+                        onChange={(e) => handleAdvanceAmountChange(item.id, Number(e.target.value) || 0)}
+                        min="0"
+                        max={item.amount}
+                        className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>{t('simulator.items.financeBalance')}</Label>
+                      <Input
+                        type="number"
+                        value={item.financeBalance}
+                        readOnly
+                        className="bg-muted [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label>{t('simulator.items.advancePercentage')}</Label>
-                    <Input
-                      type="number"
-                      value={item.advancePercentage || ''}
-                      onChange={(e) => handleAdvanceChange(item.id, Number(e.target.value) || 0)}
-                      min="0"
-                      max="100"
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                    />
+                )}
+                
+                {item.isFranchise && (
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('simulator.items.totalAmount')}</Label>
+                      <Input
+                        type="number"
+                        value={item.amount}
+                        readOnly
+                        className="bg-muted [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>{t('simulator.items.advancePercentage')}</Label>
+                      <Input
+                        type="number"
+                        value={item.advancePercentage || ''}
+                        onChange={(e) => handleAdvanceChange(item.id, Number(e.target.value) || 0)}
+                        min="0"
+                        max="100"
+                        className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>{t('simulator.items.advanceAmount')}</Label>
+                      <Input
+                        type="number"
+                        value={item.advanceAmount || ''}
+                        onChange={(e) => handleAdvanceAmountChange(item.id, Number(e.target.value) || 0)}
+                        min="0"
+                        max={item.amount}
+                        className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>{t('simulator.items.financeBalance')}</Label>
+                      <Input
+                        type="number"
+                        value={item.financeBalance}
+                        readOnly
+                        className="bg-muted [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label>{t('simulator.items.advanceAmount')}</Label>
-                    <Input
-                      type="number"
-                      value={item.advanceAmount || ''}
-                      onChange={(e) => handleAdvanceAmountChange(item.id, Number(e.target.value) || 0)}
-                      min="0"
-                      max={item.amount}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>{t('simulator.items.financeBalance')}</Label>
-                    <Input
-                      type="number"
-                      value={item.financeBalance}
-                      readOnly
-                      className="bg-muted [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                    />
-                  </div>
-                </div>
+                )}
                 
                 <div className="space-y-2">
                   <Label>{t('simulator.items.creditType')}</Label>
