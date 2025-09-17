@@ -11,7 +11,7 @@ import {
   Building2, 
   Heart, 
   Factory, 
-  Truck, 
+  Store, 
   Building,
   Home,
   ArrowRight,
@@ -53,11 +53,11 @@ const Industries = () => {
       href: "/industries/industrial"
     },
     {
-      icon: Truck,
-      title: t('industries.logistics.title'),
-      description: t('industries.logistics.description'),
-      cta: t('industries.logistics.cta'),
-      href: "/industries/logistics"
+      icon: Store,
+      title: "Franchise Real Estate Solutions",
+      description: "Tailored real estate advisory for franchise expansion, including property acquisition, remodeling, and rental management. We optimize each investment to align with franchise brand standards and maximize long-term value.",
+      cta: "Franchise Real Estate Solutions →",
+      href: "/industries/franchise"
     },
     {
       icon: Building,
