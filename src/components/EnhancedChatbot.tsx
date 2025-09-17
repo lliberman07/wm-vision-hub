@@ -77,11 +77,11 @@ export const EnhancedChatbot: React.FC = () => {
   }, [messages]);
 
   useEffect(() => {
-    // Initialize conversation with welcome message
+    // Initialize conversation with welcome message based on current page language
     if (isOpen && messages.length === 0) {
       const welcomeMessage = language === 'es' 
-        ? "¡Hola! Soy Builder, tu asistente de IA inmobiliario de WM Management. 🏠\n\n¿En qué puedo ayudarte hoy?"
-        : "Hello! I'm Builder, your real estate AI assistant from WM Management. 🏠\n\nHow can I help you today?";
+        ? "¡Hola! Soy tu asistente de IA especializado de WM Management. 🏠\n\n¿En qué tipo de proyecto inmobiliario te puedo ayudar hoy? ¿Inversión residencial, comercial, financiamiento o gestión de propiedades?"
+        : "Hello! I'm your specialized AI assistant from WM Management. 🏠\n\nWhat type of real estate project can I help you with today? Residential investment, commercial, financing, or property management?";
       
       setMessages([{
         id: `welcome_${Date.now()}`,
