@@ -1279,7 +1279,7 @@ const translations = {
     // Financing Request
     'Financing Request Details': 'Detalles de la Solicitud de Financiamiento',
     'Please provide details about your financing needs': 'Por favor proporcione detalles sobre sus necesidades de financiamiento',
-    'Requested Amount': 'Monto Solicitado',
+    'Requested Amount': 'Monto Solicitado (USD)',
     'Desired Term': 'Plazo Deseado',
     'Select desired term': 'Seleccione plazo deseado',
     '6 months': '6 meses',

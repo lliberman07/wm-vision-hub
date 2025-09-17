@@ -66,7 +66,7 @@ export const FinancingRequest = ({ data, onNext, onBack }: FinancingRequestProps
   const formatCurrency = (value: string) => {
     const numericValue = value.replace(/[^0-9]/g, '');
     if (numericValue) {
-      return new Intl.NumberFormat('es-AR').format(parseInt(numericValue));
+      return new Intl.NumberFormat('en-US').format(parseInt(numericValue));
     }
     return '';
   };
@@ -110,13 +110,13 @@ export const FinancingRequest = ({ data, onNext, onBack }: FinancingRequestProps
         <div className="space-y-2">
           <Label htmlFor="requestedAmount">{t('Requested Amount')} *</Label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">$</span>
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">USD $</span>
             <Input
               id="requestedAmount"
               value={formatCurrency(formData.requestedAmount)}
               onChange={(e) => handleAmountChange(e.target.value)}
               placeholder="0"
-              className={`pl-8 ${errors.requestedAmount ? 'border-destructive' : ''}`}
+              className={`pl-16 ${errors.requestedAmount ? 'border-destructive' : ''}`}
             />
           </div>
           {errors.requestedAmount && <p className="text-sm text-destructive">{errors.requestedAmount}</p>}
@@ -201,7 +201,7 @@ export const FinancingRequest = ({ data, onNext, onBack }: FinancingRequestProps
             <div className="flex justify-between">
               <span>{t('Amount:')}</span>
               <span className="font-medium">
-                {formData.requestedAmount ? formatCurrency(formData.requestedAmount) : '-'}
+                {formData.requestedAmount ? `USD $${formatCurrency(formData.requestedAmount)}` : '-'}
               </span>
             </div>
             <div className="flex justify-between">
