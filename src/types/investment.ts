@@ -13,6 +13,8 @@ export interface FranchiseData {
   launchExpenses: number;
   staffTraining: number;
   initialStock: number;
+  localRent: number;
+  localDeposit: number;
   others: number;
   
   // Ubicación del local
@@ -96,6 +98,8 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
       launchExpenses: 0,
       staffTraining: 0,
       initialStock: 0,
+      localRent: 0,
+      localDeposit: 0,
       others: 0,
       province: '',
       city: '',

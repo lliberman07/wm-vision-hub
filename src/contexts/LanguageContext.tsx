@@ -732,6 +732,8 @@ const translations = {
     'franchise.financialInfo.launchExpenses': 'Launch Expenses',
     'franchise.financialInfo.staffTraining': 'Staff Training',
     'franchise.financialInfo.initialStock': 'Initial Stock',
+    'franchise.financialInfo.localRent': 'Local Rent',
+    'franchise.financialInfo.localDeposit': 'Local Deposit',
     'franchise.financialInfo.others': 'Others',
     'franchise.financialInfo.total': 'Total Investment',
     
@@ -1568,6 +1570,8 @@ const translations = {
     'franchise.financialInfo.launchExpenses': 'Gastos de Lanzamiento',
     'franchise.financialInfo.staffTraining': 'Capacitación Personal',
     'franchise.financialInfo.initialStock': 'Stock Inicial',
+    'franchise.financialInfo.localRent': 'Alquiler Local',
+    'franchise.financialInfo.localDeposit': 'Depósito Local',
     'franchise.financialInfo.others': 'Otros',
     'franchise.financialInfo.total': 'Inversión Total',
     

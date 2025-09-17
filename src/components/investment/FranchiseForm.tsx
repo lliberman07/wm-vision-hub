@@ -71,6 +71,8 @@ export const FranchiseForm = ({ data, onUpdate }: FranchiseFormProps) => {
     data.launchExpenses + 
     data.staffTraining + 
     data.initialStock + 
+    data.localRent + 
+    data.localDeposit + 
     data.others;
 
   return (
@@ -193,6 +195,26 @@ export const FranchiseForm = ({ data, onUpdate }: FranchiseFormProps) => {
                 type="number"
                 value={data.initialStock || ''}
                 onChange={(e) => handleInputChange('initialStock', Number(e.target.value) || 0)}
+                placeholder="0"
+                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('franchise.financialInfo.localRent')}</Label>
+              <Input
+                type="number"
+                value={data.localRent || ''}
+                onChange={(e) => handleInputChange('localRent', Number(e.target.value) || 0)}
+                placeholder="0"
+                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('franchise.financialInfo.localDeposit')}</Label>
+              <Input
+                type="number"
+                value={data.localDeposit || ''}
+                onChange={(e) => handleInputChange('localDeposit', Number(e.target.value) || 0)}
                 placeholder="0"
                 className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
               />
