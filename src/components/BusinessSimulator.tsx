@@ -7,7 +7,6 @@ import { ResultsAnalysis } from "@/components/investment/ResultsAnalysis";
 import { useInvestmentCalculations } from "@/hooks/useInvestmentCalculations";
 import { useLanguage } from "@/contexts/LanguageContext";
 import CurrencySelector from "@/components/CurrencySelector";
-import { Calculator } from "lucide-react";
 
 const BusinessSimulator = () => {
   const { t } = useLanguage();
@@ -61,8 +60,14 @@ const BusinessSimulator = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-center mb-6">
-        <CurrencySelector variant="compact" />
+      <div className="text-center space-y-4">
+        <h2 className="text-3xl font-bold">{t('simulator.title')}</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          {t('simulator.description')}
+        </p>
+        <div className="flex justify-center">
+          <CurrencySelector variant="compact" />
+        </div>
       </div>
 
       <Tabs defaultValue="items" className="w-full">
