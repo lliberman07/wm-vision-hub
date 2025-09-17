@@ -206,19 +206,11 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
                 
                 <div className="space-y-2">
                   <Label>{t('simulator.items.creditType')}</Label>
-                  <Select
-                    value={item.creditType}
-                    onValueChange={(value) => onUpdateItem(item.id, { creditType: value as CreditType })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="personal">{t('simulator.items.creditType.personal')}</SelectItem>
-                      <SelectItem value="capital">{t('simulator.items.creditType.capital')}</SelectItem>
-                      <SelectItem value="mortgage">{t('simulator.items.creditType.mortgage')}</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="p-2 border rounded-md bg-muted">
+                    <Badge className={CREDIT_TYPE_COLORS[item.creditType]} variant="secondary">
+                      {getCreditLabel(item.creditType, t)}
+                    </Badge>
+                  </div>
                 </div>
               </CardContent>
             )}
