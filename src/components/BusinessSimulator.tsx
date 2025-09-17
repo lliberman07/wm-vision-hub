@@ -60,14 +60,8 @@ const BusinessSimulator = () => {
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold">{t('simulator.title')}</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          {t('simulator.description')}
-        </p>
-        <div className="flex justify-center">
-          <CurrencySelector variant="compact" />
-        </div>
+      <div className="flex justify-center mb-6">
+        <CurrencySelector variant="compact" />
       </div>
 
       <Tabs defaultValue="items" className="w-full">
