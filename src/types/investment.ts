@@ -116,25 +116,5 @@ export const DEFAULT_ITEMS: Omit<InvestmentItem, 'id'>[] = [
     advanceAmount: 0,
     financeBalance: 0,
     creditType: 'personal'
-  },
-  {
-    name: 'Gastos Legales / Licencias',
-    nameKey: 'simulator.item.legalLicenses',
-    isSelected: false,
-    amount: 0,
-    advancePercentage: 0,
-    advanceAmount: 0,
-    financeBalance: 0,
-    creditType: 'personal'
-  },
-  {
-    name: 'Marketing y Lanzamiento',
-    nameKey: 'simulator.item.marketingLaunch',
-    isSelected: false,
-    amount: 0,
-    advancePercentage: 0,
-    advanceAmount: 0,
-    financeBalance: 0,
-    creditType: 'personal'
   }
 ];
