@@ -71,7 +71,7 @@ export const FinancialInfo = ({ data, onNext, onBack }: FinancialInfoProps) => {
     <Card>
       <CardHeader>
         <CardTitle>
-          {data.type === 'individual' ? t('Financial Information') : t('Company Financial Information')}
+          {data.type === 'individual' ? t('Financial Information') : t('Company Profile')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
