@@ -61,19 +61,8 @@ const BusinessSimulator = () => {
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-6">
-        <div className="space-y-4">
-          <h1 className="text-4xl lg:text-5xl font-bold text-foreground flex items-center justify-center gap-3">
-            <Calculator className="w-10 h-10 lg:w-12 lg:h-12 text-primary" />
-            Business Investment Plan Simulator
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Plan your business investment with our interactive tool. Adjust variables to see real-time projections of costs and financing options.
-          </p>
-        </div>
-        <div className="flex justify-center">
-          <CurrencySelector variant="compact" />
-        </div>
+      <div className="flex justify-center mb-6">
+        <CurrencySelector variant="compact" />
       </div>
 
       <Tabs defaultValue="items" className="w-full">
