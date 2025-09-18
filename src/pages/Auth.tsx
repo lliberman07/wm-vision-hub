@@ -9,9 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus, Shield } from "lucide-react";
 import { useEffect } from "react";
-import wmLogo from "@/assets/wm-logo.png";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -73,7 +72,7 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-strong">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 p-3 bg-primary/10 rounded-full w-fit">
-            <img src={wmLogo} alt="WM Management" className="h-12 w-auto" />
+            <Shield className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-2xl">{t('Admin Access')}</CardTitle>
           <CardDescription>
