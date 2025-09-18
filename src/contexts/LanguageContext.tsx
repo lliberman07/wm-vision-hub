@@ -201,7 +201,7 @@ const translations = {
     'common.open': 'Open',
 
     // Property Management
-    'propertyManagement.pms.access': 'Access PMS >',
+    'propertyManagement.pms.access': 'Access PMS',
 
     // Admin Dashboard
     'admin.access': 'Admin Access',
@@ -1057,7 +1057,7 @@ const translations = {
     'common.open': 'Abrir',
 
     // Property Management
-    'propertyManagement.pms.access': 'Ingreso a PMS >',
+    'propertyManagement.pms.access': 'Ingreso a PMS',
 
     // Admin Dashboard (Spanish)
     'Admin Access': 'Acceso de Administrador',

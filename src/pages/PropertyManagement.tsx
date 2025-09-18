@@ -141,7 +141,7 @@ const PropertyManagement = () => {
                 rel="noopener noreferrer"
               >
                 {t('propertyManagement.pms.access')}
-                <ExternalLink className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
           </div>
