@@ -1056,6 +1056,7 @@ const translations = {
     // Admin Dashboard (Spanish)
     'Admin Access': 'Acceso de Administrador',
     'Sign in to access the admin dashboard': 'Inicie sesión para acceder al panel de administración',
+    'Back to home page': 'Volver a la página de inicio',
     'Contact Submissions': 'Envíos de Contacto',
     'Financing Applications': 'Solicitudes de Financiamiento',
     'Manage individual and business financing applications': 'Gestionar solicitudes de financiamiento individuales y empresariales',

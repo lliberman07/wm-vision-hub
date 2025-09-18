@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { LogIn, UserPlus, Shield } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 import { useEffect } from "react";
+import wmLogo from "@/assets/wm-logo.png";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -72,7 +73,7 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-strong">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 p-3 bg-primary/10 rounded-full w-fit">
-            <Shield className="h-8 w-8 text-primary" />
+            <img src={wmLogo} alt="WM Management" className="h-12 w-auto" />
           </div>
           <CardTitle className="text-2xl">{t('Admin Access')}</CardTitle>
           <CardDescription>
@@ -118,6 +119,14 @@ const Auth = () => {
                   <LogIn className="mr-2 h-4 w-4" />
                   {loading ? t('Signing in...') : t('Sign In')}
                 </Button>
+                <div className="text-center mt-4">
+                  <Link 
+                    to="/" 
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('Back to home page')}
+                  </Link>
+                </div>
               </form>
             </TabsContent>
             
@@ -154,6 +163,14 @@ const Auth = () => {
                   <UserPlus className="mr-2 h-4 w-4" />
                   {loading ? t('Creating account...') : t('Create Account')}
                 </Button>
+                <div className="text-center mt-4">
+                  <Link 
+                    to="/" 
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('Back to home page')}
+                  </Link>
+                </div>
               </form>
             </TabsContent>
           </Tabs>
