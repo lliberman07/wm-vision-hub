@@ -200,6 +200,9 @@ const translations = {
     'common.close': 'Close',
     'common.open': 'Open',
 
+    // Property Management
+    'propertyManagement.pms.access': 'Access PMS >',
+
     // Admin Dashboard
     'admin.access': 'Admin Access',
     'admin.signin.description': 'Sign in to access the admin dashboard',
@@ -1052,6 +1055,9 @@ const translations = {
     'common.previous': 'Anterior',
     'common.close': 'Cerrar',
     'common.open': 'Abrir',
+
+    // Property Management
+    'propertyManagement.pms.access': 'Ingreso a PMS >',
 
     // Admin Dashboard (Spanish)
     'Admin Access': 'Acceso de Administrador',

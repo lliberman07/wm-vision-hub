@@ -18,7 +18,8 @@ import {
   CheckCircle,
   ArrowRight,
   Shield,
-  BarChart3
+  BarChart3,
+  ExternalLink
 } from "lucide-react";
 
 const PropertyManagement = () => {
@@ -129,9 +130,21 @@ const PropertyManagement = () => {
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
             {t('propertyManagement.hero.title')}
           </h1>
-          <p className="text-xl text-primary-foreground/90 leading-relaxed">
+          <p className="text-xl text-primary-foreground/90 leading-relaxed mb-8">
             {t('propertyManagement.hero.subtitle')}
           </p>
+          <div className="flex justify-center">
+            <Button size="lg" variant="secondary" asChild>
+              <a 
+                href="https://persiscalconsulting-property-manager-test.odoo.com/es_AR/web/login#action=menu&cids=1&menu_id=1"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('propertyManagement.pms.access')}
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+          </div>
         </div>
       </section>
 
