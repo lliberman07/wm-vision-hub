@@ -12,7 +12,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+      "inline-flex h-12 items-center justify-center rounded-lg bg-gradient-to-r from-sky-50/80 via-sky-100/60 to-sky-200/50 p-1 text-muted-foreground shadow-sm border border-sky-200/30",
       className
     )}
     {...props}
@@ -23,16 +23,30 @@ TabsList.displayName = TabsPrimitive.List.displayName
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  const value = props.value;
+  let gradientClass = "";
+  
+  if (value === "items") {
+    gradientClass = "data-[state=active]:bg-gradient-to-br data-[state=active]:from-sky-100 data-[state=active]:to-sky-200 data-[state=active]:text-sky-800 data-[state=active]:border-sky-300";
+  } else if (value === "financing") {
+    gradientClass = "data-[state=active]:bg-gradient-to-br data-[state=active]:from-sky-200 data-[state=active]:to-sky-300 data-[state=active]:text-sky-800 data-[state=active]:border-sky-400";
+  } else if (value === "results") {
+    gradientClass = "data-[state=active]:bg-gradient-to-br data-[state=active]:from-sky-300 data-[state=active]:to-sky-400 data-[state=active]:text-sky-900 data-[state=active]:border-sky-500";
+  }
+
+  return (
+    <TabsPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2.5 text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-sky-50/50 data-[state=active]:shadow-md data-[state=active]:border",
+        gradientClass,
+        className
+      )}
+      {...props}
+    />
+  )
+})
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
 
 const TabsContent = React.forwardRef<
