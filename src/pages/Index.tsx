@@ -206,7 +206,7 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white hover:text-cyan-500 transition-all" asChild>
+                <Button variant="secondary" size="sm" className="bg-white/20 text-foreground border-white/30 hover:bg-white hover:text-cyan-500 transition-all" asChild>
                   <Link to="/financing/simulator">{t('home.simulator.cta')}</Link>
                 </Button>
               </CardContent>
