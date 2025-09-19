@@ -195,7 +195,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-accent text-accent-foreground shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+            <Card className="bg-cyan-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
               <CardHeader className="pb-4">
                 <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4">
                   <Calculator className="h-6 w-6 text-white" />
@@ -206,7 +206,7 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white hover:text-accent transition-all" asChild>
+                <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white hover:text-cyan-500 transition-all" asChild>
                   <Link to="/financing/simulator">{t('home.simulator.cta')}</Link>
                 </Button>
               </CardContent>
