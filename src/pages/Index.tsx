@@ -36,7 +36,7 @@ const Index = () => {
         <div className="container mx-auto max-w-7xl relative z-10 container-padding">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8 animate-fade-in">
-              <Badge variant="secondary" className="w-fit bg-accent/20 text-accent border-accent/30 backdrop-blur-sm">
+              <Badge variant="secondary" className="w-fit bg-cyan-500/20 text-cyan-400 border-cyan-400/30 backdrop-blur-sm">
                 {t('home.hero.badge')}
               </Badge>
               <h1 className="h1 text-white">
