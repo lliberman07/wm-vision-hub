@@ -604,6 +604,9 @@ const translations = {
     'simulator.tabs.results': 'Results & Analysis',
     'simulator.disclaimer.text': 'Notice: The values shown are estimated simulations. WM Management S.A. does not guarantee their accuracy nor is responsible for decisions based on this tool.',
     'simulator.disclaimer.seeMore': 'See more',
+    'simulator.cta.continueToFinancing': 'Continue to Financing',
+    'simulator.cta.viewResults': 'View Results & Analysis',
+    'simulator.cta.continue': 'Continue',
     // Terms of Service
     'terms.title': 'Terms of Service',
     'terms.acceptance.title': 'Acceptance of Terms',
@@ -1457,6 +1460,9 @@ const translations = {
     'simulator.tabs.results': 'Resultados y Análisis',
     'simulator.disclaimer.text': 'Aviso: Los valores mostrados son simulaciones estimativas. WM Management S.A. no garantiza su exactitud ni se responsabiliza por decisiones basadas en esta herramienta.',
     'simulator.disclaimer.seeMore': 'Ver más',
+    'simulator.cta.continueToFinancing': 'Continuar al Financiamiento',
+    'simulator.cta.viewResults': 'Ver Resultados y Análisis',
+    'simulator.cta.continue': 'Continuar',
     // Términos de Servicio
     'terms.title': 'Términos de Servicio',
     'terms.acceptance.title': 'Aceptación de los Términos',

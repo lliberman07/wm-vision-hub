@@ -22,8 +22,10 @@ TabsList.displayName = TabsPrimitive.List.displayName
 
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
+    statusBadge?: React.ReactNode;
+  }
+>(({ className, statusBadge, children, ...props }, ref) => {
   const value = props.value;
   let activeClass = "";
   
@@ -39,12 +41,19 @@ const TabsTrigger = React.forwardRef<
     <TabsPrimitive.Trigger
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2.5 text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-slate-600 hover:text-sky-700 hover:bg-sky-50/80",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2.5 text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-slate-600 hover:text-sky-700 hover:bg-sky-50/80 relative gap-2",
         activeClass,
         className
       )}
       {...props}
-    />
+    >
+      {children}
+      {statusBadge && (
+        <span className="ml-1">
+          {statusBadge}
+        </span>
+      )}
+    </TabsPrimitive.Trigger>
   )
 })
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
