@@ -106,8 +106,8 @@ const About = () => {
 
             <Card className="shadow-medium">
               <CardHeader className="text-center">
-                <div className="w-20 h-20 bg-gradient-accent rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <TrendingUp className="h-8 w-8 text-accent-foreground" />
+                <div className="w-20 h-20 bg-cyan-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <TrendingUp className="h-8 w-8 text-white" />
                 </div>
                 <CardTitle>{t('about.team.strategy')}</CardTitle>
                 <CardDescription>
