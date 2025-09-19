@@ -1611,7 +1611,7 @@ const translations = {
     'franchise.location.squareMeters': 'Metros Cuadrados',
     // Fuentes de Financiamiento
     'simulator.financing.sourcesTitle': 'Fuentes de Financiamiento',
-    'simulator.financing.sourcesDescription': 'Configure las condiciones de financiamiento por tipo de crédito',
+    'simulator.financing.sourcesDescription': 'Evalúe el escenario financiero de su modelo de negocio.',
     'simulator.financing.totalFinanced': 'Total Financiado',
     'simulator.financing.totalMonthlyPayment': 'Pago Mensual Total',
     'simulator.financing.monthlyPayment': 'Pago Mensual',
