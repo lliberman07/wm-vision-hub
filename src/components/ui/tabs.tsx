@@ -12,7 +12,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-12 items-center justify-center rounded-lg bg-gradient-to-r from-sky-50/80 via-sky-100/60 to-sky-200/50 p-1 text-muted-foreground shadow-sm border border-sky-200/30",
+      "inline-flex h-12 items-center justify-center rounded-xl bg-white/90 backdrop-blur-sm p-1 text-muted-foreground shadow-lg border border-sky-100/50",
       className
     )}
     {...props}
@@ -25,22 +25,22 @@ const TabsTrigger = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, ...props }, ref) => {
   const value = props.value;
-  let gradientClass = "";
+  let activeClass = "";
   
   if (value === "items") {
-    gradientClass = "data-[state=active]:bg-gradient-to-br data-[state=active]:from-sky-100 data-[state=active]:to-sky-200 data-[state=active]:text-sky-800 data-[state=active]:border-sky-300";
+    activeClass = "data-[state=active]:bg-sky-100 data-[state=active]:text-sky-800 data-[state=active]:shadow-lg data-[state=active]:shadow-sky-200/50";
   } else if (value === "financing") {
-    gradientClass = "data-[state=active]:bg-gradient-to-br data-[state=active]:from-sky-200 data-[state=active]:to-sky-300 data-[state=active]:text-sky-800 data-[state=active]:border-sky-400";
+    activeClass = "data-[state=active]:bg-sky-200 data-[state=active]:text-sky-800 data-[state=active]:shadow-lg data-[state=active]:shadow-sky-300/50";
   } else if (value === "results") {
-    gradientClass = "data-[state=active]:bg-gradient-to-br data-[state=active]:from-sky-300 data-[state=active]:to-sky-400 data-[state=active]:text-sky-900 data-[state=active]:border-sky-500";
+    activeClass = "data-[state=active]:bg-sky-300 data-[state=active]:text-sky-900 data-[state=active]:shadow-lg data-[state=active]:shadow-sky-400/50";
   }
 
   return (
     <TabsPrimitive.Trigger
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2.5 text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-sky-50/50 data-[state=active]:shadow-md data-[state=active]:border",
-        gradientClass,
+        "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2.5 text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-slate-600 hover:text-sky-700 hover:bg-sky-50/80",
+        activeClass,
         className
       )}
       {...props}
