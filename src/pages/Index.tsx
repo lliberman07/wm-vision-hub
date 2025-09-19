@@ -49,7 +49,7 @@ const Index = () => {
                 {t('home.hero.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button size="lg" className="btn-premium group" asChild>
+                <Button size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 group" asChild>
                   <Link to="/services">
                     {t('home.hero.cta1')}
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
