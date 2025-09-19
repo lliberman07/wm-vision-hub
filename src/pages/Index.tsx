@@ -67,26 +67,26 @@ const Index = () => {
               <div className="card-glass p-8 rounded-xl">
                 <div className="space-y-6">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                      <CheckCircle className="h-5 w-5 text-accent" />
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-cyan-400" />
                     </div>
                     <span className="text-white font-medium">{t('home.hero.feature1')}</span>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                      <CheckCircle className="h-5 w-5 text-accent" />
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-cyan-400" />
                     </div>
                     <span className="text-white font-medium">{t('home.hero.feature2')}</span>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                      <CheckCircle className="h-5 w-5 text-accent" />
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-cyan-400" />
                     </div>
                     <span className="text-white font-medium">{t('home.hero.feature3')}</span>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                      <CheckCircle className="h-5 w-5 text-accent" />
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-cyan-400" />
                     </div>
                     <span className="text-white font-medium">{t('home.hero.feature4')}</span>
                   </div>
