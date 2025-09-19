@@ -54,9 +54,9 @@ const Industries = () => {
     },
     {
       icon: Store,
-      title: "Franchise Real Estate Solutions",
-      description: "Tailored real estate advisory for franchise expansion, including property acquisition, remodeling, and rental management. We optimize each investment to align with franchise brand standards and maximize long-term value.",
-      cta: "Franchise Real Estate Solutions →",
+      title: "Soluciones Inmobiliarias para Franquicias",
+      description: "Asesoría inmobiliaria especializada para la expansión de franquicias, incluyendo adquisición de propiedades, remodelación y gestión de alquileres. Optimizamos cada inversión para alinearse con los estándares de marca de la franquicia y maximizar el valor a largo plazo.",
+      cta: "Soluciones para Franquicias",
       href: "/industries/franchise"
     },
     {
