@@ -1132,7 +1132,7 @@ const translations = {
     'financing.program.benefits.quickApproval.desc': 'Proceso de aprobación acelerado para comenzar rápidamente con papeleo mínimo y procesamiento eficiente.',
     'financing.program.benefits.flexible': 'Opciones de Pago Flexibles',
     'financing.program.benefits.flexible.desc': 'Múltiples estructuras de pago disponibles para coincidir con su modelo de negocio y requisitos de flujo de efectivo.',
-    'financing.simulator.title': 'Calculadora de Financiamiento de Inversión',
+    'financing.simulator.title': 'Simulador de Escenarios de Negocios e Inversión',
     'financing.simulator.description': 'Calcule sus opciones de financiamiento y pagos mensuales con nuestro simulador de financiamiento interactivo.',
     'financing.signup.ready': '¿Listo para Comenzar Su Jornada Empresarial?',
     'financing.signup.title': 'Comience con Nuestro Programa de Financiamiento',
