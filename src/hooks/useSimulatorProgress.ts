@@ -30,9 +30,9 @@ export const useSimulatorProgress = (
 
     // Determine next step
     let nextStep: string | null = null;
-    if (!isConfigurationComplete) {
+    if (isConfigurationComplete && !isFinancingComplete) {
       nextStep = 'financing';
-    } else if (!isFinancingComplete) {
+    } else if (isFinancingComplete && !isResultsReady) {
       nextStep = 'results';
     }
 
