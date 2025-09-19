@@ -262,9 +262,9 @@
   /* Hero Section Styling */
   .hero-gradient {
     background: linear-gradient(135deg, 
-      hsl(215 25% 12% / 0.9) 0%, 
-      hsl(215 84% 19% / 0.8) 50%, 
-      hsl(215 25% 12% / 0.9) 100%);
+      hsl(215 25% 12% / 0.6) 0%, 
+      hsl(215 84% 19% / 0.5) 50%, 
+      hsl(215 25% 12% / 0.6) 100%);
   }
 
   /* Section Spacing */
