@@ -955,7 +955,7 @@ const translations = {
     'services.property.features.performance': 'Análisis de Rendimiento',
     'services.property.features.reporting': 'Reportes Financieros',
     'services.property.cta': 'Más Sobre Administración de Propiedades',
-    'services.brokerage.title': 'Gestión Inmobiliaria',
+    'services.brokerage.title': 'Servicios Inmobiliarios',
     'services.brokerage.description': 'Conectamos compradores , vendedores e inquilinos con precisión, transparencia y conocimiento profundo del mercado para asegurar transacciones exitosas para todas las partes.',
     'services.brokerage.features.analysis': 'Análisis de Mercado',
     'services.brokerage.features.transaction': 'Gestión de Transacciones',
