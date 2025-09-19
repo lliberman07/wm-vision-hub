@@ -200,7 +200,7 @@ const Index = () => {
                 <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4">
                   <Calculator className="h-6 w-6 text-white" />
                 </div>
-                <CardTitle className="text-lg text-white">{t('home.services.financing.title')}</CardTitle>
+                <CardTitle className="text-lg text-foreground">{t('home.services.financing.title')}</CardTitle>
                 <CardDescription className="text-foreground leading-relaxed">
                   {t('home.services.financing.description')}
                 </CardDescription>
