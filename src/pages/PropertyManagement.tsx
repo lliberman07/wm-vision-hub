@@ -139,6 +139,7 @@ const PropertyManagement = () => {
                 href="https://persiscalconsulting-property-manager-test.odoo.com/es_AR/web/login#action=menu&cids=1&menu_id=1"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="font-bold"
               >
                 {t('propertyManagement.pms.access')}
                 <ArrowRight className="ml-2 h-4 w-4" />
