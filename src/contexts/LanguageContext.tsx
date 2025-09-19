@@ -1610,7 +1610,7 @@ const translations = {
     'franchise.location.addressPlaceholder': 'Dirección de la calle',
     'franchise.location.squareMeters': 'Metros Cuadrados',
     // Fuentes de Financiamiento
-    'simulator.financing.sourcesTitle': 'Fuentes de Financiamiento',
+    'simulator.financing.sourcesTitle': 'Escenario Financiero del Negocio',
     'simulator.financing.sourcesDescription': 'Evalúe el escenario financiero de su modelo de negocio.',
     'simulator.financing.totalFinanced': 'Total Financiado',
     'simulator.financing.totalMonthlyPayment': 'Pago Mensual Total',
