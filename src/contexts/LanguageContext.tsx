@@ -1425,7 +1425,7 @@ const translations = {
     // Investment Simulator
     'simulator.title': 'Simulador de Plan de Inversión de Negocio',
     'simulator.description': 'Planifique su inversión de proyecto y negocio con nuestra herramienta interactiva. Ajuste variables para ver proyecciones en tiempo real de costos y opciones de financiamiento.',
-    'simulator.items.title': 'Configuración de Artículos de Inversión',
+    'simulator.items.title': 'Selección de Ítems para el Caso de Negocio',
     'simulator.items.description': 'Elija uno o varios ítems para construir y explorar escenarios adaptados a su nuevo proyecto o negocio.',
     'simulator.items.totalInvestment': 'Monto Total de Inversión',
     'simulator.items.totalAmount': 'Monto Total',
