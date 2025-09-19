@@ -41,7 +41,7 @@ const About = () => {
             <div className="space-y-8">
               <div>
                 <div className="flex items-center space-x-3 mb-4">
-                  <Target className="h-8 w-8 text-primary" />
+                  <Target className="h-8 w-8 text-cyan-500" />
                   <h2 className="text-3xl font-bold">{t('about.mission.title')}</h2>
                 </div>
                 <p className="text-lg text-muted-foreground leading-relaxed">
