@@ -971,7 +971,7 @@ const translations = {
     'services.consulting.features.legal': 'Cumplimiento Legal',
     'services.consulting.features.planning': 'Planificación Estratégica',
     'services.consulting.features.research': 'Investigación de Mercado',
-    'services.consulting.cta': 'Obtener Consultoría Estratégica',
+    'services.consulting.cta': 'Más sobre Consultoría Inmobiliaria',
     'services.development.title': 'Desarrollo Inmobiliario',
     'services.development.description': 'De la visión a la realidad, gestionamos todos los aspectos de los proyectos de desarrollo inmobiliario, asegurando ejecución de calidad, cumplimiento de cronogramas y optimización del presupuesto.',
     'services.development.features.project': 'Gestión de Proyectos',
