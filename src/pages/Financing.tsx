@@ -58,7 +58,7 @@ const Financing = () => {
               <div className="p-3 bg-primary/10 rounded-full">
                 <PiggyBank className="h-8 w-8 text-primary" />
               </div>
-              <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <h2 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {t('financing.program.title')}
               </h2>
             </div>
