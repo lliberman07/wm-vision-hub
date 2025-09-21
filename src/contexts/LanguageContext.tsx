@@ -1140,7 +1140,7 @@ const translations = {
     'financing.signup.ready': '¿Listo para Impulsar Su Proyecto con Financiamiento Inteligente?',
     'financing.signup.title': 'Inicie su Evaluación de Financiamiento',
     'financing.signup.subtitle': 'Dé el primer paso hacia la evaluación financiera y la preparación de su proyecto o negocio.',
-    'financing.signup.description': 'Nuestros especialistas en financiamiento están listos para ayudarle a navegar el proceso de financiamiento y encontrar la mejor solución para sus objetivos empresariales.',
+    'financing.signup.description': 'Nuestro equipo de profesionales lo acompaña en la evaluación financiera de su proyecto, brindando asesoría experta y el uso de tecnologías integradas para identificar y comparar alternativas de financiamiento disponibles en el mercado.',
     'financing.signup.description2': 'Programe una consulta hoy para recibir asesoramiento sobre cómo acceder a las mejores opciones de financiamiento disponibles en el mercado, comparando propuestas reales de bancos y aseguradoras.',
     'financing.signup.benefits.consultation': 'Consulte con especialistas en financiamiento y gestión de proyectos',
     'financing.signup.benefits.solutions': 'Análisis personalizado de su perfil y de las alternativas del mercado',
