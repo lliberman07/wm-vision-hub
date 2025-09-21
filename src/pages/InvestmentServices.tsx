@@ -6,7 +6,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
-import investmentStrategyHero from "@/assets/investment-strategy-hero.jpg";
+import realEstatePortfolioHero from "@/assets/real-estate-portfolio-hero.jpg";
 import { 
   Shield, 
   TrendingUp, 
@@ -119,7 +119,7 @@ const InvestmentServices = () => {
       <section 
         className="relative text-primary-foreground py-20 px-4 overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9)), url(${investmentStrategyHero})`,
+          backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9)), url(${realEstatePortfolioHero})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
