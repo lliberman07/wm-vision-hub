@@ -75,24 +75,22 @@ const RealEstateDevelopment = () => {
       <main>
         {/* Hero Section */}
         <section 
-          className="relative text-white py-20 px-4 bg-cover bg-center bg-no-repeat"
+          className="relative text-white section-padding bg-cover bg-center bg-no-repeat overflow-hidden"
           style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${developmentHeroBackground})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundImage: `url(${developmentHeroBackground})`
           }}
         >
-          <div className="container mx-auto text-center max-w-4xl flex items-center justify-center min-h-[50vh]">
-            <div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              Desarrollo Inmobiliario con Enfoque Integral
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90 leading-relaxed">
-              De la visión a la realidad, acompañamos a desarrolladores inmobiliarios en todas las fases de su proyecto. 
-              Nos enfocamos en potenciar la comercialización, la preventa y la conexión entre actores clave del mercado, 
-              asegurando que cada etapa genere valor y liquidez.
-            </p>
+          <div className="absolute inset-0 hero-gradient"></div>
+          <div className="container mx-auto relative z-10">
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                Desarrollo Inmobiliario con Enfoque Integral
+              </h1>
+              <p className="text-xl md:text-2xl mb-8 text-white/90 leading-relaxed">
+                De la visión a la realidad, acompañamos a desarrolladores inmobiliarios en todas las fases de su proyecto. 
+                Nos enfocamos en potenciar la comercialización, la preventa y la conexión entre actores clave del mercado, 
+                asegurando que cada etapa genere valor y liquidez.
+              </p>
             </div>
           </div>
         </section>
