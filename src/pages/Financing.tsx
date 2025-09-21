@@ -73,72 +73,77 @@ const Financing = () => {
           </div>
 
           {/* Features and Benefits Grid */}
-          <div className="flex flex-col lg:flex-row gap-8 mb-16">
-            {/* Left Column - Features */}
-            <div className="lg:w-2/3 grid gap-6">
+          <div className="grid lg:grid-cols-3 gap-8 mb-16 items-start">
+            {/* Left Column - Features (Smaller Cards) */}
+            <div className="lg:col-span-1 grid gap-4">
               <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-                      <Brain className="h-6 w-6 text-primary" />
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                      <Brain className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-2">{t('financing.program.features.interest')}</h3>
-                      <p className="text-muted-foreground leading-relaxed">{t('financing.program.features.interest.desc')}</p>
+                      <h3 className="font-bold text-base mb-1">{t('financing.program.features.interest')}</h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.features.interest.desc')}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-                      <TrendingUp className="h-6 w-6 text-primary" />
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                      <TrendingUp className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-2">{t('financing.program.features.terms')}</h3>
-                      <p className="text-muted-foreground leading-relaxed">{t('financing.program.features.terms.desc')}</p>
+                      <h3 className="font-bold text-base mb-1">{t('financing.program.features.terms')}</h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.features.terms.desc')}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-                      <Shield className="h-6 w-6 text-primary" />
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                      <Shield className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-2">{t('financing.program.features.secure')}</h3>
-                      <p className="text-muted-foreground leading-relaxed">{t('financing.program.features.secure.desc')}</p>
+                      <h3 className="font-bold text-base mb-1">{t('financing.program.features.secure')}</h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.features.secure.desc')}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-                      <Target className="h-6 w-6 text-primary" />
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                      <Target className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-2">{t('financing.program.features.coverage')}</h3>
-                      <p className="text-muted-foreground leading-relaxed">{t('financing.program.features.coverage.desc')}</p>
+                      <h3 className="font-bold text-base mb-1">{t('financing.program.features.coverage')}</h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.features.coverage.desc')}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
             
+            {/* Center Column - Vertical Divider */}
+            <div className="hidden lg:flex justify-center">
+              <div className="w-px bg-gradient-to-b from-primary/20 via-primary/40 to-primary/20 h-full min-h-[400px]"></div>
+            </div>
+            
             {/* Right Column - Benefits */}
-            <div className="lg:w-1/3 flex items-center">
-              <Card className="w-full group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
+            <div className="lg:col-span-1">
+              <Card className="h-full group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
                 <CardContent className="p-6">
-                  <div className="flex items-start space-x-4 mb-6">
-                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                  <div className="flex items-start space-x-3 mb-6">
+                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
                       <CheckCircle className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1">
