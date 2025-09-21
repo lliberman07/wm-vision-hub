@@ -1152,7 +1152,7 @@ const translations = {
     'financing.news.content': 'Manténgase al día con las últimas tendencias de financiamiento, actualizaciones de tasas de interés y anuncios de nuevos programas que podrían beneficiar su inversión de proyecto y negocio.',
 
     // Financing Application
-    'financing.application.title': 'Solicitud de Financiamiento',
+    'financing.application.title': 'Perfil de Financiamiento',
     'financing.application.step': 'Paso',
     'financing.application.of': 'de',
     'financing.application.typeSelection': 'Selección de Tipo',
