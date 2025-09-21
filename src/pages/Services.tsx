@@ -117,7 +117,11 @@ const Services = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="space-y-16">
             {services.map((service, index) => (
-              <div key={service.title} className={`grid lg:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}>
+              <div 
+                key={service.title} 
+                id={index === 0 ? 'property-management' : undefined}
+                className={`grid lg:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}
+              >
                 <div className={`space-y-6 ${index % 2 === 1 ? 'lg:col-start-2' : ''}`}>
                   <div className="flex items-center space-x-3">
                     <service.icon className="h-10 w-10 text-primary" />
