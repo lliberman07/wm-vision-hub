@@ -101,6 +101,9 @@ export const FinancingApplication = () => {
     try {
       setIsLoading(true);
       
+      console.log('Saving application with stepData:', stepData);
+      console.log('Current applicationData:', applicationData);
+      
       let application;
       
       if (applicationData.id) {
@@ -118,15 +121,19 @@ export const FinancingApplication = () => {
         if (error) throw error;
         application = data;
       } else {
-        // Create new application
+        // Create new application - ensure we have the type from stepData
+        const insertData = {
+          type: stepData.type || applicationData.type,
+          email: stepData.email || applicationData.email,
+          phone: stepData.phone || applicationData.phone,
+          status: (step === steps.length - 1 ? 'completed' : 'draft') as 'draft' | 'completed'
+        };
+        
+        console.log('Inserting application with data:', insertData);
+        
         const { data, error } = await supabase
           .from('applications')
-          .insert({
-            type: stepData.type || applicationData.type!,
-            email: stepData.email || applicationData.email!,
-            phone: stepData.phone || applicationData.phone,
-            status: step === steps.length - 1 ? 'completed' : 'draft'
-          })
+          .insert(insertData)
           .select()
           .single();
           
@@ -181,7 +188,8 @@ export const FinancingApplication = () => {
   };
 
   const handleNext = async (stepData: any) => {
-    setApplicationData(prev => ({ ...prev, ...stepData }));
+    const updatedData = { ...applicationData, ...stepData };
+    setApplicationData(updatedData);
     await saveApplication(stepData, currentStep);
     
     if (currentStep < steps.length - 1) {
