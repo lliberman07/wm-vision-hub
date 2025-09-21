@@ -140,7 +140,7 @@ const Services = () => {
             {services.map((service, index) => (
               <div 
                 key={service.title} 
-                id={index === 0 ? 'property-management' : index === 1 ? 'brokerage' : index === 2 ? 'consulting' : undefined}
+                id={index === 0 ? 'property-management' : index === 1 ? 'brokerage' : index === 2 ? 'consulting' : index === 3 ? 'development' : undefined}
                 className={`grid lg:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}
               >
                 <div className={`space-y-6 ${index % 2 === 1 ? 'lg:col-start-2' : ''}`}>
