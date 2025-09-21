@@ -1138,7 +1138,7 @@ const translations = {
     'financing.simulator.title': 'Simulador Interactivo de Escenarios y Variables de Negocio',
     'financing.simulator.description': 'Explore diferentes escenarios con nuestro simulador de caso de negocio interactivo. Elija y combine variables clave para proyectar cómo planificar y evaluar una nueva iniciativa.',
     'financing.signup.ready': '¿Listo para Impulsar Su Proyecto con Financiamiento Inteligente?',
-    'financing.signup.title': 'Comience con Nuestro Programa de Financiamiento',
+    'financing.signup.title': 'Inicie su Evaluación de Financiamiento',
     'financing.signup.subtitle': 'Dé el primer paso hacia la evaluación financiera y la preparación de su proyecto o negocio.',
     'financing.signup.description': 'Nuestros especialistas en financiamiento están listos para ayudarle a navegar el proceso de financiamiento y encontrar la mejor solución para sus objetivos empresariales.',
     'financing.signup.description2': 'Programe una consulta hoy para recibir asesoramiento sobre cómo acceder a las mejores opciones de financiamiento disponibles en el mercado, comparando propuestas reales de bancos y aseguradoras.',
