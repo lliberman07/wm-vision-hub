@@ -6,7 +6,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
-import servicesHeroBackground from "@/assets/services-hero-background.jpg";
+import realEstateBrokerageHero from "@/assets/real-estate-brokerage-hero.jpg";
 import { 
   Building2, 
   TrendingUp, 
@@ -32,7 +32,7 @@ const RealEstateBrokerage = () => {
       <section 
         className="relative text-white section-padding bg-cover bg-center bg-no-repeat overflow-hidden"
         style={{
-          backgroundImage: `url(${servicesHeroBackground})`
+          backgroundImage: `url(${realEstateBrokerageHero})`
         }}
       >
         <div className="absolute inset-0 hero-gradient"></div>
