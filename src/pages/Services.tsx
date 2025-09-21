@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,26 @@ import {
 
 const Services = () => {
   const { t } = useLanguage();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        // Wait for the page to fully render before scrolling
+        setTimeout(() => {
+          const elementTop = element.offsetTop;
+          const offsetPosition = elementTop - (window.innerHeight / 2) + (element.offsetHeight / 2);
+          
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: 'smooth'
+          });
+        }, 100);
+      }
+    }
+  }, [location.hash]);
   
   const services = [
     {
