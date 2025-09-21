@@ -37,10 +37,10 @@ serve(async (req) => {
         pageUrl: '/services',
         pageTitle: 'WM Management - Services',
         section: 'services',
-        contentEn: `Our services include comprehensive property management, real estate investment consulting, financing solutions, business planning and analysis, market research and evaluation, portfolio management, and strategic investment planning. We provide end-to-end solutions for real estate investors and property owners.`,
-        contentEs: `Nuestros servicios incluyen gestión integral de propiedades, consultoría en inversión inmobiliaria, soluciones de financiamiento, planificación y análisis empresarial, investigación y evaluación de mercado, gestión de cartera y planificación estratégica de inversiones. Proporcionamos soluciones integrales para inversionistas inmobiliarios y propietarios.`,
-        summaryEn: 'Comprehensive property management, investment consulting, financing solutions, and strategic planning services.',
-        summaryEs: 'Gestión integral de propiedades, consultoría en inversión, soluciones de financiamiento y servicios de planificación estratégica.'
+        contentEn: `Our comprehensive services include: Property Management (tenant screening, rent collection, maintenance coordination, legal compliance, 24/7 emergency response), Real Estate Brokerage (buying and selling properties, market analysis, transaction management, expert negotiations), Consulting Services (feasibility studies, legal advisory, strategic planning, market research), Real Estate Development (project management, design coordination, construction oversight, quality assurance), and Trust & Investment Services (secure investment frameworks, portfolio management, risk assessment, performance monitoring).`,
+        contentEs: `Nuestros servicios integrales incluyen: Gestión de Propiedades (evaluación de inquilinos, cobro de alquileres, coordinación de mantenimiento, cumplimiento legal, respuesta de emergencia 24/7), Brokerage Inmobiliario (compra y venta de propiedades, análisis de mercado, gestión de transacciones, negociaciones expertas), Servicios de Consultoría (estudios de factibilidad, asesoría legal, planificación estratégica, investigación de mercado), Desarrollo Inmobiliario (gestión de proyectos, coordinación de diseño, supervisión de construcción, aseguramiento de calidad), y Servicios de Fideicomiso e Inversión (marcos de inversión seguros, gestión de portafolio, evaluación de riesgo, monitoreo de rendimiento).`,
+        summaryEn: 'Property management, real estate brokerage, consulting, development, and trust & investment services.',
+        summaryEs: 'Gestión de propiedades, brokerage inmobiliario, consultoría, desarrollo y servicios de fideicomiso e inversión.'
       },
       {
         pageUrl: '/financing',
@@ -52,13 +52,13 @@ serve(async (req) => {
         summaryEs: 'Varias opciones de financiamiento incluyendo préstamos tradicionales, financiamiento de propiedades de inversión y préstamos comerciales con tasas competitivas.'
       },
       {
-        pageUrl: '/property-management',
-        pageTitle: 'WM Management - Property Management',
+        pageUrl: '/services/property-management',
+        pageTitle: 'WM Management - Property Management Services',
         section: 'property-management',
-        contentEn: `Our property management services include tenant screening and placement, rent collection and financial reporting, maintenance and repairs coordination, property inspections, legal compliance management, and 24/7 emergency response. We handle all aspects of property management to maximize your investment returns.`,
-        contentEs: `Nuestros servicios de gestión de propiedades incluyen evaluación y colocación de inquilinos, cobro de alquileres e informes financieros, coordinación de mantenimiento y reparaciones, inspecciones de propiedades, gestión de cumplimiento legal y respuesta de emergencia 24/7. Manejamos todos los aspectos de la gestión de propiedades para maximizar los retornos de su inversión.`,
-        summaryEn: 'Complete property management including tenant services, maintenance coordination, and financial reporting.',
-        summaryEs: 'Gestión completa de propiedades incluyendo servicios de inquilinos, coordinación de mantenimiento e informes financieros.'
+        contentEn: `Our property management services include: Complete tenant screening and placement, Monthly rent collection and financial reporting, Proactive maintenance and repairs coordination, Regular property inspections, Legal compliance management, 24/7 emergency response. We offer three service modalities: Basic Management (essential services), Intermediate Management (comprehensive care), and Full Management (complete solutions). Our goal is to maximize your investment returns while minimizing your involvement.`,
+        contentEs: `Nuestros servicios de gestión de propiedades incluyen: Evaluación y colocación completa de inquilinos, Cobro mensual de alquileres e informes financieros, Coordinación proactiva de mantenimiento y reparaciones, Inspecciones regulares de propiedades, Gestión de cumplimiento legal, Respuesta de emergencia 24/7. Ofrecemos tres modalidades de servicio: Gestión Básica (servicios esenciales), Gestión Intermedia (cuidado integral), y Gestión Completa (soluciones completas). Nuestro objetivo es maximizar los retornos de su inversión mientras minimizamos su participación.`,
+        summaryEn: 'Complete property management including tenant services, maintenance coordination, financial reporting, and emergency response.',
+        summaryEs: 'Gestión completa de propiedades incluyendo servicios de inquilinos, coordinación de mantenimiento, informes financieros y respuesta de emergencia.'
       },
       {
         pageUrl: '/about',
@@ -130,6 +130,40 @@ Tenemos chat en vivo disponible en nuestro sitio web para asistencia inmediata. 
         summaryEs: 'Herramienta de análisis de inversión para calcular retornos, flujo de efectivo y ROI en inversiones inmobiliarias.'
       },
       {
+        pageUrl: '/services/investments',
+        pageTitle: 'WM Management - Trust & Investment Services',
+        section: 'investments',
+        contentEn: `We offer secure and transparent investment frameworks through real estate trusts, designed to provide consistent returns while minimizing risk. Our services include: Portfolio Management (comprehensive administration of diversified real estate investments), Investment Strategy (personalized plans based on investment horizon, risk profile and profitability objectives), Risk Assessment (analysis of each investment opportunity ensuring transparency and risk mitigation), Performance Monitoring (periodic reports with performance metrics, projections and strategic adjustments). We offer three types of trusts: Development Trusts (participation in projects from initial stage for higher returns), Income Trusts (investments in properties for constant rental income), Mixed Trusts (combines development and income, balancing risk and liquidity). Benefits include legal security, diversification, accessibility, transparency, and sustained profitability.`,
+        contentEs: `Ofrecemos marcos de inversión confiables y transparentes a través de fideicomisos inmobiliarios, diseñados para proporcionar retornos consistentes mientras se minimiza el riesgo. Nuestros servicios incluyen: Gestión de Portafolio (administración integral de inversiones en proyectos inmobiliarios diversificados), Estrategia de Inversión (definición de planes personalizados según horizonte de inversión, perfil de riesgo y objetivos de rentabilidad), Evaluación de Riesgo (análisis de cada oportunidad de inversión, asegurando transparencia y mitigación de riesgos), Monitoreo de Rendimiento (reportes periódicos con métricas de desempeño, proyecciones y ajustes estratégicos). Ofrecemos tres tipos de fideicomisos: Fideicomisos de Desarrollo (participación en proyectos desde la etapa inicial para obtener mayores retornos), Fideicomisos de Renta (inversiones en propiedades destinadas a generar ingresos constantes por alquiler), Fideicomisos Mixtos (combina desarrollo y renta, equilibrando riesgo y liquidez). Los beneficios incluyen seguridad jurídica, diversificación, accesibilidad, transparencia y rentabilidad sostenida.`,
+        summaryEn: 'Real estate trust and investment services including portfolio management, investment strategy, risk assessment, and performance monitoring.',
+        summaryEs: 'Servicios de fideicomiso e inversión inmobiliaria incluyendo gestión de portafolio, estrategia de inversión, evaluación de riesgo y monitoreo de rendimiento.'
+      {
+        pageUrl: '/services/brokerage',
+        pageTitle: 'WM Management - Real Estate Brokerage Services',
+        section: 'brokerage',
+        contentEn: `Our real estate brokerage services include: Property Buying and Selling (comprehensive support from valuation to deed signing, ensuring clear and efficient operations), Market Analysis and Valuation (detailed studies to determine optimal prices and investment opportunities), Expert Negotiations (representing your interests to achieve the best commercial conditions in each deal), Transaction Management (coordinating all legal, financial and operational aspects with specialized professionals). We provide professional guidance throughout the entire real estate transaction process, ensuring successful outcomes for buyers and sellers.`,
+        contentEs: `Nuestros servicios de brokerage inmobiliario incluyen: Compra y Venta de Propiedades (acompañamiento integral desde la valuación hasta la firma de escritura, asegurando operaciones claras y eficientes), Análisis de Mercado y Valuación (estudios detallados para determinar precios óptimos y oportunidades de inversión), Negociaciones Expertas (representamos sus intereses para alcanzar las mejores condiciones comerciales en cada acuerdo), Gestión de Transacciones (coordinamos todos los aspectos legales, financieros y operativos con profesionales especializados). Proporcionamos orientación profesional durante todo el proceso de transacción inmobiliaria, asegurando resultados exitosos para compradores y vendedores.`,
+        summaryEn: 'Real estate brokerage services including property transactions, market analysis, negotiations, and transaction management.',
+        summaryEs: 'Servicios de brokerage inmobiliario incluyendo transacciones de propiedades, análisis de mercado, negociaciones y gestión de transacciones.'
+      },
+      {
+        pageUrl: '/services/consulting',
+        pageTitle: 'WM Management - Consulting Services',
+        section: 'consulting',
+        contentEn: `Our consulting services include: Feasibility Studies (comprehensive market analysis and investment viability assessment), Legal Advisory (regulatory compliance, contract review, and legal risk management), Strategic Planning (development of long-term investment strategies and business plans), Market Research (detailed analysis of real estate markets and investment opportunities). We provide expert guidance to help clients make informed real estate investment decisions through comprehensive analysis and strategic planning.`,
+        contentEs: `Nuestros servicios de consultoría incluyen: Estudios de Factibilidad (análisis integral de mercado y evaluación de viabilidad de inversión), Asesoría Legal (cumplimiento regulatorio, revisión de contratos y gestión de riesgos legales), Planificación Estratégica (desarrollo de estrategias de inversión a largo plazo y planes de negocio), Investigación de Mercado (análisis detallado de mercados inmobiliarios y oportunidades de inversión). Proporcionamos orientación experta para ayudar a los clientes a tomar decisiones informadas de inversión inmobiliaria a través de análisis integral y planificación estratégica.`,
+        summaryEn: 'Consulting services including feasibility studies, legal advisory, strategic planning, and market research.',
+        summaryEs: 'Servicios de consultoría incluyendo estudios de factibilidad, asesoría legal, planificación estratégica e investigación de mercado.'
+      },
+      {
+        pageUrl: '/services/development',
+        pageTitle: 'WM Management - Real Estate Development Services',
+        section: 'development',
+        contentEn: `Our real estate development services include: Project Management (comprehensive oversight of development projects from conception to completion), Design Coordination (working with architects and designers to create optimal project plans), Construction Oversight (monitoring construction progress, quality control, and timeline management), Quality Assurance (ensuring all work meets the highest standards and regulatory requirements). We manage all aspects of real estate development to ensure successful project completion and maximum return on investment.`,
+        contentEs: `Nuestros servicios de desarrollo inmobiliario incluyen: Gestión de Proyectos (supervisión integral de proyectos de desarrollo desde la concepción hasta la finalización), Coordinación de Diseño (trabajar con arquitectos y diseñadores para crear planes óptimos de proyecto), Supervisión de Construcción (monitoreo del progreso de construcción, control de calidad y gestión de cronogramas), Aseguramiento de Calidad (asegurar que todo el trabajo cumpla con los más altos estándares y requisitos regulatorios). Gestionamos todos los aspectos del desarrollo inmobiliario para asegurar la finalización exitosa del proyecto y el máximo retorno de inversión.`,
+        summaryEn: 'Real estate development services including project management, design coordination, construction oversight, and quality assurance.',
+        summaryEs: 'Servicios de desarrollo inmobiliario incluyendo gestión de proyectos, coordinación de diseño, supervisión de construcción y aseguramiento de calidad.'
+      },
         pageUrl: '/conversation-schema',
         pageTitle: 'WM Management - Conversation Guide',
         section: 'conversation-schema',
