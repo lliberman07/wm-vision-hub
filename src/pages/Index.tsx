@@ -156,7 +156,7 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors" asChild>
-                  <Link to="/services/consulting">{t('home.learnMore')}</Link>
+                  <Link to="/services#consulting">{t('home.learnMore')}</Link>
                 </Button>
               </CardContent>
             </Card>
