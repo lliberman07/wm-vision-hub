@@ -171,18 +171,36 @@ const InvestmentServices = () => {
             <h2 className="text-3xl font-bold mb-4">¿Por qué Invertir en Fideicomisos Inmobiliarios?</h2>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {benefits.map((benefit, index) => (
-              <div key={index} className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                  <benefit.icon className="h-6 w-6 text-primary-foreground" />
+          <div className="max-w-4xl mx-auto">
+            {/* Top row - 3 items */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              {benefits.slice(0, 3).map((benefit, index) => (
+                <div key={index} className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                    <benefit.icon className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">{benefit.title}:</h3>
+                    <p className="text-muted-foreground">{benefit.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">{benefit.title}:</h3>
-                  <p className="text-muted-foreground">{benefit.description}</p>
+              ))}
+            </div>
+            
+            {/* Bottom row - 2 items centered and offset */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+              {benefits.slice(3, 5).map((benefit, index) => (
+                <div key={index + 3} className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                    <benefit.icon className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">{benefit.title}:</h3>
+                    <p className="text-muted-foreground">{benefit.description}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
