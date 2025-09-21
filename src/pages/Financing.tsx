@@ -73,107 +73,111 @@ const Financing = () => {
           </div>
 
           {/* Features and Benefits Grid */}
-          <div className="grid lg:grid-cols-3 gap-8 mb-16 items-start">
-            {/* Left Column - Features (Smaller Cards) */}
-            <div className="lg:col-span-1 grid gap-4">
-              <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                      <Brain className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-base mb-1">{t('financing.program.features.interest')}</h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.features.interest.desc')}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-base mb-1">{t('financing.program.features.terms')}</h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.features.terms.desc')}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                      <Shield className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-base mb-1">{t('financing.program.features.secure')}</h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.features.secure.desc')}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                      <Target className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-base mb-1">{t('financing.program.features.coverage')}</h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.features.coverage.desc')}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Center Column - Vertical Divider */}
-            <div className="hidden lg:flex justify-center">
-              <div className="w-px bg-gradient-to-b from-primary/20 via-primary/40 to-primary/20 h-full min-h-[400px]"></div>
-            </div>
-            
-            {/* Right Column - Benefits */}
-            <div className="lg:col-span-1">
-              <Card className="h-full group hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary hover-scale">
+          <div className="grid lg:grid-cols-5 gap-8 mb-16">
+            {/* Left Column - Features (3 columns) */}
+            <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-background to-muted/30 hover-scale">
                 <CardContent className="p-6">
-                  <div className="flex items-start space-x-3 mb-6">
-                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                      <CheckCircle className="h-6 w-6 text-primary" />
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                      <Brain className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-2">{t('financing.program.benefits.title')}</h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{t('financing.program.benefits.subtitle')}</p>
+                      <h3 className="font-bold text-lg mb-3 text-foreground">{t('financing.program.features.interest')}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{t('financing.program.features.interest.desc')}</p>
                     </div>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">{t('financing.program.benefits.noFees')}</h4>
-                        <p className="text-muted-foreground text-xs">{t('financing.program.benefits.noFees.desc')}</p>
+                </CardContent>
+              </Card>
+
+              <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-background to-muted/30 hover-scale">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                      <TrendingUp className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg mb-3 text-foreground">{t('financing.program.features.terms')}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{t('financing.program.features.terms.desc')}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-background to-muted/30 hover-scale">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                      <Shield className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg mb-3 text-foreground">{t('financing.program.features.secure')}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{t('financing.program.features.secure.desc')}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-background to-muted/30 hover-scale">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                      <Target className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg mb-3 text-foreground">{t('financing.program.features.coverage')}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{t('financing.program.features.coverage.desc')}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Right Column - Benefits (2 columns) */}
+            <div className="lg:col-span-2">
+              <Card className="h-full shadow-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-16 translate-x-16"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full translate-y-12 -translate-x-12"></div>
+                <CardHeader className="relative z-10 pb-6">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-primary rounded-xl shadow-lg">
+                      <CheckCircle className="h-7 w-7 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl text-foreground">{t('financing.program.benefits.title')}</CardTitle>
+                      <CardDescription className="text-base mt-1">{t('financing.program.benefits.subtitle')}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="relative z-10 space-y-6">
+                  <div className="space-y-5">
+                    <div className="flex items-start space-x-4 p-4 bg-background/80 backdrop-blur-sm rounded-xl border border-primary/10 hover:border-primary/20 transition-colors">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <CheckCircle className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-lg mb-2 text-foreground">{t('financing.program.benefits.noFees')}</h4>
+                        <p className="text-muted-foreground">{t('financing.program.benefits.noFees.desc')}</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-start space-x-3">
-                      <Zap className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">{t('financing.program.benefits.quickApproval')}</h4>
-                        <p className="text-muted-foreground text-xs">{t('financing.program.benefits.quickApproval.desc')}</p>
+                    <div className="flex items-start space-x-4 p-4 bg-background/80 backdrop-blur-sm rounded-xl border border-primary/10 hover:border-primary/20 transition-colors">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Zap className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-lg mb-2 text-foreground">{t('financing.program.benefits.quickApproval')}</h4>
+                        <p className="text-muted-foreground">{t('financing.program.benefits.quickApproval.desc')}</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-start space-x-3">
-                      <Clock className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">{t('financing.program.benefits.flexible')}</h4>
-                        <p className="text-muted-foreground text-xs">{t('financing.program.benefits.flexible.desc')}</p>
+                    <div className="flex items-start space-x-4 p-4 bg-background/80 backdrop-blur-sm rounded-xl border border-primary/10 hover:border-primary/20 transition-colors">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Clock className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-lg mb-2 text-foreground">{t('financing.program.benefits.flexible')}</h4>
+                        <p className="text-muted-foreground">{t('financing.program.benefits.flexible.desc')}</p>
                       </div>
                     </div>
                   </div>
