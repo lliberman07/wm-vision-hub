@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
-import consultingHeroBackground from "@/assets/services-hero-background.jpg";
+import consultingHeroBackground from "@/assets/consulting-strategy-hero.jpg";
 
 const Consulting = () => {
   const services = [
