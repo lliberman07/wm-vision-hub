@@ -978,7 +978,7 @@ const translations = {
     'services.development.features.design': 'Coordinación de Diseño',
     'services.development.features.construction': 'Supervisión de Construcción',
     'services.development.features.quality': 'Aseguramiento de Calidad',
-    'services.development.cta': 'Iniciar Proyecto de Desarrollo',
+    'services.development.cta': 'Desarrollos Inmobiliarios',
     'services.investments.title': 'Servicios de Fideicomiso e Inversión',
     'services.investments.description': 'Marcos de inversión seguros y transparentes diseñados para proporcionar retornos consistentes mientras minimizan el riesgo a través de portafolios inmobiliarios diversificados.',
     'services.investments.features.portfolio': 'Gestión de Portafolio',
