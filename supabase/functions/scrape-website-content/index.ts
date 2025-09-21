@@ -165,6 +165,7 @@ Tenemos chat en vivo disponible en nuestro sitio web para asistencia inmediata. 
         summaryEn: 'Real estate development services including project management, design coordination, construction oversight, and quality assurance.',
         summaryEs: 'Servicios de desarrollo inmobiliario incluyendo gestión de proyectos, coordinación de diseño, supervisión de construcción y aseguramiento de calidad.'
       },
+      {
         pageUrl: '/conversation-schema',
         pageTitle: 'WM Management - Conversation Guide',
         section: 'conversation-schema',
