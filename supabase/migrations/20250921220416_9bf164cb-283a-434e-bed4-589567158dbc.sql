@@ -1,0 +1,9 @@
+-- Reinitialize knowledge base with correct investment information
+DELETE FROM knowledge_base;
+
+-- Insert correct WM Management investment services information
+INSERT INTO knowledge_base (page_url, page_title, section, content, summary, language, indexed_at, updated_at) VALUES
+('/services/investments', 'WM Management - Trust & Investment Services', 'investments', 
+'Ofrecemos marcos de inversión confiables y transparentes a través de fideicomisos inmobiliarios, diseñados para proporcionar retornos consistentes mientras se minimiza el riesgo. Nuestros servicios incluyen: Gestión de Portafolio (administración integral de inversiones en proyectos inmobiliarios diversificados), Estrategia de Inversión (definición de planes personalizados según horizonte de inversión, perfil de riesgo y objetivos de rentabilidad), Evaluación de Riesgo (análisis de cada oportunidad de inversión, asegurando transparencia y mitigación de riesgos), Monitoreo de Rendimiento (reportes periódicos con métricas de desempeño, proyecciones y ajustes estratégicos). Ofrecemos tres tipos de fideicomisos: Fideicomisos de Desarrollo (participación en proyectos desde la etapa inicial para obtener mayores retornos), Fideicomisos de Renta (inversiones en propiedades destinadas a generar ingresos constantes por alquiler), Fideicomisos Mixtos (combina desarrollo y renta, equilibrando riesgo y liquidez). Los beneficios incluyen seguridad jurídica, diversificación, accesibilidad, transparencia y rentabilidad sostenida.',
+'Servicios de fideicomiso e inversión inmobiliaria incluyendo gestión de portafolio, estrategia de inversión, evaluación de riesgo y monitoreo de rendimiento.',
+'es', NOW(), NOW());
