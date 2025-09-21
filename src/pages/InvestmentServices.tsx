@@ -252,6 +252,7 @@ const InvestmentServices = () => {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <div className="bg-gradient-primary rounded-2xl p-12 text-primary-foreground">
+            <h2 className="text-3xl font-bold mb-4">Oportunidades para Invertir</h2>
             <p className="text-xl mb-8 text-primary-foreground/90">
               "Descubra cómo invertir de manera segura, diversificada y con respaldo legal."
             </p>
