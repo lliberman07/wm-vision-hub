@@ -6,7 +6,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
-import realEstatePortalSoft from "@/assets/real-estate-portal-soft.jpg";
+import realEstateScreenOnly from "@/assets/real-estate-screen-only.jpg";
 import { 
   Building2, 
   TrendingUp, 
@@ -32,7 +32,7 @@ const RealEstateBrokerage = () => {
       <section 
         className="relative text-white section-padding bg-cover bg-center bg-no-repeat overflow-hidden"
         style={{
-          backgroundImage: `url(${realEstatePortalSoft})`
+          backgroundImage: `url(${realEstateScreenOnly})`
         }}
       >
         <div className="absolute inset-0 hero-gradient"></div>
