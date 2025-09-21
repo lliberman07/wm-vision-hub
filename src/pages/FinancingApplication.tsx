@@ -122,7 +122,7 @@ export const FinancingApplication = () => {
         const { data, error } = await supabase
           .from('applications')
           .insert({
-            type: applicationData.type!,
+            type: stepData.type || applicationData.type!,
             email: stepData.email || applicationData.email!,
             phone: stepData.phone || applicationData.phone,
             status: step === steps.length - 1 ? 'completed' : 'draft'
