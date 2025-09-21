@@ -121,10 +121,20 @@ export const FinancingApplication = () => {
         if (error) throw error;
         application = data;
       } else {
+        // Only create application in database if we have required fields (email)
+        const email = stepData.email || applicationData.email;
+        
+        if (!email) {
+          // Don't create in database yet, just update local state
+          console.log('Skipping database save - no email yet');
+          toast.success(t('progress.saved'));
+          return;
+        }
+        
         // Create new application - ensure we have the type from stepData
         const insertData = {
           type: stepData.type || applicationData.type,
-          email: stepData.email || applicationData.email,
+          email: email,
           phone: stepData.phone || applicationData.phone,
           status: (step === steps.length - 1 ? 'completed' : 'draft') as 'draft' | 'completed'
         };
@@ -147,12 +157,14 @@ export const FinancingApplication = () => {
         }));
       }
 
-      // Send email notification
-      await sendEmailNotification(
-        stepData.email || applicationData.email!,
-        step === steps.length - 1 ? 'completed' : 'draft',
-        application.resume_code
-      );
+      // Only send email notification if we created/updated the application in database
+      if (application) {
+        await sendEmailNotification(
+          application.email,
+          step === steps.length - 1 ? 'completed' : 'draft',
+          application.resume_code
+        );
+      }
 
       toast.success(
         step === steps.length - 1 
