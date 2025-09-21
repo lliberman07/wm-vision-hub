@@ -75,7 +75,7 @@ const RealEstateDevelopment = () => {
       <main>
         {/* Hero Section */}
         <section 
-          className="relative h-screen flex items-center justify-center text-white"
+          className="relative text-white py-20 px-4 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${developmentHeroBackground})`,
             backgroundSize: 'cover',
@@ -83,7 +83,8 @@ const RealEstateDevelopment = () => {
             backgroundRepeat: 'no-repeat'
           }}
         >
-          <div className="container mx-auto px-4 text-center max-w-4xl">
+          <div className="container mx-auto text-center max-w-4xl flex items-center justify-center min-h-[50vh]">
+            <div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Desarrollo Inmobiliario con Enfoque Integral
             </h1>
@@ -92,6 +93,7 @@ const RealEstateDevelopment = () => {
               Nos enfocamos en potenciar la comercialización, la preventa y la conexión entre actores clave del mercado, 
               asegurando que cada etapa genere valor y liquidez.
             </p>
+            </div>
           </div>
         </section>
 
