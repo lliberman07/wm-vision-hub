@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import PropertyManagement from "./pages/PropertyManagement";
+import RealEstateBrokerage from "./pages/RealEstateBrokerage";
 import Industries from "./pages/Industries";
 import Financing from "./pages/Financing";
 import Contact from "./pages/Contact";
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/services/property-management" element={<PropertyManagement />} />
+              <Route path="/services/brokerage" element={<RealEstateBrokerage />} />
               <Route path="/industries" element={<Industries />} />
         <Route path="/financing" element={<Financing />} />
         <Route path="/financing/apply" element={<FinancingApplication />} />
