@@ -1114,7 +1114,7 @@ const translations = {
     // Financing
     'financing.hero.badge': 'Financiamiento de Proyecto y Negocio',
     'financing.hero.title': 'Soluciones de Financiamiento Flexibles para Su Negocio',
-    'financing.hero.subtitle': 'Acceda al capital que necesita para iniciar su proyecto y negocio con nuestros programas de financiamiento integral diseñados para el éxito.',
+    'financing.hero.subtitle': 'Acceda al capital que necesita para iniciar su proyecto y negocio con nuestra plataforma profesional y herramientas inteligentes',
     'financing.program.title': 'Asesoramiento en Estrategias de Financiamiento',
     'financing.program.description1': 'Entendemos que iniciar un proyecto o negocio requiere respaldo financiero y una adecuada planificación. En WM Management acompañamos a personas físicas y jurídicas en el proceso de búsqueda, evaluación y selección de herramientas de financiamiento.',
     'financing.program.description2': 'Nuestra plataforma de profesionales , tecnologías inteligentes con agentes de AI , integraciones a plataformas externas ; permiten obtener información real y precisa para generar un perfil de riesgo crediticio, estructurar un plan de negocios y facilitar la recepción de propuestas de entidades financieras y aseguradoras.',
