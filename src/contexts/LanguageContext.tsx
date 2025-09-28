@@ -26,6 +26,21 @@ const translations = {
     'nav.faq': 'FAQ',
     'nav.getStarted': 'Get Started',
     
+    // Services dropdown
+    'nav.services.propertyManagement': 'Property Management',
+    'nav.services.brokerage': 'Real Estate Brokerage',
+    'nav.services.consulting': 'Strategic Consulting',
+    'nav.services.development': 'Real Estate Development',
+    'nav.services.investments': 'Trust & Investment Services',
+    
+    // Industries dropdown
+    'nav.industries.residential': 'Residential Real Estate',
+    'nav.industries.commercial': 'Commercial Properties',
+    'nav.industries.health': 'Healthcare Facilities',
+    'nav.industries.industrial': 'Industrial Properties',
+    'nav.industries.franchise': 'Franchise Solutions',
+    'nav.industries.governments': 'Government & Public Sector',
+    
     // Home page
     'home.hero.badge': 'Real Estate Excellence',
     'home.hero.title': 'Welcome to WM Management & Investments',
@@ -884,6 +899,21 @@ const translations = {
     'nav.contact': 'Contacto',
     'nav.faq': 'Preguntas Frecuentes',
     'nav.getStarted': 'Comenzar',
+    
+    // Services dropdown
+    'nav.services.propertyManagement': 'Administración de Propiedades',
+    'nav.services.brokerage': 'Gestión Inmobiliaria',
+    'nav.services.consulting': 'Consultoría Estratégica',
+    'nav.services.development': 'Desarrollo Inmobiliario',
+    'nav.services.investments': 'Servicios de Fideicomiso e Inversión',
+    
+    // Industries dropdown
+    'nav.industries.residential': 'Bienes Raíces Residenciales',
+    'nav.industries.commercial': 'Propiedades Comerciales',
+    'nav.industries.health': 'Instalaciones de Salud',
+    'nav.industries.industrial': 'Propiedades Industriales',
+    'nav.industries.franchise': 'Soluciones Inmobiliarias para Franquicias',
+    'nav.industries.governments': 'Gobierno y Sector Público',
     
     // Home page
     'home.hero.badge': 'Excelencia Inmobiliaria',
