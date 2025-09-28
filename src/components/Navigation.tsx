@@ -2,13 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Menu, ChevronDown } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
@@ -17,26 +11,11 @@ const Navigation = () => {
   const location = useLocation();
   const { t } = useLanguage();
 
-  const servicesItems = [
-    { href: "/property-management", label: t('nav.services.propertyManagement') },
-    { href: "/real-estate-brokerage", label: t('nav.services.brokerage') },
-    { href: "/consulting", label: t('nav.services.consulting') },
-    { href: "/real-estate-development", label: t('nav.services.development') },
-    { href: "/investment-services", label: t('nav.services.investments') },
-  ];
-
-  const industriesItems = [
-    { href: "/industries/residential", label: t('nav.industries.residential') },
-    { href: "/industries/commercial", label: t('nav.industries.commercial') },
-    { href: "/industries/health", label: t('nav.industries.health') },
-    { href: "/industries/industrial", label: t('nav.industries.industrial') },
-    { href: "/industries/franchise", label: t('nav.industries.franchise') },
-    { href: "/industries/governments", label: t('nav.industries.governments') },
-  ];
-
   const navItems = [
     { href: "/", label: t('nav.home') },
     { href: "/about", label: t('nav.about') },
+    { href: "/services", label: t('nav.services') },
+    { href: "/industries", label: t('nav.industries') },
     { href: "/financing", label: t('nav.financing') },
     { href: "/contact", label: t('nav.contact') },
     { href: "/faq", label: t('nav.faq') },
@@ -80,62 +59,6 @@ const Navigation = () => {
                   {item.label}
                 </Link>
               ))}
-              
-              {/* Services Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className={`nav-link text-sm font-medium whitespace-nowrap min-w-[80px] text-center inline-flex items-center justify-center gap-1 ${
-                    location.pathname.includes('/property-management') || 
-                    location.pathname.includes('/real-estate-brokerage') || 
-                    location.pathname.includes('/consulting') || 
-                    location.pathname.includes('/real-estate-development') || 
-                    location.pathname.includes('/investment-services')
-                      ? "text-primary active"
-                      : "text-foreground/80"
-                  }`}>
-                    {t('nav.services')}
-                    <ChevronDown className="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 z-50 bg-background border shadow-lg">
-                  {servicesItems.map((item) => (
-                    <DropdownMenuItem key={item.href} asChild>
-                      <Link 
-                        to={item.href}
-                        className="w-full px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                      >
-                        {item.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Industries Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className={`nav-link text-sm font-medium whitespace-nowrap min-w-[120px] text-center inline-flex items-center justify-center gap-1 ${
-                    location.pathname.includes('/industries')
-                      ? "text-primary active"
-                      : "text-foreground/80"
-                  }`}>
-                    {t('nav.industries')}
-                    <ChevronDown className="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-72 z-50 bg-background border shadow-lg">
-                  {industriesItems.map((item) => (
-                    <DropdownMenuItem key={item.href} asChild>
-                      <Link 
-                        to={item.href}
-                        className="w-full px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                      >
-                        {item.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
 
@@ -170,41 +93,6 @@ const Navigation = () => {
                     {item.label}
                   </Link>
                 ))}
-                
-                {/* Services Section for Mobile */}
-                <div className="border-t pt-3">
-                  <div className="text-sm font-semibold text-primary mb-2 px-3">
-                    {t('nav.services')}
-                  </div>
-                  {servicesItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      onClick={() => setIsOpen(false)}
-                      className="block px-6 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors ml-2"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Industries Section for Mobile */}
-                <div className="border-t pt-3">
-                  <div className="text-sm font-semibold text-primary mb-2 px-3">
-                    {t('nav.industries')}
-                  </div>
-                  {industriesItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      onClick={() => setIsOpen(false)}
-                      className="block px-6 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors ml-2"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-                
                 <div className="mt-4 space-y-3">
                   <LanguageSwitcher variant="header" />
                   <Button variant="outline" className="w-full" asChild>
