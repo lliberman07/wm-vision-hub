@@ -8,12 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Mail, Phone, Building, Calendar, MessageSquare, User, Eye, Users, FileText } from "lucide-react";
+import { LogOut, Mail, Phone, Building, Calendar, MessageSquare, User, Eye, Users, FileText, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import UserApprovals from "@/components/UserApprovals";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { ApplicationManagement } from "@/components/ApplicationManagement";
 import { KnowledgeBaseInit } from "@/components/KnowledgeBaseInit";
+import { SimulationsManagement } from "@/components/SimulationsManagement";
 
 interface Contact {
   id: string;
@@ -132,10 +133,14 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto p-6">
         <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-4' : 'grid-cols-3'}`}>
+          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Contact Submissions
+            </TabsTrigger>
+            <TabsTrigger value="simulations" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Simulaciones
             </TabsTrigger>
             <TabsTrigger value="applications" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -305,6 +310,23 @@ const Admin = () => {
                     </Table>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="simulations">
+            <Card className="shadow-strong">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5" />
+                  <span>Simulaciones de Inversión</span>
+                </CardTitle>
+                <CardDescription>
+                  Seguimiento de simulaciones y conversión a perfiles de proyecto
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SimulationsManagement />
               </CardContent>
             </Card>
           </TabsContent>

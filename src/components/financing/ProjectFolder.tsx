@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   FileText, 
   Building2, 
@@ -14,7 +15,8 @@ import {
   CheckCircle2,
   ArrowLeft,
   ArrowRight,
-  Send
+  Send,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,10 +28,15 @@ interface ProjectFolderProps {
 export const ProjectFolder = ({ simulationResults, onBack }: ProjectFolderProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // Start at step 0 for simulation code
   const [applicantType, setApplicantType] = useState<"individual" | "company">("individual");
+  const [validatingCode, setValidatingCode] = useState(false);
+  const [simulationData, setSimulationData] = useState<any>(null);
   
   const [formData, setFormData] = useState({
+    // Simulation code
+    simulationCode: "",
+    
     // Individual data
     firstName: "",
     lastName: "",
@@ -51,6 +58,74 @@ export const ProjectFolder = ({ simulationResults, onBack }: ProjectFolderProps)
     documents: [] as File[]
   });
 
+  // Update profile step in database whenever step changes
+  useEffect(() => {
+    if (simulationData && step > 0) {
+      updateProfileStep(step);
+    }
+  }, [step, simulationData]);
+
+  const updateProfileStep = async (currentStep: number) => {
+    if (!simulationData) return;
+    
+    try {
+      await supabase
+        .from('investment_simulations')
+        .update({ 
+          profile_step: currentStep,
+          profile_status: 'in_progress'
+        })
+        .eq('id', simulationData.id);
+    } catch (error) {
+      console.error('Error updating profile step:', error);
+    }
+  };
+
+  const validateSimulationCode = async () => {
+    if (!formData.simulationCode.trim()) {
+      toast({
+        title: "Error",
+        description: "Por favor ingrese el código de simulación",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setValidatingCode(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-simulation-code', {
+        body: { reference_number: formData.simulationCode.trim() }
+      });
+
+      if (error) throw error;
+
+      if (!data.valid) {
+        toast({
+          title: "Código inválido",
+          description: data.message || "El código de simulación no existe",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setSimulationData(data.simulation);
+      toast({
+        title: "¡Código válido!",
+        description: "Puede continuar con el perfil de proyecto",
+      });
+      setStep(1);
+    } catch (error) {
+      console.error('Error validating code:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo validar el código. Intente nuevamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setValidatingCode(false);
+    }
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -65,14 +140,80 @@ export const ProjectFolder = ({ simulationResults, onBack }: ProjectFolderProps)
   };
 
   const handleSubmit = async () => {
-    toast({
-      title: t("projectFolder.success.title"),
-      description: t("projectFolder.success.description"),
-    });
+    try {
+      // Create application in database
+      const { data: appData, error: appError } = await supabase
+        .from('applications')
+        .insert({
+          type: applicantType,
+          email: formData.email,
+          phone: formData.phone,
+          status: 'draft'
+        })
+        .select()
+        .single();
+
+      if (appError) throw appError;
+
+      // Update simulation with application_id and mark as completed
+      if (simulationData) {
+        await supabase
+          .from('investment_simulations')
+          .update({
+            application_id: appData.id,
+            profile_status: 'completed',
+            profile_completed_at: new Date().toISOString()
+          })
+          .eq('id', simulationData.id);
+      }
+
+      toast({
+        title: t("projectFolder.success.title"),
+        description: t("projectFolder.success.description"),
+      });
+
+      // TODO: Send emails (admin notification and user confirmation)
+    } catch (error) {
+      console.error('Error submitting project folder:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el perfil de proyecto. Intente nuevamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const renderStepContent = () => {
     switch (step) {
+      case 0:
+        return (
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="simulationCode" className="text-base">Código de Simulación</Label>
+              <p className="text-sm text-muted-foreground mb-4">
+                Ingrese el código de simulación que recibió por email al guardar su escenario
+              </p>
+              <Input
+                id="simulationCode"
+                value={formData.simulationCode}
+                onChange={(e) => handleInputChange("simulationCode", e.target.value.toUpperCase())}
+                placeholder="SIM-XXXXXXXXXX"
+                className="text-lg font-mono"
+              />
+            </div>
+            {simulationData && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                <p className="text-sm font-medium text-primary">
+                  ✓ Simulación validada
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Email: {simulationData.user_email}
+                </p>
+              </div>
+            )}
+          </div>
+        );
+
       case 1:
         return (
           <div className="space-y-6">
@@ -352,7 +493,7 @@ export const ProjectFolder = ({ simulationResults, onBack }: ProjectFolderProps)
         </Button>
         
         <div className="flex items-center space-x-2">
-          {[1, 2, 3, 4].map((num) => (
+          {[0, 1, 2, 3, 4].map((num) => (
             <div
               key={num}
               className={`h-2 w-12 rounded-full transition-all ${
@@ -365,14 +506,21 @@ export const ProjectFolder = ({ simulationResults, onBack }: ProjectFolderProps)
 
       <Card>
         <CardHeader>
-          <CardTitle>{t(`projectFolder.step${step}.title`)}</CardTitle>
-          <CardDescription>{t(`projectFolder.step${step}.description`)}</CardDescription>
+          <CardTitle>
+            {step === 0 ? "Código de Simulación" : t(`projectFolder.step${step}.title`)}
+          </CardTitle>
+          <CardDescription>
+            {step === 0 
+              ? "Ingrese el código que recibió al guardar su simulación" 
+              : t(`projectFolder.step${step}.description`)
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent className="min-h-[400px]">
           {renderStepContent()}
 
           <div className="flex justify-between mt-8 pt-6 border-t">
-            {step > 1 && (
+            {step > 0 && (
               <Button variant="outline" onClick={() => setStep(step - 1)}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t("common.back")}
@@ -380,7 +528,13 @@ export const ProjectFolder = ({ simulationResults, onBack }: ProjectFolderProps)
             )}
             
             <div className="ml-auto">
-              {step < 4 ? (
+              {step === 0 ? (
+                <Button onClick={validateSimulationCode} disabled={validatingCode || !formData.simulationCode}>
+                  {validatingCode && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Validar Código
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : step < 4 ? (
                 <Button onClick={() => setStep(step + 1)}>
                   {t("common.next")}
                   <ArrowRight className="ml-2 h-4 w-4" />

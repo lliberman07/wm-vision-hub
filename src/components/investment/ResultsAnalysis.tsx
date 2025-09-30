@@ -8,12 +8,14 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts';
-import { Download, Save, AlertTriangle, TrendingUp, Calculator, DollarSign } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { Save, AlertTriangle, TrendingUp, Calculator, DollarSign, FileDown } from 'lucide-react';
 import { InvestmentItem, CreditLine, FinancialAnalysis, Alert as AlertType } from '@/types/investment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency, formatNumber } from '@/utils/numberFormat';
-import { ExportPDFDialog } from '@/components/ExportPDFDialog';
+import { EmailModal } from '@/components/EmailModal';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ResultsAnalysisProps {
   items: InvestmentItem[];
@@ -39,35 +41,15 @@ export const ResultsAnalysis = ({
   onMarginChange
 }: ResultsAnalysisProps) => {
   const { t, language, currency } = useLanguage();
+  const { toast } = useToast();
   const [sensitivityRate, setSensitivityRate] = useState([0]);
   const [sensitivityIncome, setSensitivityIncome] = useState([0]);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const selectedItems = items.filter(item => item.isSelected);
 
   const getItemName = (item: InvestmentItem) => (item.nameKey ? t(item.nameKey) : item.name);
-
-  // Chart data preparation
-  const pieData = selectedItems.map((item, index) => ({
-    name: getItemName(item),
-    value: item.amount,
-    color: COLORS[index % COLORS.length]
-  }));
-
-  const financingData = selectedItems.map((item, index) => {
-    const label = getItemName(item);
-    return {
-      name: label.length > 15 ? label.substring(0, 12) + '...' : label,
-      adelanto: item.advanceAmount,
-      financiado: item.financeBalance,
-      color: COLORS[index % COLORS.length]
-    };
-  });
-
-  const creditLineData = creditLines.map((cl, index) => ({
-    name: cl.type === 'personal' ? t('simulator.items.creditType.personal') : cl.type === 'capital' ? t('simulator.items.creditType.capital') : t('simulator.items.creditType.mortgage'),
-    cuota: cl.monthlyPayment,
-    color: COLORS[index % COLORS.length]
-  }));
 
   // Sensitivity analysis data
   const sensitivityData = [];
@@ -87,8 +69,67 @@ export const ResultsAnalysis = ({
   const netMonthlyIncome = estimatedMonthlyIncome * (grossMarginPercentage / 100);
   const debtToIncomeRatio = estimatedMonthlyIncome > 0 ? (analysis.monthlyPaymentTotal / estimatedMonthlyIncome) * 100 : 0;
 
-  // Custom tooltip formatter for charts
-  const tooltipFormatter = (value: number) => formatCurrency(value, language, currency);
+  const handleSaveScenario = async (email: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('save-simulation-scenario', {
+        body: {
+          email,
+          simulationData: {
+            items: selectedItems,
+            creditLines,
+            estimatedMonthlyIncome,
+            grossMarginPercentage
+          },
+          analysisResults: analysis
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "¡Escenario guardado!",
+        description: `Se ha guardado su simulación con el código: ${data.reference_number}. Le hemos enviado un email con los detalles.`,
+      });
+    } catch (error) {
+      console.error('Error saving scenario:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo guardar el escenario. Por favor intente nuevamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleExportPDF = async (email: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('export-pdf-report', {
+        body: {
+          email,
+          simulationData: {
+            items: selectedItems,
+            creditLines,
+            estimatedMonthlyIncome,
+            grossMarginPercentage
+          },
+          analysisResults: analysis
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "¡PDF generado!",
+        description: `Se ha generado su reporte con el código: ${data.reference_number}. Le hemos enviado el PDF por email.`,
+      });
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo generar el PDF. Por favor intente nuevamente.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -169,9 +210,8 @@ export const ResultsAnalysis = ({
       </Card>
 
       <Tabs defaultValue="summary" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="summary">{t('simulator.results.tabs.summary')}</TabsTrigger>
-          <TabsTrigger value="charts">{t('simulator.results.tabs.charts')}</TabsTrigger>
           <TabsTrigger value="analysis">{t('simulator.results.tabs.analysis')}</TabsTrigger>
           <TabsTrigger value="sensitivity">{t('simulator.results.tabs.sensitivity')}</TabsTrigger>
         </TabsList>
@@ -237,73 +277,6 @@ export const ResultsAnalysis = ({
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="charts" className="space-y-6">
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Investment Distribution */}
-            <Card>
-            <CardHeader>
-              <CardTitle>{t('simulator.results.costBreakdown')}</CardTitle>
-            </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={tooltipFormatter} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Financing vs Advance */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('simulator.results.financingBreakdown')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={financingData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={tooltipFormatter} />
-                    <Bar dataKey="adelanto" stackId="a" fill="#f59e0b" name={t('simulator.results.upfrontPayment')} />
-                    <Bar dataKey="financiado" stackId="a" fill="#3b82f6" name={t('simulator.chart.financed')} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Monthly Payments by Credit Type */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('simulator.results.monthlyPaymentsByCreditType')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={creditLineData} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" />
-                  <Tooltip formatter={tooltipFormatter} />
-                  <Bar dataKey="cuota" fill="#10b981" />
-                </BarChart>
-              </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
@@ -491,27 +464,41 @@ export const ResultsAnalysis = ({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <Button className="flex-1">
+        <Button className="flex-1" onClick={() => setShowSaveModal(true)}>
           <Save className="mr-2 h-4 w-4" />
           {t('simulator.results.saveScenario')}
         </Button>
-        <ExportPDFDialog 
-          simulationData={items} 
-          analysisResults={analysis}
-          creditLines={creditLines}
-          estimatedMonthlyIncome={estimatedMonthlyIncome}
-          grossMarginPercentage={grossMarginPercentage}
-        >
-          <Button variant="outline" className="flex-1">
-            <Download className="mr-2 h-4 w-4" />
-            {t('simulator.results.exportPDF')}
-          </Button>
-        </ExportPDFDialog>
-        <Button variant="outline" className="flex-1">
-          <Download className="mr-2 h-4 w-4" />
-          {t('simulator.results.exportExcel')}
+        <Button variant="outline" className="flex-1" onClick={() => setShowExportModal(true)}>
+          <FileDown className="mr-2 h-4 w-4" />
+          {t('simulator.results.exportPDF')}
         </Button>
       </div>
+
+      {/* Disclaimer - Centered Full Width */}
+      <div className="w-full text-center">
+        <p className="text-xs text-muted-foreground max-w-4xl mx-auto">
+          Aviso: Los valores mostrados son simulaciones estimativas. WM Management S.A. no garantiza su exactitud ni se responsabiliza por decisiones basadas en esta herramienta.{' '}
+          <a href="/terms" className="underline hover:text-primary">Ver más</a>
+        </p>
+      </div>
+
+      {/* Email Modals */}
+      <EmailModal
+        open={showSaveModal}
+        onOpenChange={setShowSaveModal}
+        onSubmit={handleSaveScenario}
+        title="Guardar Escenario"
+        description="Ingrese su email para recibir el código de simulación y guardar este escenario."
+        actionLabel="Guardar"
+      />
+      <EmailModal
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
+        onSubmit={handleExportPDF}
+        title="Exportar PDF"
+        description="Ingrese su email para recibir el reporte PDF con su código de simulación."
+        actionLabel="Generar PDF"
+      />
     </div>
   );
 };

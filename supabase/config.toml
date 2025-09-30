@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.scrape-website-content]
 verify_jwt = false
+
+[functions.save-simulation-scenario]
+verify_jwt = false
+
+[functions.validate-simulation-code]
+verify_jwt = false
