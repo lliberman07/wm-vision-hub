@@ -237,57 +237,88 @@ const Financing = () => {
 
           {/* Two Column Layout */}
           <div className="grid lg:grid-cols-5 gap-8 mb-12">
-            {/* Left Column - Intro Card (40%) */}
-            <div className="lg:col-span-2">
-              <Card className="h-full shadow-xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20 sticky top-24">
+            {/* Left Column - Benefits Cards (40%) */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Header Card */}
+              <Card className="shadow-xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20">
                 <CardHeader>
-                  <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex items-center space-x-3">
                     <div className="p-3 bg-primary rounded-xl">
                       <Sparkles className="h-6 w-6 text-primary-foreground" />
                     </div>
-                    <CardTitle className="text-2xl">{t('financing.twoColumn.left.title')}</CardTitle>
+                    <div>
+                      <CardTitle className="text-2xl">{t('financing.twoColumn.left.title')}</CardTitle>
+                      <CardDescription className="text-base mt-1">
+                        {t('financing.twoColumn.left.description')}
+                      </CardDescription>
+                    </div>
                   </div>
-                  <CardDescription className="text-base">
-                    {t('financing.twoColumn.left.description')}
-                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold mb-1">{t('financing.twoColumn.left.benefit1.title')}</h4>
-                        <p className="text-sm text-muted-foreground">{t('financing.twoColumn.left.benefit1.desc')}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold mb-1">{t('financing.twoColumn.left.benefit2.title')}</h4>
-                        <p className="text-sm text-muted-foreground">{t('financing.twoColumn.left.benefit2.desc')}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold mb-1">{t('financing.twoColumn.left.benefit3.title')}</h4>
-                        <p className="text-sm text-muted-foreground">{t('financing.twoColumn.left.benefit3.desc')}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold mb-1">{t('financing.twoColumn.left.benefit4.title')}</h4>
-                        <p className="text-sm text-muted-foreground">{t('financing.twoColumn.left.benefit4.desc')}</p>
-                      </div>
-                    </div>
-                  </div>
+              </Card>
 
-                  <div className="pt-6 border-t border-primary/20">
-                    <p className="text-sm text-muted-foreground">
-                      {t('financing.twoColumn.left.footer')}
-                    </p>
+              {/* Benefit Cards */}
+              <Card className="shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-background to-muted/30">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <CheckCircle className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-2">{t('financing.twoColumn.left.benefit1.title')}</h4>
+                      <p className="text-muted-foreground leading-relaxed">{t('financing.twoColumn.left.benefit1.desc')}</p>
+                    </div>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-background to-muted/30">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <Target className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-2">{t('financing.twoColumn.left.benefit2.title')}</h4>
+                      <p className="text-muted-foreground leading-relaxed">{t('financing.twoColumn.left.benefit2.desc')}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-background to-muted/30">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <Shield className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-2">{t('financing.twoColumn.left.benefit3.title')}</h4>
+                      <p className="text-muted-foreground leading-relaxed">{t('financing.twoColumn.left.benefit3.desc')}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-background to-muted/30">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <Brain className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-2">{t('financing.twoColumn.left.benefit4.title')}</h4>
+                      <p className="text-muted-foreground leading-relaxed">{t('financing.twoColumn.left.benefit4.desc')}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Footer Card */}
+              <Card className="shadow-lg bg-primary/5 border-primary/20">
+                <CardContent className="p-6">
+                  <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                    {t('financing.twoColumn.left.footer')}
+                  </p>
                 </CardContent>
               </Card>
             </div>
