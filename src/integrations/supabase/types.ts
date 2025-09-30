@@ -195,8 +195,12 @@ export type Database = {
       investment_simulations: {
         Row: {
           analysis_results: Json
+          application_id: string | null
           created_at: string
           id: string
+          profile_completed_at: string | null
+          profile_status: string | null
+          profile_step: number | null
           reference_number: string
           simulation_data: Json
           updated_at: string
@@ -204,8 +208,12 @@ export type Database = {
         }
         Insert: {
           analysis_results: Json
+          application_id?: string | null
           created_at?: string
           id?: string
+          profile_completed_at?: string | null
+          profile_status?: string | null
+          profile_step?: number | null
           reference_number: string
           simulation_data: Json
           updated_at?: string
@@ -213,14 +221,26 @@ export type Database = {
         }
         Update: {
           analysis_results?: Json
+          application_id?: string | null
           created_at?: string
           id?: string
+          profile_completed_at?: string | null
+          profile_status?: string | null
+          profile_step?: number | null
           reference_number?: string
           simulation_data?: Json
           updated_at?: string
           user_email?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "investment_simulations_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       knowledge_base: {
         Row: {
