@@ -238,22 +238,22 @@ const Financing = () => {
           {/* Two Column Layout */}
           <div className="grid lg:grid-cols-5 gap-8 mb-12">
             {/* Left Column - Benefits Cards (40%) */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Header Card */}
+            <div className="lg:col-span-2 space-y-6 lg:pt-16">
+              {/* Header Card - Compact */}
               <Card className="shadow-xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-3 bg-primary rounded-xl">
-                      <Sparkles className="h-6 w-6 text-primary-foreground" />
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-3">
+                    <div className="p-3 bg-primary rounded-xl flex-shrink-0">
+                      <Sparkles className="h-5 w-5 text-primary-foreground" />
                     </div>
                     <div>
-                      <CardTitle className="text-2xl">{t('financing.twoColumn.left.title')}</CardTitle>
-                      <CardDescription className="text-base mt-1">
+                      <h3 className="text-xl font-bold mb-2">{t('financing.twoColumn.left.title')}</h3>
+                      <p className="text-sm text-muted-foreground">
                         {t('financing.twoColumn.left.description')}
-                      </CardDescription>
+                      </p>
                     </div>
                   </div>
-                </CardHeader>
+                </CardContent>
               </Card>
 
               {/* Benefit Cards */}
