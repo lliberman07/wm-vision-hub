@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvestmentItem, CreditLine, CreditType, DEFAULT_ITEMS } from "@/types/investment";
 import { ItemSelection } from "@/components/investment/ItemSelection";
@@ -8,7 +8,11 @@ import { useInvestmentCalculations } from "@/hooks/useInvestmentCalculations";
 import { useLanguage } from "@/contexts/LanguageContext";
 import CurrencySelector from "@/components/CurrencySelector";
 
-const BusinessSimulator = () => {
+interface BusinessSimulatorProps {
+  onComplete?: (results: any) => void;
+}
+
+const BusinessSimulator = ({ onComplete }: BusinessSimulatorProps = {}) => {
   const { t } = useLanguage();
   const [currentTab, setCurrentTab] = useState("items");
   const [items, setItems] = useState<InvestmentItem[]>(() =>
@@ -27,7 +31,18 @@ const BusinessSimulator = () => {
   // Use custom credit lines if available, otherwise use calculated ones
   const activeCreditLines = creditLines.length > 0 ? creditLines : calculatedCreditLines;
 
-  
+  // Notify parent when reaching results tab
+  useEffect(() => {
+    if (currentTab === "results" && onComplete) {
+      onComplete({
+        items: selectedItems,
+        analysis,
+        creditLines: activeCreditLines,
+        estimatedMonthlyIncome,
+        grossMarginPercentage
+      });
+    }
+  }, [currentTab, onComplete, selectedItems, analysis, activeCreditLines, estimatedMonthlyIncome, grossMarginPercentage]);
 
   const handleUpdateItem = (id: string, updates: Partial<InvestmentItem>) => {
     setItems(prev =>

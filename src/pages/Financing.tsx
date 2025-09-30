@@ -1,3 +1,4 @@
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import BusinessSimulator from "@/components/BusinessSimulator";
+import { ProjectFolder } from "@/components/financing/ProjectFolder";
 import { useLanguage } from "@/contexts/LanguageContext";
 import financingHeroBackground from "@/assets/financing-hero-background.jpg";
 import { 
@@ -19,11 +21,33 @@ import {
   Shield,
   Target,
   TrendingUp,
-  Clock
+  Clock,
+  FileText,
+  Sparkles
 } from "lucide-react";
 
 const Financing = () => {
   const { t } = useLanguage();
+  const [simulatorCompleted, setSimulatorCompleted] = useState(false);
+  const [simulationResults, setSimulationResults] = useState<any>(null);
+  const [showProjectFolder, setShowProjectFolder] = useState(false);
+  const projectFolderRef = useRef<HTMLDivElement>(null);
+
+  const handleSimulatorComplete = (results: any) => {
+    setSimulatorCompleted(true);
+    setSimulationResults(results);
+  };
+
+  const handleStartProjectFolder = () => {
+    setShowProjectFolder(true);
+    setTimeout(() => {
+      projectFolderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  const handleBackToSimulator = () => {
+    setShowProjectFolder(false);
+  };
   
   return (
     <div className="min-h-screen bg-background">
@@ -198,10 +222,10 @@ const Financing = () => {
         </div>
       </section>
 
-      {/* Simulator Section */}
+      {/* Simulator & Project Folder Section */}
       <section className="bg-muted py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-12">
             <div className="flex items-center justify-center space-x-3 mb-4">
               <Calculator className="h-10 w-10 text-primary" />
               <h2 className="text-3xl lg:text-4xl font-bold">{t('financing.simulator.title')}</h2>
@@ -211,7 +235,106 @@ const Financing = () => {
             </p>
           </div>
 
-          <BusinessSimulator />
+          {/* Two Column Layout */}
+          <div className="grid lg:grid-cols-5 gap-8 mb-12">
+            {/* Left Column - Intro Card (40%) */}
+            <div className="lg:col-span-2">
+              <Card className="h-full shadow-xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20 sticky top-24">
+                <CardHeader>
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-3 bg-primary rounded-xl">
+                      <Sparkles className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <CardTitle className="text-2xl">{t('financing.twoColumn.left.title')}</CardTitle>
+                  </div>
+                  <CardDescription className="text-base">
+                    {t('financing.twoColumn.left.description')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold mb-1">{t('financing.twoColumn.left.benefit1.title')}</h4>
+                        <p className="text-sm text-muted-foreground">{t('financing.twoColumn.left.benefit1.desc')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold mb-1">{t('financing.twoColumn.left.benefit2.title')}</h4>
+                        <p className="text-sm text-muted-foreground">{t('financing.twoColumn.left.benefit2.desc')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold mb-1">{t('financing.twoColumn.left.benefit3.title')}</h4>
+                        <p className="text-sm text-muted-foreground">{t('financing.twoColumn.left.benefit3.desc')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold mb-1">{t('financing.twoColumn.left.benefit4.title')}</h4>
+                        <p className="text-sm text-muted-foreground">{t('financing.twoColumn.left.benefit4.desc')}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-primary/20">
+                    <p className="text-sm text-muted-foreground">
+                      {t('financing.twoColumn.left.footer')}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column - Simulator/Project Folder (60%) */}
+            <div className="lg:col-span-3">
+              {!showProjectFolder ? (
+                <BusinessSimulator onComplete={handleSimulatorComplete} />
+              ) : (
+                <div ref={projectFolderRef}>
+                  <ProjectFolder 
+                    simulationResults={simulationResults}
+                    onBack={handleBackToSimulator}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Transition CTA - Shows after simulator completion */}
+          {simulatorCompleted && !showProjectFolder && (
+            <div className="animate-fade-in">
+              <Card className="shadow-2xl border-2 border-primary/30 bg-gradient-to-r from-primary/5 via-background to-primary/10">
+                <CardContent className="p-8">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div className="p-4 bg-primary rounded-2xl">
+                        <FileText className="h-8 w-8 text-primary-foreground" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">{t('financing.transition.title')}</h3>
+                        <p className="text-muted-foreground">{t('financing.transition.description')}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      size="lg" 
+                      className="px-8 py-6 text-lg hover-scale whitespace-nowrap"
+                      onClick={handleStartProjectFolder}
+                    >
+                      {t('financing.transition.cta')}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </section>
 
