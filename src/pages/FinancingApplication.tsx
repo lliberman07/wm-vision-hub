@@ -3,6 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { EnhancedChatbot } from '@/components/EnhancedChatbot';
@@ -28,6 +31,7 @@ interface ApplicationData {
   ownershipInfo?: any;
   financingRequest?: any;
   documents?: any[];
+  simulationId?: string;
 }
 
 export const FinancingApplication = () => {
@@ -37,10 +41,14 @@ export const FinancingApplication = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [applicationData, setApplicationData] = useState<ApplicationData>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [simulationCode, setSimulationCode] = useState('');
+  const [validatedSimulation, setValidatedSimulation] = useState<any>(null);
+  const [isValidating, setIsValidating] = useState(false);
 
   const resumeCode = searchParams.get('resume');
 
   const steps = [
+    t('Simulation Code'),
     t('Type Selection'),
     t('Basic Information'), 
     t('Financial Information'),
@@ -55,6 +63,49 @@ export const FinancingApplication = () => {
       loadApplication(resumeCode);
     }
   }, [resumeCode]);
+
+  const validateSimulationCode = async () => {
+    if (!simulationCode.trim()) {
+      toast.error(t('Por favor ingrese un código de simulación'));
+      return;
+    }
+
+    setIsValidating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-simulation-code', {
+        body: { reference_number: simulationCode.trim() }
+      });
+
+      if (error) throw error;
+
+      if (data.valid && data.simulation) {
+        setValidatedSimulation(data.simulation);
+        setApplicationData(prev => ({
+          ...prev,
+          simulationId: data.simulation.id
+        }));
+        
+        // Update simulation to mark profile as started
+        await supabase
+          .from('investment_simulations')
+          .update({
+            profile_status: 'in_progress',
+            profile_step: 1
+          })
+          .eq('id', data.simulation.id);
+
+        toast.success(t('Código de simulación validado correctamente'));
+        setCurrentStep(1);
+      } else {
+        toast.error(t('Código de simulación inválido'));
+      }
+    } catch (error) {
+      console.error('Error validating simulation code:', error);
+      toast.error(t('Error al validar el código de simulación'));
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   const loadApplication = async (code: string) => {
     try {
@@ -108,12 +159,14 @@ export const FinancingApplication = () => {
       
       if (applicationData.id) {
         // Update existing application
+        const updateData: any = {
+          status: step === steps.length - 1 ? 'completed' : 'draft',
+          updated_at: new Date().toISOString()
+        };
+
         const { data, error } = await supabase
           .from('applications')
-          .update({
-            status: step === steps.length - 1 ? 'completed' : 'draft',
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', applicationData.id)
           .select()
           .single();
@@ -131,8 +184,8 @@ export const FinancingApplication = () => {
           return;
         }
         
-        // Create new application - ensure we have the type from stepData
-        const insertData = {
+        // Create new application with simulation link
+        const insertData: any = {
           type: stepData.type || applicationData.type,
           email: email,
           phone: stepData.phone || applicationData.phone,
@@ -155,6 +208,34 @@ export const FinancingApplication = () => {
           id: application.id,
           resumeCode: application.resume_code
         }));
+
+        // Link the application to the simulation
+        if (validatedSimulation && application) {
+          await supabase
+            .from('investment_simulations')
+            .update({
+              application_id: application.id,
+              profile_step: step + 1
+            })
+            .eq('id', validatedSimulation.id);
+        }
+      }
+
+      // Update simulation progress
+      if (validatedSimulation) {
+        const updateData: any = {
+          profile_step: step + 1
+        };
+
+        if (step === steps.length - 1) {
+          updateData.profile_status = 'completed';
+          updateData.profile_completed_at = new Date().toISOString();
+        }
+
+        await supabase
+          .from('investment_simulations')
+          .update(updateData)
+          .eq('id', validatedSimulation.id);
       }
 
       // Only send email notification if we created/updated the application in database
@@ -210,7 +291,8 @@ export const FinancingApplication = () => {
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
+    // Don't allow going back to simulation code step (step 0)
+    if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -221,12 +303,51 @@ export const FinancingApplication = () => {
     switch (currentStep) {
       case 0:
         return (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('Ingrese su Código de Simulación')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="simulationCode">
+                  {t('Código de Simulación')}
+                </Label>
+                <Input
+                  id="simulationCode"
+                  value={simulationCode}
+                  onChange={(e) => setSimulationCode(e.target.value)}
+                  placeholder="SIM-20250930-1234567890123"
+                  disabled={isValidating}
+                />
+                <p className="text-sm text-muted-foreground">
+                  {t('Ingrese el código de simulación que recibió al completar la simulación de inversión')}
+                </p>
+              </div>
+              <Button 
+                onClick={validateSimulationCode}
+                disabled={!simulationCode.trim() || isValidating}
+                className="w-full"
+              >
+                {isValidating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('Validating...')}
+                  </>
+                ) : (
+                  t('Validar y Continuar')
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      case 1:
+        return (
           <TypeSelection 
             data={applicationData}
             onNext={handleNext}
           />
         );
-      case 1:
+      case 2:
         return (
           <BasicInfo 
             data={applicationData}
@@ -234,7 +355,7 @@ export const FinancingApplication = () => {
             onBack={handleBack}
           />
         );
-      case 2:
+      case 3:
         return (
           <FinancialInfo 
             data={applicationData}
@@ -242,7 +363,7 @@ export const FinancingApplication = () => {
             onBack={handleBack}
           />
         );
-      case 3:
+      case 4:
         return applicationData.type === 'company' ? (
           <OwnershipInfo 
             data={applicationData}
@@ -256,7 +377,7 @@ export const FinancingApplication = () => {
             onBack={handleBack}
           />
         );
-      case 4:
+      case 5:
         return applicationData.type === 'company' ? (
           <FinancingRequest 
             data={applicationData}
@@ -270,7 +391,7 @@ export const FinancingApplication = () => {
             onBack={handleBack}
           />
         );
-      case 5:
+      case 6:
         return (
           <DocumentUpload 
             data={applicationData}
