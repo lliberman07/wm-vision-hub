@@ -301,7 +301,7 @@ const Contact = () => {
                     <div className="flex items-start space-x-4">
                       <Mail className="h-6 w-6 text-primary mt-1" />
                       <div>
-                        <h3 className="font-semibold text-lg">{t('contact.info.email')}</h3>
+                        <h3 className="font-semibold text-lg">Email</h3>
                         <p className="text-muted-foreground">contacto@wmglobal.co</p>
                       </div>
                     </div>
