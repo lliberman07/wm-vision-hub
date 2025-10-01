@@ -105,7 +105,7 @@ const TermsOfService = () => {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg border">
                 <p className="font-semibold text-gray-800">WM Management S.A.</p>
-                <p className="text-gray-600">Email: info@wmmanagement.com</p>
+                <p className="text-gray-600">Email: contacto@wmglobal.co</p>
                 <p className="text-gray-600">Teléfono: +1 234 567 8900</p>
               </div>
             </section>
