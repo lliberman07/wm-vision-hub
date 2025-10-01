@@ -12,6 +12,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
@@ -92,6 +93,9 @@ const Consulting = () => {
         <div className="absolute inset-0 hero-gradient"></div>
         <div className="container mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center">
+            <Badge variant="secondary" className="mb-4">
+              Consultoría Estratégica
+            </Badge>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Consultoría Estratégica Inmobiliaria
             </h1>
