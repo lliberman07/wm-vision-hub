@@ -354,7 +354,7 @@ const Contact = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-center">
-                <strong>Live Chat Now Available:</strong> {t('contact.news.content')}
+                <strong>{t('contact.news.liveChat')}</strong> {t('contact.news.content')}
               </p>
             </CardContent>
           </Card>
