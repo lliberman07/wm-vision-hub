@@ -1,6 +1,7 @@
 import React from 'react';
 import { Building2, TrendingUp, Users, FileText, CheckCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import Navigation from "@/components/Navigation";
@@ -83,6 +84,9 @@ const RealEstateDevelopment = () => {
           <div className="absolute inset-0 hero-gradient"></div>
           <div className="container mx-auto relative z-10">
             <div className="max-w-4xl mx-auto text-center">
+              <Badge variant="secondary" className="mb-4">
+                Desarrollo Inmobiliario
+              </Badge>
               <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
                 Desarrollo Inmobiliario con Enfoque Integral
               </h1>
