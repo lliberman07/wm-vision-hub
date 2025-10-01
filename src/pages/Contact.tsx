@@ -288,9 +288,8 @@ const Contact = () => {
                     <div className="flex items-start space-x-4">
                       <Phone className="h-6 w-6 text-primary mt-1" />
                       <div>
-                        <h3 className="font-semibold text-lg">{t('contact.info.phone')}</h3>
-                        <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                        <p className="text-sm text-muted-foreground">{t('contact.info.phoneHours')}</p>
+                        <h3 className="font-semibold text-lg">Teléfono</h3>
+                        <p className="text-muted-foreground">+5411-1234-5678</p>
                       </div>
                     </div>
                   </CardContent>
