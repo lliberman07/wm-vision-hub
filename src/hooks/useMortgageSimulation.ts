@@ -49,21 +49,51 @@ export const useMortgageSimulation = () => {
     return Math.ceil(plazo);
   };
 
+  // Map user profile selections to database keywords
+  const mapPerfilToKeywords = (perfil: string): string[] => {
+    const mapping: Record<string, string[]> = {
+      'empleado_dependencia': ['empleado', 'relación de dependencia', 'dependencia', 'clientes que acrediten sueldos'],
+      'monotributista': ['monotributista', 'autónomo', 'independiente'],
+      'responsable_inscripto': ['responsable inscripto', 'autónomo', 'independiente'],
+      'empleado_publico': ['empleado público', 'público', 'empleado', 'clientes que acrediten sueldos']
+    };
+    return mapping[perfil] || [];
+  };
+
+  // Map credit destination to database keywords
+  const mapDestinoToKeywords = (destino: string): string[] => {
+    const mapping: Record<string, string[]> = {
+      'primera_vivienda': ['primera vivienda', 'vivienda propia única', 'vivienda única', 'vivienda permanente'],
+      'segunda_vivienda': ['segunda vivienda', 'vivienda'],
+      'construccion': ['construcción', 'construir'],
+      'refaccion': ['refacción', 'mejora', 'ampliación'],
+      'otro': []
+    };
+    return mapping[destino] || [];
+  };
+
   // Filter products by user profile and credit destination
   const filterProductsByProfile = (
     products: CreditHipotecario[],
     perfil: string,
     destino: string
   ): CreditHipotecario[] => {
+    const perfilKeywords = mapPerfilToKeywords(perfil);
+    const destinoKeywords = mapDestinoToKeywords(destino);
+    
     return products.filter(product => {
       const beneficiarios = product.beneficiarios?.toLowerCase() || '';
       const destinoFondos = product.destino_de_los_fondos?.toLowerCase() || '';
       
-      const perfilMatch = beneficiarios.includes(perfil.toLowerCase()) || 
+      // Match profile: if any keyword matches or if beneficiarios is empty/generic
+      const perfilMatch = perfilKeywords.length === 0 ||
+                          perfilKeywords.some(keyword => beneficiarios.includes(keyword)) ||
                           beneficiarios.includes('todos') ||
                           beneficiarios === '';
       
-      const destinoMatch = destinoFondos.includes(destino.toLowerCase()) || 
+      // Match destination: if any keyword matches or if destination is empty/generic
+      const destinoMatch = destinoKeywords.length === 0 ||
+                           destinoKeywords.some(keyword => destinoFondos.includes(keyword)) ||
                            destinoFondos.includes('todos') ||
                            destinoFondos === '';
       
