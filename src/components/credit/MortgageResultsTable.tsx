@@ -52,6 +52,7 @@ export const MortgageResultsTable = ({ results }: MortgageResultsTableProps) => 
             <TableRow>
               <TableHead>{t('mortgage.results.bank')}</TableHead>
               <TableHead>{t('mortgage.results.product')}</TableHead>
+              <TableHead className="text-right">{t('mortgage.results.downPayment')}</TableHead>
               <TableHead className="text-right">{t('mortgage.results.financedAmount')}</TableHead>
               <TableHead className="text-right">{t('mortgage.results.monthlyInstallment')}</TableHead>
               <TableHead className="text-right">{t('mortgage.results.maxAllowedInstallment')}</TableHead>
@@ -64,6 +65,9 @@ export const MortgageResultsTable = ({ results }: MortgageResultsTableProps) => 
               <TableRow key={index}>
                 <TableCell className="font-medium">{result.banco}</TableCell>
                 <TableCell>{result.producto}</TableCell>
+                <TableCell className="text-right font-semibold text-warning">
+                  {formatCurrency(result.pago_inicial_requerido, language)}
+                </TableCell>
                 <TableCell className="text-right">
                   {formatCurrency(result.monto_a_financiar, language)}
                 </TableCell>

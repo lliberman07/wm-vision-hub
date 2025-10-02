@@ -88,6 +88,7 @@ export interface MortgageSimulationResult {
   banco: string;
   producto: string;
   monto_a_financiar: number;
+  pago_inicial_requerido: number;
   cuota_inicial: number;
   cuota_maxima_permitida: number;
   plazo_deseado: number;

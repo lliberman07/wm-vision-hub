@@ -190,6 +190,9 @@ export const useMortgageSimulation = () => {
           product.monto_maximo_otorgable_del_prestamo
         );
 
+        // Calculate required down payment (what the bank won't finance)
+        const pago_inicial_requerido = formData.valor_propiedad - monto_a_financiar;
+
         // Calculate rates
         const tasa_mensual = calculateMonthlyRate(product.tasa_efectiva_anual_maxima);
         
@@ -229,6 +232,7 @@ export const useMortgageSimulation = () => {
           banco: product.descripcion_de_entidad,
           producto: product.nombre_corto_del_prestamo_hipotecario,
           monto_a_financiar,
+          pago_inicial_requerido,
           cuota_inicial,
           cuota_maxima_permitida,
           plazo_deseado: formData.plazo_deseado,
