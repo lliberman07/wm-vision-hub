@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { CreditFormData, CreditType } from "@/types/credit";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useUVADetection } from "@/hooks/useUVADetection";
 import { Calculator } from "lucide-react";
 
 interface CreditFormProps {
@@ -15,9 +16,10 @@ interface CreditFormProps {
 
 const CreditForm = ({ tipo, onSubmit, loading }: CreditFormProps) => {
   const { t } = useLanguage();
+  const { hasUVAProducts, loading: detectingUVA } = useUVADetection(tipo);
   const [formData, setFormData] = useState<Partial<CreditFormData>>({
     tipo,
-    inflacionEsperada: 140
+    inflacionEsperada: hasUVAProducts ? 140 : undefined
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,21 +131,23 @@ const CreditForm = ({ tipo, onSubmit, loading }: CreditFormProps) => {
             </div>
           )}
 
-          <div>
-            <Label htmlFor="inflacion">{t('credit.form.inflacion')}</Label>
-            <Input
-              id="inflacion"
-              type="number"
-              placeholder="140"
-              value={formData.inflacionEsperada || 140}
-              onChange={(e) => setFormData({ ...formData, inflacionEsperada: Number(e.target.value) })}
-            />
-            <p className="text-xs text-muted-foreground mt-1">{t('credit.form.inflacion.hint')}</p>
-          </div>
+          {hasUVAProducts && (
+            <div>
+              <Label htmlFor="inflacion">{t('credit.form.inflacion')}</Label>
+              <Input
+                id="inflacion"
+                type="number"
+                placeholder="140"
+                value={formData.inflacionEsperada || 140}
+                onChange={(e) => setFormData({ ...formData, inflacionEsperada: Number(e.target.value) })}
+              />
+              <p className="text-xs text-muted-foreground mt-1">{t('credit.form.inflacion.hint')}</p>
+            </div>
+          )}
 
-          <Button type="submit" className="w-full" disabled={loading || !isFormValid()}>
+          <Button type="submit" className="w-full" disabled={loading || detectingUVA || !isFormValid()}>
             <Calculator className="h-4 w-4 mr-2" />
-            {loading ? t('credit.form.simulating') : t('credit.form.simulate')}
+            {detectingUVA ? 'Cargando...' : loading ? t('credit.form.simulating') : t('credit.form.simulate')}
           </Button>
         </form>
       </CardContent>
