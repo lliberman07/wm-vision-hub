@@ -26,6 +26,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import { FinancingApplication } from "./pages/FinancingApplication";
 
+import CreditSimulator from "./pages/CreditSimulator";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -50,6 +52,7 @@ const App = () => (
         <Route path="/financing" element={<Financing />} />
         <Route path="/financing/apply" element={<FinancingApplication />} />
               <Route path="/financing/simulator" element={<Financing />} />
+              <Route path="/credit-simulator" element={<CreditSimulator />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/auth" element={<Auth />} />

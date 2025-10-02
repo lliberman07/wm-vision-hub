@@ -160,6 +160,240 @@ export type Database = {
         }
         Relationships: []
       }
+      creditos_hipotecarios: {
+        Row: {
+          antiguedad_laboral_minima_meses: number | null
+          beneficiarios: string | null
+          cargo_maximo_por_cancelacion_anticipada: number | null
+          codigo_de_entidad: number | null
+          costo_financiero_efectivo_total_maximo: number | null
+          created_at: string | null
+          cuota_inicial_a_plazo_maximo_cada_100_000: number | null
+          denominacion: string | null
+          descripcion_de_entidad: string
+          destino_de_los_fondos: string | null
+          edad_maxima_solicitada_anos: number | null
+          fecha_de_informacion: string | null
+          id: string
+          ingreso_minimo_mensual_solicitado: number | null
+          monto_maximo_otorgable_del_prestamo: number | null
+          nombre_completo_del_prestamo_hipotecario: string | null
+          nombre_corto_del_prestamo_hipotecario: string
+          plazo_maximo_otorgable: number | null
+          relacion_cuota_ingreso: number | null
+          relacion_monto_tasacion: number | null
+          tasa_efectiva_anual_maxima: number | null
+          territorio_de_validez_de_la_oferta: string | null
+          tipo_de_tasa: string | null
+        }
+        Insert: {
+          antiguedad_laboral_minima_meses?: number | null
+          beneficiarios?: string | null
+          cargo_maximo_por_cancelacion_anticipada?: number | null
+          codigo_de_entidad?: number | null
+          costo_financiero_efectivo_total_maximo?: number | null
+          created_at?: string | null
+          cuota_inicial_a_plazo_maximo_cada_100_000?: number | null
+          denominacion?: string | null
+          descripcion_de_entidad: string
+          destino_de_los_fondos?: string | null
+          edad_maxima_solicitada_anos?: number | null
+          fecha_de_informacion?: string | null
+          id?: string
+          ingreso_minimo_mensual_solicitado?: number | null
+          monto_maximo_otorgable_del_prestamo?: number | null
+          nombre_completo_del_prestamo_hipotecario?: string | null
+          nombre_corto_del_prestamo_hipotecario: string
+          plazo_maximo_otorgable?: number | null
+          relacion_cuota_ingreso?: number | null
+          relacion_monto_tasacion?: number | null
+          tasa_efectiva_anual_maxima?: number | null
+          territorio_de_validez_de_la_oferta?: string | null
+          tipo_de_tasa?: string | null
+        }
+        Update: {
+          antiguedad_laboral_minima_meses?: number | null
+          beneficiarios?: string | null
+          cargo_maximo_por_cancelacion_anticipada?: number | null
+          codigo_de_entidad?: number | null
+          costo_financiero_efectivo_total_maximo?: number | null
+          created_at?: string | null
+          cuota_inicial_a_plazo_maximo_cada_100_000?: number | null
+          denominacion?: string | null
+          descripcion_de_entidad?: string
+          destino_de_los_fondos?: string | null
+          edad_maxima_solicitada_anos?: number | null
+          fecha_de_informacion?: string | null
+          id?: string
+          ingreso_minimo_mensual_solicitado?: number | null
+          monto_maximo_otorgable_del_prestamo?: number | null
+          nombre_completo_del_prestamo_hipotecario?: string | null
+          nombre_corto_del_prestamo_hipotecario?: string
+          plazo_maximo_otorgable?: number | null
+          relacion_cuota_ingreso?: number | null
+          relacion_monto_tasacion?: number | null
+          tasa_efectiva_anual_maxima?: number | null
+          territorio_de_validez_de_la_oferta?: string | null
+          tipo_de_tasa?: string | null
+        }
+        Relationships: []
+      }
+      creditos_personales: {
+        Row: {
+          antiguedad_laboral_minima_meses: number | null
+          beneficiario: string | null
+          cargo_maximo_por_cancelacion_anticipada: number | null
+          codigo_de_entidad: number | null
+          costo_financiero_efectivo_total_maximo: number | null
+          created_at: string | null
+          cuota_inicial_a_plazo_maximo_cada_10_000: number | null
+          denominacion: string | null
+          descripcion_de_entidad: string
+          edad_maxima_solicitada: number | null
+          fecha_de_informacion: string | null
+          id: string
+          ingreso_minimo_mensual_solicitado: number | null
+          monto_maximo_otorgable: number | null
+          monto_minimo_otorgable: number | null
+          nombre_completo_del_prestamo_personal: string | null
+          nombre_corto_del_prestamo_personal: string
+          plazo_maximo_otorgable_anos: number | null
+          relacion_cuota_ingreso: number | null
+          tasa_efectiva_anual_maxima: number | null
+          territorio_de_validez_de_la_oferta: string | null
+          tipo_de_tasa: string | null
+        }
+        Insert: {
+          antiguedad_laboral_minima_meses?: number | null
+          beneficiario?: string | null
+          cargo_maximo_por_cancelacion_anticipada?: number | null
+          codigo_de_entidad?: number | null
+          costo_financiero_efectivo_total_maximo?: number | null
+          created_at?: string | null
+          cuota_inicial_a_plazo_maximo_cada_10_000?: number | null
+          denominacion?: string | null
+          descripcion_de_entidad: string
+          edad_maxima_solicitada?: number | null
+          fecha_de_informacion?: string | null
+          id?: string
+          ingreso_minimo_mensual_solicitado?: number | null
+          monto_maximo_otorgable?: number | null
+          monto_minimo_otorgable?: number | null
+          nombre_completo_del_prestamo_personal?: string | null
+          nombre_corto_del_prestamo_personal: string
+          plazo_maximo_otorgable_anos?: number | null
+          relacion_cuota_ingreso?: number | null
+          tasa_efectiva_anual_maxima?: number | null
+          territorio_de_validez_de_la_oferta?: string | null
+          tipo_de_tasa?: string | null
+        }
+        Update: {
+          antiguedad_laboral_minima_meses?: number | null
+          beneficiario?: string | null
+          cargo_maximo_por_cancelacion_anticipada?: number | null
+          codigo_de_entidad?: number | null
+          costo_financiero_efectivo_total_maximo?: number | null
+          created_at?: string | null
+          cuota_inicial_a_plazo_maximo_cada_10_000?: number | null
+          denominacion?: string | null
+          descripcion_de_entidad?: string
+          edad_maxima_solicitada?: number | null
+          fecha_de_informacion?: string | null
+          id?: string
+          ingreso_minimo_mensual_solicitado?: number | null
+          monto_maximo_otorgable?: number | null
+          monto_minimo_otorgable?: number | null
+          nombre_completo_del_prestamo_personal?: string | null
+          nombre_corto_del_prestamo_personal?: string
+          plazo_maximo_otorgable_anos?: number | null
+          relacion_cuota_ingreso?: number | null
+          tasa_efectiva_anual_maxima?: number | null
+          territorio_de_validez_de_la_oferta?: string | null
+          tipo_de_tasa?: string | null
+        }
+        Relationships: []
+      }
+      creditos_prendarios: {
+        Row: {
+          antiguedad_laboral_minima_meses: number | null
+          beneficiario: string | null
+          cargo_maximo_por_cancelacion_anticipada: number | null
+          codigo_de_entidad: number | null
+          costo_financiero_efectivo_total_maximo: number | null
+          created_at: string | null
+          cuota_inicial_a_plazo_maximo_cada_10_000: number | null
+          denominacion: string | null
+          descripcion_de_entidad: string
+          destino_de_los_fondos: string | null
+          edad_maxima_solicitada_anos: number | null
+          fecha_de_informacion: string | null
+          id: string
+          ingreso_minimo_mensual_solicitado: number | null
+          monto_maximo_otorgable: number | null
+          monto_minimo_otorgable: number | null
+          nombre_completo_del_prestamo_prendario: string | null
+          nombre_corto_del_prestamo_prendario: string
+          plazo_maximo_otorgable_meses: number | null
+          relacion_cuota_ingreso: number | null
+          relacion_monto_tasacion: number | null
+          tasa_efectiva_anual_maxima: number | null
+          territorio_de_validez_de_la_oferta: string | null
+          tipo_de_tasa: string | null
+        }
+        Insert: {
+          antiguedad_laboral_minima_meses?: number | null
+          beneficiario?: string | null
+          cargo_maximo_por_cancelacion_anticipada?: number | null
+          codigo_de_entidad?: number | null
+          costo_financiero_efectivo_total_maximo?: number | null
+          created_at?: string | null
+          cuota_inicial_a_plazo_maximo_cada_10_000?: number | null
+          denominacion?: string | null
+          descripcion_de_entidad: string
+          destino_de_los_fondos?: string | null
+          edad_maxima_solicitada_anos?: number | null
+          fecha_de_informacion?: string | null
+          id?: string
+          ingreso_minimo_mensual_solicitado?: number | null
+          monto_maximo_otorgable?: number | null
+          monto_minimo_otorgable?: number | null
+          nombre_completo_del_prestamo_prendario?: string | null
+          nombre_corto_del_prestamo_prendario: string
+          plazo_maximo_otorgable_meses?: number | null
+          relacion_cuota_ingreso?: number | null
+          relacion_monto_tasacion?: number | null
+          tasa_efectiva_anual_maxima?: number | null
+          territorio_de_validez_de_la_oferta?: string | null
+          tipo_de_tasa?: string | null
+        }
+        Update: {
+          antiguedad_laboral_minima_meses?: number | null
+          beneficiario?: string | null
+          cargo_maximo_por_cancelacion_anticipada?: number | null
+          codigo_de_entidad?: number | null
+          costo_financiero_efectivo_total_maximo?: number | null
+          created_at?: string | null
+          cuota_inicial_a_plazo_maximo_cada_10_000?: number | null
+          denominacion?: string | null
+          descripcion_de_entidad?: string
+          destino_de_los_fondos?: string | null
+          edad_maxima_solicitada_anos?: number | null
+          fecha_de_informacion?: string | null
+          id?: string
+          ingreso_minimo_mensual_solicitado?: number | null
+          monto_maximo_otorgable?: number | null
+          monto_minimo_otorgable?: number | null
+          nombre_completo_del_prestamo_prendario?: string | null
+          nombre_corto_del_prestamo_prendario?: string
+          plazo_maximo_otorgable_meses?: number | null
+          relacion_cuota_ingreso?: number | null
+          relacion_monto_tasacion?: number | null
+          tasa_efectiva_anual_maxima?: number | null
+          territorio_de_validez_de_la_oferta?: string | null
+          tipo_de_tasa?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           application_id: string
