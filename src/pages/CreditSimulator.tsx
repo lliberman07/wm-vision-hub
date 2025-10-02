@@ -4,6 +4,7 @@ import { CreditType, CreditFormData } from "@/types/credit";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCreditSimulation } from "@/hooks/useCreditSimulation";
 import { useCreditComparator } from "@/hooks/useCreditComparator";
+import { useMortgageSimulation } from "@/hooks/useMortgageSimulation";
 import CreditTypeSelector from "@/components/credit/CreditTypeSelector";
 import CreditForm from "@/components/credit/CreditForm";
 import CreditResults from "@/components/credit/CreditResults";
@@ -11,6 +12,9 @@ import CreditComparator from "@/components/credit/CreditComparator";
 import CreditDisclaimer from "@/components/credit/CreditDisclaimer";
 import UVAProjectionChart from "@/components/credit/UVAProjectionChart";
 import BanksList from "@/components/credit/BanksList";
+import { MortgageForm } from "@/components/credit/MortgageForm";
+import { MortgageResultsTable } from "@/components/credit/MortgageResultsTable";
+import { MortgageDisclaimer } from "@/components/credit/MortgageDisclaimer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -18,13 +22,27 @@ const CreditSimulator = () => {
   const { t } = useLanguage();
   const [selectedType, setSelectedType] = useState<CreditType | undefined>();
   const [currentFormData, setCurrentFormData] = useState<CreditFormData | undefined>();
+  const [showMortgageSimulator, setShowMortgageSimulator] = useState(false);
+  
   const { simulate, loading, results, clearResults } = useCreditSimulation();
   const { items: comparisonItems, add: addToComparator, remove: removeFromComparator, clear: clearComparator } = useCreditComparator();
+  
+  const {
+    results: mortgageResults,
+    loading: mortgageLoading,
+    error: mortgageError,
+    simulateMortgage
+  } = useMortgageSimulation();
 
   const handleTypeSelect = (type: CreditType) => {
     setSelectedType(type);
     setCurrentFormData(undefined);
     clearResults();
+    setShowMortgageSimulator(type === 'hipotecario');
+  };
+
+  const handleMortgageSubmit = (data: any) => {
+    simulateMortgage(data);
   };
 
   const handleFormSubmit = (data: CreditFormData) => {
@@ -36,6 +54,7 @@ const CreditSimulator = () => {
     setSelectedType(undefined);
     setCurrentFormData(undefined);
     clearResults();
+    setShowMortgageSimulator(false);
   };
 
   const hasUVAInComparator = comparisonItems.some(item => item.esUVA);
@@ -61,8 +80,41 @@ const CreditSimulator = () => {
             <CreditTypeSelector onSelect={handleTypeSelect} selectedType={selectedType} />
           )}
 
-          {/* Banks List - shown after disclaimer when a type is selected */}
-          {selectedType && (
+          {/* Mortgage Simulator */}
+          {selectedType === 'hipotecario' && showMortgageSimulator && (
+            <>
+              <Button
+                variant="ghost"
+                onClick={handleBack}
+                className="mb-6"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                {t('credit.back')}
+              </Button>
+
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">{t('mortgage.form.title')}</h2>
+                  <MortgageForm onSubmit={handleMortgageSubmit} loading={mortgageLoading} />
+                </div>
+
+                {mortgageError && (
+                  <div className="bg-red-50 text-red-800 p-4 rounded-md">
+                    {mortgageError}
+                  </div>
+                )}
+
+                {mortgageResults.length > 0 && (
+                  <MortgageResultsTable results={mortgageResults} />
+                )}
+
+                <MortgageDisclaimer />
+              </div>
+            </>
+          )}
+
+          {/* Banks List and Regular Simulator for personal and prendario */}
+          {selectedType && selectedType !== 'hipotecario' && (
             <>
               <Button
                 variant="ghost"
@@ -77,33 +129,28 @@ const CreditSimulator = () => {
                 <h2 className="text-2xl font-bold mb-4">{t('credit.bank.availableBanks')}</h2>
                 <BanksList creditType={selectedType} />
               </div>
-            </>
-          )}
 
-          {/* Step 2: Form and Results - Optional simulation */}
-          {selectedType && (
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold mb-6">{t('credit.bank.customSimulation')}</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left: Form */}
-                <div className="sticky top-4 h-fit">
-                  <CreditForm
-                    tipo={selectedType}
-                    onSubmit={handleFormSubmit}
-                    loading={loading}
-                  />
-                </div>
+              <div className="mt-12">
+                <h2 className="text-2xl font-bold mb-6">{t('credit.bank.customSimulation')}</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="sticky top-4 h-fit">
+                    <CreditForm
+                      tipo={selectedType}
+                      onSubmit={handleFormSubmit}
+                      loading={loading}
+                    />
+                  </div>
 
-                {/* Right: Results */}
-                <div>
-                  <CreditResults
-                    results={results}
-                    onAddToComparator={addToComparator}
-                    loading={loading}
-                  />
+                  <div>
+                    <CreditResults
+                      results={results}
+                      onAddToComparator={addToComparator}
+                      loading={loading}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Comparator */}

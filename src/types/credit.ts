@@ -9,6 +9,10 @@ export interface CreditFormData {
   plazo: number;
   tasacion?: number;
   inflacionEsperada?: number;
+  // Mortgage-specific fields
+  valor_propiedad?: number;
+  perfil_usuario?: string;
+  destino_credito?: string;
 }
 
 export interface CreditProductBase {
@@ -30,6 +34,8 @@ export interface CreditHipotecario extends CreditProductBase {
   edad_maxima_solicitada_anos: number;
   relacion_monto_tasacion: number;
   cuota_inicial_a_plazo_maximo_cada_100_000: number;
+  beneficiarios?: string;
+  destino_de_los_fondos?: string;
 }
 
 export interface CreditPersonal extends CreditProductBase {
@@ -76,4 +82,21 @@ export interface UVAProjection {
   mes: number;
   cuota: number;
   porcentajeIngreso: number;
+}
+
+export interface MortgageSimulationResult {
+  banco: string;
+  producto: string;
+  monto_a_financiar: number;
+  cuota_inicial: number;
+  cuota_maxima_permitida: number;
+  plazo_deseado: number;
+  plazo_recomendado: number | null;
+  plazo_maximo: number;
+  estado: 'VIABLE' | 'NO_VIABLE_EXTENDER' | 'NO_VIABLE';
+  tasa_mensual: number;
+  tasa_anual: number;
+  cft: number;
+  codigo_entidad: number;
+  productData: CreditHipotecario;
 }
