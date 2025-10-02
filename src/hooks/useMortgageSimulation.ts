@@ -16,8 +16,9 @@ export const useMortgageSimulation = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Calculate monthly interest rate from annual effective rate
+  // tea comes as decimal (0.21 for 21%)
   const calculateMonthlyRate = (tea: number): number => {
-    return Math.pow(1 + tea / 100, 1 / 12) - 1;
+    return Math.pow(1 + tea, 1 / 12) - 1;
   };
 
   // Calculate French installment (cuota francesa)
@@ -235,8 +236,8 @@ export const useMortgageSimulation = () => {
           plazo_maximo: product.plazo_maximo_otorgable,
           estado,
           tasa_mensual: tasa_mensual * 100,
-          tasa_anual: product.tasa_efectiva_anual_maxima,
-          cft: product.costo_financiero_efectivo_total_maximo || 0,
+          tasa_anual: product.tasa_efectiva_anual_maxima * 100, // Convert to percentage for display
+          cft: (product.costo_financiero_efectivo_total_maximo || 0) * 100, // Convert to percentage for display
           codigo_entidad: product.codigo_de_entidad || 0,
           productData: product
         });
