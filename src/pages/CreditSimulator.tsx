@@ -10,6 +10,7 @@ import CreditResults from "@/components/credit/CreditResults";
 import CreditComparator from "@/components/credit/CreditComparator";
 import CreditDisclaimer from "@/components/credit/CreditDisclaimer";
 import UVAProjectionChart from "@/components/credit/UVAProjectionChart";
+import BanksList from "@/components/credit/BanksList";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -60,7 +61,7 @@ const CreditSimulator = () => {
             <CreditTypeSelector onSelect={handleTypeSelect} selectedType={selectedType} />
           )}
 
-          {/* Step 2: Form and Results */}
+          {/* Banks List - shown after disclaimer when a type is selected */}
           {selectedType && (
             <>
               <Button
@@ -72,6 +73,17 @@ const CreditSimulator = () => {
                 {t('credit.back')}
               </Button>
 
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold mb-4">{t('credit.bank.availableBanks')}</h2>
+                <BanksList creditType={selectedType} />
+              </div>
+            </>
+          )}
+
+          {/* Step 2: Form and Results - Optional simulation */}
+          {selectedType && (
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-6">{t('credit.bank.customSimulation')}</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left: Form */}
                 <div className="sticky top-4 h-fit">
@@ -91,7 +103,7 @@ const CreditSimulator = () => {
                   />
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {/* Comparator */}
