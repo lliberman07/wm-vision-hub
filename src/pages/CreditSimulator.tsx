@@ -17,12 +17,13 @@ const CreditSimulator = () => {
   const { t } = useLanguage();
   const [selectedType, setSelectedType] = useState<CreditType | undefined>();
   const [currentFormData, setCurrentFormData] = useState<CreditFormData | undefined>();
-  const { simulate, loading, results } = useCreditSimulation();
+  const { simulate, loading, results, clearResults } = useCreditSimulation();
   const { items: comparisonItems, add: addToComparator, remove: removeFromComparator, clear: clearComparator } = useCreditComparator();
 
   const handleTypeSelect = (type: CreditType) => {
     setSelectedType(type);
     setCurrentFormData(undefined);
+    clearResults();
   };
 
   const handleFormSubmit = (data: CreditFormData) => {
@@ -33,6 +34,7 @@ const CreditSimulator = () => {
   const handleBack = () => {
     setSelectedType(undefined);
     setCurrentFormData(undefined);
+    clearResults();
   };
 
   const hasUVAInComparator = comparisonItems.some(item => item.esUVA);

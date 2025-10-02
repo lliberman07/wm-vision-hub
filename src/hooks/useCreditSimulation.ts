@@ -250,9 +250,14 @@ export const useCreditSimulation = () => {
     }
   };
 
+  const clearResults = () => {
+    setResults([]);
+  };
+
   return {
     simulate,
     loading,
-    results
+    results,
+    clearResults
   };
 };
