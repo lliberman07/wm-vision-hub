@@ -52,7 +52,7 @@ const BankDetailsDialog = ({ bank, creditType, open, onClose }: BankDetailsDialo
 
   const getCancellationCharge = (product: any): string => {
     const charge = product.cargo_maximo_por_cancelacion_anticipada;
-    if (!charge || charge === 0) return t('credit.bank.noCharge');
+    if (!charge || charge === 0 || charge === null) return t('credit.bank.noCharge');
     return `${charge.toFixed(2)}%`;
   };
 
@@ -131,7 +131,7 @@ const BankDetailsDialog = ({ bank, creditType, open, onClose }: BankDetailsDialo
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="font-semibold">{getProductName(product)}</h4>
                           <Badge variant="outline" className="text-xs">
-                            TEA {t('credit.bank.from')} {product.tasa_efectiva_anual_maxima.toFixed(2)}%
+                            TEA {t('credit.bank.from')} {product.tasa_efectiva_anual_maxima?.toFixed(2) || 'N/A'}%
                           </Badge>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
@@ -151,7 +151,7 @@ const BankDetailsDialog = ({ bank, creditType, open, onClose }: BankDetailsDialo
                           )}
                           <div>
                             <span className="text-muted-foreground">CFT: </span>
-                            <span className="font-medium">{product.costo_financiero_efectivo_total_maximo.toFixed(2)}%</span>
+                            <span className="font-medium">{product.costo_financiero_efectivo_total_maximo?.toFixed(2) || 'N/A'}%</span>
                           </div>
                         </div>
                       </div>
