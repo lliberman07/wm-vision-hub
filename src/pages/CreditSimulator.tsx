@@ -11,6 +11,9 @@ import CreditResults from "@/components/credit/CreditResults";
 import CreditComparator from "@/components/credit/CreditComparator";
 import CreditDisclaimer from "@/components/credit/CreditDisclaimer";
 import UVAProjectionChart from "@/components/credit/UVAProjectionChart";
+import UVAComparisonChart from "@/components/credit/UVAComparisonChart";
+import UVARiskIndicator from "@/components/credit/UVARiskIndicator";
+import UVAScenarioSimulator from "@/components/credit/UVAScenarioSimulator";
 import BanksList from "@/components/credit/BanksList";
 import { MortgageForm } from "@/components/credit/MortgageForm";
 import { MortgageResultsTable } from "@/components/credit/MortgageResultsTable";
@@ -162,14 +165,44 @@ const CreditSimulator = () => {
             />
           )}
 
-          {/* UVA Projection Chart */}
+          {/* UVA Analysis Components */}
           {hasUVAInComparator && firstUVAItem && currentFormData && (
-            <UVAProjectionChart
-              cuotaInicial={firstUVAItem.cuota}
-              inflacionAnual={currentFormData.inflacionEsperada || 140}
-              plazoMeses={currentFormData.plazo}
-              ingreso={currentFormData.ingreso}
-            />
+            <div className="space-y-8">
+              {/* Original Projection Chart */}
+              <UVAProjectionChart
+                cuotaInicial={firstUVAItem.cuota}
+                inflacionAnual={currentFormData.inflacionEsperada || 140}
+                plazoMeses={currentFormData.plazo}
+                ingreso={currentFormData.ingreso}
+              />
+              
+              {/* Risk Indicator */}
+              <UVARiskIndicator
+                cuotaInicial={firstUVAItem.cuota}
+                ingreso={currentFormData.ingreso}
+                plazoMeses={currentFormData.plazo}
+                inflacionAnual={currentFormData.inflacionEsperada || 140}
+                aumentoSalarialEsperado={currentFormData.inflacionEsperada || 140}
+              />
+              
+              {/* Comparison UVA vs Traditional */}
+              <UVAComparisonChart
+                monto={currentFormData.monto}
+                plazoMeses={currentFormData.plazo}
+                tasaUVA={firstUVAItem.tasa}
+                tasaTradicional={firstUVAItem.tasa * 2} // Aproximación: tradicional ~2x la tasa UVA
+                inflacionAnual={currentFormData.inflacionEsperada || 140}
+                ingreso={currentFormData.ingreso}
+              />
+              
+              {/* Multi-Scenario Simulator */}
+              <UVAScenarioSimulator
+                cuotaInicial={firstUVAItem.cuota}
+                plazoMeses={currentFormData.plazo}
+                ingreso={currentFormData.ingreso}
+                inflacionBase={currentFormData.inflacionEsperada || 140}
+              />
+            </div>
           )}
 
           {/* Disclaimer */}
