@@ -183,21 +183,25 @@ export const useMortgageSimulation = () => {
           return;
         }
 
-        // Calculate financeable amount
-        const montoSegunTasacion = formData.valor_propiedad * (product.relacion_monto_tasacion / 100);
+        // Standard mortgage calculation formulas:
+        // LTV (Loan-to-Value) = relacion_monto_tasacion is already in decimal (0.7 = 70%)
+        // DTI (Debt-to-Income) = relacion_cuota_ingreso is already in decimal (0.25 = 25%)
+        
+        // Calculate financeable amount based on LTV
+        const montoSegunLTV = formData.valor_propiedad * product.relacion_monto_tasacion;
         const monto_a_financiar = Math.min(
-          montoSegunTasacion,
+          montoSegunLTV,
           product.monto_maximo_otorgable_del_prestamo
         );
 
         // Calculate required down payment (what the bank won't finance)
         const pago_inicial_requerido = formData.valor_propiedad - monto_a_financiar;
 
-        // Calculate rates
+        // Calculate monthly interest rate from annual effective rate (TEA)
         const tasa_mensual = calculateMonthlyRate(product.tasa_efectiva_anual_maxima);
         
-        // Calculate maximum allowed installment based on income
-        const cuota_maxima_permitida = formData.ingreso_mensual * (product.relacion_cuota_ingreso / 100);
+        // Calculate maximum allowed installment based on DTI (Debt-to-Income ratio)
+        const cuota_maxima_permitida = formData.ingreso_mensual * product.relacion_cuota_ingreso;
         
         // Calculate initial installment with desired term
         const cuota_inicial = calculateFrenchInstallment(
