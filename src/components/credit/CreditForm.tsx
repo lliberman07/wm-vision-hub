@@ -119,7 +119,9 @@ const CreditForm = ({ tipo, onSubmit, loading }: CreditFormProps) => {
 
           {(tipo === 'hipotecario' || tipo === 'prendario') && (
             <div>
-              <Label htmlFor="tasacion">{t('credit.form.tasacion')}</Label>
+              <Label htmlFor="tasacion">
+                {t(`credit.form.tasacion.${tipo}`)}
+              </Label>
               <Input
                 id="tasacion"
                 type="number"
