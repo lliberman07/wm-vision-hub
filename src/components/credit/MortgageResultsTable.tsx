@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MortgageSimulationResult } from '@/types/credit';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/utils/numberFormat';
+import { AmortizationTableDialog } from './AmortizationTableDialog';
+import { Eye } from 'lucide-react';
 
 interface MortgageResultsTableProps {
   results: MortgageSimulationResult[];
@@ -11,6 +15,7 @@ interface MortgageResultsTableProps {
 
 export const MortgageResultsTable = ({ results }: MortgageResultsTableProps) => {
   const { t, language } = useLanguage();
+  const [selectedResult, setSelectedResult] = useState<MortgageSimulationResult | null>(null);
 
   const getStatusBadge = (estado: MortgageSimulationResult['estado'], plazoRecomendado: number | null) => {
     switch (estado) {
@@ -58,6 +63,7 @@ export const MortgageResultsTable = ({ results }: MortgageResultsTableProps) => 
               <TableHead className="text-right">{t('mortgage.results.maxAllowedInstallment')}</TableHead>
               <TableHead className="text-center">{t('mortgage.results.recommendedTerm')}</TableHead>
               <TableHead className="text-center">{t('mortgage.results.status')}</TableHead>
+              <TableHead className="text-center">{t('mortgage.results.details')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -86,11 +92,33 @@ export const MortgageResultsTable = ({ results }: MortgageResultsTableProps) => 
                 <TableCell className="text-center">
                   {getStatusBadge(result.estado, result.plazo_recomendado)}
                 </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedResult(result)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    {t('mortgage.results.viewAmortization')}
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      {selectedResult && (
+        <AmortizationTableDialog
+          open={!!selectedResult}
+          onOpenChange={(open) => !open && setSelectedResult(null)}
+          banco={selectedResult.banco}
+          producto={selectedResult.producto}
+          montoFinanciado={selectedResult.monto_a_financiar}
+          tasaMensual={selectedResult.tasa_mensual}
+          plazoMeses={selectedResult.plazo_deseado}
+        />
+      )}
     </Card>
   );
 };
