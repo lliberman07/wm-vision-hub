@@ -18,6 +18,7 @@ const Navigation = () => {
     { href: "/industries", label: t('nav.industries') },
     { href: "/financing", label: t('nav.financing') },
     { href: "/contact", label: t('nav.contact') },
+    { href: "/contact_odoo", label: t('nav.contactOdoo') },
     { href: "/faq", label: t('nav.faq') },
   ];
 

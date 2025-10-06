@@ -23,6 +23,7 @@ const translations = {
     'nav.industries': 'Industries & Programs',
     'nav.financing': 'Financing',
     'nav.contact': 'Contact',
+    'nav.contactOdoo': 'Odoo Contact',
     'nav.faq': 'FAQ',
     'nav.getStarted': 'Get Started',
     
@@ -1194,6 +1195,7 @@ const translations = {
     'nav.industries': 'Industrias y Programas',
     'nav.financing': 'Financiamiento',
     'nav.contact': 'Contacto',
+    'nav.contactOdoo': 'Contacto Odoo',
     'nav.faq': 'Preguntas Frecuentes',
     'nav.getStarted': 'Comenzar',
     
