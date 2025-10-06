@@ -102,6 +102,7 @@ export default function ContactOdoo() {
 
     setIsSearching(true);
     try {
+      console.log('Calling manage-odoo-contact with searchTerm:', searchTerm.trim());
       const { data, error } = await supabase.functions.invoke('manage-odoo-contact', {
         body: {
           action: 'search',
@@ -109,6 +110,7 @@ export default function ContactOdoo() {
         },
       });
 
+      console.log('Response from edge function:', { data, error });
       if (error) throw error;
 
       if (data.success) {
@@ -191,10 +193,12 @@ export default function ContactOdoo() {
         body.contactId = selectedContact.id;
       }
 
+      console.log('Submitting to manage-odoo-contact:', body);
       const { data: response, error } = await supabase.functions.invoke('manage-odoo-contact', {
         body,
       });
 
+      console.log('Response from edge function:', { response, error });
       if (error) throw error;
 
       if (response.success) {
