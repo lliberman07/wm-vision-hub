@@ -25,6 +25,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import { FinancingApplication } from "./pages/FinancingApplication";
+import ContactOdoo from "./pages/ContactOdoo";
 
 import CreditSimulator from "./pages/CreditSimulator";
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/financing/simulator" element={<Financing />} />
               <Route path="/credit-simulator" element={<CreditSimulator />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/contact_odoo" element={<ContactOdoo />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/auth" element={<Auth />} />
               <Route 

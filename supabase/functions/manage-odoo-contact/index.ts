@@ -1,0 +1,275 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface OdooConfig {
+  url: string;
+  database: string;
+  username: string;
+  apiKey: string;
+}
+
+interface ContactData {
+  name: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  street?: string;
+  street2?: string;
+  city?: string;
+  state_id?: number;
+  zip?: string;
+  country_id?: number;
+  website?: string;
+  vat?: string;
+  company_type: 'person' | 'company';
+  function?: string;
+  parent_id?: number;
+  category_id?: Array<[number, number, number[]]>;
+}
+
+interface RequestBody {
+  action: 'search' | 'create' | 'update';
+  searchTerm?: string;
+  contactId?: number;
+  contactData?: ContactData;
+}
+
+async function authenticateOdoo(config: OdooConfig): Promise<number> {
+  console.log('Authenticating with Odoo...');
+  
+  const authResponse = await fetch(`${config.url}/jsonrpc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'call',
+      params: {
+        service: 'common',
+        method: 'authenticate',
+        args: [config.database, config.username, config.apiKey, {}]
+      },
+      id: Math.random()
+    })
+  });
+
+  const authData = await authResponse.json();
+  console.log('Authentication response:', authData);
+
+  if (authData.error) {
+    throw new Error(`Odoo authentication failed: ${JSON.stringify(authData.error)}`);
+  }
+
+  if (!authData.result) {
+    throw new Error('Authentication failed: No user ID returned');
+  }
+
+  console.log('Authenticated successfully, UID:', authData.result);
+  return authData.result;
+}
+
+async function searchContacts(config: OdooConfig, uid: number, searchTerm: string) {
+  console.log('Searching contacts with term:', searchTerm);
+
+  const searchResponse = await fetch(`${config.url}/jsonrpc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'call',
+      params: {
+        service: 'object',
+        method: 'execute_kw',
+        args: [
+          config.database,
+          uid,
+          config.apiKey,
+          'res.partner',
+          'search_read',
+          [
+            [
+              '|', '|',
+              ['email', 'ilike', searchTerm],
+              ['vat', 'ilike', searchTerm],
+              ['name', 'ilike', searchTerm]
+            ]
+          ],
+          {
+            fields: [
+              'id', 'name', 'email', 'phone', 'mobile', 'street', 'street2',
+              'city', 'state_id', 'zip', 'country_id', 'website', 'vat',
+              'company_type', 'function', 'parent_id', 'category_id'
+            ],
+            limit: 10
+          }
+        ]
+      },
+      id: Math.random()
+    })
+  });
+
+  const searchData = await searchResponse.json();
+  console.log('Search response:', searchData);
+
+  if (searchData.error) {
+    throw new Error(`Search failed: ${JSON.stringify(searchData.error)}`);
+  }
+
+  return searchData.result || [];
+}
+
+async function createContact(config: OdooConfig, uid: number, contactData: ContactData) {
+  console.log('Creating contact with data:', contactData);
+
+  const createResponse = await fetch(`${config.url}/jsonrpc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'call',
+      params: {
+        service: 'object',
+        method: 'execute_kw',
+        args: [
+          config.database,
+          uid,
+          config.apiKey,
+          'res.partner',
+          'create',
+          [contactData]
+        ]
+      },
+      id: Math.random()
+    })
+  });
+
+  const createData = await createResponse.json();
+  console.log('Create response:', createData);
+
+  if (createData.error) {
+    throw new Error(`Contact creation failed: ${JSON.stringify(createData.error)}`);
+  }
+
+  return createData.result;
+}
+
+async function updateContact(config: OdooConfig, uid: number, contactId: number, contactData: ContactData) {
+  console.log('Updating contact ID:', contactId, 'with data:', contactData);
+
+  const updateResponse = await fetch(`${config.url}/jsonrpc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'call',
+      params: {
+        service: 'object',
+        method: 'execute_kw',
+        args: [
+          config.database,
+          uid,
+          config.apiKey,
+          'res.partner',
+          'write',
+          [[contactId], contactData]
+        ]
+      },
+      id: Math.random()
+    })
+  });
+
+  const updateData = await updateResponse.json();
+  console.log('Update response:', updateData);
+
+  if (updateData.error) {
+    throw new Error(`Contact update failed: ${JSON.stringify(updateData.error)}`);
+  }
+
+  return updateData.result;
+}
+
+const handler = async (req: Request): Promise<Response> => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const config: OdooConfig = {
+      url: Deno.env.get('ODOO_URL') || '',
+      database: Deno.env.get('ODOO_DATABASE') || '',
+      username: Deno.env.get('ODOO_USERNAME') || '',
+      apiKey: Deno.env.get('ODOO_API_KEY') || '',
+    };
+
+    // Validate configuration
+    if (!config.url || !config.database || !config.username || !config.apiKey) {
+      throw new Error('Missing Odoo configuration. Please check environment variables.');
+    }
+
+    console.log('Odoo Config:', {
+      url: config.url,
+      database: config.database,
+      username: config.username,
+      apiKeyLength: config.apiKey.length
+    });
+
+    const body: RequestBody = await req.json();
+    console.log('Request body:', body);
+
+    // Authenticate with Odoo
+    const uid = await authenticateOdoo(config);
+
+    let result;
+
+    switch (body.action) {
+      case 'search':
+        if (!body.searchTerm) {
+          throw new Error('Search term is required for search action');
+        }
+        result = await searchContacts(config, uid, body.searchTerm);
+        break;
+
+      case 'create':
+        if (!body.contactData) {
+          throw new Error('Contact data is required for create action');
+        }
+        result = await createContact(config, uid, body.contactData);
+        break;
+
+      case 'update':
+        if (!body.contactId || !body.contactData) {
+          throw new Error('Contact ID and contact data are required for update action');
+        }
+        result = await updateContact(config, uid, body.contactId, body.contactData);
+        break;
+
+      default:
+        throw new Error(`Invalid action: ${body.action}`);
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, data: result }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      }
+    );
+  } catch (error: any) {
+    console.error('Error in manage-odoo-contact function:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'An unknown error occurred' 
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      }
+    );
+  }
+};
+
+serve(handler);
