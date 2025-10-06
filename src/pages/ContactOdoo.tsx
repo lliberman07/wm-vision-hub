@@ -18,7 +18,7 @@ const contactSchema = z.object({
   contactType: z.enum(['person', 'company']),
   searchTerm: z.string().optional(),
   name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email').optional().or(z.literal('')),
+  email: z.string().optional(),
   phone: z.string().optional(),
   street: z.string().optional(),
   street2: z.string().optional(),
@@ -26,7 +26,7 @@ const contactSchema = z.object({
   state: z.string().optional(),
   zip: z.string().optional(),
   country: z.string().optional(),
-  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  website: z.string().optional(),
   vat: z.string().optional(),
   arcaResponsibility: z.string().optional(),
   tags: z.string().optional(),
@@ -159,6 +159,7 @@ export default function ContactOdoo() {
   };
 
   const onSubmit = async (data: ContactFormData) => {
+    console.log('Form submitted with data:', data);
     setIsSubmitting(true);
     try {
       const contactData: any = {
