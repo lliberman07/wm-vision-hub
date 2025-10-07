@@ -1,5 +1,5 @@
 import { Users, Building2, FileText } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -35,6 +35,7 @@ const menuItems = [
 export function OdooSidebar() {
   const { state } = useSidebar();
   const { t } = useLanguage();
+  const location = useLocation();
   const isCollapsed = state === 'collapsed';
 
   return (
@@ -51,16 +52,12 @@ export function OdooSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        isActive
-                          ? 'bg-accent text-accent-foreground font-medium'
-                          : 'text-foreground hover:bg-accent/50 hover:text-accent-foreground'
-                      }
-                    >
-                      <item.icon className="h-4 w-4" />
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === item.url}
+                  >
+                    <NavLink to={item.url}>
+                      <item.icon />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
