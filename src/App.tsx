@@ -26,8 +26,11 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import { FinancingApplication } from "./pages/FinancingApplication";
 import ContactOdoo from "./pages/ContactOdoo";
-
+import OdooPMS from "./pages/OdooPMS";
+import PropertyOdoo from "./pages/PropertyOdoo";
+import ContractsOdoo from "./pages/ContractsOdoo";
 import CreditSimulator from "./pages/CreditSimulator";
+import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +59,12 @@ const App = () => (
               <Route path="/credit-simulator" element={<CreditSimulator />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/contact_odoo" element={<ContactOdoo />} />
+              <Route path="/odoo_pms" element={<OdooPMS />}>
+                <Route index element={<Navigate to="/odoo_pms/contactos" replace />} />
+                <Route path="contactos" element={<ContactOdoo standalone={false} />} />
+                <Route path="propiedades" element={<PropertyOdoo />} />
+                <Route path="contratos" element={<ContractsOdoo />} />
+              </Route>
               <Route path="/faq" element={<FAQ />} />
               <Route path="/auth" element={<Auth />} />
               <Route 

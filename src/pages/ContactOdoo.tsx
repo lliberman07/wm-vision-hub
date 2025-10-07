@@ -59,7 +59,11 @@ interface SearchResult {
   category_id?: number[];
 }
 
-export default function ContactOdoo() {
+interface ContactOdooProps {
+  standalone?: boolean;
+}
+
+export default function ContactOdoo({ standalone = true }: ContactOdooProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [mode, setMode] = useState<'create' | 'edit'>('create');
@@ -262,328 +266,31 @@ export default function ContactOdoo() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12">
-      <div className="container max-w-4xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">{t('contactOdoo.title')}</CardTitle>
-            <CardDescription>{t('contactOdoo.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            {/* Mode Selection */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">{t('contactOdoo.mode.title')}</Label>
-              <RadioGroup
-                value={mode}
-                onValueChange={(value: 'create' | 'edit') => {
-                  setMode(value);
-                  form.setValue('mode', value);
-                  if (value === 'create') {
-                    setSelectedContact(null);
-                    setSearchResults([]);
-                  }
-                }}
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2 border rounded-lg p-4 flex-1 cursor-pointer hover:bg-accent">
-                  <RadioGroupItem value="create" id="create" />
-                  <Label htmlFor="create" className="cursor-pointer flex-1">
-                    {t('contactOdoo.mode.create')}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-lg p-4 flex-1 cursor-pointer hover:bg-accent">
-                  <RadioGroupItem value="edit" id="edit" />
-                  <Label htmlFor="edit" className="cursor-pointer flex-1">
-                    {t('contactOdoo.mode.edit')}
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
+  const content = (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-3xl">{t('contactOdoo.title')}</CardTitle>
+        <CardDescription>{t('contactOdoo.description')}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-8">
+...
+      </CardContent>
+    </Card>
+  );
 
-            {/* Search Section (only in edit mode) */}
-            {mode === 'edit' && (
-              <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
-                <Label className="text-base font-semibold">{t('contactOdoo.search.title')}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder={t('contactOdoo.search.placeholder')}
-                    {...form.register('searchTerm')}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                  <Button onClick={handleSearch} disabled={isSearching}>
-                    {isSearching ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Search className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
-                {searchResults.length > 0 && (
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {searchResults.map((contact) => (
-                      <div
-                        key={contact.id}
-                        className="p-3 border rounded-lg hover:bg-background cursor-pointer transition-colors"
-                        onClick={() => loadContactData(contact)}
-                      >
-                        <div className="flex items-start gap-3">
-                          {contact.company_type === 'company' ? (
-                            <Building2 className="h-5 w-5 mt-0.5 text-primary" />
-                          ) : (
-                            <User className="h-5 w-5 mt-0.5 text-primary" />
-                          )}
-                          <div className="flex-1">
-                            <div className="font-semibold">{contact.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {contact.email && <div>{contact.email}</div>}
-                              {contact.vat && <div>IVA: {contact.vat}</div>}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Contact Type Selection */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">{t('contactOdoo.type.title')}</Label>
-              <RadioGroup
-                value={contactType}
-                onValueChange={(value: 'person' | 'company') => {
-                  setContactType(value);
-                  form.setValue('contactType', value);
-                }}
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2 border rounded-lg p-4 flex-1 cursor-pointer hover:bg-accent">
-                  <RadioGroupItem value="person" id="person" />
-                  <Label htmlFor="person" className="cursor-pointer flex-1 flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    {t('contactOdoo.type.person')}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-lg p-4 flex-1 cursor-pointer hover:bg-accent">
-                  <RadioGroupItem value="company" id="company" />
-                  <Label htmlFor="company" className="cursor-pointer flex-1 flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    {t('contactOdoo.type.company')}
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* Contact Form */}
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">{t('contactOdoo.form.basic')}</h3>
-                
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">
-                      {contactType === 'company' 
-                        ? t('contactOdoo.form.companyName') 
-                        : t('contactOdoo.form.fullName')}
-                      <span className="text-destructive ml-1">*</span>
-                    </Label>
-                    <Input id="name" {...form.register('name')} />
-                    {form.formState.errors.name && (
-                      <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{t('contactOdoo.form.email')}</Label>
-                    <Input id="email" type="email" {...form.register('email')} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">{t('contactOdoo.form.phone')}</Label>
-                    <Input id="phone" {...form.register('phone')} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="website">{t('contactOdoo.form.website')}</Label>
-                    <Input id="website" {...form.register('website')} placeholder="https://" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Address Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">{t('contactOdoo.form.address')}</h3>
-                
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="street">{t('contactOdoo.form.street')}</Label>
-                    <Input id="street" {...form.register('street')} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="street2">{t('contactOdoo.form.street2')}</Label>
-                    <Input id="street2" {...form.register('street2')} />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">{t('contactOdoo.form.city')}</Label>
-                      <Input id="city" {...form.register('city')} />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="state">{t('contactOdoo.form.state')}</Label>
-                      <Select
-                        value={form.watch('state')}
-                        onValueChange={(value) => form.setValue('state', value)}
-                      >
-                        <SelectTrigger id="state">
-                          <SelectValue placeholder={t('contactOdoo.form.selectState')} />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background z-50">
-                          {ARGENTINA_DATA.map((province) => (
-                            <SelectItem key={province.id} value={province.name}>
-                              {province.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="zip">{t('contactOdoo.form.zip')}</Label>
-                      <Input id="zip" {...form.register('zip')} />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="country">{t('contactOdoo.form.country')}</Label>
-                      <Select
-                        value={form.watch('country')}
-                        onValueChange={(value) => form.setValue('country', value)}
-                      >
-                        <SelectTrigger id="country">
-                          <SelectValue placeholder={t('contactOdoo.form.selectCountry')} />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background z-50">
-                          {COUNTRIES.map((country) => (
-                            <SelectItem key={country.code} value={country.code}>
-                              {t('common.currentLanguage') === 'es' ? country.nameEs : country.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tax & Legal Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">{t('contactOdoo.form.taxInfo')}</h3>
-                
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="identificationType">{t('contactOdoo.form.identificationType')}</Label>
-                    <Select
-                      value={form.watch('identificationType')}
-                      onValueChange={(value) => form.setValue('identificationType', value)}
-                    >
-                      <SelectTrigger id="identificationType">
-                        <SelectValue placeholder={t('contactOdoo.form.selectIdentificationType')} />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background z-50">
-                        {IDENTIFICATION_TYPES.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {t('common.currentLanguage') === 'es' ? type.labelEs : type.labelEn}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="identificationNumber">{t('contactOdoo.form.identificationNumber')}</Label>
-                    <Input 
-                      id="identificationNumber" 
-                      {...form.register('identificationNumber')} 
-                      placeholder={t('contactOdoo.form.numberPlaceholder')}
-                    />
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="arcaResponsibility">{t('contactOdoo.form.arca')}</Label>
-                    <Select
-                      value={form.watch('arcaResponsibility')}
-                      onValueChange={(value) => form.setValue('arcaResponsibility', value)}
-                    >
-                      <SelectTrigger id="arcaResponsibility">
-                        <SelectValue placeholder={t('contactOdoo.form.selectArca')} />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background z-50">
-                        {ARCA_RESPONSIBILITIES.map((resp) => (
-                          <SelectItem key={resp.value} value={resp.value}>
-                            {t('common.currentLanguage') === 'es' ? resp.labelEs : resp.labelEn}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tags">{t('contactOdoo.form.tags')}</Label>
-                  <Input 
-                    id="tags" 
-                    {...form.register('tags')} 
-                    placeholder={t('contactOdoo.form.tagsPlaceholder')}
-                  />
-                </div>
-              </div>
-
-              {/* Person-specific fields */}
-              {contactType === 'person' && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">{t('contactOdoo.form.workInfo')}</h3>
-                  
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="companyName">{t('contactOdoo.form.company')}</Label>
-                      <Input id="companyName" {...form.register('companyName')} />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="jobPosition">{t('contactOdoo.form.position')}</Label>
-                      <Input id="jobPosition" {...form.register('jobPosition')} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <div className="flex gap-3 pt-4">
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t('common.loading')}
-                    </>
-                  ) : (
-                    mode === 'create' ? t('contactOdoo.submit.create') : t('contactOdoo.submit.update')
-                  )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+  if (standalone) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12">
+        <div className="container max-w-4xl">
+          {content}
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="container max-w-4xl py-12">
+      {content}
     </div>
   );
 }
