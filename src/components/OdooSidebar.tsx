@@ -40,7 +40,7 @@ export function OdooSidebar() {
   return (
     <Sidebar className={isCollapsed ? 'w-14' : 'w-60'} collapsible="icon">
       <div className="flex items-center justify-between p-4 border-b">
-        {!isCollapsed && <h2 className="font-semibold text-lg">Odoo PMS</h2>}
+        {!isCollapsed && <h2 className="font-semibold text-lg">WM PMS</h2>}
         <SidebarTrigger />
       </div>
 
@@ -55,13 +55,15 @@ export function OdooSidebar() {
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        isActive
-                          ? 'bg-accent text-accent-foreground font-medium'
-                          : 'hover:bg-accent/50'
+                        `flex items-center gap-2 ${
+                          isActive
+                            ? 'bg-accent text-accent-foreground font-medium'
+                            : 'hover:bg-accent/50'
+                        }`
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      {!isCollapsed && <span>{item.title}</span>}
+                      <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
