@@ -135,15 +135,10 @@ const PropertyManagement = () => {
           </p>
           <div className="flex justify-center">
             <Button size="lg" variant="secondary" asChild>
-              <a 
-                href="https://persiscalconsulting-property-manager-test.odoo.com/es_AR/web/login#action=menu&cids=1&menu_id=1"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-bold"
-              >
+              <Link to="/odoo_pms/contactos" className="font-bold">
                 {t('propertyManagement.pms.access')}
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
+              </Link>
             </Button>
           </div>
         </div>
