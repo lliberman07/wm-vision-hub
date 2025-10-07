@@ -55,11 +55,9 @@ export function OdooSidebar() {
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        `flex items-center gap-2 ${
-                          isActive
-                            ? 'bg-accent text-accent-foreground font-medium'
-                            : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
-                        }`
+                        isActive
+                          ? 'bg-accent text-accent-foreground font-medium'
+                          : 'text-foreground hover:bg-accent/50 hover:text-accent-foreground'
                       }
                     >
                       <item.icon className="h-4 w-4" />
