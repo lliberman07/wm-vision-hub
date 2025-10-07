@@ -269,8 +269,8 @@ export default function ContactOdoo({ standalone = true }: ContactOdooProps) {
   const content = (
     <Card>
       <CardHeader>
-        <CardTitle className="text-3xl">{t('contactOdoo.title')}</CardTitle>
-        <CardDescription>{t('contactOdoo.description')}</CardDescription>
+        <CardTitle className="text-3xl">Gestión de Contactos</CardTitle>
+        <CardDescription>Crear o modificar contactos</CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         {/* Mode Selection */}
