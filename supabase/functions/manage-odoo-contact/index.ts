@@ -16,7 +16,6 @@ interface ContactData {
   name: string;
   email?: string;
   phone?: string;
-  mobile?: string;
   street?: string;
   street2?: string;
   city?: string;

@@ -168,10 +168,7 @@ export default function ContactOdoo() {
       };
 
       if (data.email) contactData.email = data.email;
-      if (data.phone) {
-        contactData.phone = data.phone;
-        contactData.mobile = data.phone;
-      }
+      if (data.phone) contactData.phone = data.phone;
       if (data.street) contactData.street = data.street;
       if (data.street2) contactData.street2 = data.street2;
       if (data.city) contactData.city = data.city;
