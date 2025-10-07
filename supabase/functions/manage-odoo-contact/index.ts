@@ -235,6 +235,14 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
       if (idTypeData.result && idTypeData.result.length > 0) {
         odooData.l10n_latam_identification_type_id = idTypeData.result[0].id;
         console.log('Found identification type ID:', idTypeData.result[0].id);
+        
+        // Store the vat number to use after we set the identification type
+        const vatNumber = odooData.vat;
+        delete odooData.vat;
+        
+        // First create/update with the identification type
+        console.log('Setting identification type first, VAT will be added in update step');
+        odooData._vat_to_set = vatNumber; // Store for later
       }
     } catch (error) {
       console.error('Error finding identification type:', error);
@@ -396,6 +404,14 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
     delete odooData.parent_name;
   }
 
+  // Check if we need to set VAT after creation (stored from identification type handling)
+  let vatToSet: string | null = null;
+  if (odooData._vat_to_set) {
+    vatToSet = odooData._vat_to_set;
+    delete odooData._vat_to_set;
+    console.log('VAT will be set after contact creation:', vatToSet);
+  }
+
   const createResponse = await fetch(`${config.url}/jsonrpc`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -425,7 +441,48 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
     throw new Error(`Contact creation failed: ${JSON.stringify(createData.error)}`);
   }
 
-  return createData.result;
+  const contactId = createData.result;
+  console.log('Contact created successfully with ID:', contactId);
+
+  // If we have a VAT number to set, update the contact now that identification type is set
+  if (vatToSet) {
+    console.log('Updating contact with VAT number:', vatToSet);
+    try {
+      const updateResponse = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'res.partner',
+              'write',
+              [[contactId], { vat: vatToSet }]
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const updateData = await updateResponse.json();
+      console.log('VAT update response:', JSON.stringify(updateData));
+      
+      if (updateData.error) {
+        console.error('Error updating VAT:', JSON.stringify(updateData.error));
+        // Don't throw error, just log it - contact was created successfully
+      }
+    } catch (error) {
+      console.error('Error in VAT update:', error);
+      // Don't throw error, just log it - contact was created successfully
+    }
+  }
+
+  return contactId;
 }
 
 async function updateContact(config: OdooConfig, uid: number, contactId: number, contactData: ContactData) {
