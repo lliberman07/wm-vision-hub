@@ -58,7 +58,7 @@ export function OdooSidebar() {
                         `flex items-center gap-2 ${
                           isActive
                             ? 'bg-accent text-accent-foreground font-medium'
-                            : 'hover:bg-accent/50'
+                            : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
                         }`
                       }
                     >
