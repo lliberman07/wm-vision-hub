@@ -12,13 +12,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Search, Building2, User, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { COUNTRIES } from '@/data/countries';
+import { IDENTIFICATION_TYPES, ARCA_RESPONSIBILITIES } from '@/data/odooTypes';
+import { ARGENTINA_DATA } from '@/data/argentina';
 
 const contactSchema = z.object({
   mode: z.enum(['create', 'edit']),
   contactType: z.enum(['person', 'company']),
   searchTerm: z.string().optional(),
   name: z.string().min(1, 'Name is required'),
-  email: z.string().optional(),
+  email: z.string().email('Invalid email').optional().or(z.literal('')),
   phone: z.string().optional(),
   street: z.string().optional(),
   street2: z.string().optional(),
@@ -27,7 +30,8 @@ const contactSchema = z.object({
   zip: z.string().optional(),
   country: z.string().optional(),
   website: z.string().optional(),
-  vat: z.string().optional(),
+  identificationType: z.string().optional(),
+  identificationNumber: z.string().optional(),
   arcaResponsibility: z.string().optional(),
   tags: z.string().optional(),
   companyName: z.string().optional(),
@@ -79,9 +83,10 @@ export default function ContactOdoo() {
       city: '',
       state: '',
       zip: '',
-      country: '',
+      country: 'AR',
       website: '',
-      vat: '',
+      identificationType: 'CUIT',
+      identificationNumber: '',
       arcaResponsibility: '',
       tags: '',
       companyName: '',
@@ -148,9 +153,15 @@ export default function ContactOdoo() {
     form.setValue('city', contact.city || '');
     form.setValue('state', contact.state_id?.[1] || '');
     form.setValue('zip', contact.zip || '');
-    form.setValue('country', contact.country_id?.[1] || '');
+    
+    // Find country code from country name
+    const countryData = COUNTRIES.find(c => 
+      c.name === contact.country_id?.[1] || c.nameEs === contact.country_id?.[1]
+    );
+    form.setValue('country', countryData?.code || 'AR');
+    
     form.setValue('website', contact.website || '');
-    form.setValue('vat', contact.vat || '');
+    form.setValue('identificationNumber', contact.vat || '');
     
     if (contact.company_type === 'person') {
       form.setValue('jobPosition', contact.function || '');
@@ -174,11 +185,31 @@ export default function ContactOdoo() {
       if (data.city) contactData.city = data.city;
       if (data.zip) contactData.zip = data.zip;
       if (data.website) contactData.website = data.website;
-      if (data.vat) contactData.vat = data.vat;
+      
+      // Identification number (vat field in Odoo)
+      if (data.identificationNumber) contactData.vat = data.identificationNumber;
+      
+      // State/Province (send as string, Odoo will match it)
+      if (data.state) contactData.state_name = data.state;
+      
+      // Country (send country code, Odoo will match it)
+      if (data.country) contactData.country_code = data.country;
+      
+      // ARCA Responsibility
+      if (data.arcaResponsibility) contactData.l10n_ar_afip_responsibility_type_id = data.arcaResponsibility;
+      
+      // Tags (convert comma-separated string to array)
+      if (data.tags) {
+        const tagNames = data.tags.split(',').map(tag => tag.trim()).filter(Boolean);
+        if (tagNames.length > 0) {
+          contactData.category_names = tagNames;
+        }
+      }
 
       // Add person-specific fields
       if (contactType === 'person') {
         if (data.jobPosition) contactData.function = data.jobPosition;
+        if (data.companyName) contactData.parent_name = data.companyName;
       }
 
       const action = mode === 'create' ? 'create' : 'update';
@@ -401,7 +432,21 @@ export default function ContactOdoo() {
 
                     <div className="space-y-2">
                       <Label htmlFor="state">{t('contactOdoo.form.state')}</Label>
-                      <Input id="state" {...form.register('state')} />
+                      <Select
+                        value={form.watch('state')}
+                        onValueChange={(value) => form.setValue('state', value)}
+                      >
+                        <SelectTrigger id="state">
+                          <SelectValue placeholder={t('contactOdoo.form.selectState')} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          {ARGENTINA_DATA.map((province) => (
+                            <SelectItem key={province.id} value={province.name}>
+                              {province.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">
@@ -411,7 +456,21 @@ export default function ContactOdoo() {
 
                     <div className="space-y-2">
                       <Label htmlFor="country">{t('contactOdoo.form.country')}</Label>
-                      <Input id="country" {...form.register('country')} />
+                      <Select
+                        value={form.watch('country')}
+                        onValueChange={(value) => form.setValue('country', value)}
+                      >
+                        <SelectTrigger id="country">
+                          <SelectValue placeholder={t('contactOdoo.form.selectCountry')} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          {COUNTRIES.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              {t('common.currentLanguage') === 'es' ? country.nameEs : country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -423,13 +482,50 @@ export default function ContactOdoo() {
                 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="vat">{t('contactOdoo.form.vat')}</Label>
-                    <Input id="vat" {...form.register('vat')} />
+                    <Label htmlFor="identificationType">{t('contactOdoo.form.identificationType')}</Label>
+                    <Select
+                      value={form.watch('identificationType')}
+                      onValueChange={(value) => form.setValue('identificationType', value)}
+                    >
+                      <SelectTrigger id="identificationType">
+                        <SelectValue placeholder={t('contactOdoo.form.selectIdentificationType')} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        {IDENTIFICATION_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {t('common.currentLanguage') === 'es' ? type.labelEs : type.labelEn}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="identificationNumber">{t('contactOdoo.form.identificationNumber')}</Label>
+                    <Input 
+                      id="identificationNumber" 
+                      {...form.register('identificationNumber')} 
+                      placeholder={t('contactOdoo.form.numberPlaceholder')}
+                    />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="arcaResponsibility">{t('contactOdoo.form.arca')}</Label>
-                    <Input id="arcaResponsibility" {...form.register('arcaResponsibility')} />
+                    <Select
+                      value={form.watch('arcaResponsibility')}
+                      onValueChange={(value) => form.setValue('arcaResponsibility', value)}
+                    >
+                      <SelectTrigger id="arcaResponsibility">
+                        <SelectValue placeholder={t('contactOdoo.form.selectArca')} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        {ARCA_RESPONSIBILITIES.map((resp) => (
+                          <SelectItem key={resp.value} value={resp.value}>
+                            {t('common.currentLanguage') === 'es' ? resp.labelEs : resp.labelEn}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

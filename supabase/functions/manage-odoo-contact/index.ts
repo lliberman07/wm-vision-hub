@@ -20,14 +20,19 @@ interface ContactData {
   street2?: string;
   city?: string;
   state_id?: number;
+  state_name?: string;
   zip?: string;
   country_id?: number;
+  country_code?: string;
   website?: string;
   vat?: string;
+  l10n_ar_afip_responsibility_type_id?: string;
   company_type: 'person' | 'company';
   function?: string;
   parent_id?: number;
+  parent_name?: string;
   category_id?: Array<[number, number, number[]]>;
+  category_names?: string[];
 }
 
 interface RequestBody {
@@ -123,6 +128,182 @@ async function searchContacts(config: OdooConfig, uid: number, searchTerm: strin
 async function createContact(config: OdooConfig, uid: number, contactData: ContactData) {
   console.log('Creating contact with data:', contactData);
 
+  // Prepare the contact data for Odoo
+  const odooData: any = { ...contactData };
+  
+  // Handle country - search by code
+  if (contactData.country_code) {
+    try {
+      const countrySearch = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'res.country',
+              'search_read',
+              [[['code', '=', contactData.country_code]]],
+              { fields: ['id'], limit: 1 }
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const countryData = await countrySearch.json();
+      if (countryData.result && countryData.result.length > 0) {
+        odooData.country_id = countryData.result[0].id;
+      }
+    } catch (error) {
+      console.error('Error finding country:', error);
+    }
+    delete odooData.country_code;
+  }
+
+  // Handle state/province - search by name
+  if (contactData.state_name && odooData.country_id) {
+    try {
+      const stateSearch = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'res.country.state',
+              'search_read',
+              [[['name', 'ilike', contactData.state_name], ['country_id', '=', odooData.country_id]]],
+              { fields: ['id'], limit: 1 }
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const stateData = await stateSearch.json();
+      if (stateData.result && stateData.result.length > 0) {
+        odooData.state_id = stateData.result[0].id;
+      }
+    } catch (error) {
+      console.error('Error finding state:', error);
+    }
+    delete odooData.state_name;
+  }
+
+  // Handle tags - search or create
+  if (contactData.category_names && contactData.category_names.length > 0) {
+    try {
+      const tagIds: number[] = [];
+      for (const tagName of contactData.category_names) {
+        const tagSearch = await fetch(`${config.url}/jsonrpc`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'call',
+            params: {
+              service: 'object',
+              method: 'execute_kw',
+              args: [
+                config.database,
+                uid,
+                config.apiKey,
+                'res.partner.category',
+                'search_read',
+                [[['name', '=', tagName]]],
+                { fields: ['id'], limit: 1 }
+              ]
+            },
+            id: Math.random()
+          })
+        });
+        const tagData = await tagSearch.json();
+        if (tagData.result && tagData.result.length > 0) {
+          tagIds.push(tagData.result[0].id);
+        } else {
+          // Create tag if it doesn't exist
+          const createTag = await fetch(`${config.url}/jsonrpc`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'call',
+              params: {
+                service: 'object',
+                method: 'execute_kw',
+                args: [
+                  config.database,
+                  uid,
+                  config.apiKey,
+                  'res.partner.category',
+                  'create',
+                  [{ name: tagName }]
+                ]
+              },
+              id: Math.random()
+            })
+          });
+          const newTagData = await createTag.json();
+          if (newTagData.result) {
+            tagIds.push(newTagData.result);
+          }
+        }
+      }
+      if (tagIds.length > 0) {
+        odooData.category_id = [[6, 0, tagIds]];
+      }
+    } catch (error) {
+      console.error('Error handling tags:', error);
+    }
+    delete odooData.category_names;
+  }
+
+  // Handle parent company for persons
+  if (contactData.parent_name && contactData.company_type === 'person') {
+    try {
+      const companySearch = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'res.partner',
+              'search_read',
+              [[['name', 'ilike', contactData.parent_name], ['is_company', '=', true]]],
+              { fields: ['id'], limit: 1 }
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const companyData = await companySearch.json();
+      if (companyData.result && companyData.result.length > 0) {
+        odooData.parent_id = companyData.result[0].id;
+      }
+    } catch (error) {
+      console.error('Error finding parent company:', error);
+    }
+    delete odooData.parent_name;
+  }
+
   const createResponse = await fetch(`${config.url}/jsonrpc`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -138,7 +319,7 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
           config.apiKey,
           'res.partner',
           'create',
-          [contactData]
+          [odooData]
         ]
       },
       id: Math.random()
@@ -158,6 +339,182 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
 async function updateContact(config: OdooConfig, uid: number, contactId: number, contactData: ContactData) {
   console.log('Updating contact ID:', contactId, 'with data:', contactData);
 
+  // Prepare the contact data for Odoo (same logic as create)
+  const odooData: any = { ...contactData };
+  
+  // Handle country - search by code
+  if (contactData.country_code) {
+    try {
+      const countrySearch = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'res.country',
+              'search_read',
+              [[['code', '=', contactData.country_code]]],
+              { fields: ['id'], limit: 1 }
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const countryData = await countrySearch.json();
+      if (countryData.result && countryData.result.length > 0) {
+        odooData.country_id = countryData.result[0].id;
+      }
+    } catch (error) {
+      console.error('Error finding country:', error);
+    }
+    delete odooData.country_code;
+  }
+
+  // Handle state/province - search by name
+  if (contactData.state_name && odooData.country_id) {
+    try {
+      const stateSearch = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'res.country.state',
+              'search_read',
+              [[['name', 'ilike', contactData.state_name], ['country_id', '=', odooData.country_id]]],
+              { fields: ['id'], limit: 1 }
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const stateData = await stateSearch.json();
+      if (stateData.result && stateData.result.length > 0) {
+        odooData.state_id = stateData.result[0].id;
+      }
+    } catch (error) {
+      console.error('Error finding state:', error);
+    }
+    delete odooData.state_name;
+  }
+
+  // Handle tags - search or create
+  if (contactData.category_names && contactData.category_names.length > 0) {
+    try {
+      const tagIds: number[] = [];
+      for (const tagName of contactData.category_names) {
+        const tagSearch = await fetch(`${config.url}/jsonrpc`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'call',
+            params: {
+              service: 'object',
+              method: 'execute_kw',
+              args: [
+                config.database,
+                uid,
+                config.apiKey,
+                'res.partner.category',
+                'search_read',
+                [[['name', '=', tagName]]],
+                { fields: ['id'], limit: 1 }
+              ]
+            },
+            id: Math.random()
+          })
+        });
+        const tagData = await tagSearch.json();
+        if (tagData.result && tagData.result.length > 0) {
+          tagIds.push(tagData.result[0].id);
+        } else {
+          // Create tag if it doesn't exist
+          const createTag = await fetch(`${config.url}/jsonrpc`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'call',
+              params: {
+                service: 'object',
+                method: 'execute_kw',
+                args: [
+                  config.database,
+                  uid,
+                  config.apiKey,
+                  'res.partner.category',
+                  'create',
+                  [{ name: tagName }]
+                ]
+              },
+              id: Math.random()
+            })
+          });
+          const newTagData = await createTag.json();
+          if (newTagData.result) {
+            tagIds.push(newTagData.result);
+          }
+        }
+      }
+      if (tagIds.length > 0) {
+        odooData.category_id = [[6, 0, tagIds]];
+      }
+    } catch (error) {
+      console.error('Error handling tags:', error);
+    }
+    delete odooData.category_names;
+  }
+
+  // Handle parent company for persons
+  if (contactData.parent_name && contactData.company_type === 'person') {
+    try {
+      const companySearch = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'res.partner',
+              'search_read',
+              [[['name', 'ilike', contactData.parent_name], ['is_company', '=', true]]],
+              { fields: ['id'], limit: 1 }
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const companyData = await companySearch.json();
+      if (companyData.result && companyData.result.length > 0) {
+        odooData.parent_id = companyData.result[0].id;
+      }
+    } catch (error) {
+      console.error('Error finding parent company:', error);
+    }
+    delete odooData.parent_name;
+  }
+
   const updateResponse = await fetch(`${config.url}/jsonrpc`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -173,7 +530,7 @@ async function updateContact(config: OdooConfig, uid: number, contactId: number,
           config.apiKey,
           'res.partner',
           'write',
-          [[contactId], contactData]
+          [[contactId], odooData]
         ]
       },
       id: Math.random()
