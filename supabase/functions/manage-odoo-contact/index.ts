@@ -201,9 +201,19 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
     delete odooData.state_name;
   }
 
-  // Handle ARCA Responsibility Type - search by external ID
+  // Handle ARCA Responsibility Type - search by name
   if (contactData.l10n_ar_afip_responsibility_type_id) {
     try {
+      console.log('Searching for ARCA responsibility type:', contactData.l10n_ar_afip_responsibility_type_id);
+      
+      // Convert underscore format to readable name
+      const readableName = contactData.l10n_ar_afip_responsibility_type_id
+        .replace(/_/g, ' ')
+        .replace(/IVA /g, 'IVA ')
+        .trim();
+      
+      console.log('Readable name for search:', readableName);
+      
       const arcaSearch = await fetch(`${config.url}/jsonrpc`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -219,18 +229,21 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
               config.apiKey,
               'l10n_ar.afip.responsibility.type',
               'search_read',
-              [[['code', '=', contactData.l10n_ar_afip_responsibility_type_id]]],
-              { fields: ['id'], limit: 1 }
+              [[['name', 'ilike', readableName]]],
+              { fields: ['id', 'name', 'code'], limit: 5 }
             ]
           },
           id: Math.random()
         })
       });
       const arcaData = await arcaSearch.json();
+      console.log('ARCA search result:', JSON.stringify(arcaData));
+      
       if (arcaData.result && arcaData.result.length > 0) {
         odooData.l10n_ar_afip_responsibility_type_id = arcaData.result[0].id;
+        console.log('Found ARCA responsibility type ID:', arcaData.result[0].id);
       } else {
-        // If not found, remove the field to avoid errors
+        console.log('ARCA responsibility type not found, removing field');
         delete odooData.l10n_ar_afip_responsibility_type_id;
       }
     } catch (error) {
@@ -450,9 +463,19 @@ async function updateContact(config: OdooConfig, uid: number, contactId: number,
     delete odooData.state_name;
   }
 
-  // Handle ARCA Responsibility Type - search by external ID
+  // Handle ARCA Responsibility Type - search by name
   if (contactData.l10n_ar_afip_responsibility_type_id) {
     try {
+      console.log('Searching for ARCA responsibility type:', contactData.l10n_ar_afip_responsibility_type_id);
+      
+      // Convert underscore format to readable name
+      const readableName = contactData.l10n_ar_afip_responsibility_type_id
+        .replace(/_/g, ' ')
+        .replace(/IVA /g, 'IVA ')
+        .trim();
+      
+      console.log('Readable name for search:', readableName);
+      
       const arcaSearch = await fetch(`${config.url}/jsonrpc`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -468,18 +491,21 @@ async function updateContact(config: OdooConfig, uid: number, contactId: number,
               config.apiKey,
               'l10n_ar.afip.responsibility.type',
               'search_read',
-              [[['code', '=', contactData.l10n_ar_afip_responsibility_type_id]]],
-              { fields: ['id'], limit: 1 }
+              [[['name', 'ilike', readableName]]],
+              { fields: ['id', 'name', 'code'], limit: 5 }
             ]
           },
           id: Math.random()
         })
       });
       const arcaData = await arcaSearch.json();
+      console.log('ARCA search result:', JSON.stringify(arcaData));
+      
       if (arcaData.result && arcaData.result.length > 0) {
         odooData.l10n_ar_afip_responsibility_type_id = arcaData.result[0].id;
+        console.log('Found ARCA responsibility type ID:', arcaData.result[0].id);
       } else {
-        // If not found, remove the field to avoid errors
+        console.log('ARCA responsibility type not found, removing field');
         delete odooData.l10n_ar_afip_responsibility_type_id;
       }
     } catch (error) {
