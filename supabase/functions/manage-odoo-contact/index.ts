@@ -474,11 +474,18 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
       
       if (updateData.error) {
         console.error('Error updating VAT:', JSON.stringify(updateData.error));
-        // Don't throw error, just log it - contact was created successfully
+        // Return success but with a warning about the VAT validation
+        return {
+          contactId,
+          warning: `Contacto creado pero el número de identificación no pudo guardarse. ${updateData.error.data?.message || 'Formato de número inválido para Odoo.'}`
+        };
       }
     } catch (error) {
       console.error('Error in VAT update:', error);
-      // Don't throw error, just log it - contact was created successfully
+      return {
+        contactId,
+        warning: 'Contacto creado pero hubo un error al guardar el número de identificación.'
+      };
     }
   }
 
@@ -846,8 +853,13 @@ const handler = async (req: Request): Promise<Response> => {
         throw new Error(`Invalid action: ${body.action}`);
     }
 
+    // Handle result that may contain a warning
+    const responseData = typeof result === 'object' && result !== null && 'contactId' in result
+      ? { success: true, data: result.contactId, warning: result.warning }
+      : { success: true, data: result };
+
     return new Response(
-      JSON.stringify({ success: true, data: result }),
+      JSON.stringify(responseData),
       {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },

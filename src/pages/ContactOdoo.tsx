@@ -232,11 +232,15 @@ export default function ContactOdoo() {
       if (error) throw error;
 
       if (response.success) {
+        const title = response.warning ? t('contactOdoo.warning.title') || 'Advertencia' : t('contactOdoo.success.title');
+        const description = response.warning || (mode === 'create' 
+          ? t('contactOdoo.success.created') 
+          : t('contactOdoo.success.updated'));
+        
         toast({
-          title: t('contactOdoo.success.title'),
-          description: mode === 'create' 
-            ? t('contactOdoo.success.created') 
-            : t('contactOdoo.success.updated'),
+          title,
+          description,
+          variant: response.warning ? 'destructive' : 'default',
         });
         
         // Reset form
