@@ -186,7 +186,8 @@ export default function ContactOdoo() {
       if (data.zip) contactData.zip = data.zip;
       if (data.website) contactData.website = data.website;
       
-      // Identification number (vat field in Odoo)
+      // Identification type and number
+      if (data.identificationType) contactData.identification_type = data.identificationType;
       if (data.identificationNumber) contactData.vat = data.identificationNumber;
       
       // State/Province (send as string, Odoo will match it)

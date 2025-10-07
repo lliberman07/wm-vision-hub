@@ -26,6 +26,7 @@ interface ContactData {
   country_code?: string;
   website?: string;
   vat?: string;
+  identification_type?: string;
   l10n_ar_afip_responsibility_type_id?: string;
   company_type: 'person' | 'company';
   function?: string;
@@ -199,6 +200,46 @@ async function createContact(config: OdooConfig, uid: number, contactData: Conta
       console.error('Error finding state:', error);
     }
     delete odooData.state_name;
+  }
+
+  // Handle identification type - search in l10n_latam.identification.type
+  if (contactData.identification_type && odooData.country_id) {
+    try {
+      console.log('Searching for identification type:', contactData.identification_type);
+      
+      const idTypeSearch = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'l10n_latam.identification.type',
+              'search_read',
+              [[['name', 'ilike', contactData.identification_type], ['country_id', '=', odooData.country_id]]],
+              { fields: ['id', 'name'], limit: 1 }
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const idTypeData = await idTypeSearch.json();
+      console.log('Identification type search result:', JSON.stringify(idTypeData));
+      
+      if (idTypeData.result && idTypeData.result.length > 0) {
+        odooData.l10n_latam_identification_type_id = idTypeData.result[0].id;
+        console.log('Found identification type ID:', idTypeData.result[0].id);
+      }
+    } catch (error) {
+      console.error('Error finding identification type:', error);
+    }
+    delete odooData.identification_type;
   }
 
   // Handle ARCA Responsibility Type - search by name
@@ -461,6 +502,46 @@ async function updateContact(config: OdooConfig, uid: number, contactId: number,
       console.error('Error finding state:', error);
     }
     delete odooData.state_name;
+  }
+
+  // Handle identification type - search in l10n_latam.identification.type
+  if (contactData.identification_type && odooData.country_id) {
+    try {
+      console.log('Searching for identification type:', contactData.identification_type);
+      
+      const idTypeSearch = await fetch(`${config.url}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              config.database,
+              uid,
+              config.apiKey,
+              'l10n_latam.identification.type',
+              'search_read',
+              [[['name', 'ilike', contactData.identification_type], ['country_id', '=', odooData.country_id]]],
+              { fields: ['id', 'name'], limit: 1 }
+            ]
+          },
+          id: Math.random()
+        })
+      });
+      const idTypeData = await idTypeSearch.json();
+      console.log('Identification type search result:', JSON.stringify(idTypeData));
+      
+      if (idTypeData.result && idTypeData.result.length > 0) {
+        odooData.l10n_latam_identification_type_id = idTypeData.result[0].id;
+        console.log('Found identification type ID:', idTypeData.result[0].id);
+      }
+    } catch (error) {
+      console.error('Error finding identification type:', error);
+    }
+    delete odooData.identification_type;
   }
 
   // Handle ARCA Responsibility Type - search by name
