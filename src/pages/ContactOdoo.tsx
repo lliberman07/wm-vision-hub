@@ -273,7 +273,319 @@ export default function ContactOdoo({ standalone = true }: ContactOdooProps) {
         <CardDescription>{t('contactOdoo.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
-...
+        {/* Mode Selection */}
+        <div className="space-y-4">
+          <Label className="text-lg font-semibold">{t('contactOdoo.mode.label')}</Label>
+          <RadioGroup
+            value={mode}
+            onValueChange={(value) => {
+              setMode(value as 'create' | 'edit');
+              form.setValue('mode', value as 'create' | 'edit');
+              if (value === 'create') {
+                setSelectedContact(null);
+                setSearchResults([]);
+                form.reset();
+              }
+            }}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="create" id="create" />
+              <Label htmlFor="create" className="cursor-pointer">{t('contactOdoo.mode.create')}</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="edit" id="edit" />
+              <Label htmlFor="edit" className="cursor-pointer">{t('contactOdoo.mode.edit')}</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Search Section (only for edit mode) */}
+        {mode === 'edit' && (
+          <div className="space-y-4 p-6 bg-muted/50 rounded-lg border">
+            <Label htmlFor="searchTerm" className="text-lg font-semibold">
+              {t('contactOdoo.search.label')}
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="searchTerm"
+                placeholder={t('contactOdoo.search.placeholder')}
+                {...form.register('searchTerm')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSearch();
+                  }
+                }}
+              />
+              <Button onClick={handleSearch} disabled={isSearching} type="button">
+                {isSearching ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div className="space-y-2 mt-4">
+                <Label className="font-semibold">{t('contactOdoo.search.results')}</Label>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {searchResults.map((contact) => (
+                    <Button
+                      key={contact.id}
+                      variant="outline"
+                      className="w-full justify-start text-left h-auto py-3"
+                      type="button"
+                      onClick={() => loadContactData(contact)}
+                    >
+                      <div className="flex items-start gap-3 w-full">
+                        {contact.company_type === 'company' ? (
+                          <Building2 className="h-5 w-5 mt-1 flex-shrink-0" />
+                        ) : (
+                          <User className="h-5 w-5 mt-1 flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold truncate">{contact.name}</div>
+                          <div className="text-sm text-muted-foreground truncate">
+                            {contact.email} {contact.phone && `• ${contact.phone}`}
+                          </div>
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Contact Type Selection */}
+        <div className="space-y-4">
+          <Label className="text-lg font-semibold">{t('contactOdoo.contactType.label')}</Label>
+          <RadioGroup
+            value={contactType}
+            onValueChange={(value) => {
+              setContactType(value as 'person' | 'company');
+              form.setValue('contactType', value as 'person' | 'company');
+            }}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="person" id="person" />
+              <Label htmlFor="person" className="cursor-pointer flex items-center gap-2">
+                <User className="h-4 w-4" />
+                {t('contactOdoo.contactType.person')}
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="company" id="company" />
+              <Label htmlFor="company" className="cursor-pointer flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                {t('contactOdoo.contactType.company')}
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Contact Form */}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">{t('contactOdoo.sections.basicInfo')}</h3>
+            
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">{t('contactOdoo.fields.name')} *</Label>
+                <Input id="name" {...form.register('name')} />
+                {form.formState.errors.name && (
+                  <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('contactOdoo.fields.email')}</Label>
+                <Input id="email" type="email" {...form.register('email')} />
+                {form.formState.errors.email && (
+                  <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">{t('contactOdoo.fields.phone')}</Label>
+                <Input id="phone" {...form.register('phone')} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="website">{t('contactOdoo.fields.website')}</Label>
+                <Input id="website" {...form.register('website')} />
+              </div>
+            </div>
+
+            {/* Person-specific fields */}
+            {contactType === 'person' && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">{t('contactOdoo.fields.companyName')}</Label>
+                  <Input id="companyName" {...form.register('companyName')} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="jobPosition">{t('contactOdoo.fields.jobPosition')}</Label>
+                  <Input id="jobPosition" {...form.register('jobPosition')} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Address Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">{t('contactOdoo.sections.address')}</h3>
+            
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="street">{t('contactOdoo.fields.street')}</Label>
+                <Input id="street" {...form.register('street')} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="street2">{t('contactOdoo.fields.street2')}</Label>
+                <Input id="street2" {...form.register('street2')} />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="city">{t('contactOdoo.fields.city')}</Label>
+                  <Input id="city" {...form.register('city')} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="state">{t('contactOdoo.fields.state')}</Label>
+                  <Select 
+                    value={form.watch('state')} 
+                    onValueChange={(value) => form.setValue('state', value)}
+                  >
+                    <SelectTrigger id="state">
+                      <SelectValue placeholder={t('contactOdoo.fields.selectState')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ARGENTINA_DATA.map((province) => (
+                        <SelectItem key={province.name} value={province.name}>
+                          {province.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="zip">{t('contactOdoo.fields.zip')}</Label>
+                  <Input id="zip" {...form.register('zip')} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country">{t('contactOdoo.fields.country')}</Label>
+                <Select 
+                  value={form.watch('country')} 
+                  onValueChange={(value) => form.setValue('country', value)}
+                >
+                  <SelectTrigger id="country">
+                    <SelectValue placeholder={t('contactOdoo.fields.selectCountry')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        {country.nameEs || country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Tax Information (Argentina specific) */}
+          {form.watch('country') === 'AR' && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">{t('contactOdoo.sections.taxInfo')}</h3>
+              
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="identificationType">{t('contactOdoo.fields.identificationType')}</Label>
+                  <Select 
+                    value={form.watch('identificationType')} 
+                    onValueChange={(value) => form.setValue('identificationType', value)}
+                  >
+                    <SelectTrigger id="identificationType">
+                      <SelectValue placeholder={t('contactOdoo.fields.selectIdentificationType')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {IDENTIFICATION_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.labelEs}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="identificationNumber">{t('contactOdoo.fields.identificationNumber')}</Label>
+                  <Input id="identificationNumber" {...form.register('identificationNumber')} />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="arcaResponsibility">{t('contactOdoo.fields.arcaResponsibility')}</Label>
+                  <Select 
+                    value={form.watch('arcaResponsibility')} 
+                    onValueChange={(value) => form.setValue('arcaResponsibility', value)}
+                  >
+                    <SelectTrigger id="arcaResponsibility">
+                      <SelectValue placeholder={t('contactOdoo.fields.selectArcaResponsibility')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ARCA_RESPONSIBILITIES.map((resp) => (
+                        <SelectItem key={resp.value} value={resp.value}>
+                          {resp.labelEs}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tags */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">{t('contactOdoo.sections.tags')}</h3>
+            <div className="space-y-2">
+              <Label htmlFor="tags">{t('contactOdoo.fields.tags')}</Label>
+              <Input 
+                id="tags" 
+                {...form.register('tags')} 
+                placeholder={t('contactOdoo.fields.tagsPlaceholder')}
+              />
+              <p className="text-sm text-muted-foreground">
+                {t('contactOdoo.fields.tagsHelp')}
+              </p>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {mode === 'create' ? t('contactOdoo.buttons.creating') : t('contactOdoo.buttons.updating')}
+              </>
+            ) : (
+              mode === 'create' ? t('contactOdoo.buttons.create') : t('contactOdoo.buttons.update')
+            )}
+          </Button>
+        </form>
       </CardContent>
     </Card>
   );
