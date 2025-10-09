@@ -1737,6 +1737,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_automatic_adjustments: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       approve_user: {
         Args: { user_id_param: string }
         Returns: undefined

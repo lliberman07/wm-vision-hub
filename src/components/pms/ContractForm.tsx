@@ -395,6 +395,99 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
               <FormField
                 control={form.control}
+                name="tipo_contrato"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Contrato</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="CONTRATO">CONTRATO</SelectItem>
+                        <SelectItem value="COPROPIEDAD">COPROPIEDAD</SelectItem>
+                        <SelectItem value="CESION">CESIÓN</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <Separator className="my-4" />
+            <h3 className="text-lg font-semibold mb-4">Configuración de Montos</h3>
+
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="monto_a"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Monto Item A</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="monto_b"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Monto Item B</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="aplica_a_items"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Aplica a Items</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="UNICO">ÚNICO</SelectItem>
+                        <SelectItem value="A">A</SelectItem>
+                        <SelectItem value="B">B</SelectItem>
+                        <SelectItem value="A+B">A+B</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <Separator className="my-4" />
+            <h3 className="text-lg font-semibold mb-4">Configuración de Ajustes</h3>
+
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
                 name="adjustment_type"
                 render={({ field }) => (
                   <FormItem>
@@ -410,6 +503,92 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         <SelectItem value="icl">ICL</SelectItem>
                         <SelectItem value="ipc">IPC</SelectItem>
                         <SelectItem value="fixed">Fijo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="indice_ajuste"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Índice de Ajuste</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar índice" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="ICL">ICL</SelectItem>
+                        <SelectItem value="IPC">IPC</SelectItem>
+                        <SelectItem value="Otro">Otro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="frecuencia_ajuste"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Frecuencia de Ajuste</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Mensual">Mensual</SelectItem>
+                        <SelectItem value="Trimestral">Trimestral</SelectItem>
+                        <SelectItem value="Semestral">Semestral</SelectItem>
+                        <SelectItem value="Anual">Anual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="fecha_primer_ajuste"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fecha Primer Ajuste</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="frecuencia_factura"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Frecuencia de Factura</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Mensual">Mensual</SelectItem>
+                        <SelectItem value="Bimestral">Bimestral</SelectItem>
+                        <SelectItem value="Trimestral">Trimestral</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
