@@ -662,10 +662,176 @@ export type Database = {
           },
         ]
       }
+      pms_cashflow_property: {
+        Row: {
+          created_at: string | null
+          currency: string
+          detail_json: Json | null
+          id: string
+          net_result: number | null
+          period: string
+          property_id: string
+          tenant_id: string
+          total_expenses: number | null
+          total_income: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency: string
+          detail_json?: Json | null
+          id?: string
+          net_result?: number | null
+          period: string
+          property_id: string
+          tenant_id: string
+          total_expenses?: number | null
+          total_income?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string
+          detail_json?: Json | null
+          id?: string
+          net_result?: number | null
+          period?: string
+          property_id?: string
+          tenant_id?: string
+          total_expenses?: number | null
+          total_income?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_cashflow_property_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "pms_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_cashflow_property_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_contract_adjustments: {
+        Row: {
+          application_date: string
+          audit_json: Json | null
+          contract_id: string
+          created_at: string | null
+          id: string
+          index_type: string
+          item: string | null
+          new_amount: number
+          previous_amount: number
+          tenant_id: string
+          variation_percent: number
+        }
+        Insert: {
+          application_date: string
+          audit_json?: Json | null
+          contract_id: string
+          created_at?: string | null
+          id?: string
+          index_type: string
+          item?: string | null
+          new_amount: number
+          previous_amount: number
+          tenant_id: string
+          variation_percent: number
+        }
+        Update: {
+          application_date?: string
+          audit_json?: Json | null
+          contract_id?: string
+          created_at?: string | null
+          id?: string
+          index_type?: string
+          item?: string | null
+          new_amount?: number
+          previous_amount?: number
+          tenant_id?: string
+          variation_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_contract_adjustments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_adjustments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_contract_payment_methods: {
+        Row: {
+          contract_id: string
+          created_at: string | null
+          destination_account: string | null
+          id: string
+          item: string | null
+          notes: string | null
+          payment_method: string
+          percentage: number | null
+          tenant_id: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string | null
+          destination_account?: string | null
+          id?: string
+          item?: string | null
+          notes?: string | null
+          payment_method: string
+          percentage?: number | null
+          tenant_id: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string | null
+          destination_account?: string | null
+          id?: string
+          item?: string | null
+          notes?: string | null
+          payment_method?: string
+          percentage?: number | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_contract_payment_methods_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_payment_methods_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_contracts: {
         Row: {
           adjustment_config: Json | null
           adjustment_type: string | null
+          aplica_a_items: string | null
           contract_number: string
           contract_type: string | null
           created_at: string | null
@@ -673,9 +839,17 @@ export type Database = {
           currency: string | null
           deposit_amount: number | null
           end_date: string
+          fecha_primer_ajuste: string | null
+          frecuencia_ajuste: string | null
+          frecuencia_factura: string | null
           guarantors: Json | null
           id: string
+          indice_ajuste: string | null
           monthly_rent: number
+          monto_a: number | null
+          monto_ajustado_actual_a: number | null
+          monto_ajustado_actual_b: number | null
+          monto_b: number | null
           owner_id: string
           payment_day: number | null
           pdf_url: string | null
@@ -685,11 +859,14 @@ export type Database = {
           status: string | null
           tenant_id: string
           tenant_renter_id: string
+          tipo_contrato: string | null
+          ultimo_ajuste: string | null
           updated_at: string | null
         }
         Insert: {
           adjustment_config?: Json | null
           adjustment_type?: string | null
+          aplica_a_items?: string | null
           contract_number: string
           contract_type?: string | null
           created_at?: string | null
@@ -697,9 +874,17 @@ export type Database = {
           currency?: string | null
           deposit_amount?: number | null
           end_date: string
+          fecha_primer_ajuste?: string | null
+          frecuencia_ajuste?: string | null
+          frecuencia_factura?: string | null
           guarantors?: Json | null
           id?: string
+          indice_ajuste?: string | null
           monthly_rent: number
+          monto_a?: number | null
+          monto_ajustado_actual_a?: number | null
+          monto_ajustado_actual_b?: number | null
+          monto_b?: number | null
           owner_id: string
           payment_day?: number | null
           pdf_url?: string | null
@@ -709,11 +894,14 @@ export type Database = {
           status?: string | null
           tenant_id: string
           tenant_renter_id: string
+          tipo_contrato?: string | null
+          ultimo_ajuste?: string | null
           updated_at?: string | null
         }
         Update: {
           adjustment_config?: Json | null
           adjustment_type?: string | null
+          aplica_a_items?: string | null
           contract_number?: string
           contract_type?: string | null
           created_at?: string | null
@@ -721,9 +909,17 @@ export type Database = {
           currency?: string | null
           deposit_amount?: number | null
           end_date?: string
+          fecha_primer_ajuste?: string | null
+          frecuencia_ajuste?: string | null
+          frecuencia_factura?: string | null
           guarantors?: Json | null
           id?: string
+          indice_ajuste?: string | null
           monthly_rent?: number
+          monto_a?: number | null
+          monto_ajustado_actual_a?: number | null
+          monto_ajustado_actual_b?: number | null
+          monto_b?: number | null
           owner_id?: string
           payment_day?: number | null
           pdf_url?: string | null
@@ -733,6 +929,8 @@ export type Database = {
           status?: string | null
           tenant_id?: string
           tenant_renter_id?: string
+          tipo_contrato?: string | null
+          ultimo_ajuste?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -809,6 +1007,107 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pms_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_economic_indices: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          index_type: string
+          period: string
+          source: string | null
+          tenant_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          index_type: string
+          period: string
+          source?: string | null
+          tenant_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          index_type?: string
+          period?: string
+          source?: string | null
+          tenant_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_economic_indices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          expense_date: string
+          id: string
+          property_id: string
+          receipt_url: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          expense_date: string
+          id?: string
+          property_id: string
+          receipt_url?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          expense_date?: string
+          id?: string
+          property_id?: string
+          receipt_url?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_expenses_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "pms_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_expenses_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "pms_tenants"
@@ -904,6 +1203,64 @@ export type Database = {
           },
         ]
       }
+      pms_owner_properties: {
+        Row: {
+          created_at: string | null
+          end_date: string | null
+          id: string
+          owner_id: string
+          property_id: string
+          share_percent: number
+          start_date: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          owner_id: string
+          property_id: string
+          share_percent: number
+          start_date?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          owner_id?: string
+          property_id?: string
+          share_percent?: number
+          start_date?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_owner_properties_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "pms_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_owner_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "pms_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_owner_properties_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_owners: {
         Row: {
           address: string | null
@@ -972,6 +1329,61 @@ export type Database = {
           },
         ]
       }
+      pms_payment_distributions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          owner_id: string
+          payment_id: string
+          share_percent: number
+          tenant_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          owner_id: string
+          payment_id: string
+          share_percent: number
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          owner_id?: string
+          payment_id?: string
+          share_percent?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_payment_distributions_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "pms_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_distributions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_distributions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_payments: {
         Row: {
           amount: number
@@ -980,11 +1392,13 @@ export type Database = {
           currency: string | null
           due_date: string
           id: string
+          item: string | null
           notes: string | null
           paid_amount: number | null
           paid_date: string | null
           payment_method: string | null
           payment_type: string
+          porcentaje: number | null
           receipt_url: string | null
           reference_number: string | null
           status: string | null
@@ -998,11 +1412,13 @@ export type Database = {
           currency?: string | null
           due_date: string
           id?: string
+          item?: string | null
           notes?: string | null
           paid_amount?: number | null
           paid_date?: string | null
           payment_method?: string | null
           payment_type: string
+          porcentaje?: number | null
           receipt_url?: string | null
           reference_number?: string | null
           status?: string | null
@@ -1016,11 +1432,13 @@ export type Database = {
           currency?: string | null
           due_date?: string
           id?: string
+          item?: string | null
           notes?: string | null
           paid_amount?: number | null
           paid_date?: string | null
           payment_method?: string | null
           payment_type?: string
+          porcentaje?: number | null
           receipt_url?: string | null
           reference_number?: string | null
           status?: string | null
@@ -1047,18 +1465,24 @@ export type Database = {
       pms_properties: {
         Row: {
           address: string
+          alias: string | null
           amenities: string[] | null
+          barrio: string | null
           bathrooms: number | null
           bedrooms: number | null
+          categoria: string | null
           city: string
           code: string
           country: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
+          estado_publicacion: string | null
           id: string
           latitude: number | null
           longitude: number | null
+          monto_alquiler: number | null
+          operacion: string | null
           photos: Json | null
           postal_code: string | null
           property_type: string
@@ -1068,21 +1492,28 @@ export type Database = {
           surface_total: number | null
           tenant_id: string
           updated_at: string | null
+          valor_venta: number | null
         }
         Insert: {
           address: string
+          alias?: string | null
           amenities?: string[] | null
+          barrio?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
+          categoria?: string | null
           city: string
           code: string
           country?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          estado_publicacion?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          monto_alquiler?: number | null
+          operacion?: string | null
           photos?: Json | null
           postal_code?: string | null
           property_type: string
@@ -1092,21 +1523,28 @@ export type Database = {
           surface_total?: number | null
           tenant_id: string
           updated_at?: string | null
+          valor_venta?: number | null
         }
         Update: {
           address?: string
+          alias?: string | null
           amenities?: string[] | null
+          barrio?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
+          categoria?: string | null
           city?: string
           code?: string
           country?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          estado_publicacion?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          monto_alquiler?: number | null
+          operacion?: string | null
           photos?: Json | null
           postal_code?: string | null
           property_type?: string
@@ -1116,6 +1554,7 @@ export type Database = {
           surface_total?: number | null
           tenant_id?: string
           updated_at?: string | null
+          valor_venta?: number | null
         }
         Relationships: [
           {
