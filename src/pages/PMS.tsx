@@ -47,10 +47,8 @@ const PMS = () => {
     );
   }
 
-  const handleModuleClick = (moduleName: string) => {
-    toast.info(`Módulo ${moduleName}`, {
-      description: 'Esta funcionalidad estará disponible próximamente',
-    });
+  const handleModuleClick = (moduleName: string, route: string) => {
+    navigate(route);
   };
 
   return (
@@ -66,7 +64,7 @@ const PMS = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Propiedades')}
+            onClick={() => handleModuleClick('Propiedades', '/pms/properties')}
           >
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -86,7 +84,7 @@ const PMS = () => {
 
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Propietarios')}
+            onClick={() => handleModuleClick('Propietarios', '/pms/owners')}
           >
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -106,7 +104,7 @@ const PMS = () => {
 
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Inquilinos')}
+            onClick={() => handleModuleClick('Inquilinos', '/pms/tenants')}
           >
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -126,7 +124,7 @@ const PMS = () => {
 
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Contratos')}
+            onClick={() => handleModuleClick('Contratos', '/pms/contracts')}
           >
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -146,7 +144,7 @@ const PMS = () => {
 
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Pagos')}
+            onClick={() => handleModuleClick('Pagos', '/pms/payments')}
           >
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -166,7 +164,7 @@ const PMS = () => {
 
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Mantenimiento')}
+            onClick={() => handleModuleClick('Mantenimiento', '/pms/maintenance')}
           >
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -186,7 +184,7 @@ const PMS = () => {
 
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Reportes')}
+            onClick={() => handleModuleClick('Reportes', '/pms/reports')}
           >
             <CardHeader>
               <div className="flex items-center gap-3">

@@ -30,6 +30,13 @@ import CreditSimulator from "./pages/CreditSimulator";
 import PMS from "./pages/PMS";
 import PMSRequestAccess from "./pages/PMSRequestAccess";
 import PMSLogin from "./pages/PMSLogin";
+import Properties from "./pages/pms/Properties";
+import Owners from "./pages/pms/Owners";
+import Tenants from "./pages/pms/Tenants";
+import Contracts from "./pages/pms/Contracts";
+import Payments from "./pages/pms/Payments";
+import Maintenance from "./pages/pms/Maintenance";
+import Reports from "./pages/pms/Reports";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +78,13 @@ const App = () => (
               <Route path="/pms" element={<PMS />} />
               <Route path="/pms/login" element={<PMSLogin />} />
               <Route path="/pms/request-access" element={<PMSRequestAccess />} />
+              <Route path="/pms/properties" element={<Properties />} />
+              <Route path="/pms/owners" element={<Owners />} />
+              <Route path="/pms/tenants" element={<Tenants />} />
+              <Route path="/pms/contracts" element={<Contracts />} />
+              <Route path="/pms/payments" element={<Payments />} />
+              <Route path="/pms/maintenance" element={<Maintenance />} />
+              <Route path="/pms/reports" element={<Reports />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
