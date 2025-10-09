@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Building2, Users, FileText, Wrench, DollarSign, BarChart3 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const PMS = () => {
   const navigate = useNavigate();
@@ -46,6 +47,12 @@ const PMS = () => {
     );
   }
 
+  const handleModuleClick = (moduleName: string) => {
+    toast.info(`Módulo ${moduleName}`, {
+      description: 'Esta funcionalidad estará disponible próximamente',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -57,7 +64,10 @@ const PMS = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
+            onClick={() => handleModuleClick('Propiedades')}
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Building2 className="h-8 w-8 text-primary" />
@@ -74,7 +84,10 @@ const PMS = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
+            onClick={() => handleModuleClick('Propietarios')}
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Users className="h-8 w-8 text-primary" />
@@ -91,7 +104,10 @@ const PMS = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
+            onClick={() => handleModuleClick('Inquilinos')}
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Users className="h-8 w-8 text-primary" />
@@ -108,7 +124,10 @@ const PMS = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
+            onClick={() => handleModuleClick('Contratos')}
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <FileText className="h-8 w-8 text-primary" />
@@ -125,7 +144,10 @@ const PMS = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
+            onClick={() => handleModuleClick('Pagos')}
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <DollarSign className="h-8 w-8 text-primary" />
@@ -142,7 +164,10 @@ const PMS = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
+            onClick={() => handleModuleClick('Mantenimiento')}
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Wrench className="h-8 w-8 text-primary" />
@@ -159,7 +184,10 @@ const PMS = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
+            onClick={() => handleModuleClick('Reportes')}
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-8 w-8 text-primary" />
