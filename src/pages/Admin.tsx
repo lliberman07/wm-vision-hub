@@ -15,6 +15,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { ApplicationManagement } from "@/components/ApplicationManagement";
 import { KnowledgeBaseInit } from "@/components/KnowledgeBaseInit";
 import { SimulationsManagement } from "@/components/SimulationsManagement";
+import PMSAccessRequests from "@/components/PMSAccessRequests";
 
 interface Contact {
   id: string;
@@ -133,7 +134,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto p-6">
         <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-6' : 'grid-cols-4'}`}>
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Contact Submissions
@@ -151,10 +152,16 @@ const Admin = () => {
               AI Chatbot
             </TabsTrigger>
             {userProfile?.role === 'superadmin' && (
-              <TabsTrigger value="approvals" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                User Approvals
-              </TabsTrigger>
+              <>
+                <TabsTrigger value="pms-access" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  PMS Access
+                </TabsTrigger>
+                <TabsTrigger value="approvals" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  User Approvals
+                </TabsTrigger>
+              </>
             )}
           </TabsList>
 
@@ -366,13 +373,32 @@ const Admin = () => {
           </TabsContent>
 
           {userProfile?.role === 'superadmin' && (
-            <TabsContent value="approvals">
-              <Card className="shadow-strong">
-                <CardContent className="pt-6">
-                  <UserApprovals />
-                </CardContent>
-              </Card>
-            </TabsContent>
+            <>
+              <TabsContent value="pms-access">
+                <Card className="shadow-strong">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Users className="h-5 w-5" />
+                      <span>Solicitudes de Acceso PMS</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Aprobar o rechazar solicitudes de acceso al sistema PMS
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <PMSAccessRequests />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="approvals">
+                <Card className="shadow-strong">
+                  <CardContent className="pt-6">
+                    <UserApprovals />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </>
           )}
         </Tabs>
       </main>
