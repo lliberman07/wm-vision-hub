@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePMS } from "@/contexts/PMSContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { IndicesForm } from "@/components/pms/IndicesForm";
-import { ArrowLeft, Plus, Search, TrendingUp } from "lucide-react";
+import { Plus, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { PMSLayout } from "@/components/pms/PMSLayout";
+import { FilterBar } from "@/components/pms/FilterBar";
+import { EmptyState } from "@/components/pms/EmptyState";
 
 interface EconomicIndex {
   id: string;
@@ -23,36 +23,16 @@ interface EconomicIndex {
 }
 
 export default function Indices() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { hasPMSAccess, currentTenant, pmsRoles } = usePMS();
+  const { currentTenant } = usePMS();
   const [indices, setIndices] = useState<EconomicIndex[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<EconomicIndex | undefined>();
-  const { toast } = useToast();
-
-  const hasAccess = pmsRoles.includes('SUPERADMIN') || pmsRoles.includes('INMOBILIARIA');
 
   useEffect(() => {
-    if (!user || !hasPMSAccess) {
-      navigate('/pms-login');
-      return;
-    }
-    
-    if (!hasAccess) {
-      toast({
-        title: "Acceso denegado",
-        description: "Solo SUPERADMIN e INMOBILIARIA pueden gestionar índices económicos",
-        variant: "destructive"
-      });
-      navigate('/pms');
-      return;
-    }
-
     fetchIndices();
-  }, [user, hasPMSAccess, hasAccess]);
+  }, [currentTenant]);
 
   const fetchIndices = async () => {
     if (!currentTenant?.id) return;
@@ -86,25 +66,24 @@ export default function Indices() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/pms')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+    <PMSLayout>
+      <div className="container mx-auto px-4 py-6">
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">Índices Económicos</h1>
-              <p className="text-sm text-muted-foreground">IPC, ICL, UVA - Gestión de valores históricos</p>
+              <p className="text-muted-foreground mt-1">
+                Gestión de valores mensuales de IPC, ICL y UVA
+              </p>
             </div>
+            <Button onClick={() => {
+              setSelectedIndex(undefined);
+              setIsFormOpen(true);
+            }} size="lg">
+              <Plus className="h-4 w-4 mr-2" />
+              Cargar Índice
+            </Button>
           </div>
-          <Button onClick={() => {
-            setSelectedIndex(undefined);
-            setIsFormOpen(true);
-          }}>
-            <Plus className="h-4 w-4 mr-2" />
-            Cargar Índice
-          </Button>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
@@ -131,29 +110,30 @@ export default function Indices() {
           })}
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Historial de Índices</span>
-              <div className="relative w-64">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por tipo o período..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="mb-6">
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+          />
+        </div>
+
+        <Card className="card-elevated">
+          <CardContent className="p-0">
             {loading ? (
-              <div className="text-center py-8">Cargando...</div>
+              <div className="p-8 text-center">Cargando...</div>
             ) : filteredIndices.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No se encontraron índices
-              </div>
+              <EmptyState
+                icon={TrendingUp}
+                title="No hay índices cargados"
+                description="Comienza cargando los valores mensuales de los índices económicos (IPC, ICL, UVA)"
+                actionLabel="+ Cargar Índice"
+                onAction={() => {
+                  setSelectedIndex(undefined);
+                  setIsFormOpen(true);
+                }}
+              />
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -192,7 +172,8 @@ export default function Indices() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -207,6 +188,6 @@ export default function Indices() {
           />
         )}
       </div>
-    </div>
+    </PMSLayout>
   );
 }

@@ -75,7 +75,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       monto_a: 0,
       monto_b: 0,
       aplica_a_items: 'A',
-      indice_ajuste: '',
+      indice_ajuste: 'none',
       frecuencia_ajuste: '',
       frecuencia_factura: 'Mensual',
       fecha_primer_ajuste: '',
@@ -484,48 +484,32 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
             <Separator className="my-4" />
             <h3 className="text-lg font-semibold mb-4">Configuración de Ajustes</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Los valores mensuales de los índices se cargan en la sección <span className="font-semibold">Índices Económicos</span>
+            </p>
 
             <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="adjustment_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo de Ajuste</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">Sin ajuste</SelectItem>
-                        <SelectItem value="icl">ICL</SelectItem>
-                        <SelectItem value="ipc">IPC</SelectItem>
-                        <SelectItem value="fixed">Fijo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="indice_ajuste"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Índice de Ajuste</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      // Sync adjustment_type with indice_ajuste
+                      form.setValue('adjustment_type', value === 'none' ? 'none' : value.toLowerCase());
+                    }} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccionar índice" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="ICL">ICL</SelectItem>
-                        <SelectItem value="IPC">IPC</SelectItem>
-                        <SelectItem value="Otro">Otro</SelectItem>
+                        <SelectItem value="none">Sin ajuste</SelectItem>
+                        <SelectItem value="IPC">IPC - Índice de Precios al Consumidor</SelectItem>
+                        <SelectItem value="ICL">ICL - Índice de Contratos de Locación</SelectItem>
+                        <SelectItem value="UVA">UVA - Unidad de Valor Adquisitivo</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
