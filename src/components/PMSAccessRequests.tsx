@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock, Mail, User, Briefcase } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Mail, User, Briefcase, Phone, MapPin, FileText, Building } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -16,6 +16,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Eye } from 'lucide-react';
 
 interface PMSAccessRequest {
   id: string;
@@ -26,12 +35,23 @@ interface PMSAccessRequest {
   status: string;
   created_at: string;
   user_email?: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  document_id?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  company_name?: string;
+  tax_id?: string;
 }
 
 const PMSAccessRequests = () => {
   const [requests, setRequests] = useState<PMSAccessRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<PMSAccessRequest | null>(null);
+  const [viewingRequest, setViewingRequest] = useState<PMSAccessRequest | null>(null);
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
   const { toast } = useToast();
 
@@ -203,9 +223,11 @@ const PMSAccessRequests = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Usuario</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Rol Solicitado</TableHead>
-                <TableHead>Motivo</TableHead>
+                <TableHead>Datos Personales</TableHead>
+                <TableHead>Rol</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
                 <TableHead>Fecha</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Acciones</TableHead>
@@ -217,48 +239,211 @@ const PMSAccessRequests = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">Usuario #{request.user_id.substring(0, 8)}</span>
+                      <div>
+                        <p className="font-medium">{request.first_name} {request.last_name}</p>
+                        <p className="text-xs text-muted-foreground">{request.user_email}</p>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>{request.user_email}</span>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Phone className="h-3 w-3 text-muted-foreground" />
+                        <span>{request.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-3 w-3 text-muted-foreground" />
+                        <span>DNI: {request.document_id}</span>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>{getRoleBadge(request.requested_role)}</TableCell>
-                  <TableCell className="max-w-xs truncate">{request.reason}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {format(new Date(request.created_at), 'dd/MM/yyyy HH:mm')}
+                    {format(new Date(request.created_at), 'dd/MM/yyyy')}
                   </TableCell>
                   <TableCell>{getStatusBadge(request.status)}</TableCell>
                   <TableCell>
-                    {request.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setActionType('approve');
-                          }}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Aprobar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setActionType('reject');
-                          }}
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Rechazar
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex gap-2 justify-end">
+                      <Sheet>
+                        <SheetTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setViewingRequest(request)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent className="w-[400px] sm:w-[600px] overflow-y-auto">
+                          {viewingRequest && (
+                            <>
+                              <SheetHeader>
+                                <SheetTitle>Detalle de Solicitud</SheetTitle>
+                                <SheetDescription>
+                                  Información completa del solicitante
+                                </SheetDescription>
+                              </SheetHeader>
+                              
+                              <div className="mt-6 space-y-6">
+                                <div className="space-y-3">
+                                  <h3 className="font-semibold flex items-center gap-2">
+                                    <User className="h-4 w-4" />
+                                    Datos Personales
+                                  </h3>
+                                  <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                      <p className="text-muted-foreground">Nombre</p>
+                                      <p className="font-medium">{viewingRequest.first_name}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Apellido</p>
+                                      <p className="font-medium">{viewingRequest.last_name}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Email</p>
+                                      <p className="font-medium">{viewingRequest.user_email}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Teléfono</p>
+                                      <p className="font-medium">{viewingRequest.phone}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">DNI</p>
+                                      <p className="font-medium">{viewingRequest.document_id}</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                  <h3 className="font-semibold flex items-center gap-2">
+                                    <MapPin className="h-4 w-4" />
+                                    Dirección
+                                  </h3>
+                                  <div className="grid grid-cols-1 gap-3 text-sm">
+                                    <div>
+                                      <p className="text-muted-foreground">Dirección</p>
+                                      <p className="font-medium">{viewingRequest.address}</p>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-3">
+                                      <div>
+                                        <p className="text-muted-foreground">Ciudad</p>
+                                        <p className="font-medium">{viewingRequest.city}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground">Provincia</p>
+                                        <p className="font-medium">{viewingRequest.state}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground">CP</p>
+                                        <p className="font-medium">{viewingRequest.postal_code}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {viewingRequest.requested_role === 'INMOBILIARIA' && (
+                                  <div className="space-y-3">
+                                    <h3 className="font-semibold flex items-center gap-2">
+                                      <Building className="h-4 w-4" />
+                                      Datos de Empresa
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                      <div>
+                                        <p className="text-muted-foreground">Empresa</p>
+                                        <p className="font-medium">{viewingRequest.company_name}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground">CUIT/CUIL</p>
+                                        <p className="font-medium">{viewingRequest.tax_id}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="space-y-3">
+                                  <h3 className="font-semibold flex items-center gap-2">
+                                    <Briefcase className="h-4 w-4" />
+                                    Información de Solicitud
+                                  </h3>
+                                  <div className="space-y-2 text-sm">
+                                    <div>
+                                      <p className="text-muted-foreground">Rol Solicitado</p>
+                                      {getRoleBadge(viewingRequest.requested_role)}
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Motivo</p>
+                                      <p className="font-medium whitespace-pre-wrap">{viewingRequest.reason}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Fecha de Solicitud</p>
+                                      <p className="font-medium">
+                                        {format(new Date(viewingRequest.created_at), "dd/MM/yyyy 'a las' HH:mm")}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Estado</p>
+                                      {getStatusBadge(viewingRequest.status)}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {viewingRequest.status === 'pending' && (
+                                  <div className="flex gap-2 pt-4">
+                                    <Button
+                                      className="flex-1"
+                                      onClick={() => {
+                                        setSelectedRequest(viewingRequest);
+                                        setActionType('approve');
+                                      }}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-2" />
+                                      Aprobar Solicitud
+                                    </Button>
+                                    <Button
+                                      className="flex-1"
+                                      variant="destructive"
+                                      onClick={() => {
+                                        setSelectedRequest(viewingRequest);
+                                        setActionType('reject');
+                                      }}
+                                    >
+                                      <XCircle className="h-4 w-4 mr-2" />
+                                      Rechazar
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </SheetContent>
+                      </Sheet>
+                      
+                      {request.status === 'pending' && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setActionType('approve');
+                            }}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setActionType('reject');
+                            }}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

@@ -15,7 +15,18 @@ interface PMSContextType {
   pmsRoles: PMSRole[];
   currentTenant: PMSTenant | null;
   loading: boolean;
-  requestAccess: (role: PMSRole, reason: string) => Promise<{ error: any }>;
+  requestAccess: (role: PMSRole, reason: string, userData?: {
+    first_name: string;
+    last_name: string;
+    phone: string;
+    document_id: string;
+    address: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    company_name?: string;
+    tax_id?: string;
+  }) => Promise<{ error: any }>;
   checkPMSAccess: () => Promise<void>;
 }
 
@@ -80,7 +91,22 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const requestAccess = async (role: PMSRole, reason: string) => {
+  const requestAccess = async (
+    role: PMSRole, 
+    reason: string,
+    userData?: {
+      first_name: string;
+      last_name: string;
+      phone: string;
+      document_id: string;
+      address: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      company_name?: string;
+      tax_id?: string;
+    }
+  ) => {
     if (!user) {
       return { error: { message: 'Debes iniciar sesión para solicitar acceso' } };
     }
@@ -105,7 +131,17 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           user_id: user.id,
           tenant_id: tenantId,
           requested_role: role,
-          reason: reason
+          reason: reason,
+          first_name: userData?.first_name,
+          last_name: userData?.last_name,
+          phone: userData?.phone,
+          document_id: userData?.document_id,
+          address: userData?.address,
+          city: userData?.city,
+          state: userData?.state,
+          postal_code: userData?.postal_code,
+          company_name: userData?.company_name,
+          tax_id: userData?.tax_id,
         });
 
       if (error) {

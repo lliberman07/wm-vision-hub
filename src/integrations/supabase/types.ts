@@ -590,35 +590,65 @@ export type Database = {
       }
       pms_access_requests: {
         Row: {
+          address: string | null
+          city: string | null
+          company_name: string | null
           created_at: string | null
+          document_id: string | null
+          first_name: string | null
           id: string
+          last_name: string | null
+          phone: string | null
+          postal_code: string | null
           reason: string | null
           requested_role: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at: string | null
           reviewed_by: string | null
+          state: string | null
           status: string | null
+          tax_id: string | null
           tenant_id: string
           user_id: string
         }
         Insert: {
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
           created_at?: string | null
+          document_id?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
+          phone?: string | null
+          postal_code?: string | null
           reason?: string | null
           requested_role: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at?: string | null
           reviewed_by?: string | null
+          state?: string | null
           status?: string | null
+          tax_id?: string | null
           tenant_id: string
           user_id: string
         }
         Update: {
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
           created_at?: string | null
+          document_id?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
+          phone?: string | null
+          postal_code?: string | null
           reason?: string | null
           requested_role?: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at?: string | null
           reviewed_by?: string | null
+          state?: string | null
           status?: string | null
+          tax_id?: string | null
           tenant_id?: string
           user_id?: string
         }
