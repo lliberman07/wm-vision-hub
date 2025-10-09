@@ -29,6 +29,7 @@ import { FinancingApplication } from "./pages/FinancingApplication";
 import CreditSimulator from "./pages/CreditSimulator";
 import PMS from "./pages/PMS";
 import PMSRequestAccess from "./pages/PMSRequestAccess";
+import PMSLogin from "./pages/PMSLogin";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
                 } 
               />
               <Route path="/pms" element={<PMS />} />
+              <Route path="/pms/login" element={<PMSLogin />} />
               <Route path="/pms/request-access" element={<PMSRequestAccess />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />

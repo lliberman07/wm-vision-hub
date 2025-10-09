@@ -13,7 +13,7 @@ const PMS = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate('/pms/login');
     }
   }, [user, authLoading, navigate]);
 

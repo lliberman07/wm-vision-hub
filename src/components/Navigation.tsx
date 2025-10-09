@@ -71,21 +71,13 @@ const Navigation = () => {
           {/* Right side controls - Premium styling */}
           <div className="hidden md:flex items-center space-x-4 w-48 justify-end flex-shrink-0">
             <LanguageSwitcher variant="header" />
-            {user && (
-              <>
-                {!pmsLoading && hasPMSAccess && (
-                  <Button variant="default" size="sm" className="shadow-sm" asChild>
-                    <Link to="/pms">{t('nav.pms')}</Link>
-                  </Button>
-                )}
-                <Button variant="outline" size="sm" className="shadow-sm" asChild>
-                  <Link to="/auth">Admin</Link>
-                </Button>
-              </>
-            )}
-            {!user && (
+            {user ? (
               <Button variant="outline" size="sm" className="shadow-sm" asChild>
-                <Link to="/auth">Admin</Link>
+                <Link to="/admin">Admin</Link>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" className="shadow-sm" asChild>
+                <Link to="/auth">Sign In</Link>
               </Button>
             )}
           </div>
@@ -115,15 +107,8 @@ const Navigation = () => {
                 ))}
                 <div className="mt-4 space-y-3">
                   <LanguageSwitcher variant="header" />
-                  {user && !pmsLoading && hasPMSAccess && (
-                    <Button variant="default" className="w-full" asChild>
-                      <Link to="/pms" onClick={() => setIsOpen(false)}>
-                        {t('nav.pms')}
-                      </Link>
-                    </Button>
-                  )}
                   <Button variant="outline" className="w-full" asChild>
-                    <Link to="/auth" onClick={() => setIsOpen(false)}>
+                    <Link to={user ? "/admin" : "/auth"} onClick={() => setIsOpen(false)}>
                       {user ? 'Admin Access' : 'Sign In'}
                     </Link>
                   </Button>

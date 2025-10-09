@@ -135,23 +135,8 @@ const PMSRequestAccess = () => {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Autenticación Requerida</CardTitle>
-            <CardDescription>
-              Debes iniciar sesión para solicitar acceso al PMS
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => navigate('/auth')} className="w-full">
-              Iniciar Sesión
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    navigate('/pms/login');
+    return null;
   }
 
   if (submitted) {
