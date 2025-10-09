@@ -220,6 +220,21 @@
 }
 
 @layer components {
+  /* PMS Specific Gradients */
+  .pms-hero-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary)) 0%, 
+      hsl(var(--secondary)) 100%
+    );
+  }
+
+  .card-stat-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--primary) / 0.1) 0%,
+      hsl(var(--accent) / 0.05) 100%
+    );
+  }
+
   /* Professional Button Variants */
   .btn-premium {
     @apply bg-gradient-accent text-accent-foreground shadow-md hover:shadow-lg;

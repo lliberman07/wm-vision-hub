@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Building2, Users, FileText, Wrench, DollarSign, BarChart3 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Loader2, Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt } from 'lucide-react';
+import { PMSLayout } from '@/components/pms/PMSLayout';
+import { DashboardKPIs } from '@/components/pms/DashboardKPIs';
+import { ModuleCard } from '@/components/pms/ModuleCard';
 
 const PMS = () => {
   const navigate = useNavigate();
@@ -47,163 +49,109 @@ const PMS = () => {
     );
   }
 
-  const handleModuleClick = (moduleName: string, route: string) => {
-    navigate(route);
-  };
+  const modules = [
+    {
+      title: 'Propiedades',
+      description: 'Administra el portafolio de propiedades',
+      icon: Building2,
+      route: '/pms/properties',
+      gradient: 'from-primary/10 to-primary/20',
+    },
+    {
+      title: 'Propietarios',
+      description: 'Administra información de propietarios',
+      icon: UserSquare2,
+      route: '/pms/owners',
+      gradient: 'from-success/10 to-success/20',
+    },
+    {
+      title: 'Inquilinos',
+      description: 'Administra información de inquilinos',
+      icon: Users,
+      route: '/pms/tenants',
+      gradient: 'from-accent/10 to-accent/20',
+    },
+    {
+      title: 'Contratos',
+      description: 'Crea y administra contratos de alquiler',
+      icon: FileText,
+      route: '/pms/contracts',
+      gradient: 'from-warning/10 to-warning/20',
+    },
+    {
+      title: 'Pagos',
+      description: 'Controla pagos y vencimientos',
+      icon: DollarSign,
+      route: '/pms/payments',
+      gradient: 'from-primary/10 to-accent/20',
+    },
+    {
+      title: 'Gastos',
+      description: 'Gestiona gastos de propiedades',
+      icon: Receipt,
+      route: '/pms/expenses',
+      gradient: 'from-destructive/10 to-destructive/20',
+    },
+    {
+      title: 'Mantenimiento',
+      description: 'Gestiona solicitudes de mantenimiento',
+      icon: Wrench,
+      route: '/pms/maintenance',
+      gradient: 'from-success/10 to-primary/20',
+    },
+    {
+      title: 'Reportes',
+      description: 'Visualiza métricas del negocio',
+      icon: BarChart3,
+      route: '/pms/reports',
+      gradient: 'from-accent/10 to-success/20',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">WM Admin Prop</h1>
-          <p className="text-muted-foreground">
-            {currentTenant?.name} • Rol: {pmsRoles.join(', ')}
-          </p>
+    <PMSLayout>
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Hero Section */}
+        <div className="rounded-xl bg-gradient-to-br from-primary via-primary/90 to-secondary p-8 text-primary-foreground">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl font-bold mb-2">Bienvenido a WM Admin Prop</h1>
+            <p className="text-lg opacity-90">
+              {currentTenant?.name}
+            </p>
+            <div className="flex gap-2 mt-4">
+              {pmsRoles.map((role) => (
+                <span
+                  key={role}
+                  className="px-3 py-1 rounded-full bg-background/20 backdrop-blur text-sm font-medium"
+                >
+                  {role}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card 
-            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Propiedades', '/pms/properties')}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Building2 className="h-8 w-8 text-primary" />
-                <div>
-                  <CardTitle>Propiedades</CardTitle>
-                  <CardDescription>Gestión de inmuebles</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Administra el portafolio de propiedades
-              </p>
-            </CardContent>
-          </Card>
+        {/* KPIs */}
+        <DashboardKPIs />
 
-          <Card 
-            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Propietarios', '/pms/owners')}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-primary" />
-                <div>
-                  <CardTitle>Propietarios</CardTitle>
-                  <CardDescription>Gestión de dueños</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Administra información de propietarios
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Inquilinos', '/pms/tenants')}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-primary" />
-                <div>
-                  <CardTitle>Inquilinos</CardTitle>
-                  <CardDescription>Gestión de arrendatarios</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Administra información de inquilinos
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Contratos', '/pms/contracts')}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <FileText className="h-8 w-8 text-primary" />
-                <div>
-                  <CardTitle>Contratos</CardTitle>
-                  <CardDescription>Gestión de contratos</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Crea y administra contratos de alquiler
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Pagos', '/pms/payments')}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <DollarSign className="h-8 w-8 text-primary" />
-                <div>
-                  <CardTitle>Pagos</CardTitle>
-                  <CardDescription>Gestión de cobros</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Controla pagos y vencimientos
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Mantenimiento', '/pms/maintenance')}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Wrench className="h-8 w-8 text-primary" />
-                <div>
-                  <CardTitle>Mantenimiento</CardTitle>
-                  <CardDescription>Solicitudes de reparación</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Gestiona solicitudes de mantenimiento
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
-            onClick={() => handleModuleClick('Reportes', '/pms/reports')}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <BarChart3 className="h-8 w-8 text-primary" />
-                <div>
-                  <CardTitle>Reportes</CardTitle>
-                  <CardDescription>Análisis y estadísticas</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Visualiza métricas del negocio
-              </p>
-            </CardContent>
-          </Card>
+        {/* Modules Grid */}
+        <div>
+          <h2 className="text-2xl font-bold mb-6">Módulos del Sistema</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {modules.map((module) => (
+              <ModuleCard
+                key={module.title}
+                title={module.title}
+                description={module.description}
+                icon={module.icon}
+                onClick={() => navigate(module.route)}
+                gradient={module.gradient}
+              />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </PMSLayout>
   );
 };
 
