@@ -1252,6 +1252,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_pms_user_roles_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pms_user_roles_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
