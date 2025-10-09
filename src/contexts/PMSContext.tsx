@@ -82,22 +82,20 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const requestAccess = async (role: PMSRole, reason: string) => {
     if (!user) {
-      return { error: { message: 'You must be logged in to request access' } };
+      return { error: { message: 'Debes iniciar sesión para solicitar acceso' } };
     }
 
     try {
-      const { data: defaultTenant, error: tenantError } = await supabase
-        .from('pms_tenants')
-        .select('id')
-        .eq('slug', 'wm-default')
-        .maybeSingle();
+      // Use the security definer function to get default tenant ID
+      const { data: tenantId, error: tenantError } = await supabase
+        .rpc('get_default_tenant_id');
 
       if (tenantError) {
         console.error('Error fetching default tenant:', tenantError);
         return { error: { message: 'Error al obtener tenant predeterminado' } };
       }
 
-      if (!defaultTenant) {
+      if (!tenantId) {
         return { error: { message: 'Tenant predeterminado no encontrado. Contacte al administrador.' } };
       }
 
@@ -105,7 +103,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         .from('pms_access_requests')
         .insert({
           user_id: user.id,
-          tenant_id: defaultTenant.id,
+          tenant_id: tenantId,
           requested_role: role,
           reason: reason
         });

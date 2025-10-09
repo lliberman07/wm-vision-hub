@@ -1287,6 +1287,10 @@ export type Database = {
           status: Database["public"]["Enums"]["approval_status"]
         }[]
       }
+      get_default_tenant_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_pms_role: {
         Args: {
           _role: Database["public"]["Enums"]["pms_app_role"]
