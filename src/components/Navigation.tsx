@@ -15,6 +15,8 @@ const Navigation = () => {
   const { user } = useAuth();
   const { hasPMSAccess, loading: pmsLoading } = usePMS();
 
+  console.log('Navigation PMS Debug:', { user: !!user, hasPMSAccess, pmsLoading });
+
   const navItems = [
     { href: "/", label: t('nav.home') },
     { href: "/about", label: t('nav.about') },
@@ -69,14 +71,23 @@ const Navigation = () => {
           {/* Right side controls - Premium styling */}
           <div className="hidden md:flex items-center space-x-4 w-48 justify-end flex-shrink-0">
             <LanguageSwitcher variant="header" />
-            {user && hasPMSAccess && !pmsLoading && (
-              <Button variant="default" size="sm" className="shadow-sm" asChild>
-                <Link to="/pms">{t('nav.pms')}</Link>
+            {user && (
+              <>
+                {!pmsLoading && hasPMSAccess && (
+                  <Button variant="default" size="sm" className="shadow-sm" asChild>
+                    <Link to="/pms">{t('nav.pms')}</Link>
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" className="shadow-sm" asChild>
+                  <Link to="/auth">Admin</Link>
+                </Button>
+              </>
+            )}
+            {!user && (
+              <Button variant="outline" size="sm" className="shadow-sm" asChild>
+                <Link to="/auth">Admin</Link>
               </Button>
             )}
-            <Button variant="outline" size="sm" className="shadow-sm" asChild>
-              <Link to="/auth">Admin</Link>
-            </Button>
           </div>
 
           {/* Mobile Navigation */}
@@ -104,7 +115,7 @@ const Navigation = () => {
                 ))}
                 <div className="mt-4 space-y-3">
                   <LanguageSwitcher variant="header" />
-                  {user && hasPMSAccess && !pmsLoading && (
+                  {user && !pmsLoading && hasPMSAccess && (
                     <Button variant="default" className="w-full" asChild>
                       <Link to="/pms" onClick={() => setIsOpen(false)}>
                         {t('nav.pms')}
@@ -113,7 +124,7 @@ const Navigation = () => {
                   )}
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/auth" onClick={() => setIsOpen(false)}>
-                      Admin Access
+                      {user ? 'Admin Access' : 'Sign In'}
                     </Link>
                   </Button>
                 </div>
