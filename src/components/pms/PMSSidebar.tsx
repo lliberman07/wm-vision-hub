@@ -63,12 +63,9 @@ export function PMSSidebar() {
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="p-4 border-b">
         <div className="flex items-center gap-3">
-          <img src={wmLogo} alt="WM Admin" className="h-8 w-8" />
+          <img src={wmLogo} alt="WM" className="h-8 w-8" />
           {!isCollapsed && (
-            <div>
-              <h2 className="text-sm font-semibold">WM Admin Prop</h2>
-              <p className="text-xs text-muted-foreground">Sistema PMS</p>
-            </div>
+            <span className="text-sm font-semibold text-primary">WM</span>
           )}
         </div>
       </SidebarHeader>
@@ -100,19 +97,13 @@ export function PMSSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t">
-        {!isCollapsed && (
-          <div className="space-y-2">
-            <Separator />
-            <div className="space-y-1">
-              <p className="text-xs font-medium">{currentTenant?.name || 'N/A'}</p>
-              <div className="flex gap-1 flex-wrap">
-                {pmsRoles.map((role) => (
-                  <Badge key={role} variant="secondary" className="text-xs">
-                    {role}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+        {!isCollapsed && pmsRoles.length > 0 && (
+          <div className="flex gap-1 flex-wrap">
+            {pmsRoles.map((role) => (
+              <Badge key={role} variant="secondary" className="text-xs">
+                {role}
+              </Badge>
+            ))}
           </div>
         )}
       </SidebarFooter>
