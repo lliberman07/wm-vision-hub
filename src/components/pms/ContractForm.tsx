@@ -27,6 +27,14 @@ const formSchema = z.object({
   adjustment_type: z.string().optional(),
   status: z.string().min(1, 'Estado requerido'),
   special_clauses: z.string().optional(),
+  tipo_contrato: z.string().optional(),
+  monto_a: z.number().min(0).optional(),
+  monto_b: z.number().min(0).optional(),
+  aplica_a_items: z.string().optional(),
+  indice_ajuste: z.string().optional(),
+  frecuencia_ajuste: z.string().optional(),
+  frecuencia_factura: z.string().optional(),
+  fecha_primer_ajuste: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -61,6 +69,14 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       adjustment_type: 'none',
       status: 'draft',
       special_clauses: '',
+      tipo_contrato: 'CONTRATO',
+      monto_a: 0,
+      monto_b: 0,
+      aplica_a_items: 'A',
+      indice_ajuste: '',
+      frecuencia_ajuste: '',
+      frecuencia_factura: 'Mensual',
+      fecha_primer_ajuste: '',
     },
   });
 
@@ -99,6 +115,14 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         adjustment_type: data.adjustment_type,
         status: data.status,
         special_clauses: data.special_clauses,
+        tipo_contrato: data.tipo_contrato,
+        monto_a: data.monto_a || data.monthly_rent,
+        monto_b: data.monto_b || 0,
+        aplica_a_items: data.aplica_a_items,
+        indice_ajuste: data.indice_ajuste,
+        frecuencia_ajuste: data.frecuencia_ajuste,
+        frecuencia_factura: data.frecuencia_factura,
+        fecha_primer_ajuste: data.fecha_primer_ajuste,
         tenant_id: currentTenant?.id,
       };
 

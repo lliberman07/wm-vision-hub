@@ -24,6 +24,8 @@ const formSchema = z.object({
   payment_method: z.string().optional(),
   reference_number: z.string().optional(),
   notes: z.string().optional(),
+  item: z.string().optional(),
+  porcentaje: z.number().min(0).max(100).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -53,6 +55,8 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
       payment_method: '',
       reference_number: '',
       notes: '',
+      item: 'UNICO',
+      porcentaje: 100,
     },
   });
 
@@ -84,8 +88,12 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
         payment_method: data.payment_method,
         reference_number: data.reference_number,
         notes: data.notes,
+        item: data.item,
+        porcentaje: data.porcentaje,
         tenant_id: currentTenant?.id,
       };
+
+      let paymentId = payment?.id;
 
       if (payment?.id) {
         const { error } = await supabase
