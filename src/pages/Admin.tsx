@@ -16,6 +16,7 @@ import { ApplicationManagement } from "@/components/ApplicationManagement";
 import { KnowledgeBaseInit } from "@/components/KnowledgeBaseInit";
 import { SimulationsManagement } from "@/components/SimulationsManagement";
 import PMSAccessRequests from "@/components/PMSAccessRequests";
+import PMSRolesManagement from "@/components/PMSRolesManagement";
 
 interface Contact {
   id: string;
@@ -134,7 +135,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto p-6">
         <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-6' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-7' : 'grid-cols-4'}`}>
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Contact Submissions
@@ -155,7 +156,11 @@ const Admin = () => {
               <>
                 <TabsTrigger value="pms-access" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  PMS Access
+                  Solicitudes PMS
+                </TabsTrigger>
+                <TabsTrigger value="pms-roles" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Roles PMS
                 </TabsTrigger>
                 <TabsTrigger value="approvals" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
@@ -387,6 +392,23 @@ const Admin = () => {
                   </CardHeader>
                   <CardContent>
                     <PMSAccessRequests />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="pms-roles">
+                <Card className="shadow-strong">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Users className="h-5 w-5" />
+                      <span>Roles PMS Asignados</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Gestionar roles del sistema de gestión de propiedades (separado de roles de administración del sitio)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <PMSRolesManagement />
                   </CardContent>
                 </Card>
               </TabsContent>
