@@ -588,6 +588,648 @@ export type Database = {
           },
         ]
       }
+      pms_access_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          reason: string | null
+          requested_role: Database["public"]["Enums"]["pms_app_role"]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_role: Database["public"]["Enums"]["pms_app_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_role?: Database["public"]["Enums"]["pms_app_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_access_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_contracts: {
+        Row: {
+          adjustment_config: Json | null
+          adjustment_type: string | null
+          contract_number: string
+          contract_type: string | null
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          deposit_amount: number | null
+          end_date: string
+          guarantors: Json | null
+          id: string
+          monthly_rent: number
+          owner_id: string
+          payment_day: number | null
+          pdf_url: string | null
+          property_id: string
+          special_clauses: string | null
+          start_date: string
+          status: string | null
+          tenant_id: string
+          tenant_renter_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          adjustment_config?: Json | null
+          adjustment_type?: string | null
+          contract_number: string
+          contract_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          deposit_amount?: number | null
+          end_date: string
+          guarantors?: Json | null
+          id?: string
+          monthly_rent: number
+          owner_id: string
+          payment_day?: number | null
+          pdf_url?: string | null
+          property_id: string
+          special_clauses?: string | null
+          start_date: string
+          status?: string | null
+          tenant_id: string
+          tenant_renter_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          adjustment_config?: Json | null
+          adjustment_type?: string | null
+          contract_number?: string
+          contract_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          deposit_amount?: number | null
+          end_date?: string
+          guarantors?: Json | null
+          id?: string
+          monthly_rent?: number
+          owner_id?: string
+          payment_day?: number | null
+          pdf_url?: string | null
+          property_id?: string
+          special_clauses?: string | null
+          start_date?: string
+          status?: string | null
+          tenant_id?: string
+          tenant_renter_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_contracts_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "pms_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contracts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "pms_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contracts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contracts_tenant_renter_id_fkey"
+            columns: ["tenant_renter_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants_renters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_documents: {
+        Row: {
+          created_at: string | null
+          document_type: string
+          entity_id: string
+          entity_type: string
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          mime_type: string | null
+          tenant_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_type: string
+          entity_id: string
+          entity_type: string
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          mime_type?: string | null
+          tenant_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_type?: string
+          entity_id?: string
+          entity_type?: string
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          mime_type?: string | null
+          tenant_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_maintenance_requests: {
+        Row: {
+          actual_cost: number | null
+          assigned_to: string | null
+          category: string | null
+          completed_date: string | null
+          contract_id: string | null
+          created_at: string | null
+          description: string
+          estimated_cost: number | null
+          id: string
+          notes: string | null
+          photos: Json | null
+          priority: string | null
+          property_id: string
+          reported_by: string | null
+          scheduled_date: string | null
+          status: string | null
+          tenant_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          actual_cost?: number | null
+          assigned_to?: string | null
+          category?: string | null
+          completed_date?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          description: string
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          photos?: Json | null
+          priority?: string | null
+          property_id: string
+          reported_by?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+          tenant_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          actual_cost?: number | null
+          assigned_to?: string | null
+          category?: string | null
+          completed_date?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          description?: string
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          photos?: Json | null
+          priority?: string | null
+          property_id?: string
+          reported_by?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_maintenance_requests_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_maintenance_requests_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "pms_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_maintenance_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_owners: {
+        Row: {
+          address: string | null
+          bank_account: Json | null
+          city: string | null
+          created_at: string | null
+          document_number: string
+          document_type: string
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          owner_type: string
+          phone: string | null
+          tax_id: string | null
+          tenant_id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          bank_account?: Json | null
+          city?: string | null
+          created_at?: string | null
+          document_number: string
+          document_type: string
+          email: string
+          full_name: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          owner_type: string
+          phone?: string | null
+          tax_id?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          bank_account?: Json | null
+          city?: string | null
+          created_at?: string | null
+          document_number?: string
+          document_type?: string
+          email?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          owner_type?: string
+          phone?: string | null
+          tax_id?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_owners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_payments: {
+        Row: {
+          amount: number
+          contract_id: string
+          created_at: string | null
+          currency: string | null
+          due_date: string
+          id: string
+          notes: string | null
+          paid_amount: number | null
+          paid_date: string | null
+          payment_method: string | null
+          payment_type: string
+          receipt_url: string | null
+          reference_number: string | null
+          status: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          contract_id: string
+          created_at?: string | null
+          currency?: string | null
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_type: string
+          receipt_url?: string | null
+          reference_number?: string | null
+          status?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          contract_id?: string
+          created_at?: string | null
+          currency?: string | null
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_type?: string
+          receipt_url?: string | null
+          reference_number?: string | null
+          status?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_properties: {
+        Row: {
+          address: string
+          amenities: string[] | null
+          bathrooms: number | null
+          bedrooms: number | null
+          city: string
+          code: string
+          country: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          photos: Json | null
+          postal_code: string | null
+          property_type: string
+          state: string | null
+          status: string | null
+          surface_covered: number | null
+          surface_total: number | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          address: string
+          amenities?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city: string
+          code: string
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          photos?: Json | null
+          postal_code?: string | null
+          property_type: string
+          state?: string | null
+          status?: string | null
+          surface_covered?: number | null
+          surface_total?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string
+          amenities?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string
+          code?: string
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          photos?: Json | null
+          postal_code?: string | null
+          property_type?: string
+          state?: string | null
+          status?: string | null
+          surface_covered?: number | null
+          surface_total?: number | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_properties_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_tenants: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          settings: Json | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          settings?: Json | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          settings?: Json | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      pms_tenants_renters: {
+        Row: {
+          created_at: string | null
+          credit_score: number | null
+          document_number: string
+          document_type: string
+          email: string
+          emergency_contact: Json | null
+          employment_info: Json | null
+          full_name: string
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          phone: string | null
+          tenant_id: string
+          tenant_references: Json | null
+          tenant_type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credit_score?: number | null
+          document_number: string
+          document_type: string
+          email: string
+          emergency_contact?: Json | null
+          employment_info?: Json | null
+          full_name: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          phone?: string | null
+          tenant_id: string
+          tenant_references?: Json | null
+          tenant_type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credit_score?: number | null
+          document_number?: string
+          document_type?: string
+          email?: string
+          emergency_contact?: Json | null
+          employment_info?: Json | null
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          phone?: string | null
+          tenant_id?: string
+          tenant_references?: Json | null
+          tenant_type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_tenants_renters_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_user_roles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["pms_app_role"]
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["pms_app_role"]
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["pms_app_role"]
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           approved_at: string | null
@@ -645,6 +1287,14 @@ export type Database = {
           status: Database["public"]["Enums"]["approval_status"]
         }[]
       }
+      has_pms_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["pms_app_role"]
+          _tenant_id?: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       application_status:
@@ -658,6 +1308,12 @@ export type Database = {
       application_type: "individual" | "company"
       approval_status: "pending" | "approved" | "denied"
       employment_status: "employed" | "self-employed" | "other"
+      pms_app_role:
+        | "SUPERADMIN"
+        | "INMOBILIARIA"
+        | "ADMINISTRADOR"
+        | "PROPIETARIO"
+        | "INQUILINO"
       user_role: "superadmin" | "admin"
     }
     CompositeTypes: {
@@ -798,6 +1454,13 @@ export const Constants = {
       application_type: ["individual", "company"],
       approval_status: ["pending", "approved", "denied"],
       employment_status: ["employed", "self-employed", "other"],
+      pms_app_role: [
+        "SUPERADMIN",
+        "INMOBILIARIA",
+        "ADMINISTRADOR",
+        "PROPIETARIO",
+        "INQUILINO",
+      ],
       user_role: ["superadmin", "admin"],
     },
   },

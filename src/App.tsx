@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PMSProvider } from "@/contexts/PMSContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -26,6 +27,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import { FinancingApplication } from "./pages/FinancingApplication";
 import CreditSimulator from "./pages/CreditSimulator";
+import PMS from "./pages/PMS";
+import PMSRequestAccess from "./pages/PMSRequestAccess";
 
 const queryClient = new QueryClient();
 
@@ -34,11 +37,12 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <Routes>
+          <PMSProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
+              <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
@@ -63,12 +67,15 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/pms" element={<PMS />} />
+              <Route path="/pms/request-access" element={<PMSRequestAccess />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+          </PMSProvider>
         </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>

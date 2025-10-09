@@ -135,7 +135,7 @@ const PropertyManagement = () => {
           </p>
           <div className="flex justify-center">
             <Button size="lg" variant="secondary" asChild>
-              <Link to="/odoo_pms/contactos" className="font-bold">
+              <Link to="/pms" className="font-bold">
                 {t('propertyManagement.pms.access')}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
