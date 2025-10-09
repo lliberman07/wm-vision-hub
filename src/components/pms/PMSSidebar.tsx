@@ -64,9 +64,6 @@ export function PMSSidebar() {
       <SidebarHeader className="p-4 border-b">
         <div className="flex items-center gap-3">
           <img src={wmLogo} alt="WM" className="h-8 w-8" />
-          {!isCollapsed && (
-            <span className="text-sm font-semibold text-primary">WM</span>
-          )}
         </div>
       </SidebarHeader>
 
@@ -97,7 +94,15 @@ export function PMSSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t">
-        {/* Footer vacío o se puede usar para otros elementos */}
+        {!isCollapsed && pmsRoles.length > 0 && (
+          <div className="flex gap-1 flex-wrap">
+            {pmsRoles.map((role) => (
+              <Badge key={role} variant="secondary" className="text-xs">
+                {role}
+              </Badge>
+            ))}
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
