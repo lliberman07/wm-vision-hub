@@ -62,9 +62,7 @@ export function PMSSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="p-4 border-b">
-        <div className="flex items-center gap-3">
-          <img src={wmLogo} alt="WM" className="h-8 w-8" />
-        </div>
+        {/* Header sin logo */}
       </SidebarHeader>
 
       <SidebarContent>
