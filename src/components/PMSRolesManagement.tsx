@@ -42,7 +42,7 @@ const PMSRolesManagement = () => {
     try {
       const { data: rolesData, error } = await supabase
         .from('pms_user_roles')
-        .select('*, pms_tenants(name)')
+        .select('*, pms_tenants!fk_pms_user_roles_tenant(name)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
