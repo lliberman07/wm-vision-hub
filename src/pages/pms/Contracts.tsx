@@ -11,6 +11,7 @@ import { Plus, Search, Edit, Eye, ArrowLeft, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { ContractForm } from '@/components/pms/ContractForm';
 
 interface Contract {
   id: string;
@@ -29,6 +30,8 @@ const Contracts = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -81,7 +84,7 @@ const Contracts = () => {
             <h1 className="text-3xl font-bold">Contratos</h1>
             <p className="text-muted-foreground">{currentTenant?.name}</p>
           </div>
-          <Button onClick={() => toast.info('Funcionalidad en desarrollo')}>
+          <Button onClick={() => { setSelectedContract(undefined); setIsFormOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Contrato
           </Button>
@@ -140,7 +143,7 @@ const Contracts = () => {
                         <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Editar')}>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedContract(contract); setIsFormOpen(true); }}>
                           <Edit className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -151,6 +154,13 @@ const Contracts = () => {
             )}
           </CardContent>
         </Card>
+
+        <ContractForm
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          onSuccess={fetchContracts}
+          contract={selectedContract}
+        />
       </div>
     </div>
   );
