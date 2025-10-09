@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePMS } from '@/contexts/PMSContext';
 import { useState, useEffect } from 'react';
+import { ContractPaymentMethods } from './ContractPaymentMethods';
 
 const formSchema = z.object({
   contract_number: z.string().min(1, 'Número de contrato requerido'),
@@ -429,6 +431,16 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 </FormItem>
               )}
             />
+
+            {contract?.id && (
+              <>
+                <Separator className="my-6" />
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Métodos de Pago</h3>
+                  <ContractPaymentMethods contractId={contract.id} />
+                </div>
+              </>
+            )}
 
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
