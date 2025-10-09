@@ -7,11 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Search, Edit, Eye, ArrowLeft, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { PaymentForm } from '@/components/pms/PaymentForm';
+import { PaymentDistributions } from '@/components/pms/PaymentDistributions';
 
 interface Payment {
   id: string;
@@ -33,6 +35,7 @@ const Payments = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | undefined>();
 
   useEffect(() => {
@@ -153,7 +156,7 @@ const Payments = () => {
                       <TableCell>{format(new Date(payment.due_date), 'dd/MM/yyyy')}</TableCell>
                       <TableCell>{getStatusBadge(payment.status)}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedPayment(payment); setIsViewOpen(true); }}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => { setSelectedPayment(payment); setIsFormOpen(true); }}>
@@ -174,6 +177,52 @@ const Payments = () => {
           onSuccess={fetchPayments}
           payment={selectedPayment}
         />
+
+        <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Detalles del Pago</DialogTitle>
+              <DialogDescription>
+                {selectedPayment?.reference_number || 'Sin referencia'}
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedPayment && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tipo de Pago</p>
+                    <p className="font-medium capitalize">{selectedPayment.payment_type}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Estado</p>
+                    <p className="font-medium">{getStatusBadge(selectedPayment.status)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Monto Total</p>
+                    <p className="font-medium text-lg">{selectedPayment.currency} {selectedPayment.amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Monto Pagado</p>
+                    <p className="font-medium text-lg">{selectedPayment.currency} {selectedPayment.paid_amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Fecha de Vencimiento</p>
+                    <p className="font-medium">{format(new Date(selectedPayment.due_date), 'dd/MM/yyyy')}</p>
+                  </div>
+                  {selectedPayment.paid_date && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Fecha de Pago</p>
+                      <p className="font-medium">{format(new Date(selectedPayment.paid_date), 'dd/MM/yyyy')}</p>
+                    </div>
+                  )}
+                </div>
+
+                <PaymentDistributions paymentId={selectedPayment.id} />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

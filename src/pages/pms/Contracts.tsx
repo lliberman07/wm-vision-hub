@@ -7,11 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Search, Edit, Eye, ArrowLeft, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ContractForm } from '@/components/pms/ContractForm';
+import { ContractPaymentMethods } from '@/components/pms/ContractPaymentMethods';
+import { ContractAdjustments } from '@/components/pms/ContractAdjustments';
 
 interface Contract {
   id: string;
@@ -31,6 +35,7 @@ const Contracts = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
 
   useEffect(() => {
@@ -140,7 +145,7 @@ const Contracts = () => {
                         <Button variant="ghost" size="sm" onClick={() => toast.info('Ver PDF')}>
                           <FileText className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedContract(contract); setIsViewOpen(true); }}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => { setSelectedContract(contract); setIsFormOpen(true); }}>
@@ -161,6 +166,56 @@ const Contracts = () => {
           onSuccess={fetchContracts}
           contract={selectedContract}
         />
+
+        <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Detalles del Contrato</DialogTitle>
+              <DialogDescription>
+                {selectedContract?.contract_number}
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedContract && (
+              <Tabs defaultValue="info" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="info">Información</TabsTrigger>
+                  <TabsTrigger value="methods">Métodos de Pago</TabsTrigger>
+                  <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="info" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Fecha Inicio</p>
+                      <p className="font-medium">{format(new Date(selectedContract.start_date), 'dd/MM/yyyy')}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Fecha Fin</p>
+                      <p className="font-medium">{format(new Date(selectedContract.end_date), 'dd/MM/yyyy')}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Renta Mensual</p>
+                      <p className="font-medium">{selectedContract.currency} {selectedContract.monthly_rent.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Estado</p>
+                      <p className="font-medium">{getStatusBadge(selectedContract.status)}</p>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="methods">
+                  <ContractPaymentMethods contractId={selectedContract.id} />
+                </TabsContent>
+
+                <TabsContent value="adjustments">
+                  <ContractAdjustments contractId={selectedContract.id} />
+                </TabsContent>
+              </Tabs>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

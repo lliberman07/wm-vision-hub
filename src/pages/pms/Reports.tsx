@@ -3,19 +3,89 @@ import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, TrendingUp, Building2, Users, FileText } from 'lucide-react';
-import { useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, TrendingUp, Building2, Users, FileText, DollarSign } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const Reports = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentTenant, hasPMSAccess } = usePMS();
+  const [selectedProperty, setSelectedProperty] = useState<string>('all');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('current-month');
+  const [properties, setProperties] = useState<any[]>([]);
+  const [cashflowData, setCashflowData] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    totalProperties: 0,
+    activeContracts: 0,
+    activeTenants: 0,
+    monthlyIncome: 0,
+  });
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
       navigate('/pms');
+    } else {
+      fetchData();
     }
   }, [user, hasPMSAccess, navigate]);
+
+  useEffect(() => {
+    if (currentTenant?.id) {
+      fetchCashflow();
+    }
+  }, [selectedProperty, selectedPeriod, currentTenant]);
+
+  const fetchData = async () => {
+    try {
+      const [propsRes, contractsRes, tenantsRes, paymentsRes] = await Promise.all([
+        supabase.from('pms_properties').select('id, code, address'),
+        supabase.from('pms_contracts').select('id').eq('status', 'active'),
+        supabase.from('pms_tenants_renters').select('id').eq('is_active', true),
+        supabase.from('pms_payments').select('paid_amount, currency').eq('status', 'paid'),
+      ]);
+
+      if (propsRes.data) setProperties(propsRes.data);
+
+      const totalIncome = paymentsRes.data?.reduce((sum, p) => sum + Number(p.paid_amount || 0), 0) || 0;
+
+      setStats({
+        totalProperties: propsRes.data?.length || 0,
+        activeContracts: contractsRes.data?.length || 0,
+        activeTenants: tenantsRes.data?.length || 0,
+        monthlyIncome: totalIncome,
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const fetchCashflow = async () => {
+    try {
+      let query = supabase
+        .from('pms_cashflow_property')
+        .select('*')
+        .eq('tenant_id', currentTenant?.id)
+        .order('period', { ascending: false })
+        .limit(12);
+
+      if (selectedProperty !== 'all') {
+        query = query.eq('property_id', selectedProperty);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setCashflowData(data || []);
+    } catch (error) {
+      console.error('Error fetching cashflow:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -38,7 +108,7 @@ const Reports = () => {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.totalProperties}</div>
               <p className="text-xs text-muted-foreground">
                 En el sistema
               </p>
@@ -53,7 +123,7 @@ const Reports = () => {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.activeContracts}</div>
               <p className="text-xs text-muted-foreground">
                 En vigencia
               </p>
@@ -68,7 +138,7 @@ const Reports = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.activeTenants}</div>
               <p className="text-xs text-muted-foreground">
                 Activos
               </p>
@@ -78,33 +148,98 @@ const Reports = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Ingresos del Mes
+                Ingresos Cobrados
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0</div>
+              <div className="text-2xl font-bold">
+                ${stats.monthlyIncome.toLocaleString('es-AR')}
+              </div>
               <p className="text-xs text-muted-foreground">
-                ARS
+                Histórico
               </p>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Análisis y Estadísticas</CardTitle>
-            <CardDescription>
-              Visualiza métricas del negocio
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Flujo de Caja por Propiedad
+                </CardTitle>
+                <CardDescription>
+                  Ingresos, gastos y resultado neto
+                </CardDescription>
+              </div>
+              <div className="flex gap-3">
+                <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las propiedades</SelectItem>
+                    {properties.map(prop => (
+                      <SelectItem key={prop.id} value={prop.id}>
+                        {prop.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-12 text-muted-foreground">
-              <p>Los reportes detallados estarán disponibles próximamente</p>
-              <p className="text-sm mt-2">
-                Incluirá gráficos de ocupación, ingresos, vencimientos y más
-              </p>
-            </div>
+            {cashflowData.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>No hay datos de flujo de caja disponibles</p>
+                <p className="text-sm mt-2">
+                  Los datos se generan automáticamente cuando se registran pagos y gastos
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Período</TableHead>
+                    <TableHead>Moneda</TableHead>
+                    <TableHead className="text-right">Ingresos</TableHead>
+                    <TableHead className="text-right">Gastos</TableHead>
+                    <TableHead className="text-right">Resultado Neto</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cashflowData.map((cf) => (
+                    <TableRow key={cf.id}>
+                      <TableCell className="font-medium">{cf.period}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{cf.currency}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right text-green-600 font-medium">
+                        ${Number(cf.total_income || 0).toLocaleString('es-AR', {
+                          minimumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-right text-red-600">
+                        ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
+                          minimumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-right font-bold">
+                        <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
+                          ${Number(cf.net_result || 0).toLocaleString('es-AR', {
+                            minimumFractionDigits: 2,
+                          })}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
