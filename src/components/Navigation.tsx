@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePMS } from "@/contexts/PMSContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { hasPMSAccess, loading: pmsLoading } = usePMS();
 
   const navItems = [
     { href: "/", label: t('nav.home') },
@@ -65,6 +69,11 @@ const Navigation = () => {
           {/* Right side controls - Premium styling */}
           <div className="hidden md:flex items-center space-x-4 w-48 justify-end flex-shrink-0">
             <LanguageSwitcher variant="header" />
+            {user && hasPMSAccess && !pmsLoading && (
+              <Button variant="default" size="sm" className="shadow-sm" asChild>
+                <Link to="/pms">{t('nav.pms')}</Link>
+              </Button>
+            )}
             <Button variant="outline" size="sm" className="shadow-sm" asChild>
               <Link to="/auth">Admin</Link>
             </Button>
@@ -95,6 +104,13 @@ const Navigation = () => {
                 ))}
                 <div className="mt-4 space-y-3">
                   <LanguageSwitcher variant="header" />
+                  {user && hasPMSAccess && !pmsLoading && (
+                    <Button variant="default" className="w-full" asChild>
+                      <Link to="/pms" onClick={() => setIsOpen(false)}>
+                        {t('nav.pms')}
+                      </Link>
+                    </Button>
+                  )}
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/auth" onClick={() => setIsOpen(false)}>
                       Admin Access

@@ -24,6 +24,7 @@ const translations = {
     'nav.financing': 'Financing',
     'nav.contact': 'Contact',
     'nav.faq': 'FAQ',
+    'nav.pms': 'PMS',
     'nav.getStarted': 'Get Started',
     
     // Home page
@@ -1153,6 +1154,7 @@ const translations = {
     'nav.financing': 'Financiamiento',
     'nav.contact': 'Contacto',
     'nav.faq': 'Preguntas Frecuentes',
+    'nav.pms': 'PMS',
     'nav.getStarted': 'Comenzar',
     
     // Home page
