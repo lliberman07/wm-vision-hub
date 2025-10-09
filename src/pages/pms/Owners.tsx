@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Edit, Eye, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { OwnerForm } from '@/components/pms/OwnerForm';
 
 interface Owner {
   id: string;
@@ -29,6 +30,8 @@ const Owners = () => {
   const [owners, setOwners] = useState<Owner[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState<Owner | undefined>();
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -74,7 +77,7 @@ const Owners = () => {
             <h1 className="text-3xl font-bold">Propietarios</h1>
             <p className="text-muted-foreground">{currentTenant?.name}</p>
           </div>
-          <Button onClick={() => toast.info('Funcionalidad en desarrollo')}>
+          <Button onClick={() => { setSelectedOwner(undefined); setIsFormOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Propietario
           </Button>
@@ -134,7 +137,7 @@ const Owners = () => {
                         <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Editar')}>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedOwner(owner); setIsFormOpen(true); }}>
                           <Edit className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -145,6 +148,13 @@ const Owners = () => {
             )}
           </CardContent>
         </Card>
+
+        <OwnerForm
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          onSuccess={fetchOwners}
+          owner={selectedOwner}
+        />
       </div>
     </div>
   );

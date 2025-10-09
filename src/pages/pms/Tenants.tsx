@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Edit, Eye, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { TenantForm } from '@/components/pms/TenantForm';
 
 interface Tenant {
   id: string;
@@ -29,6 +30,8 @@ const Tenants = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | undefined>();
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -74,7 +77,7 @@ const Tenants = () => {
             <h1 className="text-3xl font-bold">Inquilinos</h1>
             <p className="text-muted-foreground">{currentTenant?.name}</p>
           </div>
-          <Button onClick={() => toast.info('Funcionalidad en desarrollo')}>
+          <Button onClick={() => { setSelectedTenant(undefined); setIsFormOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Inquilino
           </Button>
@@ -134,7 +137,7 @@ const Tenants = () => {
                         <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Editar')}>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedTenant(tenant); setIsFormOpen(true); }}>
                           <Edit className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -145,6 +148,13 @@ const Tenants = () => {
             )}
           </CardContent>
         </Card>
+
+        <TenantForm
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          onSuccess={fetchTenants}
+          tenant={selectedTenant}
+        />
       </div>
     </div>
   );

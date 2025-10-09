@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Edit, Eye, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { PropertyForm } from '@/components/pms/PropertyForm';
 
 interface Property {
   id: string;
@@ -30,6 +31,8 @@ const Properties = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | undefined>();
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -84,7 +87,7 @@ const Properties = () => {
             <h1 className="text-3xl font-bold">Propiedades</h1>
             <p className="text-muted-foreground">{currentTenant?.name}</p>
           </div>
-          <Button onClick={() => toast.info('Funcionalidad en desarrollo')}>
+          <Button onClick={() => { setSelectedProperty(undefined); setIsFormOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
             Nueva Propiedad
           </Button>
@@ -142,7 +145,7 @@ const Properties = () => {
                         <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Editar')}>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedProperty(property); setIsFormOpen(true); }}>
                           <Edit className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -153,6 +156,13 @@ const Properties = () => {
             )}
           </CardContent>
         </Card>
+
+        <PropertyForm
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          onSuccess={fetchProperties}
+          property={selectedProperty}
+        />
       </div>
     </div>
   );
