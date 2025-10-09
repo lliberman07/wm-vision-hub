@@ -97,15 +97,7 @@ export function PMSSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t">
-        {!isCollapsed && pmsRoles.length > 0 && (
-          <div className="flex gap-1 flex-wrap">
-            {pmsRoles.map((role) => (
-              <Badge key={role} variant="secondary" className="text-xs">
-                {role}
-              </Badge>
-            ))}
-          </div>
-        )}
+        {/* Footer vacío o se puede usar para otros elementos */}
       </SidebarFooter>
     </Sidebar>
   );
