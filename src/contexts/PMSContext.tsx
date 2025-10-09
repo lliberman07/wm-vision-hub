@@ -86,14 +86,19 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     try {
-      const { data: defaultTenant } = await supabase
+      const { data: defaultTenant, error: tenantError } = await supabase
         .from('pms_tenants')
         .select('id')
         .eq('slug', 'wm-default')
-        .single();
+        .maybeSingle();
+
+      if (tenantError) {
+        console.error('Error fetching default tenant:', tenantError);
+        return { error: { message: 'Error al obtener tenant predeterminado' } };
+      }
 
       if (!defaultTenant) {
-        return { error: { message: 'Default tenant not found' } };
+        return { error: { message: 'Tenant predeterminado no encontrado. Contacte al administrador.' } };
       }
 
       const { error } = await supabase
@@ -105,9 +110,15 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           reason: reason
         });
 
-      return { error };
+      if (error) {
+        console.error('Error creating access request:', error);
+        return { error: { message: 'Error al crear solicitud de acceso' } };
+      }
+
+      return { error: null };
     } catch (error: any) {
-      return { error };
+      console.error('Unexpected error:', error);
+      return { error: { message: 'Error inesperado al procesar solicitud' } };
     }
   };
 
