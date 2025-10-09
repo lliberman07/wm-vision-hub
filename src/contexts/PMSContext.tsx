@@ -57,32 +57,52 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     try {
-      const { data: roles, error } = await supabase
+      console.log('[PMSContext] Checking PMS access for user:', user.id);
+      
+      // First, get user roles
+      const { data: roles, error: rolesError } = await supabase
         .from('pms_user_roles')
-        .select('role, tenant_id, pms_tenants(id, name, slug)')
+        .select('role, tenant_id')
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      console.log('[PMSContext] Roles query result:', { roles, error: rolesError });
+
+      if (rolesError) {
+        console.error('[PMSContext] Error fetching roles:', rolesError);
+        throw rolesError;
+      }
 
       if (roles && roles.length > 0) {
         setHasPMSAccess(true);
         setPMSRoles(roles.map(r => r.role as PMSRole));
         
-        const tenant = roles[0].pms_tenants as any;
-        if (tenant) {
+        // Then get tenant information separately
+        const { data: tenant, error: tenantError } = await supabase
+          .from('pms_tenants')
+          .select('id, name, slug')
+          .eq('id', roles[0].tenant_id)
+          .single();
+
+        console.log('[PMSContext] Tenant query result:', { tenant, error: tenantError });
+
+        if (tenant && !tenantError) {
           setCurrentTenant({
             id: tenant.id,
             name: tenant.name,
             slug: tenant.slug
           });
+        } else {
+          console.warn('[PMSContext] Could not fetch tenant, but user has roles');
+          setCurrentTenant(null);
         }
       } else {
+        console.log('[PMSContext] No roles found for user');
         setHasPMSAccess(false);
         setPMSRoles([]);
         setCurrentTenant(null);
       }
     } catch (error) {
-      console.error('Error checking PMS access:', error);
+      console.error('[PMSContext] Error checking PMS access:', error);
       setHasPMSAccess(false);
       setPMSRoles([]);
       setCurrentTenant(null);
