@@ -111,26 +111,6 @@ const PMS = () => {
   return (
     <PMSLayout>
       <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Hero Section */}
-        <div className="rounded-xl bg-gradient-to-br from-primary via-primary/90 to-secondary p-8 text-primary-foreground">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold mb-2">Bienvenido a WM Admin Prop</h1>
-            <p className="text-lg opacity-90">
-              {currentTenant?.name}
-            </p>
-            <div className="flex gap-2 mt-4">
-              {pmsRoles.map((role) => (
-                <span
-                  key={role}
-                  className="px-3 py-1 rounded-full bg-background/20 backdrop-blur text-sm font-medium"
-                >
-                  {role}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* KPIs */}
         <DashboardKPIs />
 
