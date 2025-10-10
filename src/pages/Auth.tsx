@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,12 +21,16 @@ const Auth = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get('redirect');
 
   useEffect(() => {
     if (user) {
-      navigate("/admin");
+      // Redirect to the requested path or default to /admin
+      const destination = redirectPath || "/admin";
+      navigate(destination);
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectPath]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +46,8 @@ const Auth = () => {
         title: "Success",
         description: "Successfully signed in!",
       });
-      navigate("/admin");
+      const destination = redirectPath || "/admin";
+      navigate(destination);
     }
     
     setLoading(false);

@@ -135,8 +135,43 @@ const PMSRequestAccess = () => {
   }
 
   if (!user) {
-    navigate('/pms/login');
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-slate-950 dark:via-blue-950 dark:to-slate-900 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center space-y-2">
+            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Building2 className="w-6 h-6 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">Autenticación Requerida</CardTitle>
+            <CardDescription className="text-base">
+              Necesitas crear una cuenta o iniciar sesión para solicitar acceso al Sistema de Gestión de Propiedades.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                La autenticación nos permite validar tu identidad y proteger el sistema contra bots y accesos no autorizados.
+              </AlertDescription>
+            </Alert>
+            <Button 
+              onClick={() => navigate('/pms/login?redirect=/pms/request-access')}
+              className="w-full"
+              size="lg"
+            >
+              Ir a Iniciar Sesión / Registrarse
+            </Button>
+            <Button 
+              onClick={() => navigate('/')}
+              variant="outline"
+              className="w-full"
+            >
+              Volver al Inicio
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (submitted) {

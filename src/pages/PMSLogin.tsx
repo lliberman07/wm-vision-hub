@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,12 +16,15 @@ const PMSLogin = () => {
   const [error, setError] = useState("");
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get('redirect');
 
   useEffect(() => {
     if (user) {
-      navigate("/pms");
+      // Redirect to the requested path or default to /pms
+      navigate(redirectPath || "/pms");
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectPath]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +40,8 @@ const PMSLogin = () => {
       });
     } else {
       toast.success("Inicio de sesión exitoso");
-      navigate("/pms");
+      // Redirect to the requested path or default to /pms
+      navigate(redirectPath || "/pms");
     }
 
     setLoading(false);
@@ -110,15 +114,36 @@ const PMSLogin = () => {
                 {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
               </Button>
 
-              <div className="text-center pt-4">
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={() => navigate("/pms/request-access")}
-                  className="text-sm"
-                >
-                  ¿No tienes acceso? Solicita acceso aquí
-                </Button>
+              <div className="space-y-3 mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      ¿No tienes cuenta?
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate(`/auth${redirectPath ? `?redirect=${redirectPath}` : ''}`)}
+                    className="w-full"
+                  >
+                    Registrarse
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/pms/request-access')}
+                    className="w-full"
+                  >
+                    Solicitar Acceso
+                  </Button>
+                </div>
               </div>
             </form>
           </CardContent>
