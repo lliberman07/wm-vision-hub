@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ExpenseForm } from "@/components/pms/ExpenseForm";
-import { ArrowLeft, Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText } from "lucide-react";
 import { format } from "date-fns";
+import { PMSLayout } from "@/components/pms/PMSLayout";
 
 interface Expense {
   id: string;
@@ -67,14 +68,12 @@ export default function Expenses() {
   );
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/pms')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+    <PMSLayout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
             <h1 className="text-3xl font-bold">Gastos</h1>
+            <p className="text-muted-foreground">{currentTenant?.name}</p>
           </div>
           <Button onClick={() => {
             setSelectedExpense(undefined);
@@ -174,6 +173,6 @@ export default function Expenses() {
           />
         )}
       </div>
-    </div>
+    </PMSLayout>
   );
 }

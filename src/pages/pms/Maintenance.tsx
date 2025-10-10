@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Edit, Eye, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Edit, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { MaintenanceForm } from '@/components/pms/MaintenanceForm';
+import { PMSLayout } from '@/components/pms/PMSLayout';
 
 interface MaintenanceRequest {
   id: string;
@@ -93,14 +94,10 @@ const Maintenance = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <PMSLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <Button variant="ghost" onClick={() => navigate('/pms')} className="mb-2">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver al Dashboard
-            </Button>
             <h1 className="text-3xl font-bold">Mantenimiento</h1>
             <p className="text-muted-foreground">{currentTenant?.name}</p>
           </div>
@@ -186,7 +183,7 @@ const Maintenance = () => {
           maintenance={selectedRequest}
         />
       </div>
-    </div>
+    </PMSLayout>
   );
 };
 

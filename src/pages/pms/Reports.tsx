@@ -2,15 +2,13 @@ import { useNavigate } from 'react-router-dom';
 import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, TrendingUp, Building2, Users, FileText, DollarSign } from 'lucide-react';
+import { TrendingUp, Building2, Users, FileText, DollarSign } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { PMSLayout } from '@/components/pms/PMSLayout';
 
 const Reports = () => {
   const navigate = useNavigate();
@@ -88,13 +86,9 @@ const Reports = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <PMSLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate('/pms')} className="mb-2">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al Dashboard
-          </Button>
           <h1 className="text-3xl font-bold">Reportes</h1>
           <p className="text-muted-foreground">{currentTenant?.name}</p>
         </div>
@@ -243,7 +237,7 @@ const Reports = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PMSLayout>
   );
 };
 
