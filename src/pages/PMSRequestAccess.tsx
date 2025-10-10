@@ -155,11 +155,11 @@ const PMSRequestAccess = () => {
               </AlertDescription>
             </Alert>
             <Button 
-              onClick={() => navigate('/pms/login?redirect=/pms/request-access')}
+              onClick={() => navigate('/auth?redirect=/pms/request-access')}
               className="w-full"
               size="lg"
             >
-              Ir a Iniciar Sesión / Registrarse
+              Crear Cuenta para Solicitar Acceso
             </Button>
             <Button 
               onClick={() => navigate('/')}

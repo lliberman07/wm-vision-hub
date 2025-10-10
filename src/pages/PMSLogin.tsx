@@ -121,29 +121,19 @@ const PMSLogin = () => {
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-background px-2 text-muted-foreground">
-                      ¿No tienes cuenta?
+                      ¿No tienes acceso al sistema PMS?
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate(`/auth${redirectPath ? `?redirect=${redirectPath}` : ''}`)}
-                    className="w-full"
-                  >
-                    Registrarse
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/pms/request-access')}
-                    className="w-full"
-                  >
-                    Solicitar Acceso
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/pms/request-access')}
+                  className="w-full"
+                >
+                  Solicitar Acceso
+                </Button>
               </div>
             </form>
           </CardContent>
