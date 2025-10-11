@@ -17,7 +17,8 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { signIn, signUp, user } = useAuth();
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const { signIn, signUp, resetPassword, user } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -77,6 +78,26 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const { error } = await resetPassword(email);
+    
+    if (error) {
+      setError(error.message);
+    } else {
+      toast({
+        title: t("Success"),
+        description: t("Password reset email sent! Please check your inbox."),
+      });
+      setShowResetPassword(false);
+    }
+    
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md shadow-strong">
@@ -97,46 +118,88 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">{t('Email')}</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder=""
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">{t('Password')}</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-                <Button type="submit" className="w-full" disabled={loading}>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  {loading ? t('Signing in...') : t('Sign In')}
-                </Button>
-                <div className="text-center mt-4">
-                  <Link 
-                    to="/" 
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {t('Back to home page')}
-                  </Link>
-                </div>
-              </form>
+              {!showResetPassword ? (
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">{t('Email')}</Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder=""
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">{t('Password')}</Label>
+                    <Input
+                      id="signin-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    {loading ? t('Signing in...') : t('Sign In')}
+                  </Button>
+                  <div className="text-center space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(true)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {t('Forgot your password?')}
+                    </button>
+                    <div>
+                      <Link 
+                        to="/" 
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        {t('Back to home page')}
+                      </Link>
+                    </div>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">{t('Email')}</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder=""
+                      required
+                    />
+                  </div>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t('Sending...') : t('Send Reset Email')}
+                  </Button>
+                  <div className="text-center space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(false)}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {t('Back to sign in')}
+                    </button>
+                  </div>
+                </form>
+              )}
             </TabsContent>
             
             <TabsContent value="signup">
