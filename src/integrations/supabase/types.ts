@@ -1897,8 +1897,8 @@ export type Database = {
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
         Returns: {
-          role: Database["public"]["Enums"]["user_role"]
-          status: Database["public"]["Enums"]["approval_status"]
+          role: Database["public"]["Enums"]["user_role_type"]
+          status: Database["public"]["Enums"]["request_status"]
         }[]
       }
       get_default_tenant_id: {
