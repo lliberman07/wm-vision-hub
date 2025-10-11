@@ -53,6 +53,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   const [properties, setProperties] = useState<any[]>([]);
   const [owners, setOwners] = useState<any[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
+  const [propertyOwners, setPropertyOwners] = useState<any[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -98,6 +99,26 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
     if (propsRes.data) setProperties(propsRes.data);
     if (ownersRes.data) setOwners(ownersRes.data);
     if (tenantsRes.data) setTenants(tenantsRes.data);
+  };
+
+  const fetchPropertyOwners = async (propertyId: string) => {
+    const { data } = await supabase
+      .from('pms_owner_properties')
+      .select('owner_id, pms_owners!inner(id, full_name)')
+      .eq('property_id', propertyId)
+      .is('end_date', null);
+    
+    if (data) {
+      const ownersData = data.map((op: any) => ({
+        id: op.pms_owners.id,
+        full_name: op.pms_owners.full_name
+      }));
+      setPropertyOwners(ownersData);
+      // Auto-select first owner if only one
+      if (ownersData.length === 1) {
+        form.setValue('owner_id', ownersData[0].id);
+      }
+    }
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -210,7 +231,10 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Propiedad</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={(value) => {
+                    field.onChange(value);
+                    fetchPropertyOwners(value);
+                  }} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar propiedad" />
@@ -235,7 +259,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 name="owner_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Propietario</FormLabel>
+                    <FormLabel>Propietario {propertyOwners.length > 0 && `(${propertyOwners.length} asignados a la propiedad)`}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -243,11 +267,17 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {owners.map(owner => (
-                          <SelectItem key={owner.id} value={owner.id}>
-                            {owner.full_name}
+                        {propertyOwners.length > 0 ? (
+                          propertyOwners.map(owner => (
+                            <SelectItem key={owner.id} value={owner.id}>
+                              {owner.full_name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>
+                            Primero selecciona una propiedad
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -497,8 +527,12 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     <FormLabel>Índice de Ajuste</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      // Sync adjustment_type with indice_ajuste
-                      form.setValue('adjustment_type', value === 'none' ? 'none' : value.toLowerCase());
+                      // Set adjustment_type to valid constraint values
+                      if (value === 'none') {
+                        form.setValue('adjustment_type', 'none');
+                      } else if (value === 'IPC' || value === 'ICL' || value === 'UVA') {
+                        form.setValue('adjustment_type', 'annual_index');
+                      }
                     }} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
