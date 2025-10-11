@@ -100,7 +100,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         alias: data.alias,
         categoria: data.categoria,
         barrio: data.barrio,
-        operacion: data.operacion,
+        operacion: data.operacion || null,
         monto_alquiler: data.monto_alquiler,
         valor_venta: data.valor_venta,
         estado_publicacion: data.estado_publicacion,
@@ -445,9 +445,9 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="alquiler">Alquiler</SelectItem>
-                        <SelectItem value="venta">Venta</SelectItem>
-                        <SelectItem value="ambas">Ambas</SelectItem>
+                        <SelectItem value="Alquiler">Alquiler</SelectItem>
+                        <SelectItem value="Venta">Venta</SelectItem>
+                        <SelectItem value="Ambos">Ambos</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
