@@ -1906,11 +1906,13 @@ export type Database = {
         Returns: string
       }
       has_pms_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["pms_app_role"]
-          _tenant_id?: string
-          _user_id: string
-        }
+        Args:
+          | {
+              _role: Database["public"]["Enums"]["pms_app_role"]
+              _tenant_id?: string
+              _user_id: string
+            }
+          | { _role: string; _tenant_id?: string; _user_id: string }
         Returns: boolean
       }
       has_role: {
