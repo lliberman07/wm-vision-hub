@@ -61,27 +61,49 @@ const PMSAccessRequests = () => {
 
   const fetchRequests = async () => {
     try {
+      // Get access requests from unified access_requests table
       const { data: requestsData, error } = await supabase
-        .from('pms_access_requests')
+        .from('access_requests')
         .select('*')
+        .eq('module', 'PMS')
         .order('created_at', { ascending: false});
 
       if (error) throw error;
 
-      // Get user emails from profiles table
+      // Get user info from users table
       if (requestsData && requestsData.length > 0) {
         const userIds = requestsData.map(r => r.user_id);
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, email')
+        const { data: users } = await supabase
+          .from('users')
+          .select('id, email, first_name, last_name, phone, company_name')
           .in('id', userIds);
 
-        const profileMap = new Map(profiles?.map(p => [p.id, p.email]) || []);
+        const userMap = new Map((users || []).map(u => [u.id, u]));
         
-        const enrichedData = requestsData.map(req => ({
-          ...req,
-          user_email: profileMap.get(req.user_id) || req.user_id.substring(0, 8)
-        }));
+        const enrichedData = requestsData.map(req => {
+          const user = userMap.get(req.user_id);
+          return {
+            id: req.id,
+            user_id: req.user_id,
+            tenant_id: '', // Will be assigned on approval
+            requested_role: req.requested_roles[0] || '',
+            reason: req.reason || '',
+            status: req.status,
+            created_at: req.created_at,
+            user_email: user?.email || req.user_id.substring(0, 8),
+            first_name: user?.first_name,
+            last_name: user?.last_name,
+            phone: user?.phone,
+            company_name: user?.company_name,
+            // These fields will be empty in the new structure
+            document_id: undefined,
+            address: undefined,
+            city: undefined,
+            state: undefined,
+            postal_code: undefined,
+            tax_id: undefined,
+          };
+        });
 
         setRequests(enrichedData);
       } else {
@@ -104,20 +126,31 @@ const PMSAccessRequests = () => {
 
     try {
       if (actionType === 'approve') {
-        // Create user role
+        // Get default tenant ID
+        const { data: tenantId, error: tenantError } = await supabase
+          .rpc('get_default_tenant_id');
+
+        if (tenantError || !tenantId) {
+          throw new Error('No se pudo obtener el tenant predeterminado');
+        }
+
+        // Create user role in unified user_roles table
         const { error: roleError } = await supabase
-          .from('pms_user_roles')
+          .from('user_roles')
           .insert([{
             user_id: selectedRequest.user_id,
-            tenant_id: selectedRequest.tenant_id,
+            tenant_id: tenantId,
             role: selectedRequest.requested_role as any,
+            module: 'PMS',
+            status: 'approved',
+            approved_at: new Date().toISOString()
           }]);
 
         if (roleError) throw roleError;
 
         // Update request status
         const { error: updateError } = await supabase
-          .from('pms_access_requests')
+          .from('access_requests')
           .update({ 
             status: 'approved',
             reviewed_at: new Date().toISOString()
@@ -133,9 +166,9 @@ const PMSAccessRequests = () => {
       } else {
         // Reject request
         const { error } = await supabase
-          .from('pms_access_requests')
+          .from('access_requests')
           .update({ 
-            status: 'rejected',
+            status: 'denied',
             reviewed_at: new Date().toISOString()
           })
           .eq('id', selectedRequest.id);
@@ -176,16 +209,17 @@ const PMSAccessRequests = () => {
 
   const getRoleBadge = (role: string) => {
     const colors: Record<string, string> = {
-      SUPERADMIN: 'bg-purple-500',
-      INMOBILIARIA: 'bg-blue-500',
-      ADMINISTRADOR: 'bg-indigo-500',
-      PROPIETARIO: 'bg-green-500',
-      INQUILINO: 'bg-yellow-500',
+      superadmin: 'bg-purple-500',
+      inmobiliaria: 'bg-blue-500',
+      admin: 'bg-indigo-500',
+      propietario: 'bg-green-500',
+      inquilino: 'bg-yellow-500',
+      proveedor: 'bg-orange-500',
     };
     
     return (
       <Badge className={`${colors[role] || 'bg-gray-500'} text-white`}>
-        {role}
+        {role.toUpperCase()}
       </Badge>
     );
   };

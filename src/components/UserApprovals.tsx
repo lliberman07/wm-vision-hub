@@ -21,15 +21,38 @@ const UserApprovals: React.FC = () => {
 
   const fetchPendingUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, email, created_at, status')
+      // Get pending admin roles from user_roles table
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, created_at, status')
         .eq('role', 'admin')
+        .eq('module', 'WM')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setPendingUsers(data || []);
+      if (rolesError) throw rolesError;
+
+      if (roles && roles.length > 0) {
+        // Get user emails from users table
+        const userIds = roles.map(r => r.user_id);
+        const { data: users, error: usersError } = await supabase
+          .from('users')
+          .select('id, email')
+          .in('id', userIds);
+
+        if (usersError) throw usersError;
+
+        const userMap = new Map(users?.map(u => [u.id, u.email]) || []);
+        
+        setPendingUsers(roles.map(role => ({
+          id: role.user_id,
+          email: userMap.get(role.user_id) || 'Unknown',
+          created_at: role.created_at,
+          status: role.status
+        })));
+      } else {
+        setPendingUsers([]);
+      }
     } catch (error: any) {
       console.error('Error fetching pending users:', error);
       toast({

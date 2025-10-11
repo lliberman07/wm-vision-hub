@@ -27,12 +27,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       }
 
       try {
-        const { data, error } = await supabase.rpc('get_current_user_profile');
+        // Get user roles from unified user_roles table for WM module
+        const { data: roles, error } = await supabase
+          .from('user_roles')
+          .select('role, status')
+          .eq('user_id', user.id)
+          .eq('module', 'WM')
+          .in('role', ['admin', 'superadmin']);
         
         if (error) throw error;
         
-        if (data && data.length > 0) {
-          setUserProfile(data[0]);
+        if (roles && roles.length > 0) {
+          // Use the first role found (typically users should have one WM role)
+          setUserProfile({
+            role: roles[0].role as 'superadmin' | 'admin',
+            status: roles[0].status as 'pending' | 'approved' | 'denied'
+          });
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);

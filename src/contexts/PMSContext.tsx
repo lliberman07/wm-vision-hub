@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 
-type PMSRole = 'SUPERADMIN' | 'INMOBILIARIA' | 'ADMINISTRADOR' | 'PROPIETARIO' | 'INQUILINO';
+type PMSRole = 'superadmin' | 'inmobiliaria' | 'admin' | 'propietario' | 'inquilino' | 'proveedor';
 
 interface PMSTenant {
   id: string;
@@ -59,11 +59,13 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       console.log('[PMSContext] Checking PMS access for user:', user.id);
       
-      // First, get user roles
+      // Get user roles from unified user_roles table
       const { data: roles, error: rolesError } = await supabase
-        .from('pms_user_roles')
+        .from('user_roles')
         .select('role, tenant_id')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('module', 'PMS')
+        .eq('status', 'approved');
 
       console.log('[PMSContext] Roles query result:', { roles, error: rolesError });
 
@@ -145,28 +147,35 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { error: { message: 'Tenant predeterminado no encontrado. Contacte al administrador.' } };
       }
 
-      const { error } = await supabase
-        .from('pms_access_requests')
+      // Insert into unified access_requests table
+      const { error: requestError } = await supabase
+        .from('access_requests')
         .insert({
           user_id: user.id,
-          tenant_id: tenantId,
-          requested_role: role,
+          requested_roles: [role],
+          module: 'PMS',
           reason: reason,
+        });
+
+      if (requestError) {
+        console.error('Error creating access request:', requestError);
+        return { error: { message: 'Error al crear solicitud de acceso' } };
+      }
+
+      // Update user profile with additional data
+      const { error: userError } = await supabase
+        .from('users')
+        .update({
           first_name: userData?.first_name,
           last_name: userData?.last_name,
           phone: userData?.phone,
-          document_id: userData?.document_id,
-          address: userData?.address,
-          city: userData?.city,
-          state: userData?.state,
-          postal_code: userData?.postal_code,
           company_name: userData?.company_name,
-          tax_id: userData?.tax_id,
-        });
+        })
+        .eq('id', user.id);
 
-      if (error) {
-        console.error('Error creating access request:', error);
-        return { error: { message: 'Error al crear solicitud de acceso' } };
+      if (userError) {
+        console.error('Error updating user profile:', userError);
+        // Don't return error here, request was created successfully
       }
 
       return { error: null };

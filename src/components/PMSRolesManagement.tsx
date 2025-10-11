@@ -40,27 +40,32 @@ const PMSRolesManagement = () => {
 
   const fetchRoles = async () => {
     try {
+      // Get PMS roles from unified user_roles table
       const { data: rolesData, error } = await supabase
-        .from('pms_user_roles')
-        .select('*, pms_tenants!fk_pms_user_roles_tenant(name)')
+        .from('user_roles')
+        .select('id, user_id, tenant_id, role, created_at')
+        .eq('module', 'PMS')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Get user emails from profiles table
+      // Get user emails and tenant names
       if (rolesData && rolesData.length > 0) {
-        const userIds = rolesData.map(r => r.user_id);
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, email')
-          .in('id', userIds);
+        const userIds = [...new Set(rolesData.map(r => r.user_id))];
+        const tenantIds = [...new Set(rolesData.filter(r => r.tenant_id).map(r => r.tenant_id!))];
 
-        const profileMap = new Map(profiles?.map(p => [p.id, p.email]) || []);
+        const { data: users } = await supabase.from('users').select('id, email').in('id', userIds);
+        const { data: tenants } = tenantIds.length > 0 
+          ? await supabase.from('pms_tenants').select('id, name').in('id', tenantIds)
+          : { data: [] };
+
+        const userMap = new Map((users || []).map(u => [u.id, u.email]));
+        const tenantMap = new Map((tenants || []).map(t => [t.id, t.name]));
         
-        const enrichedData = rolesData.map(role => ({
+        const enrichedData: PMSUserRole[] = rolesData.map(role => ({
           ...role,
-          user_email: profileMap.get(role.user_id) || role.user_id.substring(0, 8),
-          tenant_name: (role.pms_tenants as any)?.name || 'N/A'
+          user_email: userMap.get(role.user_id) || role.user_id.substring(0, 8),
+          tenant_name: role.tenant_id ? (tenantMap.get(role.tenant_id) || 'N/A') : 'N/A'
         }));
 
         setRoles(enrichedData);
@@ -84,7 +89,7 @@ const PMSRolesManagement = () => {
 
     try {
       const { error } = await supabase
-        .from('pms_user_roles')
+        .from('user_roles')
         .delete()
         .eq('id', selectedRole.id);
 
@@ -111,15 +116,17 @@ const PMSRolesManagement = () => {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'SUPERADMIN':
+      case 'superadmin':
         return 'destructive';
-      case 'INMOBILIARIA':
+      case 'inmobiliaria':
         return 'default';
-      case 'ADMINISTRADOR':
+      case 'admin':
         return 'secondary';
-      case 'PROPIETARIO':
+      case 'propietario':
         return 'outline';
-      case 'INQUILINO':
+      case 'inquilino':
+        return 'outline';
+      case 'proveedor':
         return 'outline';
       default:
         return 'outline';

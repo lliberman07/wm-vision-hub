@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          module: Database["public"]["Enums"]["module_type"]
+          reason: string | null
+          requested_roles: string[]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["request_status"] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          module: Database["public"]["Enums"]["module_type"]
+          reason?: string | null
+          requested_roles: string[]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["request_status"] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          module?: Database["public"]["Enums"]["module_type"]
+          reason?: string | null
+          requested_roles?: string[]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["request_status"] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applicants: {
         Row: {
           application_id: string
@@ -1732,6 +1783,96 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          approved_at: string | null
+          created_at: string | null
+          id: string
+          module: Database["public"]["Enums"]["module_type"]
+          role: Database["public"]["Enums"]["user_role_type"]
+          status: Database["public"]["Enums"]["request_status"] | null
+          tenant_id: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string | null
+          id?: string
+          module: Database["public"]["Enums"]["module_type"]
+          role: Database["public"]["Enums"]["user_role_type"]
+          status?: Database["public"]["Enums"]["request_status"] | null
+          tenant_id?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string | null
+          id?: string
+          module?: Database["public"]["Enums"]["module_type"]
+          role?: Database["public"]["Enums"]["user_role_type"]
+          status?: Database["public"]["Enums"]["request_status"] | null
+          tenant_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          approved: boolean | null
+          company_name: string | null
+          created_at: string | null
+          email: string
+          email_verified: boolean | null
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          company_name?: string | null
+          created_at?: string | null
+          email: string
+          email_verified?: boolean | null
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          company_name?: string | null
+          created_at?: string | null
+          email?: string
+          email_verified?: boolean | null
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1772,6 +1913,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_role: {
+        Args: {
+          _module?: Database["public"]["Enums"]["module_type"]
+          _role: Database["public"]["Enums"]["user_role_type"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       application_status:
@@ -1785,6 +1934,8 @@ export type Database = {
       application_type: "individual" | "company"
       approval_status: "pending" | "approved" | "denied"
       employment_status: "employed" | "self-employed" | "other"
+      entity_type: "persona" | "empresa"
+      module_type: "WM" | "PMS"
       pms_app_role:
         | "SUPERADMIN"
         | "INMOBILIARIA"
@@ -1792,7 +1943,15 @@ export type Database = {
         | "PROPIETARIO"
         | "INQUILINO"
         | "PROVEEDOR"
+      request_status: "pending" | "approved" | "denied"
       user_role: "superadmin" | "admin"
+      user_role_type:
+        | "superadmin"
+        | "admin"
+        | "propietario"
+        | "inquilino"
+        | "inmobiliaria"
+        | "proveedor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1932,6 +2091,8 @@ export const Constants = {
       application_type: ["individual", "company"],
       approval_status: ["pending", "approved", "denied"],
       employment_status: ["employed", "self-employed", "other"],
+      entity_type: ["persona", "empresa"],
+      module_type: ["WM", "PMS"],
       pms_app_role: [
         "SUPERADMIN",
         "INMOBILIARIA",
@@ -1940,7 +2101,16 @@ export const Constants = {
         "INQUILINO",
         "PROVEEDOR",
       ],
+      request_status: ["pending", "approved", "denied"],
       user_role: ["superadmin", "admin"],
+      user_role_type: [
+        "superadmin",
+        "admin",
+        "propietario",
+        "inquilino",
+        "inmobiliaria",
+        "proveedor",
+      ],
     },
   },
 } as const
