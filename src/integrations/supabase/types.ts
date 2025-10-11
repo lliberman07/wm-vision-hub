@@ -1791,6 +1791,7 @@ export type Database = {
         | "ADMINISTRADOR"
         | "PROPIETARIO"
         | "INQUILINO"
+        | "PROVEEDOR"
       user_role: "superadmin" | "admin"
     }
     CompositeTypes: {
@@ -1937,6 +1938,7 @@ export const Constants = {
         "ADMINISTRADOR",
         "PROPIETARIO",
         "INQUILINO",
+        "PROVEEDOR",
       ],
       user_role: ["superadmin", "admin"],
     },
