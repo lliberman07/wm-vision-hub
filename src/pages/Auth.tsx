@@ -61,11 +61,16 @@ const Auth = () => {
     const { error } = await signUp(email, password);
     
     if (error) {
-      setError(error.message);
+      // Detectar si el usuario ya existe
+      if (error.message.includes("already") || error.message.includes("registered")) {
+        setError("Este email ya está registrado. Por favor, inicia sesión en su lugar.");
+      } else {
+        setError(error.message);
+      }
     } else {
       toast({
-        title: "Success",
-        description: "Account created successfully! Please check your email to confirm your account.",
+        title: t("Success"),
+        description: t("Account created successfully! Please check your email to confirm your account."),
       });
     }
     
