@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePMS } from '@/contexts/PMSContext';
 import { OwnerPropertyManager } from './OwnerPropertyManager';
+import { PropertyPhotosUpload } from './PropertyPhotosUpload';
 
 const formSchema = z.object({
   code: z.string().min(1, 'Código requerido'),
@@ -48,6 +49,7 @@ interface PropertyFormProps {
 export function PropertyForm({ open, onOpenChange, onSuccess, property }: PropertyFormProps) {
   const { currentTenant } = usePMS();
   const [propertyOwners, setPropertyOwners] = useState<any[]>([]);
+  const [photos, setPhotos] = useState<string[]>(property?.photos || []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -105,6 +107,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         valor_venta: data.valor_venta,
         estado_publicacion: data.estado_publicacion,
         tenant_id: currentTenant?.id,
+        photos: photos,
       };
 
       let propertyId = property?.id;
@@ -158,6 +161,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
       onOpenChange(false);
       form.reset();
       setPropertyOwners([]);
+      setPhotos([]);
     } catch (error: any) {
       toast.error('Error', { description: error.message });
     }
@@ -483,6 +487,21 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Fotos de la Propiedad (Opcional)</h3>
+              <p className="text-sm text-muted-foreground">
+                Puedes agregar hasta 3 fotos de la propiedad
+              </p>
+              <PropertyPhotosUpload
+                photos={photos}
+                onPhotosChange={setPhotos}
+                propertyId={property?.id}
+                disabled={form.formState.isSubmitting}
               />
             </div>
 

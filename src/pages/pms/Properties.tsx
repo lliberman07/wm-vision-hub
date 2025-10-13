@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Building2 } from 'lucide-react';
+import { Plus, Building2, ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PropertyForm } from '@/components/pms/PropertyForm';
@@ -25,6 +25,7 @@ interface Property {
   bedrooms?: number;
   bathrooms?: number;
   surface_total?: number;
+  photos?: string[];
 }
 
 const Properties = () => {
@@ -53,7 +54,10 @@ const Properties = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProperties(data || []);
+      setProperties((data || []).map(p => ({
+        ...p,
+        photos: Array.isArray(p.photos) ? (p.photos as string[]) : []
+      })) as Property[]);
     } catch (error: any) {
       toast.error('Error al cargar propiedades', {
         description: error.message,
@@ -139,6 +143,7 @@ const Properties = () => {
                       <TableHead>Tipo</TableHead>
                       <TableHead>Detalles</TableHead>
                       <TableHead>Estado</TableHead>
+                      <TableHead>Fotos</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -157,6 +162,16 @@ const Properties = () => {
                           </div>
                         </TableCell>
                         <TableCell>{getStatusBadge(property.status)}</TableCell>
+                        <TableCell>
+                          {property.photos && property.photos.length > 0 ? (
+                            <div className="flex items-center gap-1">
+                              <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{property.photos.length}</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"
