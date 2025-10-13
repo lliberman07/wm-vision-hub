@@ -110,25 +110,22 @@ const PMSAccessRequests = () => {
 
         // Si el usuario no existe en auth.users, crearlo
         if (!userId) {
-          const tempPassword = crypto.randomUUID().substring(0, 12);
-          
-          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: selectedRequest.email,
-            password: tempPassword,
-            email_confirm: true,
-            user_metadata: {
+          const { data: userData, error: createError } = await supabase.functions.invoke('create-pms-user', {
+            body: {
+              email: selectedRequest.email,
               first_name: selectedRequest.first_name,
               last_name: selectedRequest.last_name,
-              entity_type: selectedRequest.company_name ? 'empresa' : 'persona',
+              company_name: selectedRequest.company_name,
             }
           });
 
-          if (authError) {
-            console.error('Error creating user:', authError);
-            throw new Error('No se pudo crear la cuenta de usuario: ' + authError.message);
+          if (createError || !userData) {
+            console.error('Error creating user:', createError);
+            throw new Error('No se pudo crear la cuenta de usuario: ' + (createError?.message || 'Error desconocido'));
           }
 
-          userId = authData.user.id;
+          userId = userData.user_id;
+          const tempPassword = userData.temp_password;
 
           // Enviar email con credenciales
           await supabase.functions.invoke('send-welcome-email', {
