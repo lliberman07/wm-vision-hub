@@ -274,9 +274,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                             </SelectItem>
                           ))
                         ) : (
-                          <SelectItem value="" disabled>
+                          <div className="px-2 py-1.5 text-sm text-muted-foreground">
                             Primero selecciona una propiedad
-                          </SelectItem>
+                          </div>
                         )}
                       </SelectContent>
                     </Select>
