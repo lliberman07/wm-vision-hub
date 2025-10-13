@@ -137,19 +137,42 @@ const PMSAccessRequests = () => {
           });
         }
 
-        // Insertar rol en user_roles con module='PMS'
-        const { error: roleError } = await supabase
+        // Verificar si ya existe un rol para este usuario
+        const { data: existingRole } = await supabase
           .from('user_roles')
-          .insert([{
-            user_id: userId,
-            role: selectedRequest.requested_role.toLowerCase() as any,
-            module: 'PMS',
-            tenant_id: selectedRequest.tenant_id,
-            status: 'approved',
-            approved_at: new Date().toISOString(),
-          }]);
+          .select('id')
+          .eq('user_id', userId)
+          .eq('role', selectedRequest.requested_role.toLowerCase() as any)
+          .eq('module', 'PMS')
+          .eq('tenant_id', selectedRequest.tenant_id)
+          .maybeSingle();
 
-        if (roleError) throw roleError;
+        if (existingRole) {
+          // Actualizar el rol existente
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .update({
+              status: 'approved',
+              approved_at: new Date().toISOString(),
+            })
+            .eq('id', existingRole.id);
+
+          if (roleError) throw roleError;
+        } else {
+          // Insertar nuevo rol
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert([{
+              user_id: userId,
+              role: selectedRequest.requested_role.toLowerCase() as any,
+              module: 'PMS',
+              tenant_id: selectedRequest.tenant_id,
+              status: 'approved',
+              approved_at: new Date().toISOString(),
+            }]);
+
+          if (roleError) throw roleError;
+        }
 
         // Actualizar pms_access_requests
         const { error: updateError } = await supabase
@@ -188,7 +211,19 @@ const PMSAccessRequests = () => {
           description: "Ahora puedes volver a aprobar la solicitud para re-enviar el email",
         });
       } else {
-        // Rechazar solicitud
+        // Rechazar solicitud - también actualizar el rol a 'denied' si existe
+        if (selectedRequest.user_id) {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .update({ status: 'denied' })
+            .eq('user_id', selectedRequest.user_id)
+            .eq('role', selectedRequest.requested_role.toLowerCase() as any)
+            .eq('module', 'PMS')
+            .eq('tenant_id', selectedRequest.tenant_id);
+
+          if (roleError) console.error('Error updating role status:', roleError);
+        }
+
         const { error: updateError } = await supabase
           .from('pms_access_requests')
           .update({
