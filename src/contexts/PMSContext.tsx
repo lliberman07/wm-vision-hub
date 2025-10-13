@@ -156,11 +156,11 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         .eq('email', userData.email)
         .limit(1);
 
-      // Use existing user ID or generate a temporary one
-      // When admin approves, they'll create the actual user account
+      // Use existing user ID if found, otherwise null
+      // When admin approves a request with null user_id, they'll create the user account
       const userId = existingUsers && existingUsers.length > 0 
         ? existingUsers[0].id 
-        : crypto.randomUUID();
+        : null;
 
       // Insert into pms_access_requests table (which doesn't require authentication)
       const { error: requestError } = await supabase
