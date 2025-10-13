@@ -53,7 +53,14 @@ const Contracts = () => {
     try {
       const { data, error } = await supabase
         .from('pms_contracts')
-        .select('*')
+        .select(`
+          *,
+          pms_properties!inner(
+            id,
+            code,
+            address
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -70,6 +77,30 @@ const Contracts = () => {
   const filteredContracts = contracts.filter(contract =>
     contract.contract_number.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const fetchContractOwners = async (propertyId: string) => {
+    const { data } = await supabase
+      .from('pms_owner_properties')
+      .select(`
+        share_percent,
+        pms_owners!inner(id, full_name)
+      `)
+      .eq('property_id', propertyId)
+      .is('end_date', null);
+    
+    return data?.map(op => ({
+      name: op.pms_owners.full_name,
+      percentage: op.share_percent
+    })) || [];
+  };
+
+  const [contractOwners, setContractOwners] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (selectedContract && isViewOpen) {
+      fetchContractOwners((selectedContract as any).property_id).then(setContractOwners);
+    }
+  }, [selectedContract, isViewOpen]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -244,6 +275,16 @@ const Contracts = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Estado</p>
                       {getStatusBadge(selectedContract.status)}
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground mb-2">Propietarios</p>
+                      <div className="flex flex-wrap gap-2">
+                        {contractOwners.map((owner, idx) => (
+                          <Badge key={idx} variant="secondary">
+                            {owner.name} ({owner.percentage}%)
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </TabsContent>

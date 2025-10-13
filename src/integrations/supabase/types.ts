@@ -904,7 +904,6 @@ export type Database = {
           monto_ajustado_actual_a: number | null
           monto_ajustado_actual_b: number | null
           monto_b: number | null
-          owner_id: string
           payment_day: number | null
           pdf_url: string | null
           property_id: string
@@ -939,7 +938,6 @@ export type Database = {
           monto_ajustado_actual_a?: number | null
           monto_ajustado_actual_b?: number | null
           monto_b?: number | null
-          owner_id: string
           payment_day?: number | null
           pdf_url?: string | null
           property_id: string
@@ -974,7 +972,6 @@ export type Database = {
           monto_ajustado_actual_a?: number | null
           monto_ajustado_actual_b?: number | null
           monto_b?: number | null
-          owner_id?: string
           payment_day?: number | null
           pdf_url?: string | null
           property_id?: string
@@ -988,13 +985,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "pms_contracts_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "pms_owners"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "pms_contracts_property_id_fkey"
             columns: ["property_id"]

@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
@@ -17,7 +18,6 @@ import { ContractPaymentMethods } from './ContractPaymentMethods';
 const formSchema = z.object({
   contract_number: z.string().min(1, 'Número de contrato requerido'),
   property_id: z.string().min(1, 'Propiedad requerida'),
-  owner_id: z.string().min(1, 'Propietario requerido'),
   tenant_renter_id: z.string().min(1, 'Inquilino requerido'),
   start_date: z.string().min(1, 'Fecha inicio requerida'),
   end_date: z.string().min(1, 'Fecha fin requerida'),
@@ -51,7 +51,6 @@ interface ContractFormProps {
 export function ContractForm({ open, onOpenChange, onSuccess, contract }: ContractFormProps) {
   const { currentTenant } = usePMS();
   const [properties, setProperties] = useState<any[]>([]);
-  const [owners, setOwners] = useState<any[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
   const [propertyOwners, setPropertyOwners] = useState<any[]>([]);
 
@@ -60,7 +59,6 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
     defaultValues: contract || {
       contract_number: '',
       property_id: '',
-      owner_id: '',
       tenant_renter_id: '',
       start_date: '',
       end_date: '',
@@ -90,34 +88,29 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   }, [open]);
 
   const fetchData = async () => {
-    const [propsRes, ownersRes, tenantsRes] = await Promise.all([
+    const [propsRes, tenantsRes] = await Promise.all([
       supabase.from('pms_properties').select('id, code, address'),
-      supabase.from('pms_owners').select('id, full_name'),
       supabase.from('pms_tenants_renters').select('id, full_name'),
     ]);
 
     if (propsRes.data) setProperties(propsRes.data);
-    if (ownersRes.data) setOwners(ownersRes.data);
     if (tenantsRes.data) setTenants(tenantsRes.data);
   };
 
   const fetchPropertyOwners = async (propertyId: string) => {
     const { data } = await supabase
       .from('pms_owner_properties')
-      .select('owner_id, pms_owners!inner(id, full_name)')
+      .select('share_percent, pms_owners!inner(id, full_name)')
       .eq('property_id', propertyId)
       .is('end_date', null);
     
     if (data) {
-      const ownersData = data.map((op: any) => ({
+      const ownersInfo = data.map((op: any) => ({
         id: op.pms_owners.id,
-        full_name: op.pms_owners.full_name
+        name: op.pms_owners.full_name,
+        percentage: op.share_percent
       }));
-      setPropertyOwners(ownersData);
-      // Auto-select first owner if only one
-      if (ownersData.length === 1) {
-        form.setValue('owner_id', ownersData[0].id);
-      }
+      setPropertyOwners(ownersInfo);
     }
   };
 
@@ -126,7 +119,6 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       const payload: any = {
         contract_number: data.contract_number,
         property_id: data.property_id,
-        owner_id: data.owner_id,
         tenant_renter_id: data.tenant_renter_id,
         start_date: data.start_date,
         end_date: data.end_date,
@@ -253,38 +245,21 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="owner_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Propietario {propertyOwners.length > 0 && `(${propertyOwners.length} asignados a la propiedad)`}</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar propietario" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {propertyOwners.length > 0 ? (
-                          propertyOwners.map(owner => (
-                            <SelectItem key={owner.id} value={owner.id}>
-                              {owner.full_name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                            Primero selecciona una propiedad
-                          </div>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Mostrar propietarios de la propiedad seleccionada */}
+            {form.watch('property_id') && propertyOwners.length > 0 && (
+              <div className="col-span-2 bg-muted/50 p-4 rounded-lg border">
+                <p className="text-sm font-medium mb-2">Propietarios de la propiedad:</p>
+                <div className="flex flex-wrap gap-2">
+                  {propertyOwners.map((owner) => (
+                    <Badge key={owner.id} variant="secondary">
+                      {owner.name} ({owner.percentage}%)
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
 
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="tenant_renter_id"
