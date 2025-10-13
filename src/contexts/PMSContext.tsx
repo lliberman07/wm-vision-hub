@@ -16,6 +16,7 @@ interface PMSContextType {
   currentTenant: PMSTenant | null;
   loading: boolean;
   requestAccess: (role: PMSRole, reason: string, userData?: {
+    email: string;
     first_name: string;
     last_name: string;
     phone: string;
@@ -117,6 +118,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     role: PMSRole, 
     reason: string,
     userData?: {
+      email: string;
       first_name: string;
       last_name: string;
       phone: string;
@@ -129,12 +131,12 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       tax_id?: string;
     }
   ) => {
-    if (!user) {
-      return { error: { message: 'Debes iniciar sesión para solicitar acceso' } };
+    if (!userData?.email) {
+      return { error: { message: 'Email es requerido' } };
     }
 
     try {
-      // Use the security definer function to get default tenant ID
+      // Get the default tenant ID
       const { data: tenantId, error: tenantError } = await supabase
         .rpc('get_default_tenant_id');
 
@@ -147,35 +149,43 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { error: { message: 'Tenant predeterminado no encontrado. Contacte al administrador.' } };
       }
 
-      // Insert into unified access_requests table
+      // Check if user exists with this email by querying auth.users indirectly
+      const { data: existingUsers } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', userData.email)
+        .limit(1);
+
+      // Use existing user ID or generate a temporary one
+      // When admin approves, they'll create the actual user account
+      const userId = existingUsers && existingUsers.length > 0 
+        ? existingUsers[0].id 
+        : crypto.randomUUID();
+
+      // Insert into pms_access_requests table (which doesn't require authentication)
       const { error: requestError } = await supabase
-        .from('access_requests')
-        .insert({
-          user_id: user.id,
-          requested_roles: [role],
-          module: 'PMS',
+        .from('pms_access_requests')
+        .insert([{
+          user_id: userId,
+          tenant_id: tenantId,
+          requested_role: role.toUpperCase() as any,
           reason: reason,
-        });
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          phone: userData.phone,
+          document_id: userData.document_id,
+          address: userData.address,
+          city: userData.city,
+          state: userData.state,
+          postal_code: userData.postal_code,
+          company_name: userData.company_name || null,
+          tax_id: userData.tax_id || null,
+          status: 'pending',
+        }]);
 
       if (requestError) {
         console.error('Error creating access request:', requestError);
-        return { error: { message: 'Error al crear solicitud de acceso' } };
-      }
-
-      // Update user profile with additional data
-      const { error: userError } = await supabase
-        .from('users')
-        .update({
-          first_name: userData?.first_name,
-          last_name: userData?.last_name,
-          phone: userData?.phone,
-          company_name: userData?.company_name,
-        })
-        .eq('id', user.id);
-
-      if (userError) {
-        console.error('Error updating user profile:', userError);
-        // Don't return error here, request was created successfully
+        return { error: { message: 'Error al crear solicitud de acceso: ' + requestError.message } };
       }
 
       return { error: null };

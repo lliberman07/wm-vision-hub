@@ -17,6 +17,7 @@ import { z } from 'zod';
 const requestSchema = z.object({
   firstName: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "Nombre muy largo"),
   lastName: z.string().trim().min(2, "El apellido debe tener al menos 2 caracteres").max(100, "Apellido muy largo"),
+  email: z.string().trim().email("Email inválido").max(255, "Email muy largo"),
   phone: z.string().trim().min(8, "Teléfono inválido").max(20, "Teléfono muy largo"),
   documentId: z.string().trim().min(6, "DNI inválido").max(20, "DNI muy largo"),
   address: z.string().trim().min(5, "Dirección muy corta").max(200, "Dirección muy larga"),
@@ -34,13 +35,13 @@ type FormData = z.infer<typeof requestSchema>;
 
 const PMSRequestAccess = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
   const { requestAccess } = usePMS();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
+    email: '',
     phone: '',
     documentId: '',
     address: '',
@@ -96,6 +97,7 @@ const PMSRequestAccess = () => {
       formData.role as any,
       formData.reason,
       {
+        email: formData.email,
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
@@ -125,54 +127,6 @@ const PMSRequestAccess = () => {
 
     setLoading(false);
   };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-slate-950 dark:via-blue-950 dark:to-slate-900 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Building2 className="w-6 h-6 text-primary" />
-            </div>
-            <CardTitle className="text-2xl">Autenticación Requerida</CardTitle>
-            <CardDescription className="text-base">
-              Necesitas crear una cuenta o iniciar sesión para solicitar acceso al Sistema de Gestión de Propiedades.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                La autenticación nos permite validar tu identidad y proteger el sistema contra bots y accesos no autorizados.
-              </AlertDescription>
-            </Alert>
-            <Button 
-              onClick={() => navigate('/auth?redirect=/pms/request-access')}
-              className="w-full"
-              size="lg"
-            >
-              Crear Cuenta para Solicitar Acceso
-            </Button>
-            <Button 
-              onClick={() => navigate('/')}
-              variant="outline"
-              className="w-full"
-            >
-              Volver al Inicio
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (submitted) {
     return (
@@ -283,17 +237,20 @@ const PMSRequestAccess = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="email"
-                      value={user.email || ''}
-                      disabled
-                      className="pl-10 bg-muted"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      placeholder="tu@email.com"
+                      className="pl-10"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">Email de tu cuenta autenticada</p>
+                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                  <p className="text-xs text-muted-foreground">Te notificaremos a este email sobre tu solicitud</p>
                 </div>
               </div>
 
