@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -38,7 +39,7 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: owner || {
+    defaultValues: {
       full_name: '',
       email: '',
       phone: '',
@@ -51,6 +52,36 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
       notes: '',
     },
   });
+
+  useEffect(() => {
+    if (open && owner) {
+      form.reset({
+        full_name: owner.full_name || '',
+        email: owner.email || '',
+        phone: owner.phone || '',
+        document_type: owner.document_type || 'DNI',
+        document_number: owner.document_number || '',
+        owner_type: owner.owner_type || 'individual',
+        tax_id: owner.tax_id || '',
+        address: owner.address || '',
+        city: owner.city || '',
+        notes: owner.notes || '',
+      });
+    } else if (open && !owner) {
+      form.reset({
+        full_name: '',
+        email: '',
+        phone: '',
+        document_type: 'DNI',
+        document_number: '',
+        owner_type: 'individual',
+        tax_id: '',
+        address: '',
+        city: '',
+        notes: '',
+      });
+    }
+  }, [open, owner, form]);
 
   const onSubmit = async (data: FormValues) => {
     try {

@@ -56,7 +56,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: contract || {
+    defaultValues: {
       contract_number: '',
       property_id: '',
       tenant_renter_id: '',
@@ -84,8 +84,61 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   useEffect(() => {
     if (open) {
       fetchData();
+      if (contract) {
+        form.reset({
+          contract_number: contract.contract_number || '',
+          property_id: contract.property_id || '',
+          tenant_renter_id: contract.tenant_renter_id || '',
+          start_date: contract.start_date || '',
+          end_date: contract.end_date || '',
+          monthly_rent: contract.monthly_rent || 0,
+          currency: contract.currency || 'ARS',
+          deposit_amount: contract.deposit_amount || 0,
+          payment_day: contract.payment_day || 10,
+          contract_type: contract.contract_type || 'rental',
+          adjustment_type: contract.adjustment_type || 'none',
+          status: contract.status || 'draft',
+          special_clauses: contract.special_clauses || '',
+          tipo_contrato: contract.tipo_contrato || 'CONTRATO',
+          monto_a: contract.monto_a || 0,
+          monto_b: contract.monto_b || 0,
+          aplica_a_items: contract.aplica_a_items || 'A',
+          indice_ajuste: contract.indice_ajuste || 'none',
+          frecuencia_ajuste: contract.frecuencia_ajuste || '',
+          frecuencia_factura: contract.frecuencia_factura || 'Mensual',
+          fecha_primer_ajuste: contract.fecha_primer_ajuste || '',
+        });
+        if (contract.property_id) {
+          fetchPropertyOwners(contract.property_id);
+        }
+      } else {
+        form.reset({
+          contract_number: '',
+          property_id: '',
+          tenant_renter_id: '',
+          start_date: '',
+          end_date: '',
+          monthly_rent: 0,
+          currency: 'ARS',
+          deposit_amount: 0,
+          payment_day: 10,
+          contract_type: 'rental',
+          adjustment_type: 'none',
+          status: 'draft',
+          special_clauses: '',
+          tipo_contrato: 'CONTRATO',
+          monto_a: 0,
+          monto_b: 0,
+          aplica_a_items: 'A',
+          indice_ajuste: 'none',
+          frecuencia_ajuste: '',
+          frecuencia_factura: 'Mensual',
+          fecha_primer_ajuste: '',
+        });
+      }
     }
-  }, [open]);
+  }, [open, contract, form]);
+
 
   const fetchData = async () => {
     const [propsRes, tenantsRes] = await Promise.all([

@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -35,7 +36,7 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: tenant || {
+    defaultValues: {
       full_name: '',
       email: '',
       phone: '',
@@ -45,6 +46,30 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
       notes: '',
     },
   });
+
+  useEffect(() => {
+    if (open && tenant) {
+      form.reset({
+        full_name: tenant.full_name || '',
+        email: tenant.email || '',
+        phone: tenant.phone || '',
+        document_type: tenant.document_type || 'DNI',
+        document_number: tenant.document_number || '',
+        tenant_type: tenant.tenant_type || 'individual',
+        notes: tenant.notes || '',
+      });
+    } else if (open && !tenant) {
+      form.reset({
+        full_name: '',
+        email: '',
+        phone: '',
+        document_type: 'DNI',
+        document_number: '',
+        tenant_type: 'individual',
+        notes: '',
+      });
+    }
+  }, [open, tenant, form]);
 
   const onSubmit = async (data: FormValues) => {
     try {

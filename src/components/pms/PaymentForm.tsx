@@ -43,7 +43,7 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: payment || {
+    defaultValues: {
       contract_id: '',
       payment_type: 'rent',
       amount: 0,
@@ -63,8 +63,41 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
   useEffect(() => {
     if (open) {
       fetchContracts();
+      if (payment) {
+        form.reset({
+          contract_id: payment.contract_id || '',
+          payment_type: payment.payment_type || 'rent',
+          amount: payment.amount || 0,
+          currency: payment.currency || 'ARS',
+          due_date: payment.due_date || '',
+          paid_date: payment.paid_date || '',
+          paid_amount: payment.paid_amount || 0,
+          status: payment.status || 'pending',
+          payment_method: payment.payment_method || '',
+          reference_number: payment.reference_number || '',
+          notes: payment.notes || '',
+          item: payment.item || 'UNICO',
+          porcentaje: payment.porcentaje || 100,
+        });
+      } else {
+        form.reset({
+          contract_id: '',
+          payment_type: 'rent',
+          amount: 0,
+          currency: 'ARS',
+          due_date: '',
+          paid_date: '',
+          paid_amount: 0,
+          status: 'pending',
+          payment_method: '',
+          reference_number: '',
+          notes: '',
+          item: 'UNICO',
+          porcentaje: 100,
+        });
+      }
     }
-  }, [open]);
+  }, [open, payment, form]);
 
   const fetchContracts = async () => {
     const { data } = await supabase

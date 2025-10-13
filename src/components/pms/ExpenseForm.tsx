@@ -37,7 +37,7 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: expense || {
+    defaultValues: {
       property_id: "",
       category: "",
       amount: 0,
@@ -52,10 +52,28 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
     if (open) {
       fetchProperties();
       if (expense) {
-        form.reset(expense);
+        form.reset({
+          property_id: expense.property_id || "",
+          category: expense.category || "",
+          amount: expense.amount || 0,
+          currency: expense.currency || "ARS",
+          expense_date: expense.expense_date || new Date().toISOString().split('T')[0],
+          description: expense.description || "",
+          receipt_url: expense.receipt_url || ""
+        });
+      } else {
+        form.reset({
+          property_id: "",
+          category: "",
+          amount: 0,
+          currency: "ARS",
+          expense_date: new Date().toISOString().split('T')[0],
+          description: "",
+          receipt_url: ""
+        });
       }
     }
-  }, [open, expense]);
+  }, [open, expense, form]);
 
   const fetchProperties = async () => {
     const { data } = await supabase

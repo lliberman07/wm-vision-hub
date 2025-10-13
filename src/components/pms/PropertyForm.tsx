@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -53,7 +53,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: property || {
+    defaultValues: {
       code: '',
       address: '',
       city: '',
@@ -75,6 +75,56 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
       estado_publicacion: 'borrador',
     },
   });
+
+  useEffect(() => {
+    if (open && property) {
+      form.reset({
+        code: property.code || '',
+        address: property.address || '',
+        city: property.city || '',
+        state: property.state || '',
+        postal_code: property.postal_code || '',
+        property_type: property.property_type || 'apartment',
+        status: property.status || 'available',
+        bedrooms: property.bedrooms || 0,
+        bathrooms: property.bathrooms || 0,
+        surface_total: property.surface_total || 0,
+        surface_covered: property.surface_covered || 0,
+        description: property.description || '',
+        alias: property.alias || '',
+        categoria: property.categoria || '',
+        barrio: property.barrio || '',
+        operacion: property.operacion || '',
+        monto_alquiler: property.monto_alquiler || 0,
+        valor_venta: property.valor_venta || 0,
+        estado_publicacion: property.estado_publicacion || 'borrador',
+      });
+      setPhotos(property.photos || []);
+    } else if (open && !property) {
+      form.reset({
+        code: '',
+        address: '',
+        city: '',
+        state: '',
+        postal_code: '',
+        property_type: 'apartment',
+        status: 'available',
+        bedrooms: 0,
+        bathrooms: 0,
+        surface_total: 0,
+        surface_covered: 0,
+        description: '',
+        alias: '',
+        categoria: '',
+        barrio: '',
+        operacion: '',
+        monto_alquiler: 0,
+        valor_venta: 0,
+        estado_publicacion: 'borrador',
+      });
+      setPhotos([]);
+    }
+  }, [open, property, form]);
 
   const onSubmit = async (data: FormValues) => {
     try {

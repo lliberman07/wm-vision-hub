@@ -41,7 +41,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: maintenance || {
+    defaultValues: {
       property_id: '',
       contract_id: '',
       title: '',
@@ -58,8 +58,35 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
   useEffect(() => {
     if (open) {
       fetchData();
+      if (maintenance) {
+        form.reset({
+          property_id: maintenance.property_id || '',
+          contract_id: maintenance.contract_id || '',
+          title: maintenance.title || '',
+          description: maintenance.description || '',
+          category: maintenance.category || 'plumbing',
+          priority: maintenance.priority || 'medium',
+          status: maintenance.status || 'pending',
+          estimated_cost: maintenance.estimated_cost || 0,
+          scheduled_date: maintenance.scheduled_date || '',
+          notes: maintenance.notes || '',
+        });
+      } else {
+        form.reset({
+          property_id: '',
+          contract_id: '',
+          title: '',
+          description: '',
+          category: 'plumbing',
+          priority: 'medium',
+          status: 'pending',
+          estimated_cost: 0,
+          scheduled_date: '',
+          notes: '',
+        });
+      }
     }
-  }, [open]);
+  }, [open, maintenance, form]);
 
   const fetchData = async () => {
     const [propsRes, contractsRes] = await Promise.all([
