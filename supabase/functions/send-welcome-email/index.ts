@@ -26,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Sending welcome email to:', email);
 
     const emailResponse = await resend.emails.send({
-      from: "WM Real Estate <onboarding@resend.dev>",
+      from: "WM Real Estate <noreply@wmglobal.co>",
       to: [email],
       subject: "¡Bienvenido al Sistema PMS de WM Real Estate!",
       html: `
