@@ -168,6 +168,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         .insert([{
           user_id: userId,
           tenant_id: tenantId,
+          email: userData.email,
           requested_role: role.toUpperCase() as any,
           reason: reason,
           first_name: userData.first_name,

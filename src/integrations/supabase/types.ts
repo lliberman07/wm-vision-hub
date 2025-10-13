@@ -646,6 +646,7 @@ export type Database = {
           company_name: string | null
           created_at: string | null
           document_id: string | null
+          email: string
           first_name: string | null
           id: string
           last_name: string | null
@@ -667,6 +668,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string | null
           document_id?: string | null
+          email: string
           first_name?: string | null
           id?: string
           last_name?: string | null
@@ -688,6 +690,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string | null
           document_id?: string | null
+          email?: string
           first_name?: string | null
           id?: string
           last_name?: string | null
@@ -1708,41 +1711,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pms_tenants_renters_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "pms_tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pms_user_roles: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          id: string
-          role: Database["public"]["Enums"]["pms_app_role"]
-          tenant_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["pms_app_role"]
-          tenant_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["pms_app_role"]
-          tenant_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pms_user_roles_tenant"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "pms_tenants"

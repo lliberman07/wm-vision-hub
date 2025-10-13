@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock, Mail, User, Briefcase, Phone, MapPin, FileText, Building } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Mail, User, Briefcase, Phone, MapPin, FileText, Building, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -24,26 +24,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Eye } from 'lucide-react';
 
 interface PMSAccessRequest {
   id: string;
-  user_id: string;
+  user_id?: string;
   tenant_id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  company_name?: string;
+  phone: string;
+  document_id: string;
+  address: string;
+  city: string;
+  state: string;
+  postal_code: string;
   requested_role: string;
   reason: string;
-  status: string;
+  status: 'pending' | 'approved' | 'rejected';
   created_at: string;
-  user_email?: string;
-  first_name?: string;
-  last_name?: string;
-  phone?: string;
-  document_id?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  postal_code?: string;
-  company_name?: string;
   tax_id?: string;
 }
 
@@ -60,55 +59,36 @@ const PMSAccessRequests = () => {
   }, []);
 
   const fetchRequests = async () => {
+    setLoading(true);
     try {
-      // Get access requests from unified access_requests table
-      const { data: requestsData, error } = await supabase
-        .from('access_requests')
+      const { data: requests, error: requestsError } = await supabase
+        .from('pms_access_requests')
         .select('*')
-        .eq('module', 'PMS')
-        .order('created_at', { ascending: false});
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (requestsError) throw requestsError;
 
-      // Get user info from users table
-      if (requestsData && requestsData.length > 0) {
-        const userIds = requestsData.map(r => r.user_id);
-        const { data: users } = await supabase
-          .from('users')
-          .select('id, email, first_name, last_name, phone, company_name')
-          .in('id', userIds);
-
-        const userMap = new Map((users || []).map(u => [u.id, u]));
-        
-        const enrichedData = requestsData.map(req => {
-          const user = userMap.get(req.user_id);
-          return {
-            id: req.id,
-            user_id: req.user_id,
-            tenant_id: '', // Will be assigned on approval
-            requested_role: req.requested_roles[0] || '',
-            reason: req.reason || '',
-            status: req.status,
-            created_at: req.created_at,
-            user_email: user?.email || req.user_id.substring(0, 8),
-            first_name: user?.first_name,
-            last_name: user?.last_name,
-            phone: user?.phone,
-            company_name: user?.company_name,
-            // These fields will be empty in the new structure
-            document_id: undefined,
-            address: undefined,
-            city: undefined,
-            state: undefined,
-            postal_code: undefined,
-            tax_id: undefined,
-          };
-        });
-
-        setRequests(enrichedData);
-      } else {
-        setRequests([]);
-      }
+      // pms_access_requests ya tiene todos los campos necesarios
+      setRequests((requests || []).map(req => ({
+        id: req.id,
+        user_id: req.user_id || undefined,
+        email: req.email || 'Sin email',
+        first_name: req.first_name || 'Sin nombre',
+        last_name: req.last_name || '',
+        company_name: req.company_name,
+        phone: req.phone || '-',
+        document_id: req.document_id || '-',
+        address: req.address || '-',
+        city: req.city || '-',
+        state: req.state || '-',
+        postal_code: req.postal_code || '-',
+        tax_id: req.tax_id,
+        requested_role: req.requested_role,
+        reason: req.reason || '',
+        status: req.status as 'pending' | 'approved' | 'rejected',
+        created_at: req.created_at,
+        tenant_id: req.tenant_id,
+      })));
     } catch (error: any) {
       console.error('Error fetching requests:', error);
       toast({
@@ -126,58 +106,89 @@ const PMSAccessRequests = () => {
 
     try {
       if (actionType === 'approve') {
-        // Get default tenant ID
-        const { data: tenantId, error: tenantError } = await supabase
-          .rpc('get_default_tenant_id');
+        let userId = selectedRequest.user_id;
 
-        if (tenantError || !tenantId) {
-          throw new Error('No se pudo obtener el tenant predeterminado');
+        // Si el usuario no existe en auth.users, crearlo
+        if (!userId) {
+          const tempPassword = crypto.randomUUID().substring(0, 12);
+          
+          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+            email: selectedRequest.email,
+            password: tempPassword,
+            email_confirm: true,
+            user_metadata: {
+              first_name: selectedRequest.first_name,
+              last_name: selectedRequest.last_name,
+              entity_type: selectedRequest.company_name ? 'empresa' : 'persona',
+            }
+          });
+
+          if (authError) {
+            console.error('Error creating user:', authError);
+            throw new Error('No se pudo crear la cuenta de usuario: ' + authError.message);
+          }
+
+          userId = authData.user.id;
+
+          // Enviar email con credenciales
+          await supabase.functions.invoke('send-welcome-email', {
+            body: {
+              email: selectedRequest.email,
+              first_name: selectedRequest.first_name,
+              password: tempPassword,
+            }
+          });
         }
 
-        // Create user role in unified user_roles table
+        // Insertar rol en user_roles con module='PMS'
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert([{
-            user_id: selectedRequest.user_id,
-            tenant_id: tenantId,
-            role: selectedRequest.requested_role as any,
+            user_id: userId,
+            role: selectedRequest.requested_role.toLowerCase() as any,
             module: 'PMS',
+            tenant_id: selectedRequest.tenant_id,
             status: 'approved',
-            approved_at: new Date().toISOString()
+            approved_at: new Date().toISOString(),
           }]);
 
         if (roleError) throw roleError;
 
-        // Update request status
+        // Actualizar pms_access_requests
         const { error: updateError } = await supabase
-          .from('access_requests')
-          .update({ 
+          .from('pms_access_requests')
+          .update({
+            user_id: userId,
             status: 'approved',
-            reviewed_at: new Date().toISOString()
+            reviewed_at: new Date().toISOString(),
+            reviewed_by: (await supabase.auth.getUser()).data.user?.id,
           })
           .eq('id', selectedRequest.id);
 
         if (updateError) throw updateError;
 
         toast({
-          title: "Solicitud Aprobada",
-          description: `Acceso concedido a ${selectedRequest.user_email}`,
+          title: "Solicitud aprobada",
+          description: userId === selectedRequest.user_id 
+            ? "El usuario ahora tiene acceso al sistema PMS" 
+            : "Se creó la cuenta y se enviaron las credenciales por email",
         });
       } else {
-        // Reject request
-        const { error } = await supabase
-          .from('access_requests')
-          .update({ 
-            status: 'denied',
-            reviewed_at: new Date().toISOString()
+        // Rechazar solicitud
+        const { error: updateError } = await supabase
+          .from('pms_access_requests')
+          .update({
+            status: 'rejected',
+            reviewed_at: new Date().toISOString(),
+            reviewed_by: (await supabase.auth.getUser()).data.user?.id,
           })
           .eq('id', selectedRequest.id);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
         toast({
-          title: "Solicitud Rechazada",
-          description: `Acceso denegado a ${selectedRequest.user_email}`,
+          title: "Solicitud rechazada",
+          description: "El usuario ha sido notificado",
         });
       }
 
@@ -209,17 +220,17 @@ const PMSAccessRequests = () => {
 
   const getRoleBadge = (role: string) => {
     const colors: Record<string, string> = {
-      superadmin: 'bg-purple-500',
-      inmobiliaria: 'bg-blue-500',
-      admin: 'bg-indigo-500',
-      propietario: 'bg-green-500',
-      inquilino: 'bg-yellow-500',
-      proveedor: 'bg-orange-500',
+      SUPERADMIN: 'bg-purple-500',
+      INMOBILIARIA: 'bg-blue-500',
+      ADMINISTRADOR: 'bg-indigo-500',
+      PROPIETARIO: 'bg-green-500',
+      INQUILINO: 'bg-yellow-500',
+      PROVEEDOR: 'bg-orange-500',
     };
     
     return (
       <Badge className={`${colors[role] || 'bg-gray-500'} text-white`}>
-        {role.toUpperCase()}
+        {role}
       </Badge>
     );
   };
@@ -257,14 +268,11 @@ const PMSAccessRequests = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Usuario</TableHead>
-                <TableHead>Datos Personales</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Fecha</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -273,22 +281,13 @@ const PMSAccessRequests = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{request.first_name} {request.last_name}</p>
-                        <p className="text-xs text-muted-foreground">{request.user_email}</p>
-                      </div>
+                      <span className="font-medium">{request.first_name} {request.last_name}</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-1 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3 text-muted-foreground" />
-                        <span>{request.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FileText className="h-3 w-3 text-muted-foreground" />
-                        <span>DNI: {request.document_id}</span>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{request.email}</span>
                     </div>
                   </TableCell>
                   <TableCell>{getRoleBadge(request.requested_role)}</TableCell>
@@ -336,7 +335,7 @@ const PMSAccessRequests = () => {
                                     </div>
                                     <div>
                                       <p className="text-muted-foreground">Email</p>
-                                      <p className="font-medium">{viewingRequest.user_email}</p>
+                                      <p className="font-medium">{viewingRequest.email}</p>
                                     </div>
                                     <div>
                                       <p className="text-muted-foreground">Teléfono</p>
@@ -426,24 +425,22 @@ const PMSAccessRequests = () => {
                                   <div className="flex gap-2 pt-4">
                                     <Button
                                       className="flex-1"
-                                      onClick={() => {
-                                        setSelectedRequest(viewingRequest);
-                                        setActionType('approve');
-                                      }}
-                                    >
-                                      <CheckCircle className="h-4 w-4 mr-2" />
-                                      Aprobar Solicitud
-                                    </Button>
-                                    <Button
-                                      className="flex-1"
                                       variant="destructive"
                                       onClick={() => {
                                         setSelectedRequest(viewingRequest);
                                         setActionType('reject');
                                       }}
                                     >
-                                      <XCircle className="h-4 w-4 mr-2" />
                                       Rechazar
+                                    </Button>
+                                    <Button
+                                      className="flex-1"
+                                      onClick={() => {
+                                        setSelectedRequest(viewingRequest);
+                                        setActionType('approve');
+                                      }}
+                                    >
+                                      Aprobar
                                     </Button>
                                   </div>
                                 )}
@@ -452,28 +449,27 @@ const PMSAccessRequests = () => {
                           )}
                         </SheetContent>
                       </Sheet>
-                      
+
                       {request.status === 'pending' && (
                         <>
                           <Button
                             size="sm"
-                            variant="default"
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setActionType('approve');
-                            }}
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
+                            variant="outline"
                             onClick={() => {
                               setSelectedRequest(request);
                               setActionType('reject');
                             }}
                           >
-                            <XCircle className="h-4 w-4" />
+                            Rechazar
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setActionType('approve');
+                            }}
+                          >
+                            Aprobar
                           </Button>
                         </>
                       )}
@@ -486,11 +482,9 @@ const PMSAccessRequests = () => {
         </div>
       )}
 
-      <AlertDialog open={!!selectedRequest && !!actionType} onOpenChange={(open) => {
-        if (!open) {
-          setSelectedRequest(null);
-          setActionType(null);
-        }
+      <AlertDialog open={!!selectedRequest && !!actionType} onOpenChange={() => {
+        setSelectedRequest(null);
+        setActionType(null);
       }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -498,25 +492,19 @@ const PMSAccessRequests = () => {
               {actionType === 'approve' ? 'Aprobar Solicitud' : 'Rechazar Solicitud'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {actionType === 'approve' ? (
-                <>
-                  ¿Estás seguro de que deseas aprobar la solicitud de <strong>{selectedRequest?.user_email}</strong> para el rol de <strong>{selectedRequest?.requested_role}</strong>?
-                  <br /><br />
-                  El usuario recibirá acceso inmediato al sistema PMS.
-                </>
-              ) : (
-                <>
-                  ¿Estás seguro de que deseas rechazar la solicitud de <strong>{selectedRequest?.user_email}</strong>?
-                  <br /><br />
-                  El usuario no tendrá acceso al sistema PMS.
-                </>
-              )}
+              {actionType === 'approve' 
+                ? `¿Confirmas que deseas aprobar la solicitud de ${selectedRequest?.first_name} ${selectedRequest?.last_name}? Se le otorgará acceso al sistema PMS.` 
+                : `¿Confirmas que deseas rechazar la solicitud de ${selectedRequest?.first_name} ${selectedRequest?.last_name}?`
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleAction}>
-              Confirmar
+            <AlertDialogAction
+              onClick={handleAction}
+              className={actionType === 'reject' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
+            >
+              {actionType === 'approve' ? 'Aprobar' : 'Rechazar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
