@@ -51,7 +51,7 @@ const PMSAccessRequests = () => {
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<PMSAccessRequest | null>(null);
   const [viewingRequest, setViewingRequest] = useState<PMSAccessRequest | null>(null);
-  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | 'revert' | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -169,6 +169,23 @@ const PMSAccessRequests = () => {
           description: userId === selectedRequest.user_id 
             ? "El usuario ahora tiene acceso al sistema PMS" 
             : "Se creó la cuenta y se enviaron las credenciales por email",
+        });
+      } else if (actionType === 'revert') {
+        // Revertir aprobación: cambiar estado a pending
+        const { error: updateError } = await supabase
+          .from('pms_access_requests')
+          .update({
+            status: 'pending',
+            reviewed_at: null,
+            reviewed_by: null,
+          })
+          .eq('id', selectedRequest.id);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Aprobación revertida",
+          description: "Ahora puedes volver a aprobar la solicitud para re-enviar el email",
         });
       } else {
         // Rechazar solicitud
@@ -441,6 +458,20 @@ const PMSAccessRequests = () => {
                                     </Button>
                                   </div>
                                 )}
+                                {viewingRequest.status === 'approved' && (
+                                  <div className="flex gap-2 pt-4">
+                                    <Button
+                                      className="flex-1"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedRequest(viewingRequest);
+                                        setActionType('revert');
+                                      }}
+                                    >
+                                      Revertir Aprobación
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             </>
                           )}
@@ -470,6 +501,18 @@ const PMSAccessRequests = () => {
                           </Button>
                         </>
                       )}
+                      {request.status === 'approved' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedRequest(request);
+                            setActionType('revert');
+                          }}
+                        >
+                          Revertir
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -486,11 +529,13 @@ const PMSAccessRequests = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {actionType === 'approve' ? 'Aprobar Solicitud' : 'Rechazar Solicitud'}
+              {actionType === 'approve' ? 'Aprobar Solicitud' : actionType === 'revert' ? 'Revertir Aprobación' : 'Rechazar Solicitud'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {actionType === 'approve' 
                 ? `¿Confirmas que deseas aprobar la solicitud de ${selectedRequest?.first_name} ${selectedRequest?.last_name}? Se le otorgará acceso al sistema PMS.` 
+                : actionType === 'revert'
+                ? `¿Confirmas que deseas revertir la aprobación de ${selectedRequest?.first_name} ${selectedRequest?.last_name}? La solicitud volverá a estado pendiente y podrás aprobarla nuevamente para re-enviar el email de bienvenida.`
                 : `¿Confirmas que deseas rechazar la solicitud de ${selectedRequest?.first_name} ${selectedRequest?.last_name}?`
               }
             </AlertDialogDescription>
@@ -501,7 +546,7 @@ const PMSAccessRequests = () => {
               onClick={handleAction}
               className={actionType === 'reject' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
             >
-              {actionType === 'approve' ? 'Aprobar' : 'Rechazar'}
+              {actionType === 'approve' ? 'Aprobar' : actionType === 'revert' ? 'Revertir' : 'Rechazar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
