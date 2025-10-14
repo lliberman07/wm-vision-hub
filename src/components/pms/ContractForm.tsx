@@ -526,6 +526,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         value={field.value || ''}
                         onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                         onWheel={(e) => e.currentTarget.blur()}
+                        className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                     </FormControl>
                     <FormMessage />
