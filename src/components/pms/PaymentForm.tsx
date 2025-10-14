@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePMS } from '@/contexts/PMSContext';
@@ -40,6 +42,7 @@ interface PaymentFormProps {
 export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentFormProps) {
   const { currentTenant } = usePMS();
   const [contracts, setContracts] = useState<any[]>([]);
+  const [selectedContractData, setSelectedContractData] = useState<any>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -102,13 +105,34 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
   const fetchContracts = async () => {
     const { data } = await supabase
       .from('pms_contracts')
-      .select('id, contract_number');
+      .select('id, contract_number, status, cancelled_at, start_date, end_date');
     
     if (data) setContracts(data);
   };
 
+  const fetchContractDetails = async (contractId: string) => {
+    const { data } = await supabase
+      .from('pms_contracts')
+      .select('*')
+      .eq('id', contractId)
+      .single();
+    
+    if (data) setSelectedContractData(data);
+  };
+
   const onSubmit = async (data: FormValues) => {
     try {
+      // Validación para contratos cancelados
+      if (selectedContractData?.status === 'cancelled' && selectedContractData?.cancelled_at) {
+        const paymentDueDate = new Date(data.due_date);
+        const cancellationDate = new Date(selectedContractData.cancelled_at);
+        
+        if (paymentDueDate >= cancellationDate) {
+          toast.error('No se puede registrar un pago para una cuota posterior a la fecha de cancelación');
+          return;
+        }
+      }
+
       const payload: any = {
         contract_id: data.contract_id,
         payment_type: data.payment_type,
@@ -165,13 +189,29 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {selectedContractData?.status === 'cancelled' && (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Este contrato fue cancelado el {new Date(selectedContractData.cancelled_at).toLocaleDateString()}.
+                  Solo puede registrar pagos de cuotas vencidas antes de esa fecha.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <FormField
               control={form.control}
               name="contract_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Contrato</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      fetchContractDetails(value);
+                    }} 
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar contrato" />
@@ -181,6 +221,7 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
                       {contracts.map(contract => (
                         <SelectItem key={contract.id} value={contract.id}>
                           {contract.contract_number}
+                          {contract.status === 'cancelled' && ' (Cancelado)'}
                         </SelectItem>
                       ))}
                     </SelectContent>

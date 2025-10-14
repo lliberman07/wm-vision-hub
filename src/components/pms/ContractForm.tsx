@@ -245,6 +245,21 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
   const onSubmit = async (data: FormValues) => {
     try {
+      // Validar que no exista otro contrato activo para la misma propiedad
+      if (data.status === 'active') {
+        const { data: existingContract } = await supabase
+          .from('pms_contracts')
+          .select('id')
+          .eq('property_id', data.property_id)
+          .eq('status', 'active')
+          .neq('id', contract?.id || '00000000-0000-0000-0000-000000000000');
+        
+        if (existingContract && existingContract.length > 0) {
+          toast.error('Ya existe un contrato activo para esta propiedad');
+          return;
+        }
+      }
+
       const payload: any = {
         contract_number: data.contract_number,
         property_id: data.property_id,

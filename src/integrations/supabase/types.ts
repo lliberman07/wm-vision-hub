@@ -886,6 +886,9 @@ export type Database = {
           adjustment_config: Json | null
           adjustment_type: string | null
           aplica_a_items: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           contract_number: string
           contract_type: string | null
           created_at: string | null
@@ -926,6 +929,9 @@ export type Database = {
           adjustment_config?: Json | null
           adjustment_type?: string | null
           aplica_a_items?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           contract_number: string
           contract_type?: string | null
           created_at?: string | null
@@ -966,6 +972,9 @@ export type Database = {
           adjustment_config?: Json | null
           adjustment_type?: string | null
           aplica_a_items?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           contract_number?: string
           contract_type?: string | null
           created_at?: string | null
@@ -1862,6 +1871,19 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: undefined
       }
+      cancel_contract: {
+        Args: {
+          cancellation_date_param: string
+          cancellation_reason_param: string
+          cancelled_by_param: string
+          contract_id_param: string
+        }
+        Returns: undefined
+      }
+      check_expired_contracts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       deny_user: {
         Args: { user_id_param: string }
         Returns: undefined
@@ -1879,6 +1901,10 @@ export type Database = {
       }
       get_default_tenant_id: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_property_auto_status: {
+        Args: { property_id_param: string }
         Returns: string
       }
       has_pms_role: {

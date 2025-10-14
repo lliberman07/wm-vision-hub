@@ -14,10 +14,12 @@ import { toast } from 'sonner';
 import { ContractForm } from '@/components/pms/ContractForm';
 import { ContractPaymentDistribution } from '@/components/pms/ContractPaymentDistribution';
 import { ContractAdjustments } from '@/components/pms/ContractAdjustments';
+import { CancelContractDialog } from '@/components/pms/CancelContractDialog';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
 import { EmptyState } from '@/components/pms/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
 
 interface Contract {
   id: string;
@@ -28,6 +30,9 @@ interface Contract {
   currency: string;
   status: string;
   pdf_url?: string;
+  cancelled_at?: string;
+  cancellation_reason?: string;
+  cancelled_by?: string;
 }
 
 const Contracts = () => {
@@ -39,6 +44,7 @@ const Contracts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
 
   useEffect(() => {
@@ -107,9 +113,15 @@ const Contracts = () => {
       active: 'default',
       draft: 'secondary',
       expired: 'destructive',
-      cancelled: 'outline',
+      cancelled: 'destructive',
     };
-    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
+    const labels: Record<string, string> = {
+      active: 'Activo',
+      draft: 'Borrador',
+      expired: 'Vencido',
+      cancelled: 'Cancelado',
+    };
+    return <Badge variant={variants[status] || 'outline'}>{labels[status] || status}</Badge>;
   };
 
   return (
@@ -235,6 +247,17 @@ const Contracts = () => {
           contract={selectedContract}
         />
 
+        {/* Cancel Contract Dialog */}
+        <CancelContractDialog
+          open={isCancelOpen}
+          onOpenChange={setIsCancelOpen}
+          contract={selectedContract}
+          onSuccess={() => {
+            fetchContracts();
+            setIsCancelOpen(false);
+          }}
+        />
+
         {/* View Dialog */}
         <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh]">
@@ -276,6 +299,22 @@ const Contracts = () => {
                       <p className="text-sm text-muted-foreground">Estado</p>
                       {getStatusBadge(selectedContract.status)}
                     </div>
+                    
+                    {selectedContract.status === 'cancelled' && selectedContract.cancelled_at && (
+                      <>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Fecha de Cancelación</p>
+                          <p className="font-medium text-destructive">
+                            {format(new Date(selectedContract.cancelled_at), 'dd/MM/yyyy')}
+                          </p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-sm text-muted-foreground">Motivo de Cancelación</p>
+                          <p className="font-medium">{selectedContract.cancellation_reason}</p>
+                        </div>
+                      </>
+                    )}
+                    
                     <div className="col-span-2">
                       <p className="text-sm text-muted-foreground mb-2">Propietarios</p>
                       <div className="flex flex-wrap gap-2">
@@ -286,6 +325,20 @@ const Contracts = () => {
                         ))}
                       </div>
                     </div>
+                    
+                    {selectedContract.status === 'active' && (
+                      <div className="col-span-2 pt-4 border-t">
+                        <Button 
+                          variant="destructive" 
+                          onClick={() => {
+                            setIsCancelOpen(true);
+                            setIsViewOpen(false);
+                          }}
+                        >
+                          Cancelar Contrato
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 

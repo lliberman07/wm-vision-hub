@@ -14,6 +14,10 @@ import { toast } from 'sonner';
 import { usePMS } from '@/contexts/PMSContext';
 import { OwnerPropertyManager } from './OwnerPropertyManager';
 import { PropertyPhotosUpload } from './PropertyPhotosUpload';
+import { usePropertyStatus } from '@/hooks/usePropertyStatus';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Bot, Wrench } from 'lucide-react';
 
 const formSchema = z.object({
   code: z.string().min(1, 'Código requerido'),
@@ -50,6 +54,8 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
   const { currentTenant } = usePMS();
   const [propertyOwners, setPropertyOwners] = useState<any[]>([]);
   const [photos, setPhotos] = useState<string[]>(property?.photos || []);
+  const [forceMaintenanceMode, setForceMaintenanceMode] = useState(false);
+  const { status: autoStatus, contract, isAutomatic } = usePropertyStatus(property?.id);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -78,6 +84,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
 
   useEffect(() => {
     if (open && property) {
+      setForceMaintenanceMode(property.status === 'maintenance');
       form.reset({
         code: property.code || '',
         address: property.address || '',
@@ -128,6 +135,12 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
 
   const onSubmit = async (data: FormValues) => {
     try {
+      // Validar que no se marque como "Alquilada" manualmente
+      if (data.status === 'rented' && !contract) {
+        toast.error('No se puede marcar como "Alquilada" manualmente. Este estado se establece automáticamente cuando existe un contrato activo.');
+        return;
+      }
+
       if (propertyOwners.length > 0) {
         const totalPercent = propertyOwners.reduce((sum, po) => sum + po.share_percent, 0);
         if (totalPercent !== 100) {
@@ -407,8 +420,35 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estado</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <div className="flex items-center justify-between mb-2">
+                    <FormLabel>Estado</FormLabel>
+                    {property && (
+                      <Badge variant={isAutomatic ? "default" : "secondary"} className="text-xs">
+                        {isAutomatic ? (
+                          <>
+                            <Bot className="h-3 w-3 mr-1" />
+                            Automático
+                          </>
+                        ) : (
+                          <>
+                            <Wrench className="h-3 w-3 mr-1" />
+                            Manual
+                          </>
+                        )}
+                      </Badge>
+                    )}
+                  </div>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      if (value === 'maintenance') {
+                        setForceMaintenanceMode(true);
+                      } else {
+                        setForceMaintenanceMode(false);
+                      }
+                    }} 
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar estado" />
@@ -416,11 +456,36 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="available">Disponible</SelectItem>
-                      <SelectItem value="rented">Alquilada</SelectItem>
+                      <SelectItem value="rented" disabled={!contract}>
+                        Alquilada {!contract && '(solo automático)'}
+                      </SelectItem>
                       <SelectItem value="maintenance">Mantenimiento</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
+                  
+                  {property && !contract && (
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Checkbox
+                        id="forceMaintenanceMode"
+                        checked={forceMaintenanceMode}
+                        onCheckedChange={(checked) => {
+                          setForceMaintenanceMode(checked as boolean);
+                          if (checked) {
+                            form.setValue('status', 'maintenance');
+                          } else {
+                            form.setValue('status', 'available');
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="forceMaintenanceMode"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        Forzar Mantenimiento Manual
+                      </label>
+                    </div>
+                  )}
                 </FormItem>
               )}
             />
