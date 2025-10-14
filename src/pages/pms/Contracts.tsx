@@ -20,6 +20,7 @@ import { FilterBar } from '@/components/pms/FilterBar';
 import { EmptyState } from '@/components/pms/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
+import { parseDateFromDB } from '@/utils/dateUtils';
 
 interface Contract {
   id: string;
@@ -191,8 +192,8 @@ const Contracts = () => {
                     {filteredContracts.map((contract) => (
                       <TableRow key={contract.id} className="hover:bg-muted/50">
                         <TableCell className="font-mono">{contract.contract_number}</TableCell>
-                        <TableCell>{new Date(contract.start_date).toLocaleDateString()}</TableCell>
-                        <TableCell>{new Date(contract.end_date).toLocaleDateString()}</TableCell>
+                        <TableCell>{parseDateFromDB(contract.start_date).toLocaleDateString()}</TableCell>
+                        <TableCell>{parseDateFromDB(contract.end_date).toLocaleDateString()}</TableCell>
                         <TableCell>
                           {contract.currency} {contract.monthly_rent?.toLocaleString()}
                         </TableCell>
@@ -280,13 +281,13 @@ const Contracts = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Fecha Inicio</p>
                       <p className="font-medium">
-                        {new Date(selectedContract.start_date).toLocaleDateString()}
+                        {parseDateFromDB(selectedContract.start_date).toLocaleDateString()}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Fecha Fin</p>
                       <p className="font-medium">
-                        {new Date(selectedContract.end_date).toLocaleDateString()}
+                        {parseDateFromDB(selectedContract.end_date).toLocaleDateString()}
                       </p>
                     </div>
                     <div>
