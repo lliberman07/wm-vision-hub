@@ -155,6 +155,20 @@ export function ContractPaymentMethods({ contractId, propertyId, montoA, montoB 
   const totalPercentageByItem = (item: string) => 
     methods.filter(m => m.item === item).reduce((sum, m) => sum + Number(m.percentage), 0);
 
+  const calculateAmount = (item: string, percentage: number) => {
+    const baseAmount = item === 'A' ? (montoA || 0) : (montoB || 0);
+    return baseAmount * (percentage / 100);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -210,6 +224,7 @@ export function ContractPaymentMethods({ contractId, propertyId, montoA, montoB 
                   <TableHead>Item</TableHead>
                   <TableHead>Propietario</TableHead>
                   <TableHead>%</TableHead>
+                  <TableHead>Monto</TableHead>
                   <TableHead>Método</TableHead>
                   <TableHead>Cuenta Destino</TableHead>
                 </TableRow>
@@ -220,6 +235,9 @@ export function ContractPaymentMethods({ contractId, propertyId, montoA, montoB 
                     <TableCell className="font-medium">{method.item}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{method.notes}</TableCell>
                     <TableCell>{method.percentage}%</TableCell>
+                    <TableCell className="font-semibold">
+                      {formatCurrency(calculateAmount(method.item, method.percentage))}
+                    </TableCell>
                     <TableCell>
                       <Select
                         value={method.payment_method}
