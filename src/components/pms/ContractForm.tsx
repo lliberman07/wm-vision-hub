@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
+import { formatDateForDB, parseDateFromDB } from '@/utils/dateUtils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -120,8 +121,8 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           contract_number: contract.contract_number || '',
           property_id: contract.property_id || '',
           tenant_renter_id: contract.tenant_renter_id || '',
-          start_date: contract.start_date ? new Date(contract.start_date) : undefined,
-          end_date: contract.end_date ? new Date(contract.end_date) : undefined,
+          start_date: contract.start_date ? parseDateFromDB(contract.start_date) : undefined,
+          end_date: contract.end_date ? parseDateFromDB(contract.end_date) : undefined,
           monthly_rent: contract.monthly_rent || 0,
           currency: contract.currency || 'ARS',
           deposit_amount: contract.deposit_amount || 0,
@@ -142,7 +143,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           indice_ajuste: contract.indice_ajuste || 'none',
           frecuencia_ajuste: contract.frecuencia_ajuste || '',
           frecuencia_factura: contract.frecuencia_factura || 'Mensual',
-          fecha_primer_ajuste: contract.fecha_primer_ajuste ? new Date(contract.fecha_primer_ajuste) : undefined,
+          fecha_primer_ajuste: contract.fecha_primer_ajuste ? parseDateFromDB(contract.fecha_primer_ajuste) : undefined,
         });
         if (contract.property_id) {
           fetchPropertyOwners(contract.property_id);
@@ -264,8 +265,8 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         contract_number: data.contract_number,
         property_id: data.property_id,
         tenant_renter_id: data.tenant_renter_id,
-        start_date: data.start_date ? format(data.start_date, 'yyyy-MM-dd') : null,
-        end_date: data.end_date ? format(data.end_date, 'yyyy-MM-dd') : null,
+        start_date: data.start_date ? formatDateForDB(data.start_date) : null,
+        end_date: data.end_date ? formatDateForDB(data.end_date) : null,
         monthly_rent: data.monthly_rent,
         currency: data.currency,
         deposit_amount: data.deposit_amount,
@@ -286,7 +287,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         indice_ajuste: data.indice_ajuste,
         frecuencia_ajuste: data.frecuencia_ajuste,
         frecuencia_factura: data.frecuencia_factura,
-        fecha_primer_ajuste: data.fecha_primer_ajuste ? format(data.fecha_primer_ajuste, 'yyyy-MM-dd') : null,
+        fecha_primer_ajuste: data.fecha_primer_ajuste ? formatDateForDB(data.fecha_primer_ajuste) : null,
         tenant_id: currentTenant?.id,
       };
 
