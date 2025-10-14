@@ -1,6 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -9,18 +11,21 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePMS } from '@/contexts/PMSContext';
 import { useState, useEffect } from 'react';
 import { ContractPaymentMethods } from './ContractPaymentMethods';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   contract_number: z.string().min(1, 'Número de contrato requerido'),
   property_id: z.string().min(1, 'Propiedad requerida'),
   tenant_renter_id: z.string().min(1, 'Inquilino requerido'),
-  start_date: z.string().min(1, 'Fecha inicio requerida'),
-  end_date: z.string().min(1, 'Fecha fin requerida'),
+  start_date: z.date({ required_error: 'Fecha inicio requerida' }),
+  end_date: z.date({ required_error: 'Fecha fin requerida' }),
   monthly_rent: z.number().min(0, 'Renta debe ser mayor a 0'),
   currency: z.string().min(1, 'Moneda requerida'),
   deposit_amount: z.number().min(0).optional(),
@@ -41,7 +46,7 @@ const formSchema = z.object({
   indice_ajuste: z.string().optional(),
   frecuencia_ajuste: z.string().optional(),
   frecuencia_factura: z.string().optional(),
-  fecha_primer_ajuste: z.string().optional(),
+  fecha_primer_ajuste: z.date().optional(),
 }).refine((data) => {
   if (data.forma_pago_item_a === 'Otro' && !data.detalle_otro_item_a) {
     return false;
@@ -81,8 +86,8 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       contract_number: '',
       property_id: '',
       tenant_renter_id: '',
-      start_date: '',
-      end_date: '',
+      start_date: undefined,
+      end_date: undefined,
       monthly_rent: undefined,
       currency: 'ARS',
       deposit_amount: undefined,
@@ -103,7 +108,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       indice_ajuste: 'none',
       frecuencia_ajuste: '',
       frecuencia_factura: 'Mensual',
-      fecha_primer_ajuste: '',
+      fecha_primer_ajuste: undefined,
     },
   });
 
@@ -115,8 +120,8 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           contract_number: contract.contract_number || '',
           property_id: contract.property_id || '',
           tenant_renter_id: contract.tenant_renter_id || '',
-          start_date: contract.start_date || '',
-          end_date: contract.end_date || '',
+          start_date: contract.start_date ? new Date(contract.start_date) : undefined,
+          end_date: contract.end_date ? new Date(contract.end_date) : undefined,
           monthly_rent: contract.monthly_rent || 0,
           currency: contract.currency || 'ARS',
           deposit_amount: contract.deposit_amount || 0,
@@ -137,7 +142,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           indice_ajuste: contract.indice_ajuste || 'none',
           frecuencia_ajuste: contract.frecuencia_ajuste || '',
           frecuencia_factura: contract.frecuencia_factura || 'Mensual',
-          fecha_primer_ajuste: contract.fecha_primer_ajuste || '',
+          fecha_primer_ajuste: contract.fecha_primer_ajuste ? new Date(contract.fecha_primer_ajuste) : undefined,
         });
         if (contract.property_id) {
           fetchPropertyOwners(contract.property_id);
@@ -147,8 +152,8 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           contract_number: '',
           property_id: '',
           tenant_renter_id: '',
-          start_date: '',
-          end_date: '',
+          start_date: undefined,
+          end_date: undefined,
           monthly_rent: undefined,
           currency: 'ARS',
           deposit_amount: undefined,
@@ -169,7 +174,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           indice_ajuste: 'none',
           frecuencia_ajuste: '',
           frecuencia_factura: 'Mensual',
-          fecha_primer_ajuste: '',
+          fecha_primer_ajuste: undefined,
         });
       }
     }
@@ -244,8 +249,8 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         contract_number: data.contract_number,
         property_id: data.property_id,
         tenant_renter_id: data.tenant_renter_id,
-        start_date: data.start_date,
-        end_date: data.end_date,
+        start_date: data.start_date ? format(data.start_date, 'yyyy-MM-dd') : null,
+        end_date: data.end_date ? format(data.end_date, 'yyyy-MM-dd') : null,
         monthly_rent: data.monthly_rent,
         currency: data.currency,
         deposit_amount: data.deposit_amount,
@@ -266,7 +271,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         indice_ajuste: data.indice_ajuste,
         frecuencia_ajuste: data.frecuencia_ajuste,
         frecuencia_factura: data.frecuencia_factura,
-        fecha_primer_ajuste: data.fecha_primer_ajuste,
+        fecha_primer_ajuste: data.fecha_primer_ajuste ? format(data.fecha_primer_ajuste, 'yyyy-MM-dd') : null,
         tenant_id: currentTenant?.id,
       };
 
@@ -420,11 +425,37 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 control={form.control}
                 name="start_date"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Fecha Inicio</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Seleccionar fecha</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -434,11 +465,37 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 control={form.control}
                 name="end_date"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Fecha Fin</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Seleccionar fecha</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -874,11 +931,37 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 control={form.control}
                 name="fecha_primer_ajuste"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Fecha Primer Ajuste</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Seleccionar fecha</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
