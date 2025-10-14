@@ -892,8 +892,11 @@ export type Database = {
           created_by: string | null
           currency: string | null
           deposit_amount: number | null
+          detalle_otro_item_a: string | null
           end_date: string
           fecha_primer_ajuste: string | null
+          forma_pago_item_a: string | null
+          forma_pago_item_b: string | null
           frecuencia_ajuste: string | null
           frecuencia_factura: string | null
           guarantors: Json | null
@@ -926,8 +929,11 @@ export type Database = {
           created_by?: string | null
           currency?: string | null
           deposit_amount?: number | null
+          detalle_otro_item_a?: string | null
           end_date: string
           fecha_primer_ajuste?: string | null
+          forma_pago_item_a?: string | null
+          forma_pago_item_b?: string | null
           frecuencia_ajuste?: string | null
           frecuencia_factura?: string | null
           guarantors?: Json | null
@@ -960,8 +966,11 @@ export type Database = {
           created_by?: string | null
           currency?: string | null
           deposit_amount?: number | null
+          detalle_otro_item_a?: string | null
           end_date?: string
           fecha_primer_ajuste?: string | null
+          forma_pago_item_a?: string | null
+          forma_pago_item_b?: string | null
           frecuencia_ajuste?: string | null
           frecuencia_factura?: string | null
           guarantors?: Json | null

@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,11 +32,22 @@ const formSchema = z.object({
   tipo_contrato: z.string().optional(),
   monto_a: z.number().min(0).optional(),
   monto_b: z.number().min(0).optional(),
-  aplica_a_items: z.string().optional(),
+  forma_pago_item_a: z.string().optional(),
+  detalle_otro_item_a: z.string().optional(),
+  forma_pago_item_b: z.string().optional(),
   indice_ajuste: z.string().optional(),
   frecuencia_ajuste: z.string().optional(),
   frecuencia_factura: z.string().optional(),
   fecha_primer_ajuste: z.string().optional(),
+}).refine((data) => {
+  // Validar que si forma_pago_item_a es "Otro", detalle_otro_item_a no puede estar vacío
+  if (data.forma_pago_item_a === 'Otro' && !data.detalle_otro_item_a) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Debe especificar el detalle cuando selecciona "Otro"',
+  path: ['detalle_otro_item_a'],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -73,7 +84,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       tipo_contrato: 'CONTRATO',
       monto_a: 0,
       monto_b: 0,
-      aplica_a_items: 'A',
+      forma_pago_item_a: 'Efectivo',
+      detalle_otro_item_a: '',
+      forma_pago_item_b: 'Efectivo',
       indice_ajuste: 'none',
       frecuencia_ajuste: '',
       frecuencia_factura: 'Mensual',
@@ -102,7 +115,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           tipo_contrato: contract.tipo_contrato || 'CONTRATO',
           monto_a: contract.monto_a || 0,
           monto_b: contract.monto_b || 0,
-          aplica_a_items: contract.aplica_a_items || 'A',
+          forma_pago_item_a: contract.forma_pago_item_a || 'Efectivo',
+          detalle_otro_item_a: contract.detalle_otro_item_a || '',
+          forma_pago_item_b: contract.forma_pago_item_b || 'Efectivo',
           indice_ajuste: contract.indice_ajuste || 'none',
           frecuencia_ajuste: contract.frecuencia_ajuste || '',
           frecuencia_factura: contract.frecuencia_factura || 'Mensual',
@@ -122,14 +137,16 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           currency: 'ARS',
           deposit_amount: 0,
           payment_day: 10,
-          contract_type: 'rental',
+          contract_type: 'residential',
           adjustment_type: 'none',
           status: 'draft',
           special_clauses: '',
           tipo_contrato: 'CONTRATO',
           monto_a: 0,
           monto_b: 0,
-          aplica_a_items: 'A',
+          forma_pago_item_a: 'Efectivo',
+          detalle_otro_item_a: '',
+          forma_pago_item_b: 'Efectivo',
           indice_ajuste: 'none',
           frecuencia_ajuste: '',
           frecuencia_factura: 'Mensual',
@@ -139,6 +156,40 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
     }
   }, [open, contract, form]);
 
+  // Automatic calculation logic for monto_a and monto_b
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      const monthlyRent = value.monthly_rent || 0;
+      const montoA = value.monto_a || 0;
+      const montoB = value.monto_b || 0;
+
+      // Si se modificó monto_a, calcular monto_b
+      if (name === 'monto_a' && montoA > 0 && montoA < monthlyRent) {
+        form.setValue('monto_b', monthlyRent - montoA, { shouldValidate: true });
+      }
+      
+      // Si se modificó monto_b, calcular monto_a
+      if (name === 'monto_b' && montoB > 0 && montoB < monthlyRent) {
+        form.setValue('monto_a', monthlyRent - montoB, { shouldValidate: true });
+      }
+
+      // Si se modificó monthly_rent y hay valores en A o B, recalcular
+      if (name === 'monthly_rent') {
+        if (montoA > 0 && montoA < monthlyRent) {
+          form.setValue('monto_b', monthlyRent - montoA, { shouldValidate: true });
+        } else if (montoB > 0 && montoB < monthlyRent) {
+          form.setValue('monto_a', monthlyRent - montoB, { shouldValidate: true });
+        }
+      }
+
+      // Validación: La suma no puede exceder monthly_rent
+      if (montoA + montoB > monthlyRent && monthlyRent > 0) {
+        toast.error('La suma de Monto Item A + Monto Item B no puede exceder la Renta Mensual');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   const fetchData = async () => {
     const [propsRes, tenantsRes] = await Promise.all([
@@ -186,7 +237,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         tipo_contrato: data.tipo_contrato,
         monto_a: data.monto_a || data.monthly_rent,
         monto_b: data.monto_b || 0,
-        aplica_a_items: data.aplica_a_items,
+        forma_pago_item_a: data.forma_pago_item_a,
+        detalle_otro_item_a: data.detalle_otro_item_a,
+        forma_pago_item_b: data.forma_pago_item_b,
         indice_ajuste: data.indice_ajuste,
         frecuencia_ajuste: data.frecuencia_ajuste,
         frecuencia_factura: data.frecuencia_factura,
@@ -499,68 +552,137 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
             </div>
 
             <Separator className="my-4" />
-            <h3 className="text-lg font-semibold mb-4">Configuración de Montos</h3>
+            <h3 className="text-lg font-semibold mb-4">Configuración de Montos y Forma de Pago</h3>
 
-            <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="monto_a"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Monto Item A</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field} 
-                        onChange={e => field.onChange(e.target.valueAsNumber)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="monto_b"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Monto Item B</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field} 
-                        onChange={e => field.onChange(e.target.valueAsNumber)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="aplica_a_items"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Aplica a Items</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+            {/* Item A */}
+            <div className="border rounded-lg p-4 mb-4">
+              <h4 className="text-sm font-semibold mb-3 text-muted-foreground">ITEM A</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="monto_a"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Monto Item A</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          onChange={e => field.onChange(e.target.valueAsNumber)}
+                          placeholder="0"
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="UNICO">ÚNICO</SelectItem>
-                        <SelectItem value="A">A</SelectItem>
-                        <SelectItem value="B">B</SelectItem>
-                        <SelectItem value="A+B">A+B</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="forma_pago_item_a"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Forma de Pago Item A</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Efectivo">Efectivo</SelectItem>
+                          <SelectItem value="Transferencia">Transferencia</SelectItem>
+                          <SelectItem value="Depósito">Depósito</SelectItem>
+                          <SelectItem value="Cheque">Cheque</SelectItem>
+                          <SelectItem value="eCheck">eCheck</SelectItem>
+                          <SelectItem value="Otro">Otro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch('forma_pago_item_a') === 'Otro' && (
+                  <FormField
+                    control={form.control}
+                    name="detalle_otro_item_a"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Detalle Otro</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder="Especificar forma de pago"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
+              </div>
+            </div>
+
+            {/* Item B - Solo se muestra si hay valor en monto_b */}
+            {(form.watch('monto_b') || 0) > 0 && (
+              <div className="border rounded-lg p-4 mb-4 bg-muted/30">
+                <h4 className="text-sm font-semibold mb-3 text-muted-foreground">ITEM B</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="monto_b"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Monto Item B</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            onChange={e => field.onChange(e.target.valueAsNumber)}
+                            placeholder="0"
+                            disabled
+                          />
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          Calculado automáticamente
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="forma_pago_item_b"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Forma de Pago Item B</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Efectivo">Efectivo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription className="text-xs">
+                          Siempre Efectivo
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                <strong>Nota:</strong> Si el Monto Item A es menor a la Renta Mensual, la diferencia se aplicará automáticamente al Monto Item B.
+              </p>
             </div>
 
             <Separator className="my-4" />
