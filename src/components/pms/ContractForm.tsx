@@ -573,12 +573,22 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         <Input 
                           type="number" 
                           {...field} 
-                          onChange={e => field.onChange(e.target.valueAsNumber)}
+                          onChange={e => {
+                            const value = e.target.valueAsNumber;
+                            const monthlyRent = form.getValues('monthly_rent') || 0;
+                            if (value <= monthlyRent) {
+                              field.onChange(value);
+                            }
+                          }}
+                          max={form.watch('monthly_rent') || 0}
                           placeholder="0"
                           onWheel={(e) => e.currentTarget.blur()}
                           className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                       </FormControl>
+                      <FormDescription className="text-xs">
+                        Máximo: {form.watch('monthly_rent') || 0}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
