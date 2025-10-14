@@ -163,22 +163,23 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       const montoA = value.monto_a || 0;
       const montoB = value.monto_b || 0;
 
-      // Si se modificó monto_a, calcular monto_b
-      if (name === 'monto_a' && montoA > 0 && montoA < monthlyRent) {
-        form.setValue('monto_b', monthlyRent - montoA, { shouldValidate: true });
-      }
-      
-      // Si se modificó monto_b, calcular monto_a
-      if (name === 'monto_b' && montoB > 0 && montoB < monthlyRent) {
-        form.setValue('monto_a', monthlyRent - montoB, { shouldValidate: true });
+      // Solo recalcular si se modificó monto_a
+      if (name === 'monto_a') {
+        if (montoA > 0 && montoA <= monthlyRent) {
+          const newMontoB = monthlyRent - montoA;
+          if (newMontoB !== montoB) {
+            form.setValue('monto_b', newMontoB, { shouldValidate: false });
+          }
+        } else if (montoA === 0) {
+          form.setValue('monto_b', 0, { shouldValidate: false });
+        }
       }
 
-      // Si se modificó monthly_rent y hay valores en A o B, recalcular
-      if (name === 'monthly_rent') {
-        if (montoA > 0 && montoA < monthlyRent) {
-          form.setValue('monto_b', monthlyRent - montoA, { shouldValidate: true });
-        } else if (montoB > 0 && montoB < monthlyRent) {
-          form.setValue('monto_a', monthlyRent - montoB, { shouldValidate: true });
+      // Si se modificó monthly_rent, recalcular monto_b basado en monto_a
+      if (name === 'monthly_rent' && montoA > 0 && montoA <= monthlyRent) {
+        const newMontoB = monthlyRent - montoA;
+        if (newMontoB !== montoB) {
+          form.setValue('monto_b', newMontoB, { shouldValidate: false });
         }
       }
 
@@ -434,6 +435,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         type="number" 
                         {...field} 
                         onChange={e => field.onChange(e.target.valueAsNumber)}
+                        className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                     </FormControl>
                     <FormMessage />
@@ -570,6 +572,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                           {...field} 
                           onChange={e => field.onChange(e.target.valueAsNumber)}
                           placeholder="0"
+                          className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                       </FormControl>
                       <FormMessage />
