@@ -435,6 +435,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         type="number" 
                         {...field} 
                         onChange={e => field.onChange(e.target.valueAsNumber)}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                     </FormControl>
@@ -479,6 +480,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         max="31"
                         {...field} 
                         onChange={e => field.onChange(e.target.valueAsNumber)}
+                        onWheel={(e) => e.currentTarget.blur()}
                       />
                     </FormControl>
                     <FormMessage />
@@ -499,6 +501,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         type="number" 
                         {...field} 
                         onChange={e => field.onChange(e.target.valueAsNumber)}
+                        onWheel={(e) => e.currentTarget.blur()}
                       />
                     </FormControl>
                     <FormMessage />
@@ -572,6 +575,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                           {...field} 
                           onChange={e => field.onChange(e.target.valueAsNumber)}
                           placeholder="0"
+                          onWheel={(e) => e.currentTarget.blur()}
                           className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                       </FormControl>
@@ -645,6 +649,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                             onChange={e => field.onChange(e.target.valueAsNumber)}
                             placeholder="0"
                             disabled
+                            onWheel={(e) => e.currentTarget.blur()}
                           />
                         </FormControl>
                         <FormDescription className="text-xs">
