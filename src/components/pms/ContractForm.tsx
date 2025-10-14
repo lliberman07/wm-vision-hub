@@ -73,17 +73,17 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       tenant_renter_id: '',
       start_date: '',
       end_date: '',
-      monthly_rent: 0,
+      monthly_rent: undefined,
       currency: 'ARS',
-      deposit_amount: 0,
+      deposit_amount: undefined,
       payment_day: 10,
       contract_type: 'residential',
       adjustment_type: 'none',
       status: 'draft',
       special_clauses: '',
       tipo_contrato: 'CONTRATO',
-      monto_a: 0,
-      monto_b: 0,
+      monto_a: undefined,
+      monto_b: undefined,
       forma_pago_item_a: 'Efectivo',
       detalle_otro_item_a: '',
       forma_pago_item_b: 'Efectivo',
@@ -133,17 +133,17 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           tenant_renter_id: '',
           start_date: '',
           end_date: '',
-          monthly_rent: 0,
+          monthly_rent: undefined,
           currency: 'ARS',
-          deposit_amount: 0,
+          deposit_amount: undefined,
           payment_day: 10,
           contract_type: 'residential',
           adjustment_type: 'none',
           status: 'draft',
           special_clauses: '',
           tipo_contrato: 'CONTRATO',
-          monto_a: 0,
-          monto_b: 0,
+          monto_a: undefined,
+          monto_b: undefined,
           forma_pago_item_a: 'Efectivo',
           detalle_otro_item_a: '',
           forma_pago_item_b: 'Efectivo',
@@ -434,7 +434,8 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                       <Input 
                         type="number" 
                         {...field} 
-                        onChange={e => field.onChange(e.target.valueAsNumber)}
+                        value={field.value || ''}
+                        onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                         onWheel={(e) => e.currentTarget.blur()}
                         className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
@@ -499,8 +500,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     <FormControl>
                       <Input 
                         type="number" 
-                        {...field} 
-                        onChange={e => field.onChange(e.target.valueAsNumber)}
+                        {...field}
+                        value={field.value || ''}
+                        onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                         onWheel={(e) => e.currentTarget.blur()}
                       />
                     </FormControl>
@@ -572,11 +574,12 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                       <FormControl>
                         <Input 
                           type="number" 
-                          {...field} 
+                          {...field}
+                          value={field.value || ''}
                           onChange={e => {
-                            const value = e.target.valueAsNumber;
+                            const value = e.target.value === '' ? undefined : e.target.valueAsNumber;
                             const monthlyRent = form.getValues('monthly_rent') || 0;
-                            if (value <= monthlyRent) {
+                            if (value === undefined || value <= monthlyRent) {
                               field.onChange(value);
                             }
                           }}
