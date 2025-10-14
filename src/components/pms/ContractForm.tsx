@@ -66,7 +66,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       currency: 'ARS',
       deposit_amount: 0,
       payment_day: 10,
-      contract_type: 'rental',
+      contract_type: 'residential',
       adjustment_type: 'none',
       status: 'draft',
       special_clauses: '',
@@ -95,7 +95,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           currency: contract.currency || 'ARS',
           deposit_amount: contract.deposit_amount || 0,
           payment_day: contract.payment_day || 10,
-          contract_type: contract.contract_type || 'rental',
+          contract_type: contract.contract_type || 'residential',
           adjustment_type: contract.adjustment_type || 'none',
           status: contract.status || 'draft',
           special_clauses: contract.special_clauses || '',
@@ -453,10 +453,33 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
               <FormField
                 control={form.control}
+                name="contract_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Uso</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="residential">Residencial</SelectItem>
+                        <SelectItem value="commercial">Comercial</SelectItem>
+                        <SelectItem value="temporary">Temporario</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="tipo_contrato"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Contrato</FormLabel>
+                    <FormLabel>Categoría de Contrato</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
