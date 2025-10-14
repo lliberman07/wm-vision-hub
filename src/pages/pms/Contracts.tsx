@@ -16,6 +16,7 @@ import { ContractPaymentDistribution } from '@/components/pms/ContractPaymentDis
 import { ContractAdjustments } from '@/components/pms/ContractAdjustments';
 import { ContractMonthlyProjections } from '@/components/pms/ContractMonthlyProjections';
 import { CancelContractDialog } from '@/components/pms/CancelContractDialog';
+import { PaymentCalendar } from '@/components/pms/PaymentCalendar';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
 import { EmptyState } from '@/components/pms/EmptyState';
@@ -59,6 +60,12 @@ const Contracts = () => {
 
   const fetchContracts = async () => {
     try {
+      // Verificar contratos vencidos primero
+      await supabase.rpc('check_expired_contracts');
+      
+      // Actualizar items vencidos
+      await supabase.rpc('update_overdue_payment_items');
+
       const { data, error } = await supabase
         .from('pms_contracts')
         .select(`
@@ -271,8 +278,9 @@ const Contracts = () => {
             </DialogHeader>
             {selectedContract && (
               <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="details">Detalles</TabsTrigger>
+                  <TabsTrigger value="calendar">Calendario Pagos</TabsTrigger>
                   <TabsTrigger value="projection">Proyección</TabsTrigger>
                   <TabsTrigger value="payments">Métodos de Pago</TabsTrigger>
                   <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
@@ -343,6 +351,21 @@ const Contracts = () => {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="calendar" className="py-4">
+                  {selectedContract.status === 'active' ? (
+                    <PaymentCalendar
+                      contractId={selectedContract.id}
+                      currency={selectedContract.currency || 'ARS'}
+                    />
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">
+                        El calendario de pagos solo está disponible para contratos activos
+                      </p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="projection" className="py-4">

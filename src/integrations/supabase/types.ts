@@ -1521,6 +1521,100 @@ export type Database = {
           },
         ]
       }
+      pms_payment_schedule_items: {
+        Row: {
+          contract_id: string
+          created_at: string | null
+          expected_amount: number
+          id: string
+          item: string
+          owner_id: string
+          owner_percentage: number
+          payment_id: string | null
+          payment_method_id: string
+          period_date: string
+          projection_id: string
+          status: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string | null
+          expected_amount: number
+          id?: string
+          item: string
+          owner_id: string
+          owner_percentage: number
+          payment_id?: string | null
+          payment_method_id: string
+          period_date: string
+          projection_id: string
+          status?: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string | null
+          expected_amount?: number
+          id?: string
+          item?: string
+          owner_id?: string
+          owner_percentage?: number
+          payment_id?: string | null
+          payment_method_id?: string
+          period_date?: string
+          projection_id?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_payment_schedule_items_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_schedule_items_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "pms_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_schedule_items_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_schedule_items_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contract_payment_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_schedule_items_projection_id_fkey"
+            columns: ["projection_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contract_monthly_projections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_schedule_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_payments: {
         Row: {
           amount: number
@@ -1929,6 +2023,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_contract: {
+        Args: { contract_id_param: string }
+        Returns: undefined
+      }
       apply_automatic_adjustments: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1955,6 +2053,10 @@ export type Database = {
         Returns: undefined
       }
       generate_contract_monthly_projections: {
+        Args: { contract_id_param: string }
+        Returns: undefined
+      }
+      generate_payment_schedule_items: {
         Args: { contract_id_param: string }
         Returns: undefined
       }
@@ -1996,6 +2098,10 @@ export type Database = {
         Returns: boolean
       }
       update_contract_projections_with_indices: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_overdue_payment_items: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }

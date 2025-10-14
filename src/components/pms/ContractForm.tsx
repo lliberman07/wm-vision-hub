@@ -246,21 +246,6 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
   const onSubmit = async (data: FormValues) => {
     try {
-      // Validar que no exista otro contrato activo para la misma propiedad
-      if (data.status === 'active') {
-        const { data: existingContract } = await supabase
-          .from('pms_contracts')
-          .select('id')
-          .eq('property_id', data.property_id)
-          .eq('status', 'active')
-          .neq('id', contract?.id || '00000000-0000-0000-0000-000000000000');
-        
-        if (existingContract && existingContract.length > 0) {
-          toast.error('Ya existe un contrato activo para esta propiedad');
-          return;
-        }
-      }
-
       const payload: any = {
         contract_number: data.contract_number,
         property_id: data.property_id,
@@ -292,20 +277,72 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       };
 
       if (contract?.id) {
-        const { error } = await supabase
-          .from('pms_contracts')
-          .update(payload)
-          .eq('id', contract.id);
-        
-        if (error) throw error;
-        toast.success('Contrato actualizado');
+        // Si es un contrato existente
+        if (contract.status === 'active') {
+          // Contrato activo: solo permitir editar campos seguros
+          const safePayload = {
+            special_clauses: data.special_clauses,
+            guarantee_details: data.guarantee_details,
+          };
+          
+          const { error } = await supabase
+            .from('pms_contracts')
+            .update(safePayload)
+            .eq('id', contract.id);
+          
+          if (error) throw error;
+          toast.success('Contrato actualizado (campos editables)');
+        } else if (contract.status === 'draft' && data.status === 'active') {
+          // Borrador → Activo: usar activate_contract
+          const { error: updateError } = await supabase
+            .from('pms_contracts')
+            .update(payload)
+            .eq('id', contract.id);
+          
+          if (updateError) throw updateError;
+
+          const { error: activateError } = await supabase
+            .rpc('activate_contract', { contract_id_param: contract.id });
+          
+          if (activateError) throw activateError;
+          toast.success('Contrato activado exitosamente');
+        } else {
+          // Borrador → Borrador: edición completa
+          const { error } = await supabase
+            .from('pms_contracts')
+            .update(payload)
+            .eq('id', contract.id);
+          
+          if (error) throw error;
+          toast.success('Contrato actualizado');
+        }
       } else {
-        const { error } = await supabase
-          .from('pms_contracts')
-          .insert([payload]);
-        
-        if (error) throw error;
-        toast.success('Contrato creado');
+        // Contrato nuevo
+        if (data.status === 'active') {
+          // Crear como borrador primero
+          const { data: newContract, error: insertError } = await supabase
+            .from('pms_contracts')
+            .insert([{ ...payload, status: 'draft' }])
+            .select()
+            .single();
+          
+          if (insertError) throw insertError;
+
+          // Luego activar
+          const { error: activateError } = await supabase
+            .rpc('activate_contract', { contract_id_param: newContract.id });
+          
+          if (activateError) throw activateError;
+          toast.success('Contrato creado y activado');
+        } else {
+          // Crear como borrador
+          const { error } = await supabase
+            .from('pms_contracts')
+            .insert([payload]);
+          
+          if (error) throw error;
+          toast.success('Borrador de contrato creado');
+        }
       }
 
       onSuccess();
@@ -349,7 +386,11 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Estado</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                      disabled={contract?.status === 'active' || contract?.status === 'cancelled' || contract?.status === 'expired'}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -358,10 +399,14 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                       <SelectContent>
                         <SelectItem value="draft">Borrador</SelectItem>
                         <SelectItem value="active">Activo</SelectItem>
-                        <SelectItem value="expired">Vencido</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
+                    {contract?.status === 'active' && (
+                      <FormDescription className="text-orange-600">
+                        ⚠️ Contrato activo. Solo se pueden editar campos seguros.
+                      </FormDescription>
+                    )}
                   </FormItem>
                 )}
               />
@@ -448,6 +493,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         <FormControl>
                           <Button
                             variant="outline"
+                            disabled={contract?.status === 'active'}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
