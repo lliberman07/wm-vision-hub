@@ -12,7 +12,7 @@ import { Plus, Eye, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContractForm } from '@/components/pms/ContractForm';
-import { ContractPaymentMethods } from '@/components/pms/ContractPaymentMethods';
+import { ContractPaymentDistribution } from '@/components/pms/ContractPaymentDistribution';
 import { ContractAdjustments } from '@/components/pms/ContractAdjustments';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
@@ -290,7 +290,17 @@ const Contracts = () => {
                 </TabsContent>
 
                 <TabsContent value="payments">
-                  <ContractPaymentMethods contractId={selectedContract.id} />
+                  <ContractPaymentDistribution 
+                    contractId={selectedContract.id}
+                    propertyId={(selectedContract as any).property_id}
+                    monto_a={(selectedContract as any).monto_a}
+                    monto_b={(selectedContract as any).monto_b}
+                    monto_ajustado_actual_a={(selectedContract as any).monto_ajustado_actual_a}
+                    monto_ajustado_actual_b={(selectedContract as any).monto_ajustado_actual_b}
+                    forma_pago_item_a={(selectedContract as any).forma_pago_item_a}
+                    forma_pago_item_b={(selectedContract as any).forma_pago_item_b}
+                    currency={selectedContract.currency}
+                  />
                 </TabsContent>
 
                 <TabsContent value="adjustments">
