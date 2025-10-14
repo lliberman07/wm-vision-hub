@@ -24,6 +24,9 @@ const formSchema = z.object({
   monthly_rent: z.number().min(0, 'Renta debe ser mayor a 0'),
   currency: z.string().min(1, 'Moneda requerida'),
   deposit_amount: z.number().min(0).optional(),
+  deposit_currency: z.string().optional(),
+  guarantee_type: z.string().optional(),
+  guarantee_details: z.string().optional(),
   payment_day: z.number().min(1).max(31).optional(),
   contract_type: z.string().optional(),
   adjustment_type: z.string().optional(),
@@ -40,7 +43,6 @@ const formSchema = z.object({
   frecuencia_factura: z.string().optional(),
   fecha_primer_ajuste: z.string().optional(),
 }).refine((data) => {
-  // Validar que si forma_pago_item_a es "Otro", detalle_otro_item_a no puede estar vacío
   if (data.forma_pago_item_a === 'Otro' && !data.detalle_otro_item_a) {
     return false;
   }
@@ -48,6 +50,14 @@ const formSchema = z.object({
 }, {
   message: 'Debe especificar el detalle cuando selecciona "Otro"',
   path: ['detalle_otro_item_a'],
+}).refine((data) => {
+  if (data.guarantee_type && !data.guarantee_details?.trim()) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Debe especificar los detalles de la garantía',
+  path: ['guarantee_details'],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -76,6 +86,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       monthly_rent: undefined,
       currency: 'ARS',
       deposit_amount: undefined,
+      deposit_currency: 'ARS',
+      guarantee_type: undefined,
+      guarantee_details: '',
       payment_day: 10,
       contract_type: 'residential',
       adjustment_type: 'none',
@@ -107,6 +120,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           monthly_rent: contract.monthly_rent || 0,
           currency: contract.currency || 'ARS',
           deposit_amount: contract.deposit_amount || 0,
+          deposit_currency: contract.deposit_currency || 'ARS',
+          guarantee_type: contract.guarantee_type || undefined,
+          guarantee_details: contract.guarantee_details || '',
           payment_day: contract.payment_day || 10,
           contract_type: contract.contract_type || 'residential',
           adjustment_type: contract.adjustment_type || 'none',
@@ -136,6 +152,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           monthly_rent: undefined,
           currency: 'ARS',
           deposit_amount: undefined,
+          deposit_currency: 'ARS',
+          guarantee_type: undefined,
+          guarantee_details: '',
           payment_day: 10,
           contract_type: 'residential',
           adjustment_type: 'none',
@@ -230,6 +249,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         monthly_rent: data.monthly_rent,
         currency: data.currency,
         deposit_amount: data.deposit_amount,
+        deposit_currency: data.deposit_currency || 'ARS',
+        guarantee_type: data.guarantee_type || null,
+        guarantee_details: data.guarantee_details || null,
         payment_day: data.payment_day,
         contract_type: data.contract_type,
         adjustment_type: data.adjustment_type,
@@ -513,20 +535,45 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
               <FormField
                 control={form.control}
-                name="contract_type"
+                name="deposit_currency"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Uso</FormLabel>
+                    <FormLabel>Moneda del Depósito</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Seleccione moneda" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="residential">Residencial</SelectItem>
-                        <SelectItem value="commercial">Comercial</SelectItem>
-                        <SelectItem value="temporary">Temporario</SelectItem>
+                        <SelectItem value="ARS">ARS - Peso Argentino</SelectItem>
+                        <SelectItem value="USD">USD - Dólar</SelectItem>
+                        <SelectItem value="EUR">EUR - Euro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="guarantee_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Garantía</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccione tipo de garantía" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Garante">Garante</SelectItem>
+                        <SelectItem value="Seguro de Caución">Seguro de Caución</SelectItem>
+                        <SelectItem value="Otros">Otros</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -534,6 +581,34 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 )}
               />
 
+              {form.watch('guarantee_type') && (
+                <FormField
+                  control={form.control}
+                  name="guarantee_details"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Detalles de la Garantía</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field}
+                          placeholder={
+                            form.watch('guarantee_type') === 'Garante' 
+                              ? 'Ingrese nombre completo, DNI y datos de contacto del garante'
+                              : form.watch('guarantee_type') === 'Seguro de Caución'
+                              ? 'Ingrese nombre de la compañía, número de póliza y vigencia'
+                              : 'Describa el tipo de garantía'
+                          }
+                          rows={4}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="tipo_contrato"
@@ -550,6 +625,29 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         <SelectItem value="CONTRATO">CONTRATO</SelectItem>
                         <SelectItem value="COPROPIEDAD">COPROPIEDAD</SelectItem>
                         <SelectItem value="CESION">CESIÓN</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contract_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Uso</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="residential">Residencial</SelectItem>
+                        <SelectItem value="commercial">Comercial</SelectItem>
+                        <SelectItem value="temporary">Temporario</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
