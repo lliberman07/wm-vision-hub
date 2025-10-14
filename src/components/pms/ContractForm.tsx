@@ -1026,7 +1026,12 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 <Separator className="my-6" />
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Métodos de Pago</h3>
-                  <ContractPaymentMethods contractId={contract.id} />
+                  <ContractPaymentMethods 
+                    contractId={contract.id}
+                    propertyId={form.watch('property_id')}
+                    montoA={form.watch('monto_a')}
+                    montoB={form.watch('monto_b')}
+                  />
                 </div>
               </>
             )}
