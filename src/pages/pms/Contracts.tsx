@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { ContractForm } from '@/components/pms/ContractForm';
 import { ContractPaymentDistribution } from '@/components/pms/ContractPaymentDistribution';
 import { ContractAdjustments } from '@/components/pms/ContractAdjustments';
+import { ContractMonthlyProjections } from '@/components/pms/ContractMonthlyProjections';
 import { CancelContractDialog } from '@/components/pms/CancelContractDialog';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
@@ -270,8 +271,9 @@ const Contracts = () => {
             </DialogHeader>
             {selectedContract && (
               <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="details">Detalles</TabsTrigger>
+                  <TabsTrigger value="projection">Proyección</TabsTrigger>
                   <TabsTrigger value="payments">Métodos de Pago</TabsTrigger>
                   <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
                 </TabsList>
@@ -343,8 +345,15 @@ const Contracts = () => {
                   </div>
                 </TabsContent>
 
+                <TabsContent value="projection" className="py-4">
+                  <ContractMonthlyProjections 
+                    contractId={selectedContract.id}
+                    currency={selectedContract.currency || 'ARS'}
+                  />
+                </TabsContent>
+
                 <TabsContent value="payments">
-                  <ContractPaymentDistribution 
+                  <ContractPaymentDistribution
                     contractId={selectedContract.id}
                     propertyId={(selectedContract as any).property_id}
                     monto_a={(selectedContract as any).monto_a}

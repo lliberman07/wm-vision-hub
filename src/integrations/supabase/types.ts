@@ -830,6 +830,72 @@ export type Database = {
           },
         ]
       }
+      pms_contract_monthly_projections: {
+        Row: {
+          adjusted_amount: number
+          adjustment_applied: boolean | null
+          adjustment_percentage: number | null
+          base_amount: number
+          contract_id: string
+          created_at: string | null
+          id: string
+          indices_used: Json | null
+          item: string
+          month_number: number
+          pending_indices: boolean | null
+          period_date: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          adjusted_amount: number
+          adjustment_applied?: boolean | null
+          adjustment_percentage?: number | null
+          base_amount: number
+          contract_id: string
+          created_at?: string | null
+          id?: string
+          indices_used?: Json | null
+          item: string
+          month_number: number
+          pending_indices?: boolean | null
+          period_date: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          adjusted_amount?: number
+          adjustment_applied?: boolean | null
+          adjustment_percentage?: number | null
+          base_amount?: number
+          contract_id?: string
+          created_at?: string | null
+          id?: string
+          indices_used?: Json | null
+          item?: string
+          month_number?: number
+          pending_indices?: boolean | null
+          period_date?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_contract_monthly_projections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_monthly_projections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_contract_payment_methods: {
         Row: {
           contract_id: string
@@ -1888,6 +1954,10 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: undefined
       }
+      generate_contract_monthly_projections: {
+        Args: { contract_id_param: string }
+        Returns: undefined
+      }
       generate_reference_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1924,6 +1994,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      update_contract_projections_with_indices: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
