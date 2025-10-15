@@ -6,7 +6,11 @@ export const uploadPropertyPhoto = async (
 ): Promise<string | null> => {
   try {
     const timestamp = Date.now();
-    const fileName = `${propertyId}_${timestamp}_${file.name}`;
+    // Sanitize filename: remove spaces and special characters
+    const sanitizedName = file.name
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9._-]/g, '');
+    const fileName = `${propertyId}_${timestamp}_${sanitizedName}`;
     const filePath = `${fileName}`;
 
     const { data, error } = await supabase.storage
