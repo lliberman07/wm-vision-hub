@@ -181,7 +181,7 @@ export function PaymentsDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-xl font-bold ${card.color} break-words`}>
+            <div className={`text-base font-bold ${card.color} break-words`}>
               {card.value}
             </div>
           </CardContent>
