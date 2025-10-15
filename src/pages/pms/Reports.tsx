@@ -109,6 +109,7 @@ const Reports = () => {
   const handleRecalculateCashflow = async () => {
     try {
       setRecalculating(true);
+      console.log('Iniciando recálculo de cashflow...');
       toast.info('Vinculando pagos existentes...');
 
       // Primero vincular pagos existentes de todos los contratos activos
@@ -118,29 +119,46 @@ const Reports = () => {
         .eq('tenant_id', currentTenant?.id)
         .in('status', ['active', 'expired', 'cancelled']);
 
-      if (contractsError) throw contractsError;
+      if (contractsError) {
+        console.error('Error obteniendo contratos:', contractsError);
+        throw contractsError;
+      }
+
+      console.log(`Vinculando pagos para ${contracts?.length || 0} contratos...`);
 
       // Vincular pagos para cada contrato
       for (const contract of contracts || []) {
+        console.log(`Vinculando pagos del contrato ${contract.id}...`);
         const { error: linkError } = await supabase.rpc('link_existing_payments_to_schedule', {
           contract_id_param: contract.id
         });
-        if (linkError) console.error('Error linking payments for contract:', contract.id, linkError);
+        if (linkError) {
+          console.error('Error linking payments for contract:', contract.id, linkError);
+        } else {
+          console.log(`Pagos vinculados exitosamente para contrato ${contract.id}`);
+        }
       }
 
       toast.info('Recalculando flujo de caja...');
+      console.log('Ejecutando recalculate_all_cashflow...');
 
       const { error } = await supabase.rpc('recalculate_all_cashflow');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error recalculating cashflow:', error);
+        throw error;
+      }
 
+      console.log('Cashflow recalculado exitosamente');
       toast.success('Flujo de caja recalculado exitosamente');
       
       // Recargar datos
+      console.log('Recargando datos...');
       await fetchData();
       if (selectedProperty !== 'none') {
         await fetchCashflow();
       }
+      console.log('Datos recargados');
     } catch (error: any) {
       console.error('Error recalculating cashflow:', error);
       toast.error('Error al recalcular flujo de caja', {
