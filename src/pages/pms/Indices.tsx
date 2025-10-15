@@ -102,7 +102,7 @@ export default function Indices() {
                     {latest ? latest.value.toFixed(4) : 'N/A'}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {latest ? format(new Date(latest.period + '-01'), 'MMMM yyyy') : 'Sin datos'}
+                    {latest ? latest.period.split('-').reverse().join('/') : 'Sin datos'}
                   </p>
                 </CardContent>
               </Card>
@@ -164,7 +164,7 @@ export default function Indices() {
                         </Badge>
                       </TableCell>
                       <TableCell className="font-mono">
-                        {format(new Date(idx.period + '-01'), 'MM/yyyy')}
+                        {idx.period.split('-').reverse().join('/')}
                       </TableCell>
                       <TableCell className="text-right font-mono font-bold">
                         {idx.value.toFixed(4)}
