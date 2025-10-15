@@ -105,12 +105,12 @@ export function ContractPaymentMethods({ contractId, propertyId, montoA, montoB 
           });
         }
 
-        // Si hay Item B
+        // Si hay Item B (siempre Efectivo)
         if (montoB && montoB > 0) {
           newMethods.push({
             contract_id: contractId,
             tenant_id: currentTenant?.id,
-            payment_method: 'transfer',
+            payment_method: 'cash',
             percentage: owner.share_percent,
             destination_account: '',
             notes: `Propietario: ${owner.pms_owners?.full_name || 'Desconocido'}`,
@@ -242,6 +242,7 @@ export function ContractPaymentMethods({ contractId, propertyId, montoA, montoB 
                       <Select
                         value={method.payment_method}
                         onValueChange={(value) => handleUpdate(method.id!, 'payment_method', value)}
+                        disabled={method.item === 'B'}
                       >
                         <SelectTrigger className="w-[140px]">
                           <SelectValue />
@@ -256,7 +257,17 @@ export function ContractPaymentMethods({ contractId, propertyId, montoA, montoB 
                     <TableCell>
                       <Input
                         value={method.destination_account || ''}
-                        onChange={(e) => handleUpdate(method.id!, 'destination_account', e.target.value)}
+                        onBlur={(e) => {
+                          if (e.target.value !== method.destination_account) {
+                            handleUpdate(method.id!, 'destination_account', e.target.value);
+                          }
+                        }}
+                        onChange={(e) => {
+                          // Actualizar el valor del input sin guardar
+                          setMethods(prev => prev.map(m => 
+                            m.id === method.id ? { ...m, destination_account: e.target.value } : m
+                          ));
+                        }}
                         placeholder="CBU/Alias"
                         className="w-[180px]"
                       />
