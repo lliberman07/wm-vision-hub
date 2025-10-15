@@ -1767,6 +1767,7 @@ export type Database = {
           porcentaje: number | null
           receipt_url: string | null
           reference_number: string | null
+          schedule_item_id: string | null
           status: string | null
           tenant_id: string
           updated_at: string | null
@@ -1787,6 +1788,7 @@ export type Database = {
           porcentaje?: number | null
           receipt_url?: string | null
           reference_number?: string | null
+          schedule_item_id?: string | null
           status?: string | null
           tenant_id: string
           updated_at?: string | null
@@ -1807,6 +1809,7 @@ export type Database = {
           porcentaje?: number | null
           receipt_url?: string | null
           reference_number?: string | null
+          schedule_item_id?: string | null
           status?: string | null
           tenant_id?: string
           updated_at?: string | null
@@ -1817,6 +1820,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payments_schedule_item_id_fkey"
+            columns: ["schedule_item_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payment_schedule_items"
             referencedColumns: ["id"]
           },
           {

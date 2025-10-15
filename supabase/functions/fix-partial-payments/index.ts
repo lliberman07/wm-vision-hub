@@ -60,19 +60,12 @@ Deno.serve(async (req) => {
     // 2. Para cada schedule item, buscar y vincular sus pagos
     for (const item of (scheduleItems as ScheduleItem[])) {
       try {
-        const monthStart = new Date(item.period_date);
-        monthStart.setDate(1);
-        const monthEnd = new Date(monthStart);
-        monthEnd.setMonth(monthEnd.getMonth() + 1);
-        monthEnd.setDate(0);
-
-        // Buscar pagos del mismo contrato, item y mes
+        // Buscar pagos del mismo contrato e item, SIN filtro de fecha
+        // Los pagos pueden hacerse meses después del período devengado
         const { data: payments, error: paymentsError } = await supabaseClient
           .from('pms_payments')
           .select('*')
-          .eq('contract_id', item.contract_id)
-          .gte('paid_date', monthStart.toISOString().split('T')[0])
-          .lte('paid_date', monthEnd.toISOString().split('T')[0]);
+          .eq('contract_id', item.contract_id);
 
         if (paymentsError) {
           console.error(`Error fetching payments for item ${item.id}:`, paymentsError);
@@ -100,16 +93,25 @@ Deno.serve(async (req) => {
 
         console.log(`Item ${item.id}: Original=${originalAmount}, Paid=${totalPaid}, Pending=${newPendingAmount}`);
 
-        // Actualizar notas de los pagos para vincularlos
+        // Actualizar notas Y schedule_item_id de los pagos para vincularlos
         for (const payment of relevantPayments) {
+          const updates: any = {};
+          
           if (!payment.notes?.includes(`schedule_item:${item.id}`)) {
-            const updatedNotes = payment.notes 
+            updates.notes = payment.notes 
               ? `${payment.notes}\n[schedule_item:${item.id}]`
               : `[schedule_item:${item.id}]`;
+          }
+          
+          // Vincular directamente con schedule_item_id
+          if (!payment.schedule_item_id) {
+            updates.schedule_item_id = item.id;
+          }
 
+          if (Object.keys(updates).length > 0) {
             await supabaseClient
               .from('pms_payments')
-              .update({ notes: updatedNotes })
+              .update(updates)
               .eq('id', payment.id);
           }
         }

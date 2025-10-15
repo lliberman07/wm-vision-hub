@@ -64,23 +64,17 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
   }, [open, scheduleItem?.id]);
 
   const loadPaymentHistory = async () => {
-    if (!scheduleItem?.id || !scheduleItem?.contract_id) return;
+    if (!scheduleItem?.id) return;
     
     try {
-      // Buscar pagos del mismo contrato, item y mes
-      const monthStart = new Date(scheduleItem.period_date);
-      monthStart.setDate(1);
-      const monthEnd = new Date(monthStart);
-      monthEnd.setMonth(monthEnd.getMonth() + 1);
-      monthEnd.setDate(0);
+      console.log('[PaymentCellModal] Loading payment history for schedule_item_id:', scheduleItem.id);
 
+      // Buscar pagos vinculados directamente por schedule_item_id
+      // NO usar filtros de fecha - los pagos pueden hacerse en cualquier mes
       const { data, error } = await supabase
         .from('pms_payments')
         .select('*')
-        .eq('contract_id', scheduleItem.contract_id)
-        .gte('paid_date', monthStart.toISOString().split('T')[0])
-        .lte('paid_date', monthEnd.toISOString().split('T')[0])
-        .or(`notes.ilike.%[schedule_item:${scheduleItem.id}]%,id.eq.${scheduleItem.payment_id || '00000000-0000-0000-0000-000000000000'}`)
+        .eq('schedule_item_id', scheduleItem.id)
         .order('paid_date', { ascending: true });
       
       if (error) {
@@ -138,6 +132,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
         reference_number: data.reference_number,
         notes: paymentNotes,
         status: 'paid',
+        schedule_item_id: scheduleItem.id, // Vínculo directo al schedule item
       };
 
       const { data: payment, error: paymentError } = await supabase
