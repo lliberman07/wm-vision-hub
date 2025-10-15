@@ -26,7 +26,7 @@ export const TenantExpenseForm = ({
   onCancel,
 }: TenantExpenseFormProps) => {
   const [loading, setLoading] = useState(false);
-  const [category, setCategory] = useState<string>('');
+  const [category, setCategory] = useState<string>();
   const [amount, setAmount] = useState<string>('');
   const [expenseDate, setExpenseDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState<string>('');
