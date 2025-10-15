@@ -109,6 +109,25 @@ const Reports = () => {
   const handleRecalculateCashflow = async () => {
     try {
       setRecalculating(true);
+      toast.info('Vinculando pagos existentes...');
+
+      // Primero vincular pagos existentes de todos los contratos activos
+      const { data: contracts, error: contractsError } = await supabase
+        .from('pms_contracts')
+        .select('id')
+        .eq('tenant_id', currentTenant?.id)
+        .in('status', ['active', 'expired', 'cancelled']);
+
+      if (contractsError) throw contractsError;
+
+      // Vincular pagos para cada contrato
+      for (const contract of contracts || []) {
+        const { error: linkError } = await supabase.rpc('link_existing_payments_to_schedule', {
+          contract_id_param: contract.id
+        });
+        if (linkError) console.error('Error linking payments for contract:', contract.id, linkError);
+      }
+
       toast.info('Recalculando flujo de caja...');
 
       const { error } = await supabase.rpc('recalculate_all_cashflow');
