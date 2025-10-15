@@ -71,16 +71,41 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
   });
 
   const getTotals = () => {
-    const total = scheduleItems.reduce((sum, item) => sum + Number(item.expected_amount), 0);
-    const paid = scheduleItems
-      .filter(item => item.status === 'paid')
-      .reduce((sum, item) => sum + Number(item.expected_amount), 0);
-    const pending = total - paid;
-    const overdue = scheduleItems
-      .filter(item => item.status === 'overdue')
-      .reduce((sum, item) => sum + Number(item.expected_amount), 0);
+    if (!scheduleItems.length) {
+      return { total: 0, paid: 0, pending: 0, overdue: 0 };
+    }
 
-    return { total, paid, pending, overdue };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const totals = scheduleItems.reduce((acc, item) => {
+      const expectedAmount = Number(item.expected_amount) || 0;
+      const paidAmount = Number(item.payment?.paid_amount) || 0;
+      const periodDate = new Date(item.period_date);
+      periodDate.setHours(0, 0, 0, 0);
+
+      // Total Esperado: suma de todos los montos esperados
+      acc.total += expectedAmount;
+
+      // Total Pagado: suma de montos realmente pagados
+      if (item.status === 'paid' && paidAmount > 0) {
+        acc.paid += paidAmount;
+      }
+
+      // Pendiente: meses futuros no devengados
+      if (periodDate > today) {
+        acc.pending += expectedAmount;
+      }
+
+      // Vencido: meses devengados sin pagar o pago parcial
+      if (periodDate <= today && item.status !== 'paid') {
+        acc.overdue += (expectedAmount - paidAmount);
+      }
+
+      return acc;
+    }, { total: 0, paid: 0, pending: 0, overdue: 0 });
+
+    return totals;
   };
 
   const totals = getTotals();

@@ -1615,6 +1615,88 @@ export type Database = {
           },
         ]
       }
+      pms_payment_submissions: {
+        Row: {
+          contract_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          paid_amount: number
+          paid_date: string
+          payment_method: string
+          receipt_url: string | null
+          reference_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          schedule_item_id: string
+          status: string | null
+          submitted_by: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          paid_amount: number
+          paid_date: string
+          payment_method: string
+          receipt_url?: string | null
+          reference_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          schedule_item_id: string
+          status?: string | null
+          submitted_by: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          paid_date?: string
+          payment_method?: string
+          receipt_url?: string | null
+          reference_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          schedule_item_id?: string
+          status?: string | null
+          submitted_by?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_payment_submissions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_submissions_schedule_item_id_fkey"
+            columns: ["schedule_item_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payment_schedule_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_submissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_payments: {
         Row: {
           amount: number
@@ -2029,6 +2111,10 @@ export type Database = {
       }
       apply_automatic_adjustments: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      approve_payment_submission: {
+        Args: { submission_id_param: string }
         Returns: undefined
       }
       approve_user: {
