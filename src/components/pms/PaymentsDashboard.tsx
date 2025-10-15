@@ -61,16 +61,25 @@ export function PaymentsDashboard() {
 
       const pendingThisMonth = overdueData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
 
-      // Total esperado este mes
-      const { data: expectedData } = await supabase
+      // Tasa de Cobranza: Cuotas devengadas hasta hoy / Cuotas pagadas hasta hoy
+      const { data: devengadoData } = await supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount')
         .eq('tenant_id', currentTenant.id)
-        .gte('period_date', `${currentMonth}-01`)
-        .lte('period_date', `${currentMonth}-31`);
+        .lte('period_date', today); // Todo lo que ya venció o está vigente
 
-      const expectedThisMonth = expectedData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
-      const collectionRate = expectedThisMonth > 0 ? (collectedThisMonth / expectedThisMonth) * 100 : 0;
+      const totalDevengado = devengadoData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
+
+      // Total pagado hasta hoy (de lo devengado)
+      const { data: pagadoData } = await supabase
+        .from('pms_payment_schedule_items')
+        .select('expected_amount')
+        .eq('tenant_id', currentTenant.id)
+        .eq('status', 'paid')
+        .lte('period_date', today);
+
+      const totalPagado = pagadoData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
+      const collectionRate = totalDevengado > 0 ? (totalPagado / totalDevengado) * 100 : 0;
 
       // Pagos informados pendientes
       const { data: submissionsData, count: submissionsCount } = await supabase
