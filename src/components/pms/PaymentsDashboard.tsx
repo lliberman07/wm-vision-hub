@@ -79,21 +79,23 @@ export function PaymentsDashboard() {
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending');
 
-      // Próximos vencimientos (7 días)
-      const { data: upcomingData, count: upcomingCount } = await supabase
+      // Próximos vencimientos (7 días) - monto total
+      const { data: upcomingData } = await supabase
         .from('pms_payment_schedule_items')
-        .select('*', { count: 'exact', head: true })
+        .select('expected_amount')
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending')
         .gte('period_date', today)
         .lte('period_date', sevenDaysFromNow);
+      
+      const upcomingTotal = upcomingData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
 
       setMetrics({
         collectedThisMonth,
         pendingThisMonth,
         collectionRate,
         pendingSubmissions: submissionsCount || 0,
-        upcomingPayments: upcomingCount || 0,
+        upcomingPayments: upcomingTotal,
       });
     } catch (error) {
       console.error('Error fetching dashboard metrics:', error);
@@ -126,14 +128,14 @@ export function PaymentsDashboard() {
     },
     {
       title: "Pagos Informados",
-      value: metrics.pendingSubmissions.toString(),
+      value: `$${metrics.pendingSubmissions.toLocaleString('es-AR')}`,
       icon: Bell,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
     {
       title: "Próximos Vencimientos (7 días)",
-      value: metrics.upcomingPayments.toString(),
+      value: `$${metrics.upcomingPayments.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: Calendar,
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
@@ -170,7 +172,7 @@ export function PaymentsDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${card.color}`}>
+            <div className={`text-xl font-bold ${card.color} break-words`}>
               {card.value}
             </div>
           </CardContent>
