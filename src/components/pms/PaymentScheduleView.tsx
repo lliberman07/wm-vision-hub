@@ -17,10 +17,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, DollarSign, Eye, FileText } from "lucide-react";
+import { ChevronDown, ChevronRight, DollarSign, Eye, FileText, RefreshCw } from "lucide-react";
 import { PaymentCellModal } from "./PaymentCellModal";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface ScheduleItem {
   id: string;
@@ -61,6 +62,7 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
+  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
     if (contractId) {
@@ -135,6 +137,29 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
     setIsModalOpen(true);
   };
 
+  const handleRegenerateSchedule = async () => {
+    try {
+      setRegenerating(true);
+      const { data, error } = await supabase.functions.invoke('regenerate-schedule-items', {
+        body: { contractId },
+      });
+
+      if (error) throw error;
+
+      toast.success('Calendario regenerado', {
+        description: data.message || 'Se regeneraron los items del calendario',
+      });
+
+      await fetchScheduleItems();
+    } catch (error: any) {
+      toast.error('Error al regenerar calendario', {
+        description: error.message,
+      });
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -191,7 +216,20 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
+          {scheduleItems.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No hay calendario de pagos</h3>
+              <p className="text-muted-foreground mb-4">
+                El calendario de pagos aún no ha sido generado para este contrato.
+              </p>
+              <Button onClick={handleRegenerateSchedule} disabled={regenerating}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
+                {regenerating ? 'Generando...' : 'Generar Calendario'}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
             {filteredMonths.map(([month, items]) => {
               const isExpanded = expandedMonths.has(month);
               const monthTotal = items.reduce((sum, item) => sum + item.expected_amount, 0);
@@ -281,7 +319,8 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
                 </Collapsible>
               );
             })}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
