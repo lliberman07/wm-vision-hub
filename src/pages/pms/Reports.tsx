@@ -151,11 +151,14 @@ const Reports = () => {
 
       toast.success('Flujo de caja recalculado exitosamente');
       
-      // Recargar datos
+      // Forzar recarga de datos
       await fetchData();
       if (selectedProperty !== 'none') {
         await fetchCashflow();
       }
+      
+      // Forzar refresh de la página para mostrar datos actualizados
+      window.location.reload();
     } catch (error: any) {
       console.error('Error recalculating cashflow:', error);
       toast.error('Error al recalcular flujo de caja', {
