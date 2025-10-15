@@ -13,6 +13,7 @@ interface PMSTenant {
 interface PMSContextType {
   hasPMSAccess: boolean;
   pmsRoles: PMSRole[];
+  userRole: PMSRole | null;
   currentTenant: PMSTenant | null;
   loading: boolean;
   requestAccess: (role: PMSRole, reason: string, userData?: {
@@ -45,6 +46,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const { user } = useAuth();
   const [hasPMSAccess, setHasPMSAccess] = useState(false);
   const [pmsRoles, setPMSRoles] = useState<PMSRole[]>([]);
+  const [userRole, setUserRole] = useState<PMSRole | null>(null);
   const [currentTenant, setCurrentTenant] = useState<PMSTenant | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,6 +54,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user) {
       setHasPMSAccess(false);
       setPMSRoles([]);
+      setUserRole(null);
       setCurrentTenant(null);
       setLoading(false);
       return;
@@ -78,6 +81,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (roles && roles.length > 0) {
         setHasPMSAccess(true);
         setPMSRoles(roles.map(r => r.role as PMSRole));
+        setUserRole(roles[0].role as PMSRole);
         
         // Then get tenant information separately
         const { data: tenant, error: tenantError } = await supabase
@@ -102,12 +106,14 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.log('[PMSContext] No roles found for user');
         setHasPMSAccess(false);
         setPMSRoles([]);
+        setUserRole(null);
         setCurrentTenant(null);
       }
     } catch (error) {
       console.error('[PMSContext] Error checking PMS access:', error);
       setHasPMSAccess(false);
       setPMSRoles([]);
+      setUserRole(null);
       setCurrentTenant(null);
     } finally {
       setLoading(false);
@@ -203,6 +209,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const value = {
     hasPMSAccess,
     pmsRoles,
+    userRole,
     currentTenant,
     loading,
     requestAccess,

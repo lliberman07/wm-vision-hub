@@ -1159,7 +1159,6 @@ export type Database = {
           index_type: string
           period: string
           source: string | null
-          tenant_id: string
           value: number
         }
         Insert: {
@@ -1169,7 +1168,6 @@ export type Database = {
           index_type: string
           period: string
           source?: string | null
-          tenant_id: string
           value: number
         }
         Update: {
@@ -1179,18 +1177,9 @@ export type Database = {
           index_type?: string
           period?: string
           source?: string | null
-          tenant_id?: string
           value?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "pms_economic_indices_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "pms_tenants"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       pms_expenses: {
         Row: {

@@ -23,10 +23,9 @@ interface IndicesFormProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   indice?: any;
-  tenantId: string;
 }
 
-export function IndicesForm({ open, onOpenChange, onSuccess, indice, tenantId }: IndicesFormProps) {
+export function IndicesForm({ open, onOpenChange, onSuccess, indice }: IndicesFormProps) {
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
@@ -45,7 +44,6 @@ export function IndicesForm({ open, onOpenChange, onSuccess, indice, tenantId }:
       
       const indiceData: any = {
         ...values,
-        tenant_id: tenantId,
         created_by: user?.id
       };
 

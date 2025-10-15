@@ -23,7 +23,8 @@ interface EconomicIndex {
 }
 
 export default function Indices() {
-  const { currentTenant } = usePMS();
+  const { currentTenant, userRole } = usePMS();
+  const isSuperAdmin = userRole === 'SUPERADMIN';
   const [indices, setIndices] = useState<EconomicIndex[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,16 +33,13 @@ export default function Indices() {
 
   useEffect(() => {
     fetchIndices();
-  }, [currentTenant]);
+  }, []);
 
   const fetchIndices = async () => {
-    if (!currentTenant?.id) return;
-
     setLoading(true);
     const { data, error } = await supabase
       .from('pms_economic_indices')
       .select('*')
-      .eq('tenant_id', currentTenant.id)
       .order('period', { ascending: false });
 
     if (!error && data) {
@@ -76,13 +74,15 @@ export default function Indices() {
                 Gestión de valores mensuales de IPC, ICL y UVA
               </p>
             </div>
-            <Button onClick={() => {
-              setSelectedIndex(undefined);
-              setIsFormOpen(true);
-            }} size="lg">
-              <Plus className="h-4 w-4 mr-2" />
-              Cargar Índice
-            </Button>
+            {isSuperAdmin && (
+              <Button onClick={() => {
+                setSelectedIndex(undefined);
+                setIsFormOpen(true);
+              }} size="lg">
+                <Plus className="h-4 w-4 mr-2" />
+                Cargar Índice
+              </Button>
+            )}
           </div>
         </div>
 
@@ -125,12 +125,16 @@ export default function Indices() {
               <EmptyState
                 icon={TrendingUp}
                 title="No hay índices cargados"
-                description="Comienza cargando los valores mensuales de los índices económicos (IPC, ICL, UVA)"
-                actionLabel="+ Cargar Índice"
-                onAction={() => {
+                description={
+                  isSuperAdmin 
+                    ? "Comienza cargando los valores mensuales de los índices económicos oficiales (IPC, ICL, UVA)"
+                    : "Los índices económicos oficiales aún no han sido cargados por el administrador del sistema"
+                }
+                actionLabel={isSuperAdmin ? "+ Cargar Índice" : undefined}
+                onAction={isSuperAdmin ? () => {
                   setSelectedIndex(undefined);
                   setIsFormOpen(true);
-                }}
+                } : undefined}
               />
             ) : (
               <div className="overflow-x-auto">
@@ -148,11 +152,11 @@ export default function Indices() {
                   {filteredIndices.map((idx) => (
                     <TableRow
                       key={idx.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => {
+                      className={isSuperAdmin ? "cursor-pointer hover:bg-muted/50" : ""}
+                      onClick={isSuperAdmin ? () => {
                         setSelectedIndex(idx);
                         setIsFormOpen(true);
-                      }}
+                      } : undefined}
                     >
                       <TableCell>
                         <Badge variant={getIndexBadgeVariant(idx.index_type)}>
@@ -178,13 +182,12 @@ export default function Indices() {
           </CardContent>
         </Card>
 
-        {currentTenant && (
+        {isSuperAdmin && (
           <IndicesForm
             open={isFormOpen}
             onOpenChange={setIsFormOpen}
             onSuccess={fetchIndices}
             indice={selectedIndex}
-            tenantId={currentTenant.id}
           />
         )}
       </div>
