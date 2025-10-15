@@ -183,10 +183,10 @@ export function DashboardKPIs() {
                 <>
                   <div className="flex flex-col gap-1">
                     <div className="text-base font-bold">
-                      ${(kpi.value as { ARS: number; USD: number }).ARS.toLocaleString()} <span className="text-xs text-muted-foreground font-normal">ARS</span>
+                      ${(kpi.value as { ARS: number; USD: number }).ARS.toLocaleString()}
                     </div>
                     <div className="text-base font-bold">
-                      USD {(kpi.value as { ARS: number; USD: number }).USD.toLocaleString()} <span className="text-xs text-muted-foreground font-normal"></span>
+                      USD {(kpi.value as { ARS: number; USD: number }).USD.toLocaleString()}
                     </div>
                   </div>
                 </>
