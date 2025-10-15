@@ -67,17 +67,17 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
       postal_code: '',
       property_type: 'apartment',
       status: 'available',
-      bedrooms: 0,
-      bathrooms: 0,
-      surface_total: 0,
-      surface_covered: 0,
+      bedrooms: undefined,
+      bathrooms: undefined,
+      surface_total: undefined,
+      surface_covered: undefined,
       description: '',
       alias: '',
       categoria: '',
       barrio: '',
       operacion: '',
-      monto_alquiler: 0,
-      valor_venta: 0,
+      monto_alquiler: undefined,
+      valor_venta: undefined,
       estado_publicacion: 'borrador',
     },
   });
@@ -583,7 +583,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                   <FormItem>
                     <FormLabel>Monto Alquiler</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                      <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} placeholder="Ingrese monto" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -597,7 +597,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                   <FormItem>
                     <FormLabel>Valor Venta</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                      <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} placeholder="Ingrese valor" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
