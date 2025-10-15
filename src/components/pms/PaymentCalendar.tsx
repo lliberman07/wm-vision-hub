@@ -39,10 +39,7 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
           *,
           projection:pms_contract_monthly_projections(*),
           payment:pms_payments(*),
-          payment_method:pms_contract_payment_methods(
-            *,
-            owner:pms_owners(id, full_name, email)
-          ),
+          payment_method:pms_contract_payment_methods(*),
           owner:pms_owners(id, full_name, email)
         `)
         .eq('contract_id', contractId)
