@@ -17,6 +17,7 @@ import { KnowledgeBaseInit } from "@/components/KnowledgeBaseInit";
 import { SimulationsManagement } from "@/components/SimulationsManagement";
 import PMSAccessRequests from "@/components/PMSAccessRequests";
 import PMSRolesManagement from "@/components/PMSRolesManagement";
+import { PMSTenantsManagement } from "@/components/PMSTenantsManagement";
 
 interface Contact {
   id: string;
@@ -135,7 +136,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto p-6">
         <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-7' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-8' : 'grid-cols-4'}`}>
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Contact Submissions
@@ -154,6 +155,10 @@ const Admin = () => {
             </TabsTrigger>
             {userProfile?.role === 'superadmin' && (
               <>
+                <TabsTrigger value="pms-tenants" className="flex items-center gap-2">
+                  <Building className="h-4 w-4" />
+                  Tenants PMS
+                </TabsTrigger>
                 <TabsTrigger value="pms-access" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Solicitudes PMS
@@ -379,6 +384,23 @@ const Admin = () => {
 
           {userProfile?.role === 'superadmin' && (
             <>
+              <TabsContent value="pms-tenants">
+                <Card className="shadow-strong">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Building className="h-5 w-5" />
+                      <span>Tenants del Sistema PMS</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Gestionar organizaciones (inmobiliarias, administradores) en el sistema PMS
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <PMSTenantsManagement />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               <TabsContent value="pms-access">
                 <Card className="shadow-strong">
                   <CardHeader>
