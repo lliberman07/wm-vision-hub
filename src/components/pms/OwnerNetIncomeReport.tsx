@@ -33,7 +33,7 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedProperty }: OwnerNetInc
   const fetchOwnerTotals = async () => {
     setLoading(true);
     try {
-      // 1. Obtener ingresos distribuidos por propietario
+      // 1. Obtener ingresos distribuidos por propietario para esta propiedad específica
       const { data: distributions, error: distError } = await supabase
         .from('pms_payment_distributions')
         .select(`
@@ -41,9 +41,14 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedProperty }: OwnerNetInc
           amount,
           share_percent,
           currency,
-          pms_owners!inner(full_name)
+          pms_owners!inner(full_name),
+          pms_payments!inner(
+            contract_id,
+            pms_contracts!inner(property_id)
+          )
         `)
-        .eq('tenant_id', tenantId);
+        .eq('tenant_id', tenantId)
+        .eq('pms_payments.pms_contracts.property_id', selectedProperty);
 
       if (distError) throw distError;
 
