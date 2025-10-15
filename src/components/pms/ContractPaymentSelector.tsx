@@ -139,8 +139,8 @@ export function ContractPaymentSelector({
                 <div>
                   <p className="text-xs text-muted-foreground">Vigencia</p>
                   <p className="text-sm font-medium">
-                    {format(new Date(selectedContract.start_date), 'dd/MM/yyyy')} -{' '}
-                    {format(new Date(selectedContract.end_date), 'dd/MM/yyyy')}
+                    {format(new Date(selectedContract.start_date + 'T00:00:00'), 'dd/MM/yyyy')} -{' '}
+                    {format(new Date(selectedContract.end_date + 'T00:00:00'), 'dd/MM/yyyy')}
                   </p>
                 </div>
               </div>
