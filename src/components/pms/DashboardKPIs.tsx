@@ -148,7 +148,7 @@ export function DashboardKPIs() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpi.value}</div>
+              <div className="text-lg font-bold">{kpi.value}</div>
             </CardContent>
           </Card>
         );
