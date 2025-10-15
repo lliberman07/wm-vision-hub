@@ -42,7 +42,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
     defaultValues: {
       paid_date: new Date(),
       paid_amount: scheduleItem?.expected_amount || 0,
-      payment_method: 'Transferencia',
+      payment_method: 'transfer',
       reference_number: '',
       notes: '',
     },
@@ -209,10 +209,11 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Efectivo">Efectivo</SelectItem>
-                      <SelectItem value="Transferencia">Transferencia</SelectItem>
-                      <SelectItem value="Cheque">Cheque</SelectItem>
-                      <SelectItem value="Débito">Débito Automático</SelectItem>
+                      <SelectItem value="cash">Efectivo</SelectItem>
+                      <SelectItem value="transfer">Transferencia</SelectItem>
+                      <SelectItem value="check">Cheque</SelectItem>
+                      <SelectItem value="card">Tarjeta</SelectItem>
+                      <SelectItem value="other">Otro</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

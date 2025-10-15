@@ -217,11 +217,11 @@ export function PaymentSubmissionModal({
                 <SelectValue placeholder="Selecciona un método" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Efectivo">Efectivo</SelectItem>
-                <SelectItem value="Transferencia">Transferencia</SelectItem>
-                <SelectItem value="Cheque">Cheque</SelectItem>
-                <SelectItem value="Débito">Débito</SelectItem>
-                <SelectItem value="Crédito">Crédito</SelectItem>
+                <SelectItem value="cash">Efectivo</SelectItem>
+                <SelectItem value="transfer">Transferencia</SelectItem>
+                <SelectItem value="check">Cheque</SelectItem>
+                <SelectItem value="card">Tarjeta</SelectItem>
+                <SelectItem value="other">Otro</SelectItem>
               </SelectContent>
             </Select>
           </div>
