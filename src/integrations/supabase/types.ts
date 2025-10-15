@@ -1184,47 +1184,85 @@ export type Database = {
       pms_expenses: {
         Row: {
           amount: number
+          approved_at: string | null
+          approved_by: string | null
+          attributable_to: string | null
           category: string
+          contract_id: string | null
           created_at: string | null
           created_by: string | null
           currency: string | null
+          deducted_from_payment_id: string | null
+          deduction_amount: number | null
           description: string | null
           expense_date: string
           id: string
+          paid_by: string | null
           property_id: string
           receipt_url: string | null
+          status: string | null
           tenant_id: string
           updated_at: string | null
         }
         Insert: {
           amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          attributable_to?: string | null
           category: string
+          contract_id?: string | null
           created_at?: string | null
           created_by?: string | null
           currency?: string | null
+          deducted_from_payment_id?: string | null
+          deduction_amount?: number | null
           description?: string | null
           expense_date: string
           id?: string
+          paid_by?: string | null
           property_id: string
           receipt_url?: string | null
+          status?: string | null
           tenant_id: string
           updated_at?: string | null
         }
         Update: {
           amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          attributable_to?: string | null
           category?: string
+          contract_id?: string | null
           created_at?: string | null
           created_by?: string | null
           currency?: string | null
+          deducted_from_payment_id?: string | null
+          deduction_amount?: number | null
           description?: string | null
           expense_date?: string
           id?: string
+          paid_by?: string | null
           property_id?: string
           receipt_url?: string | null
+          status?: string | null
           tenant_id?: string
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pms_expenses_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_expenses_deducted_from_payment_id_fkey"
+            columns: ["deducted_from_payment_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pms_expenses_property_id_fkey"
             columns: ["property_id"]
@@ -2126,6 +2164,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      deactivate_tenant_on_contract_expiry: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      deduct_approved_expense_from_next_payment: {
+        Args: { expense_id_param: string }
+        Returns: undefined
+      }
       deny_user: {
         Args: { user_id_param: string }
         Returns: undefined
@@ -2182,6 +2228,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      is_contract_active: {
+        Args: { contract_id_param: string }
+        Returns: boolean
+      }
+      reverse_expense_deduction: {
+        Args: { expense_id_param: string }
+        Returns: undefined
       }
       update_contract_projections_with_indices: {
         Args: Record<PropertyKey, never>

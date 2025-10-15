@@ -8,11 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Calendar, FileText, Upload } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Building2, Calendar, FileText, Upload, Receipt, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { TenantPaymentCalendar } from "@/components/pms/TenantPaymentCalendar";
 import { PaymentSubmissionModal } from "@/components/pms/PaymentSubmissionModal";
+import { TenantExpenseForm } from "@/components/pms/TenantExpenseForm";
 import { toast } from "sonner";
 
 interface Contract {
@@ -22,6 +24,7 @@ interface Contract {
   end_date: string;
   monthly_rent: number;
   status: string;
+  property_id: string;
   property: {
     code: string;
     address: string;
@@ -43,14 +46,29 @@ interface Submission {
   rejection_reason?: string;
 }
 
+interface Expense {
+  id: string;
+  category: string;
+  amount: number;
+  expense_date: string;
+  description?: string;
+  paid_by: string;
+  attributable_to: string;
+  status: string;
+  receipt_url?: string;
+  created_at: string;
+}
+
 export default function MyContract() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPMSAccess, pmsRoles, currentTenant } = usePMS();
   const [contract, setContract] = useState<Contract | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -67,6 +85,7 @@ export default function MyContract() {
 
     fetchContract();
     fetchSubmissions();
+    fetchExpenses();
   }, [user, hasPMSAccess, pmsRoles, navigate]);
 
   const fetchContract = async () => {
@@ -82,6 +101,7 @@ export default function MyContract() {
           end_date,
           monthly_rent,
           status,
+          property_id,
           monto_a,
           monto_b,
           property:pms_properties(code, address, city, property_type),
@@ -118,6 +138,26 @@ export default function MyContract() {
       }
 
       setSubmissions(data || []);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const fetchExpenses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("pms_expenses")
+        .select("*")
+        .eq("contract_id", contract?.id)
+        .eq("paid_by", "inquilino")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching expenses:", error);
+        return;
+      }
+
+      setExpenses(data || []);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -227,10 +267,14 @@ export default function MyContract() {
         </Card>
 
         <Tabs defaultValue="calendar" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="calendar">
               <Calendar className="mr-2 h-4 w-4" />
               Calendario de Pagos
+            </TabsTrigger>
+            <TabsTrigger value="expenses">
+              <Receipt className="mr-2 h-4 w-4" />
+              Gastos
             </TabsTrigger>
             <TabsTrigger value="history">
               <FileText className="mr-2 h-4 w-4" />
@@ -240,6 +284,87 @@ export default function MyContract() {
 
           <TabsContent value="calendar" className="space-y-4">
             <TenantPaymentCalendar contractId={contract.id} />
+          </TabsContent>
+
+          <TabsContent value="expenses" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Gastos Registrados</CardTitle>
+                    <CardDescription>
+                      Gastos que has reportado durante el contrato
+                    </CardDescription>
+                  </div>
+                  <Button onClick={() => setShowExpenseForm(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Registrar Gasto
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {expenses.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Receipt className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No has registrado gastos aún</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {expenses.map((expense) => (
+                      <div
+                        key={expense.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
+                      >
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{expense.category}</Badge>
+                            <Badge
+                              variant={
+                                expense.status === 'pending'
+                                  ? 'secondary'
+                                  : expense.status === 'approved'
+                                  ? 'default'
+                                  : expense.status === 'deducted'
+                                  ? 'default'
+                                  : 'destructive'
+                              }
+                            >
+                              {expense.status === 'pending' && 'Pendiente'}
+                              {expense.status === 'approved' && 'Aprobado'}
+                              {expense.status === 'deducted' && 'Descontado de cuota'}
+                              {expense.status === 'rejected' && 'Rechazado'}
+                            </Badge>
+                            {expense.attributable_to === 'propietario' && (
+                              <Badge variant="outline" className="text-xs">
+                                Atribuible al propietario
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="font-medium text-lg">
+                            ${expense.amount.toLocaleString('es-AR')}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(expense.expense_date), 'dd/MM/yyyy', { locale: es })}
+                          </p>
+                          {expense.description && (
+                            <p className="text-sm">{expense.description}</p>
+                          )}
+                        </div>
+                        {expense.receipt_url && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(expense.receipt_url, '_blank')}
+                          >
+                            Ver Recibo
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4">
@@ -308,6 +433,28 @@ export default function MyContract() {
           toast.success("Pago informado exitosamente");
         }}
       />
+
+      <Dialog open={showExpenseForm} onOpenChange={setShowExpenseForm}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Registrar Nuevo Gasto</DialogTitle>
+            <DialogDescription>
+              Complete los detalles del gasto realizado
+            </DialogDescription>
+          </DialogHeader>
+          <TenantExpenseForm
+            contractId={contract.id}
+            tenantId={currentTenant?.id || ""}
+            propertyId={contract.property_id || ""}
+            onSuccess={() => {
+              fetchExpenses();
+              setShowExpenseForm(false);
+              toast.success("Gasto registrado exitosamente");
+            }}
+            onCancel={() => setShowExpenseForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </PMSLayout>
   );
 }
