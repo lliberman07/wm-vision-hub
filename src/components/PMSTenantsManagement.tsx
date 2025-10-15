@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
-type TenantType = 'inmobiliaria' | 'administrador' | 'propietario' | 'inquilino' | 'proveedor_servicios';
+type TenantType = 'sistema' | 'inmobiliaria' | 'administrador' | 'propietario' | 'inquilino' | 'proveedor_servicios';
 
 interface Tenant {
   id: string;
@@ -31,6 +31,7 @@ interface TenantStats {
 }
 
 const TENANT_TYPES = [
+  { value: 'sistema', label: 'Sistema' },
   { value: 'inmobiliaria', label: 'Inmobiliaria' },
   { value: 'administrador', label: 'Administrador' },
   { value: 'propietario', label: 'Propietario' },
