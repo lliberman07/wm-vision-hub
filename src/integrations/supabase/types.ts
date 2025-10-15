@@ -718,6 +718,7 @@ export type Database = {
       }
       pms_cashflow_property: {
         Row: {
+          contract_id: string | null
           created_at: string | null
           currency: string
           detail_json: Json | null
@@ -731,6 +732,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          contract_id?: string | null
           created_at?: string | null
           currency: string
           detail_json?: Json | null
@@ -744,6 +746,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          contract_id?: string | null
           created_at?: string | null
           currency?: string
           detail_json?: Json | null
@@ -757,6 +760,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pms_cashflow_property_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pms_cashflow_property_property_id_fkey"
             columns: ["property_id"]
@@ -1496,6 +1506,7 @@ export type Database = {
       pms_payment_distributions: {
         Row: {
           amount: number
+          contract_id: string | null
           created_at: string | null
           currency: string | null
           id: string
@@ -1506,6 +1517,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          contract_id?: string | null
           created_at?: string | null
           currency?: string | null
           id?: string
@@ -1516,6 +1528,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          contract_id?: string | null
           created_at?: string | null
           currency?: string | null
           id?: string
@@ -1525,6 +1538,13 @@ export type Database = {
           tenant_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "pms_payment_distributions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pms_payment_distributions_owner_id_fkey"
             columns: ["owner_id"]

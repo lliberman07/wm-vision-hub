@@ -18,8 +18,10 @@ const Reports = () => {
   const { user } = useAuth();
   const { currentTenant, hasPMSAccess } = usePMS();
   const [selectedProperty, setSelectedProperty] = useState<string>('none');
+  const [selectedContract, setSelectedContract] = useState<string>('current');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current-month');
   const [properties, setProperties] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
   const [recalculating, setRecalculating] = useState(false);
   const [stats, setStats] = useState({
@@ -39,9 +41,15 @@ const Reports = () => {
 
   useEffect(() => {
     if (currentTenant?.id && selectedProperty !== 'none') {
-      fetchCashflow();
+      fetchContractsForProperty();
     }
   }, [selectedProperty, currentTenant]);
+
+  useEffect(() => {
+    if (currentTenant?.id && selectedContract && selectedContract !== 'none') {
+      fetchCashflow();
+    }
+  }, [selectedContract, currentTenant]);
 
   const fetchData = async () => {
     if (!currentTenant?.id) return;
@@ -86,15 +94,46 @@ const Reports = () => {
     }
   };
 
-  const fetchCashflow = async () => {
+  const fetchContractsForProperty = async () => {
     if (!currentTenant?.id || !selectedProperty) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('pms_contracts')
+        .select('id, contract_number, status, start_date, end_date')
+        .eq('tenant_id', currentTenant.id)
+        .eq('property_id', selectedProperty)
+        .in('status', ['active', 'expired', 'cancelled'])
+        .order('start_date', { ascending: false });
+
+      if (error) throw error;
+      setContracts(data || []);
+      
+      // Auto-seleccionar el contrato activo si existe
+      const activeContract = data?.find(c => c.status === 'active');
+      if (activeContract) {
+        setSelectedContract(activeContract.id);
+      } else if (data && data.length > 0) {
+        setSelectedContract(data[0].id);
+      } else {
+        setSelectedContract('none');
+      }
+    } catch (error) {
+      console.error('Error fetching contracts:', error);
+      setContracts([]);
+      setSelectedContract('none');
+    }
+  };
+
+  const fetchCashflow = async () => {
+    if (!currentTenant?.id || !selectedContract || selectedContract === 'none') return;
     
     try {
       const { data, error } = await supabase
         .from('pms_cashflow_property')
         .select('*')
         .eq('tenant_id', currentTenant.id)
-        .eq('property_id', selectedProperty)
+        .eq('contract_id', selectedContract)
         .order('period', { ascending: false })
         .limit(12);
 
@@ -244,8 +283,8 @@ const Reports = () => {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-bold">Flujo de Caja por Propiedad</h2>
-              <p className="text-muted-foreground">Seleccione una propiedad para ver el detalle</p>
+              <h2 className="text-2xl font-bold">Flujo de Caja por Contrato</h2>
+              <p className="text-muted-foreground">Seleccione una propiedad y contrato para ver el detalle</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -258,7 +297,7 @@ const Reports = () => {
                 {recalculating ? 'Recalculando...' : 'Recalcular Totales'}
               </Button>
               <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[220px]">
                   <SelectValue placeholder="Elija la Propiedad" />
                 </SelectTrigger>
                 <SelectContent>
@@ -270,10 +309,25 @@ const Reports = () => {
                   ))}
                 </SelectContent>
               </Select>
+              
+              {selectedProperty !== 'none' && contracts.length > 0 && (
+                <Select value={selectedContract} onValueChange={setSelectedContract}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Seleccione Contrato" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contracts.map(contract => (
+                      <SelectItem key={contract.id} value={contract.id}>
+                        {contract.contract_number} ({contract.status})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 
-          {selectedProperty !== 'none' && (
+          {selectedProperty !== 'none' && selectedContract && selectedContract !== 'none' && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -334,10 +388,10 @@ const Reports = () => {
           )}
         </div>
 
-        {selectedProperty !== 'none' && (
+        {selectedProperty !== 'none' && selectedContract && selectedContract !== 'none' && (
           <OwnerNetIncomeReport 
             tenantId={currentTenant?.id || ''} 
-            selectedProperty={selectedProperty}
+            selectedContract={selectedContract}
           />
         )}
       </div>

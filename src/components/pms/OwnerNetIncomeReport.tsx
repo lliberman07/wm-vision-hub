@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface OwnerNetIncomeReportProps {
   tenantId: string;
-  selectedProperty: string;
+  selectedContract: string;
 }
 
 interface OwnerTotal {
@@ -20,37 +20,29 @@ interface OwnerTotal {
   currency: string;
 }
 
-export const OwnerNetIncomeReport = ({ tenantId, selectedProperty }: OwnerNetIncomeReportProps) => {
+export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetIncomeReportProps) => {
   const [ownerTotals, setOwnerTotals] = useState<OwnerTotal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (tenantId && selectedProperty) {
+    if (tenantId && selectedContract) {
       fetchOwnerTotals();
     }
-  }, [tenantId, selectedProperty]);
+  }, [tenantId, selectedContract]);
 
   const fetchOwnerTotals = async () => {
     setLoading(true);
     try {
-      // 1. Primero obtener los pagos de la propiedad
-      const { data: payments, error: paymentsError } = await supabase
-        .from('pms_payments')
-        .select(`
-          id,
-          pms_contracts!inner(property_id)
-        `)
-        .eq('pms_contracts.property_id', selectedProperty)
-        .eq('status', 'paid');
+      // 1. Obtener información del contrato
+      const { data: contract, error: contractError } = await supabase
+        .from('pms_contracts')
+        .select('property_id')
+        .eq('id', selectedContract)
+        .single();
 
-      if (paymentsError) {
-        console.error('Error fetching payments:', paymentsError);
-        throw paymentsError;
-      }
+      if (contractError) throw contractError;
 
-      const paymentIds = payments?.map(p => p.id) || [];
-
-      // 2. Obtener distribuciones solo de esos pagos
+      // 2. Obtener distribuciones usando contract_id directamente
       const { data: distributions, error: distError } = await supabase
         .from('pms_payment_distributions')
         .select(`
@@ -60,7 +52,7 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedProperty }: OwnerNetInc
           currency,
           pms_owners!inner(full_name)
         `)
-        .in('payment_id', paymentIds)
+        .eq('contract_id', selectedContract)
         .eq('tenant_id', tenantId);
 
       if (distError) {
@@ -68,20 +60,20 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedProperty }: OwnerNetInc
         throw distError;
       }
 
-      console.log('Distributions found:', distributions);
+      console.log('Distributions found for contract:', distributions);
 
-      // 3. Obtener gastos totales de la propiedad
+      // 3. Obtener gastos del contrato
       const { data: expenses, error: expError } = await supabase
         .from('pms_expenses')
         .select('amount, currency')
-        .eq('property_id', selectedProperty)
+        .eq('contract_id', selectedContract)
         .neq('status', 'rejected');
 
       if (expError) throw expError;
 
       const totalExpenses = expenses?.reduce((sum, exp) => sum + Number(exp.amount || 0), 0) || 0;
 
-      // 4. Obtener propietarios actuales con sus porcentajes
+      // 4. Obtener propietarios del contrato (en el momento de su creación)
       const { data: owners, error: ownersError } = await supabase
         .from('pms_owner_properties')
         .select(`
@@ -89,7 +81,7 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedProperty }: OwnerNetInc
           share_percent,
           pms_owners!inner(full_name)
         `)
-        .eq('property_id', selectedProperty)
+        .eq('property_id', contract.property_id)
         .or(`end_date.is.null,end_date.gte.${new Date().toISOString().split('T')[0]}`);
 
       if (ownersError) throw ownersError;
