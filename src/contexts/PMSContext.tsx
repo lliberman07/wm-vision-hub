@@ -80,8 +80,8 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (roles && roles.length > 0) {
         setHasPMSAccess(true);
-        setPMSRoles(roles.map(r => r.role as PMSRole));
-        setUserRole(roles[0].role as PMSRole);
+        setPMSRoles(roles.map(r => r.role.toUpperCase() as PMSRole));
+        setUserRole(roles[0].role.toUpperCase() as PMSRole);
         
         // Then get tenant information separately
         const { data: tenant, error: tenantError } = await supabase
