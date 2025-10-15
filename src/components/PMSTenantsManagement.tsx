@@ -4,11 +4,15 @@ import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Building, Edit, Check, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+
+type TenantType = 'inmobiliaria' | 'administrador' | 'propietario' | 'inquilino' | 'proveedor_servicios';
 
 interface Tenant {
   id: string;
@@ -17,7 +21,22 @@ interface Tenant {
   is_active: boolean;
   created_at: string;
   settings: any;
+  tenant_type: TenantType;
 }
+
+interface TenantStats {
+  type: string;
+  count: number;
+  label: string;
+}
+
+const TENANT_TYPES = [
+  { value: 'inmobiliaria', label: 'Inmobiliaria' },
+  { value: 'administrador', label: 'Administrador' },
+  { value: 'propietario', label: 'Propietario' },
+  { value: 'inquilino', label: 'Inquilino' },
+  { value: 'proveedor_servicios', label: 'Proveedor de Servicios' },
+];
 
 export function PMSTenantsManagement() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -28,8 +47,17 @@ export function PMSTenantsManagement() {
     name: "",
     slug: "",
     is_active: true,
+    tenant_type: "inmobiliaria" as TenantType,
   });
   const { toast } = useToast();
+
+  const getTenantStats = (): TenantStats[] => {
+    return TENANT_TYPES.map(type => ({
+      type: type.value,
+      label: type.label,
+      count: tenants.filter(t => t.tenant_type === type.value).length
+    }));
+  };
 
   useEffect(() => {
     fetchTenants();
@@ -68,6 +96,7 @@ export function PMSTenantsManagement() {
             name: formData.name,
             slug: formData.slug,
             is_active: formData.is_active,
+            tenant_type: formData.tenant_type,
           })
           .eq("id", editingTenant.id);
 
@@ -84,6 +113,7 @@ export function PMSTenantsManagement() {
             name: formData.name,
             slug: formData.slug,
             is_active: formData.is_active,
+            tenant_type: formData.tenant_type,
             settings: {},
           }]);
 
@@ -113,6 +143,7 @@ export function PMSTenantsManagement() {
       name: "",
       slug: "",
       is_active: true,
+      tenant_type: "inmobiliaria",
     });
     setEditingTenant(null);
   };
@@ -123,6 +154,7 @@ export function PMSTenantsManagement() {
       name: tenant.name,
       slug: tenant.slug,
       is_active: tenant.is_active,
+      tenant_type: tenant.tenant_type,
     });
     setIsDialogOpen(true);
   };
@@ -139,7 +171,21 @@ export function PMSTenantsManagement() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Estadísticas por tipo */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {getTenantStats().map((stat) => (
+          <Card key={stat.type}>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold">{stat.count}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       <div className="flex justify-between items-center">
         <p className="text-sm text-muted-foreground">
           Total de tenants: {tenants.length}
@@ -196,6 +242,27 @@ export function PMSTenantsManagement() {
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="tenant_type">Tipo de Tenant</Label>
+                <Select
+                  value={formData.tenant_type}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, tenant_type: value as TenantType })
+                  }
+                >
+                  <SelectTrigger id="tenant_type">
+                    <SelectValue placeholder="Seleccionar tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TENANT_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex items-center space-x-2">
                 <Switch
                   id="is_active"
@@ -237,6 +304,7 @@ export function PMSTenantsManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
+                <TableHead>Tipo</TableHead>
                 <TableHead>Slug</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Fecha de Creación</TableHead>
@@ -251,6 +319,11 @@ export function PMSTenantsManagement() {
                       <Building className="h-4 w-4 text-muted-foreground" />
                       {tenant.name}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {TENANT_TYPES.find(t => t.value === tenant.tenant_type)?.label}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <code className="px-2 py-1 bg-muted rounded text-xs">

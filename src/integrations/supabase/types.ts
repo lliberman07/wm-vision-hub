@@ -1876,6 +1876,7 @@ export type Database = {
           name: string
           settings: Json | null
           slug: string
+          tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
           updated_at: string | null
         }
         Insert: {
@@ -1885,6 +1886,7 @@ export type Database = {
           name: string
           settings?: Json | null
           slug: string
+          tenant_type?: Database["public"]["Enums"]["pms_tenant_type"]
           updated_at?: string | null
         }
         Update: {
@@ -1894,6 +1896,7 @@ export type Database = {
           name?: string
           settings?: Json | null
           slug?: string
+          tenant_type?: Database["public"]["Enums"]["pms_tenant_type"]
           updated_at?: string | null
         }
         Relationships: []
@@ -2210,6 +2213,12 @@ export type Database = {
         | "PROPIETARIO"
         | "INQUILINO"
         | "PROVEEDOR"
+      pms_tenant_type:
+        | "inmobiliaria"
+        | "administrador"
+        | "propietario"
+        | "inquilino"
+        | "proveedor_servicios"
       request_status: "pending" | "approved" | "denied"
       user_role: "superadmin" | "admin"
       user_role_type:
@@ -2367,6 +2376,13 @@ export const Constants = {
         "PROPIETARIO",
         "INQUILINO",
         "PROVEEDOR",
+      ],
+      pms_tenant_type: [
+        "inmobiliaria",
+        "administrador",
+        "propietario",
+        "inquilino",
+        "proveedor_servicios",
       ],
       request_status: ["pending", "approved", "denied"],
       user_role: ["superadmin", "admin"],
