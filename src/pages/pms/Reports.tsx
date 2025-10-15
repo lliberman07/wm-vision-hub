@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Building2, Users, FileText, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Building2, Users, FileText, DollarSign, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
+import { toast } from 'sonner';
 
 const Reports = () => {
   const navigate = useNavigate();
@@ -19,6 +21,7 @@ const Reports = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current-month');
   const [properties, setProperties] = useState<any[]>([]);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
+  const [recalculating, setRecalculating] = useState(false);
   const [stats, setStats] = useState({
     totalProperties: 0,
     activeContracts: 0,
@@ -103,6 +106,32 @@ const Reports = () => {
     }
   };
 
+  const handleRecalculateCashflow = async () => {
+    try {
+      setRecalculating(true);
+      toast.info('Recalculando flujo de caja...');
+
+      const { error } = await supabase.rpc('recalculate_all_cashflow');
+
+      if (error) throw error;
+
+      toast.success('Flujo de caja recalculado exitosamente');
+      
+      // Recargar datos
+      await fetchData();
+      if (selectedProperty !== 'none') {
+        await fetchCashflow();
+      }
+    } catch (error: any) {
+      console.error('Error recalculating cashflow:', error);
+      toast.error('Error al recalcular flujo de caja', {
+        description: error.message,
+      });
+    } finally {
+      setRecalculating(false);
+    }
+  };
+
   return (
     <PMSLayout>
       <div className="container mx-auto px-4 py-8">
@@ -181,19 +210,30 @@ const Reports = () => {
               <h2 className="text-2xl font-bold">Flujo de Caja por Propiedad</h2>
               <p className="text-muted-foreground">Seleccione una propiedad para ver el detalle</p>
             </div>
-            <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Elija la Propiedad" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Elija la Propiedad</SelectItem>
-                {properties.map(prop => (
-                  <SelectItem key={prop.id} value={prop.id}>
-                    {prop.alias || prop.code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRecalculateCashflow}
+                disabled={recalculating}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
+                {recalculating ? 'Recalculando...' : 'Recalcular Totales'}
+              </Button>
+              <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Elija la Propiedad" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Elija la Propiedad</SelectItem>
+                  {properties.map(prop => (
+                    <SelectItem key={prop.id} value={prop.id}>
+                      {prop.alias || prop.code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {selectedProperty !== 'none' && (

@@ -2241,6 +2241,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      recalculate_all_cashflow: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       recalculate_projections_for_index_type: {
         Args: { index_type_param: string }
         Returns: undefined
