@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { IndicesForm } from "@/components/pms/IndicesForm";
-import { Plus, TrendingUp } from "lucide-react";
+import { Plus, TrendingUp, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { PMSLayout } from "@/components/pms/PMSLayout";
@@ -30,6 +30,7 @@ export default function Indices() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<EconomicIndex | undefined>();
+  const [recalculating, setRecalculating] = useState(false);
 
   useEffect(() => {
     fetchIndices();
@@ -46,6 +47,21 @@ export default function Indices() {
       setIndices(data);
     }
     setLoading(false);
+  };
+
+  const handleRecalculateAll = async () => {
+    try {
+      setRecalculating(true);
+      const { error } = await supabase.rpc('recalculate_all_active_contracts');
+      
+      if (error) throw error;
+      
+      toast.success("Se recalcularon todas las proyecciones con los índices actualizados");
+    } catch (error: any) {
+      toast.error(error.message || "Error al recalcular proyecciones");
+    } finally {
+      setRecalculating(false);
+    }
   };
 
   const filteredIndices = indices.filter(idx =>
@@ -75,13 +91,24 @@ export default function Indices() {
               </p>
             </div>
             {isSuperAdmin && (
-              <Button onClick={() => {
-                setSelectedIndex(undefined);
-                setIsFormOpen(true);
-              }} size="lg">
-                <Plus className="h-4 w-4 mr-2" />
-                Cargar Índice
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleRecalculateAll}
+                  disabled={recalculating}
+                  size="lg"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
+                  Recalcular Proyecciones
+                </Button>
+                <Button onClick={() => {
+                  setSelectedIndex(undefined);
+                  setIsFormOpen(true);
+                }} size="lg">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Cargar Índice
+                </Button>
+              </div>
             )}
           </div>
         </div>
