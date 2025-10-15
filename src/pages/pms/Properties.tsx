@@ -164,12 +164,20 @@ const Properties = () => {
                         <TableCell>{getStatusBadge(property.status)}</TableCell>
                         <TableCell>
                           {property.photos && property.photos.length > 0 ? (
-                            <div className="flex items-center gap-1">
-                              <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{property.photos.length}</span>
+                            <div className="relative w-12 h-12">
+                              <img 
+                                src={property.photos[0]} 
+                                alt="Propiedad" 
+                                className="w-full h-full object-cover rounded border"
+                              />
+                              {property.photos.length > 1 && (
+                                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                                  {property.photos.length}
+                                </Badge>
+                              )}
                             </div>
                           ) : (
-                            <span className="text-muted-foreground text-xs">-</span>
+                            <span className="text-muted-foreground text-xs">Sin fotos</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
