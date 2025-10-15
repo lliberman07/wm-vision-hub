@@ -1570,11 +1570,13 @@ export type Database = {
       }
       pms_payment_schedule_items: {
         Row: {
+          accumulated_paid_amount: number | null
           contract_id: string
           created_at: string | null
           expected_amount: number
           id: string
           item: string
+          original_amount: number | null
           owner_id: string
           owner_percentage: number
           payment_id: string | null
@@ -1586,11 +1588,13 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          accumulated_paid_amount?: number | null
           contract_id: string
           created_at?: string | null
           expected_amount: number
           id?: string
           item: string
+          original_amount?: number | null
           owner_id: string
           owner_percentage: number
           payment_id?: string | null
@@ -1602,11 +1606,13 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          accumulated_paid_amount?: number | null
           contract_id?: string
           created_at?: string | null
           expected_amount?: number
           id?: string
           item?: string
+          original_amount?: number | null
           owner_id?: string
           owner_percentage?: number
           payment_id?: string | null

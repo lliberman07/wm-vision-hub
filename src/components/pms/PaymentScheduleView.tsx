@@ -27,6 +27,8 @@ interface ScheduleItem {
   period_date: string;
   item: string;
   expected_amount: number;
+  original_amount: number;
+  accumulated_paid_amount: number;
   owner_percentage: number;
   status: string;
   payment_id: string | null;
@@ -277,55 +279,81 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <Table>
-                      <TableHeader>
+                       <TableHeader>
                         <TableRow>
                           <TableHead>Propietario</TableHead>
                           <TableHead>Item</TableHead>
                           <TableHead className="text-right">%</TableHead>
-                          <TableHead className="text-right">Monto Esperado</TableHead>
+                          <TableHead className="text-right">Original</TableHead>
+                          <TableHead className="text-right">Pagado</TableHead>
+                          <TableHead className="text-right">Saldo</TableHead>
                           <TableHead className="text-center">Estado</TableHead>
                           <TableHead className="text-center">Acción</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {items.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell className="font-medium">
-                              {item.owner.full_name}
-                            </TableCell>
-                            <TableCell>{item.item}</TableCell>
-                            <TableCell className="text-right">
-                              {item.owner_percentage.toFixed(2)}%
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {currency} ${item.expected_amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {getStatusBadge(item.status)}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {item.status === 'paid' ? (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleCellClick(item)}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  Ver Detalle
-                                </Button>
-                              ) : (
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  onClick={() => handleCellClick(item)}
-                                >
-                                  <DollarSign className="h-4 w-4 mr-1" />
-                                  Registrar Pago
-                                </Button>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {items.map((item) => {
+                          const originalAmount = item.original_amount || item.expected_amount;
+                          const accumulatedPaid = item.accumulated_paid_amount || 0;
+                          const pendingAmount = item.expected_amount || 0;
+                          
+                          return (
+                            <TableRow key={item.id}>
+                              <TableCell className="font-medium">
+                                {item.owner.full_name}
+                              </TableCell>
+                              <TableCell>{item.item}</TableCell>
+                              <TableCell className="text-right">
+                                {item.owner_percentage.toFixed(2)}%
+                              </TableCell>
+                              <TableCell className="text-right text-muted-foreground">
+                                {currency} ${originalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {accumulatedPaid > 0 ? (
+                                  <span className="text-green-600 font-medium">
+                                    {currency} ${accumulatedPaid.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground">-</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {pendingAmount > 0 ? (
+                                  <span className="font-semibold">
+                                    {currency} ${pendingAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground">-</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {getStatusBadge(item.status)}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {item.status === 'paid' ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleCellClick(item)}
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Ver Detalle
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => handleCellClick(item)}
+                                  >
+                                    <DollarSign className="h-4 w-4 mr-1" />
+                                    {accumulatedPaid > 0 ? 'Pagar Saldo' : 'Registrar Pago'}
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </CollapsibleContent>
