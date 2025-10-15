@@ -189,7 +189,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Sin contrato</SelectItem>
+                      <SelectItem value="none">Sin contrato</SelectItem>
                       {contracts.map(contract => (
                         <SelectItem key={contract.id} value={contract.id}>
                           {contract.contract_number}
