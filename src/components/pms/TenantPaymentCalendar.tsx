@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { Calendar } from "lucide-react";
+import { formatDateDisplay } from "@/utils/dateUtils";
 
 interface ScheduleItem {
   id: string;
@@ -74,7 +73,7 @@ export function TenantPaymentCalendar({ contractId }: TenantPaymentCalendarProps
     const grouped: { [key: string]: ScheduleItem[] } = {};
     
     items.forEach((item) => {
-      const month = format(new Date(item.period_date), "MMMM yyyy", { locale: es });
+      const month = formatDateDisplay(item.period_date);
       if (!grouped[month]) {
         grouped[month] = [];
       }
@@ -147,7 +146,7 @@ export function TenantPaymentCalendar({ contractId }: TenantPaymentCalendarProps
                             Item {item.item} - ${item.expected_amount.toLocaleString()}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Vencimiento: {format(new Date(item.period_date), "dd/MM/yyyy", { locale: es })}
+                            Vencimiento: {formatDateDisplay(item.period_date)}
                           </p>
                         </div>
                         {getStatusBadge(item.status)}

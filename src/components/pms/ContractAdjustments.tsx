@@ -4,8 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { formatDateDisplay } from '@/utils/dateUtils';
 
 interface Adjustment {
   id: string;
@@ -98,7 +97,7 @@ export function ContractAdjustments({ contractId }: ContractAdjustmentsProps) {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    {format(new Date(adj.application_date), 'dd MMM yyyy', { locale: es })}
+                    {formatDateDisplay(adj.application_date)}
                   </div>
                 </TableCell>
                 <TableCell>

@@ -16,8 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { CheckCircle, XCircle, Eye, FileText } from "lucide-react";
 import { ReviewPaymentSubmissionDialog } from "./ReviewPaymentSubmissionDialog";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatDateToDisplay, formatDateDisplay } from "@/utils/dateUtils";
 
 interface PaymentSubmission {
   id: string;
@@ -159,12 +158,12 @@ export function PaymentSubmissionsTable() {
                 {submissions.map((submission) => (
                   <TableRow key={submission.id}>
                     <TableCell>
-                      {format(new Date(submission.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                      {formatDateToDisplay(new Date(submission.created_at))}
                     </TableCell>
                     <TableCell>{submission.contract.tenant_renter.full_name}</TableCell>
                     <TableCell>{submission.contract.contract_number}</TableCell>
                     <TableCell>
-                      {format(new Date(submission.schedule_item.period_date), 'MMM yyyy', { locale: es })}
+                      {formatDateDisplay(submission.schedule_item.period_date)}
                     </TableCell>
                     <TableCell>{submission.schedule_item.owner.full_name}</TableCell>
                     <TableCell className="text-right font-medium">

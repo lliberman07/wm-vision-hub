@@ -11,11 +11,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { formatDateForDB } from '@/utils/dateUtils';
+import { formatDateForDB, formatDateToDisplay, formatDateDisplay } from '@/utils/dateUtils';
 import { formatCurrency } from '@/utils/numberFormat';
 
 const formSchema = z.object({
@@ -117,7 +116,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
         <DialogHeader>
           <DialogTitle>Registrar Pago</DialogTitle>
           <DialogDescription>
-            {format(new Date(scheduleItem.period_date), 'MMMM yyyy')} - Item {scheduleItem.item}
+            {formatDateDisplay(scheduleItem.period_date)} - Item {scheduleItem.item}
           </DialogDescription>
         </DialogHeader>
 
@@ -155,7 +154,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
                           )}
                         >
                           {field.value ? (
-                            format(field.value, 'dd/MM/yyyy')
+                            formatDateToDisplay(field.value)
                           ) : (
                             <span>Seleccionar fecha</span>
                           )}

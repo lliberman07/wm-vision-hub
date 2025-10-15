@@ -9,9 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PaymentCell } from './PaymentCell';
 import { PaymentCellModal } from './PaymentCellModal';
 import { Download, Filter, Calendar as CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { formatCurrency } from '@/utils/numberFormat';
+import { formatDateDisplay } from '@/utils/dateUtils';
 
 interface PaymentCalendarProps {
   contractId: string;
@@ -57,7 +56,8 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
   };
 
   const groupedByMonth = scheduleItems.reduce((acc, item) => {
-    const monthKey = format(new Date(item.period_date), 'yyyy-MM');
+    const [year, month] = item.period_date.split('-');
+    const monthKey = `${year}-${month}`;
     if (!acc[monthKey]) {
       acc[monthKey] = [];
     }
@@ -191,7 +191,7 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
                 <div key={monthKey} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold capitalize">
-                      {format(monthDate, 'MMMM yyyy', { locale: es })}
+                      {formatDateDisplay(monthKey + '-01').substring(3)}
                     </h3>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-muted-foreground">

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -11,6 +10,7 @@ import { AlertTriangle, CalendarIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { formatDateForDB, formatDateToDisplay } from '@/utils/dateUtils';
 
 interface CancelContractDialogProps {
   open: boolean;
@@ -35,7 +35,7 @@ export function CancelContractDialog({ open, onOpenChange, contract, onSuccess }
       const { data: userData } = await supabase.auth.getUser();
       const { error } = await supabase.rpc('cancel_contract', {
         contract_id_param: contract.id,
-        cancellation_date_param: format(cancellationDate, 'yyyy-MM-dd'),
+        cancellation_date_param: formatDateForDB(cancellationDate),
         cancellation_reason_param: cancellationReason,
         cancelled_by_param: userData.user?.id
       });
@@ -87,7 +87,7 @@ export function CancelContractDialog({ open, onOpenChange, contract, onSuccess }
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {cancellationDate ? format(cancellationDate, "dd/MM/yyyy") : "Seleccionar fecha"}
+                  {cancellationDate ? formatDateToDisplay(cancellationDate) : "Seleccionar fecha"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">

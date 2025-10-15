@@ -19,9 +19,8 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, DollarSign, Eye, FileText, RefreshCw } from "lucide-react";
 import { PaymentCellModal } from "./PaymentCellModal";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
 import { toast } from "sonner";
+import { formatDateDisplay } from "@/utils/dateUtils";
 
 interface ScheduleItem {
   id: string;
@@ -89,7 +88,8 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
 
       // Expandir primer mes por defecto
       if (data && data.length > 0) {
-        const firstMonth = format(parseISO(data[0].period_date), 'yyyy-MM');
+        const [year, month] = data[0].period_date.split('-');
+        const firstMonth = `${year}-${month}`;
         setExpandedMonths(new Set([firstMonth]));
       }
     } catch (error) {
@@ -100,9 +100,10 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
   };
 
   const groupedByMonth = scheduleItems.reduce((acc, item) => {
-    const month = format(parseISO(item.period_date), 'yyyy-MM');
-    if (!acc[month]) acc[month] = [];
-    acc[month].push(item);
+    const [year, month] = item.period_date.split('-');
+    const monthKey = `${year}-${month}`;
+    if (!acc[monthKey]) acc[monthKey] = [];
+    acc[monthKey].push(item);
     return acc;
   }, {} as Record<string, ScheduleItem[]>);
 
@@ -252,7 +253,7 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
                           <ChevronRight className="h-4 w-4" />
                         )}
                         <span className="font-medium capitalize">
-                          {format(parseISO(month + '-01'), 'MMMM yyyy', { locale: es })}
+                          {formatDateDisplay(month + '-01').substring(3)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">

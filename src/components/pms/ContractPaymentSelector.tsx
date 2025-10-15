@@ -11,8 +11,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Home, User, DollarSign } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatDateDisplay } from "@/utils/dateUtils";
 
 interface Contract {
   id: string;
@@ -139,8 +138,7 @@ export function ContractPaymentSelector({
                 <div>
                   <p className="text-xs text-muted-foreground">Vigencia</p>
                   <p className="text-sm font-medium">
-                    {format(new Date(selectedContract.start_date + 'T00:00:00'), 'dd/MM/yyyy')} -{' '}
-                    {format(new Date(selectedContract.end_date + 'T00:00:00'), 'dd/MM/yyyy')}
+                    {formatDateDisplay(selectedContract.start_date)} - {formatDateDisplay(selectedContract.end_date)}
                   </p>
                 </div>
               </div>

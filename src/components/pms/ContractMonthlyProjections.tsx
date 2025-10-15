@@ -7,8 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { TrendingUp, Info } from 'lucide-react';
 import { formatCurrency } from '@/utils/numberFormat';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { formatDateDisplay } from '@/utils/dateUtils';
 
 interface ContractMonthlyProjectionsProps {
   contractId: string;
@@ -86,7 +85,7 @@ export const ContractMonthlyProjections = ({ contractId, currency }: ContractMon
                   <TableRow key={month.period_date} className={hasAdjustment ? 'bg-accent/50' : ''}>
                     <TableCell className="font-medium">{month.month_number}</TableCell>
                     <TableCell>
-                      {format(new Date(month.period_date), 'MMM yyyy', { locale: es })}
+                      {formatDateDisplay(month.period_date).substring(3)}
                     </TableCell>
                     
                     {/* Item A */}

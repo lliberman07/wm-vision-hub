@@ -13,8 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, FileText, ExternalLink } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatDateDisplay, formatDateToDisplay } from "@/utils/dateUtils";
 
 interface ReviewPaymentSubmissionDialogProps {
   open: boolean;
@@ -107,7 +106,7 @@ export function ReviewPaymentSubmissionDialog({
             <div>
               <Label className="text-sm text-muted-foreground">Mes</Label>
               <p className="font-medium">
-                {format(new Date(submission.schedule_item.period_date), 'MMMM yyyy', { locale: es })}
+                {formatDateDisplay(submission.schedule_item.period_date)}
               </p>
             </div>
             <div>
@@ -129,7 +128,7 @@ export function ReviewPaymentSubmissionDialog({
             <div>
               <Label className="text-sm text-muted-foreground">Fecha de Pago</Label>
               <p className="font-medium">
-                {format(new Date(submission.paid_date), 'dd/MM/yyyy', { locale: es })}
+                {formatDateDisplay(submission.paid_date)}
               </p>
             </div>
             <div>

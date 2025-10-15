@@ -1,9 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
 import { CalendarIcon, AlertCircle } from 'lucide-react';
-import { formatDateForDB, parseDateFromDB } from '@/utils/dateUtils';
+import { formatDateForDB, parseDateFromDB, formatDateToDisplay } from '@/utils/dateUtils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
@@ -528,7 +527,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "dd/MM/yyyy")
+                              formatDateToDisplay(field.value)
                             ) : (
                               <span>Seleccionar fecha</span>
                             )}
@@ -568,7 +567,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "dd/MM/yyyy")
+                              formatDateToDisplay(field.value)
                             ) : (
                               <span>Seleccionar fecha</span>
                             )}
@@ -1035,7 +1034,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "dd/MM/yyyy")
+                              formatDateToDisplay(field.value)
                             ) : (
                               <span>Seleccionar fecha</span>
                             )}

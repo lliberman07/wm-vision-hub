@@ -24,9 +24,8 @@ import { ReceiptUpload } from "./ReceiptUpload";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { formatDateForDB, formatDateToDisplay, formatDateDisplay } from "@/utils/dateUtils";
 
 interface PaymentSubmissionModalProps {
   open: boolean;
@@ -102,7 +101,7 @@ export function PaymentSubmissionModal({
         tenant_id: tenantId,
         schedule_item_id: selectedItemId,
         submitted_by: user?.id,
-        paid_date: format(paidDate, "yyyy-MM-dd"),
+        paid_date: formatDateForDB(paidDate),
         paid_amount: parseFloat(paidAmount),
         payment_method: paymentMethod,
         reference_number: referenceNumber || null,
@@ -163,7 +162,7 @@ export function PaymentSubmissionModal({
               <SelectContent>
                 {scheduleItems.map((item) => (
                   <SelectItem key={item.id} value={item.id}>
-                    {format(new Date(item.period_date), "MMMM yyyy", { locale: es })} - Item {item.item} - $
+                    {formatDateDisplay(item.period_date)} - Item {item.item} - $
                     {item.expected_amount.toLocaleString()}
                   </SelectItem>
                 ))}
@@ -183,7 +182,7 @@ export function PaymentSubmissionModal({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {paidDate ? format(paidDate, "PPP", { locale: es }) : "Selecciona una fecha"}
+                  {paidDate ? formatDateToDisplay(paidDate) : "Selecciona una fecha"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
