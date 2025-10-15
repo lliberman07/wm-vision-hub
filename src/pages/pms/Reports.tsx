@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { ExpenseDistributionReport } from '@/components/pms/ExpenseDistributionReport';
+import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
 
 const Reports = () => {
   const navigate = useNavigate();
@@ -256,10 +257,17 @@ const Reports = () => {
         </div>
 
         {selectedProperty !== 'none' && (
-          <ExpenseDistributionReport 
-            tenantId={currentTenant?.id || ''} 
-            selectedProperty={selectedProperty}
-          />
+          <>
+            <OwnerNetIncomeReport 
+              tenantId={currentTenant?.id || ''} 
+              selectedProperty={selectedProperty}
+            />
+            
+            <ExpenseDistributionReport 
+              tenantId={currentTenant?.id || ''} 
+              selectedProperty={selectedProperty}
+            />
+          </>
         )}
       </div>
     </PMSLayout>
