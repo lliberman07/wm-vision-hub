@@ -118,7 +118,7 @@ export function ContractPaymentSelector({
       {selectedContract && (
         <Card>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="flex items-center gap-2">
                 <Home className="h-4 w-4 text-muted-foreground" />
                 <div>
@@ -149,8 +149,13 @@ export function ContractPaymentSelector({
                 <div>
                   <p className="text-xs text-muted-foreground">Monto Base</p>
                   <p className="text-sm font-medium">
-                    {selectedContract.currency} ${selectedContract.monthly_rent.toLocaleString('es-AR')}
+                    {selectedContract.currency} {selectedContract.monthly_rent.toLocaleString('es-AR')}
                   </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div>
+                  <p className="text-xs text-muted-foreground">Estado</p>
                   <div className="mt-1">{getStatusBadge(selectedContract.status)}</div>
                 </div>
               </div>
