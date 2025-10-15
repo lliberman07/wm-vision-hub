@@ -62,11 +62,11 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
 
       console.log('Distributions found for contract:', distributions);
 
-      // 3. Obtener gastos del contrato
+      // 3. Obtener TODOS los gastos de la propiedad (con o sin contract_id)
       const { data: expenses, error: expError } = await supabase
         .from('pms_expenses')
         .select('amount, currency')
-        .eq('contract_id', selectedContract)
+        .eq('property_id', contract.property_id)
         .neq('status', 'rejected');
 
       if (expError) throw expError;
