@@ -109,7 +109,7 @@ export function ContractPaymentSelector({
         <SelectContent>
           {contracts.map((contract) => (
             <SelectItem key={contract.id} value={contract.id}>
-              {contract.contract_number} - {contract.property.address} ({contract.tenant_renter.full_name})
+              {contract.contract_number}
             </SelectItem>
           ))}
         </SelectContent>
