@@ -38,7 +38,7 @@ export function PaymentsDashboard() {
       const now = new Date();
       const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM
       const today = now.toISOString().split('T')[0];
-      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
       // Total cobrado este mes
       const { data: paidData } = await supabase
@@ -88,14 +88,14 @@ export function PaymentsDashboard() {
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending');
 
-      // Próximos vencimientos (7 días) - monto total
+      // Próximos vencimientos (30 días) - monto total
       const { data: upcomingData } = await supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount')
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending')
         .gte('period_date', today)
-        .lte('period_date', sevenDaysFromNow);
+        .lte('period_date', thirtyDaysFromNow);
       
       const upcomingTotal = upcomingData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
 
@@ -143,7 +143,7 @@ export function PaymentsDashboard() {
       bgColor: "bg-purple-50",
     },
     {
-      title: "Próximos Vencimientos (7 días)",
+      title: "Próximos Vencimientos (30 días)",
       value: `$${metrics.upcomingPayments.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: Calendar,
       color: "text-indigo-600",
