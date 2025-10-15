@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, DollarSign, Eye, FileText, RefreshCw } from "lucide-react";
 import { PaymentCellModal } from "./PaymentCellModal";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
 
@@ -89,7 +89,7 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
 
       // Expandir primer mes por defecto
       if (data && data.length > 0) {
-        const firstMonth = format(new Date(data[0].period_date), 'yyyy-MM');
+        const firstMonth = format(parseISO(data[0].period_date), 'yyyy-MM');
         setExpandedMonths(new Set([firstMonth]));
       }
     } catch (error) {
@@ -100,7 +100,7 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
   };
 
   const groupedByMonth = scheduleItems.reduce((acc, item) => {
-    const month = format(new Date(item.period_date), 'yyyy-MM');
+    const month = format(parseISO(item.period_date), 'yyyy-MM');
     if (!acc[month]) acc[month] = [];
     acc[month].push(item);
     return acc;
@@ -251,8 +251,8 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
                         ) : (
                           <ChevronRight className="h-4 w-4" />
                         )}
-                        <span className="font-medium">
-                          {format(new Date(month + '-01'), 'MMMM yyyy', { locale: es })}
+                        <span className="font-medium capitalize">
+                          {format(parseISO(month + '-01'), 'MMMM yyyy', { locale: es })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
