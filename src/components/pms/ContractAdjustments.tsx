@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Calendar } from 'lucide-react';
 import { formatDateDisplay } from '@/utils/dateUtils';
 
-interface Adjustment {
+interface AdjustmentWithMonths {
   id: string;
   application_date: string;
   index_type: string;
@@ -15,6 +15,7 @@ interface Adjustment {
   new_amount: number;
   item: string;
   created_at: string;
+  applied_months: string[];
 }
 
 interface ContractAdjustmentsProps {
@@ -22,7 +23,7 @@ interface ContractAdjustmentsProps {
 }
 
 export function ContractAdjustments({ contractId }: ContractAdjustmentsProps) {
-  const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
+  const [adjustments, setAdjustments] = useState<AdjustmentWithMonths[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,14 +34,43 @@ export function ContractAdjustments({ contractId }: ContractAdjustmentsProps) {
 
   const fetchAdjustments = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: adjustmentsData, error } = await supabase
         .from('pms_contract_adjustments')
         .select('*')
         .eq('contract_id', contractId)
         .order('application_date', { ascending: false });
 
       if (error) throw error;
-      setAdjustments(data || []);
+
+      // Obtener proyecciones para identificar meses donde se aplicó cada ajuste
+      const { data: projections } = await supabase
+        .from('pms_contract_monthly_projections')
+        .select('period_date, adjustment_applied, adjustment_percentage, item, indices_used')
+        .eq('contract_id', contractId)
+        .eq('adjustment_applied', true)
+        .order('period_date', { ascending: true });
+
+      // Mapear ajustes con sus meses aplicados
+      const adjustmentsWithMonths = (adjustmentsData || []).map(adj => {
+        const appliedMonths: string[] = [];
+        
+        if (projections) {
+          projections.forEach(proj => {
+            // Vincular por item y porcentaje de variación similar
+            if (proj.item === adj.item && 
+                Math.abs(proj.adjustment_percentage - adj.variation_percent) < 0.01) {
+              appliedMonths.push(proj.period_date);
+            }
+          });
+        }
+
+        return {
+          ...adj,
+          applied_months: appliedMonths
+        };
+      });
+
+      setAdjustments(adjustmentsWithMonths);
     } catch (error) {
       console.error('Error fetching adjustments:', error);
     } finally {
@@ -86,6 +116,7 @@ export function ContractAdjustments({ contractId }: ContractAdjustmentsProps) {
               <TableHead>Fecha Aplicación</TableHead>
               <TableHead>Índice</TableHead>
               <TableHead>Item</TableHead>
+              <TableHead>Meses Aplicados</TableHead>
               <TableHead className="text-right">Monto Anterior</TableHead>
               <TableHead className="text-right">Variación %</TableHead>
               <TableHead className="text-right">Monto Nuevo</TableHead>
@@ -105,6 +136,26 @@ export function ContractAdjustments({ contractId }: ContractAdjustmentsProps) {
                 </TableCell>
                 <TableCell>
                   <Badge variant="secondary">{adj.item || 'ÚNICO'}</Badge>
+                </TableCell>
+                <TableCell>
+                  {adj.applied_months.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {adj.applied_months.map((month, idx) => (
+                        <Badge 
+                          key={idx} 
+                          variant="outline" 
+                          className="text-xs"
+                        >
+                          {new Date(month).toLocaleDateString('es-AR', { 
+                            month: 'short', 
+                            year: 'numeric' 
+                          })}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   ${Number(adj.previous_amount).toLocaleString('es-AR', {
