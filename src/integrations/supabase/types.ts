@@ -2233,6 +2233,14 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: boolean
       }
+      recalculate_all_active_contracts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      recalculate_projections_for_index_type: {
+        Args: { index_type_param: string }
+        Returns: undefined
+      }
       reverse_expense_deduction: {
         Args: { expense_id_param: string }
         Returns: undefined
