@@ -61,9 +61,11 @@ const Reports = () => {
           .eq('tenant_id', currentTenant.id),
         supabase
           .from('pms_payments')
-          .select('paid_amount, currency')
+          .select('paid_amount')
           .eq('status', 'paid')
-          .eq('tenant_id', currentTenant.id),
+          .eq('tenant_id', currentTenant.id)
+          .gte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0])
+          .lte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]),
       ]);
 
       if (propsRes.data) setProperties(propsRes.data);
