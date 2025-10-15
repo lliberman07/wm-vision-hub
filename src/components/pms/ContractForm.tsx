@@ -2,8 +2,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, AlertCircle } from 'lucide-react';
 import { formatDateForDB, parseDateFromDB } from '@/utils/dateUtils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -80,6 +81,21 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   const [properties, setProperties] = useState<any[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
   const [propertyOwners, setPropertyOwners] = useState<any[]>([]);
+  
+  // Helper para determinar si un campo está deshabilitado
+  const isFieldDisabled = (fieldName: string) => {
+    if (!contract || contract.status !== 'active') return false;
+    
+    const criticalFields = [
+      'contract_number', 'property_id', 'tenant_renter_id',
+      'start_date', 'end_date', 'monthly_rent', 'monto_a', 'monto_b',
+      'indice_ajuste', 'frecuencia_ajuste', 'fecha_primer_ajuste',
+      'currency', 'payment_day', 'deposit_amount', 'deposit_currency',
+      'guarantee_type', 'contract_type', 'tipo_contrato'
+    ];
+    
+    return criticalFields.includes(fieldName);
+  };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -362,6 +378,18 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
             Completa la información del contrato de alquiler
           </DialogDescription>
         </DialogHeader>
+        
+        {contract?.status === 'active' && (
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Contrato Activo - Edición Limitada</AlertTitle>
+            <AlertDescription>
+              Los campos críticos no pueden modificarse en contratos activos.
+              Solo puede editar las cláusulas especiales y detalles de garantía.
+              Para modificar otros campos, debe cancelar este contrato y crear uno nuevo.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -423,9 +451,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     fetchPropertyOwners(value);
                   }} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar propiedad" />
-                      </SelectTrigger>
+                    <SelectTrigger disabled={isFieldDisabled('property_id')}>
+                      <SelectValue placeholder="Seleccionar propiedad" />
+                    </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {properties.map(prop => (
@@ -463,9 +491,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     <FormLabel>Inquilino</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar inquilino" />
-                        </SelectTrigger>
+                    <SelectTrigger disabled={isFieldDisabled('tenant_renter_id')}>
+                      <SelectValue placeholder="Seleccionar inquilino" />
+                    </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {tenants.map(tenant => (
@@ -578,6 +606,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         value={field.value || ''}
                         onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                         onWheel={(e) => e.currentTarget.blur()}
+                        disabled={isFieldDisabled('monthly_rent')}
                         className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                     </FormControl>
@@ -592,7 +621,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Moneda</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isFieldDisabled('currency')}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />

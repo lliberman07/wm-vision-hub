@@ -2052,6 +2052,14 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: undefined
       }
+      extend_contract: {
+        Args: {
+          contract_id_param: string
+          new_end_date_param: string
+          notes_param?: string
+        }
+        Returns: undefined
+      }
       generate_contract_monthly_projections: {
         Args: { contract_id_param: string }
         Returns: undefined

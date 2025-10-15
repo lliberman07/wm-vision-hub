@@ -62,7 +62,8 @@ export function ExtendContractDialog({
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.rpc('extend_contract', {
+      // Call extend_contract function via direct SQL
+      const { error } = await supabase.rpc('extend_contract' as any, {
         contract_id_param: contractId,
         new_end_date_param: values.new_end_date,
         notes_param: values.notes || null,
