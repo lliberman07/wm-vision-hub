@@ -8,9 +8,9 @@ import { usePMS } from '@/contexts/PMSContext';
 interface KPIData {
   totalProperties: number;
   activeContracts: number;
-  overduePayments: number;
-  pendingPayments: number;
-  monthlyRevenue: number;
+  overduePayments: { ARS: number; USD: number };
+  pendingPayments: { ARS: number; USD: number };
+  monthlyRevenue: { ARS: number; USD: number };
 }
 
 export function DashboardKPIs() {
@@ -19,9 +19,9 @@ export function DashboardKPIs() {
   const [data, setData] = useState<KPIData>({
     totalProperties: 0,
     activeContracts: 0,
-    overduePayments: 0,
-    pendingPayments: 0,
-    monthlyRevenue: 0,
+    overduePayments: { ARS: 0, USD: 0 },
+    pendingPayments: { ARS: 0, USD: 0 },
+    monthlyRevenue: { ARS: 0, USD: 0 },
   });
 
   useEffect(() => {
@@ -41,32 +41,58 @@ export function DashboardKPIs() {
             .eq('status', 'active'),
           supabase
             .from('pms_payment_schedule_items')
-            .select('expected_amount')
+            .select('expected_amount, contract_id')
             .eq('tenant_id', currentTenant.id)
             .eq('status', 'overdue'),
           supabase
             .from('pms_payment_schedule_items')
-            .select('expected_amount')
+            .select('expected_amount, contract_id')
             .eq('tenant_id', currentTenant.id)
             .eq('status', 'pending'),
         ]);
 
+        // Obtener contratos para conocer las monedas
+        const { data: contractsData } = await supabase
+          .from('pms_contracts')
+          .select('id, currency')
+          .eq('tenant_id', currentTenant.id);
+
+        const contractCurrencyMap = new Map(contractsData?.map(c => [c.id, c.currency]) || []);
+
+        // Calcular totales por moneda para pagos vencidos
+        const overdueByurrency = { ARS: 0, USD: 0 };
+        overdueScheduleItems.data?.forEach(item => {
+          const currency = contractCurrencyMap.get(item.contract_id) || 'ARS';
+          overdueByurrency[currency as 'ARS' | 'USD'] += item.expected_amount || 0;
+        });
+
+        // Calcular totales por moneda para pagos pendientes
+        const pendingByCurrency = { ARS: 0, USD: 0 };
+        pendingScheduleItems.data?.forEach(item => {
+          const currency = contractCurrencyMap.get(item.contract_id) || 'ARS';
+          pendingByCurrency[currency as 'ARS' | 'USD'] += item.expected_amount || 0;
+        });
+
+        // Ingresos del mes por moneda
         const revenue = await supabase
           .from('pms_payments')
-          .select('paid_amount')
+          .select('paid_amount, contract_id')
           .eq('tenant_id', currentTenant.id)
           .eq('status', 'paid')
           .gte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
 
-        const overdueTotal = overdueScheduleItems.data?.reduce((sum, item) => sum + (item.expected_amount || 0), 0) || 0;
-        const pendingTotal = pendingScheduleItems.data?.reduce((sum, item) => sum + (item.expected_amount || 0), 0) || 0;
+        const revenueByCurrency = { ARS: 0, USD: 0 };
+        revenue.data?.forEach(p => {
+          const currency = contractCurrencyMap.get(p.contract_id) || 'ARS';
+          revenueByCurrency[currency as 'ARS' | 'USD'] += p.paid_amount || 0;
+        });
 
         setData({
           totalProperties: properties.count || 0,
           activeContracts: contracts.count || 0,
-          overduePayments: overdueTotal,
-          pendingPayments: pendingTotal,
-          monthlyRevenue: revenue.data?.reduce((sum, p) => sum + (p.paid_amount || 0), 0) || 0,
+          overduePayments: overdueByurrency,
+          pendingPayments: pendingByCurrency,
+          monthlyRevenue: revenueByCurrency,
         });
       } catch (error) {
         console.error('Error fetching KPIs:', error);
@@ -85,6 +111,7 @@ export function DashboardKPIs() {
       icon: Building2,
       gradient: 'from-primary/10 to-primary/20',
       iconColor: 'text-primary',
+      type: 'number' as const,
     },
     {
       title: 'Contratos Activos',
@@ -92,27 +119,31 @@ export function DashboardKPIs() {
       icon: TrendingUp,
       gradient: 'from-success/10 to-success/20',
       iconColor: 'text-success',
+      type: 'number' as const,
     },
     {
       title: 'Pagos Vencidos',
-      value: `$${data.overduePayments.toLocaleString()}`,
+      value: data.overduePayments,
       icon: AlertTriangle,
       gradient: 'from-destructive/10 to-destructive/20',
       iconColor: 'text-destructive',
+      type: 'currency' as const,
     },
     {
       title: 'Pagos Pendientes',
-      value: `$${data.pendingPayments.toLocaleString()}`,
+      value: data.pendingPayments,
       icon: Clock,
       gradient: 'from-warning/10 to-warning/20',
       iconColor: 'text-warning',
+      type: 'currency' as const,
     },
     {
       title: 'Ingresos del Mes',
-      value: `$${data.monthlyRevenue.toLocaleString()}`,
+      value: data.monthlyRevenue,
       icon: DollarSign,
       gradient: 'from-accent/10 to-accent/20',
       iconColor: 'text-accent',
+      type: 'currency' as const,
     },
   ];
 
@@ -147,8 +178,21 @@ export function DashboardKPIs() {
                 <Icon className={`h-4 w-4 ${kpi.iconColor}`} />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-lg font-bold">{kpi.value}</div>
+            <CardContent className="space-y-2">
+              {kpi.type === 'currency' ? (
+                <>
+                  <div className="flex flex-col gap-1">
+                    <div className="text-base font-bold">
+                      ${(kpi.value as { ARS: number; USD: number }).ARS.toLocaleString()} <span className="text-xs text-muted-foreground font-normal">ARS</span>
+                    </div>
+                    <div className="text-base font-bold">
+                      USD {(kpi.value as { ARS: number; USD: number }).USD.toLocaleString()} <span className="text-xs text-muted-foreground font-normal"></span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-lg font-bold">{kpi.value}</div>
+              )}
             </CardContent>
           </Card>
         );
