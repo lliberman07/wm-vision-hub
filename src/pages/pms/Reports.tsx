@@ -15,7 +15,7 @@ const Reports = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentTenant, hasPMSAccess } = usePMS();
-  const [selectedProperty, setSelectedProperty] = useState<string>('');
+  const [selectedProperty, setSelectedProperty] = useState<string>('none');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current-month');
   const [properties, setProperties] = useState<any[]>([]);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
@@ -35,15 +35,10 @@ const Reports = () => {
   }, [user, hasPMSAccess, navigate, currentTenant]);
 
   useEffect(() => {
-    if (currentTenant?.id && properties.length > 0) {
-      // Set first property as default if not set
-      if (!selectedProperty && properties.length > 0) {
-        setSelectedProperty(properties[0].id);
-      } else {
-        fetchCashflow();
-      }
+    if (currentTenant?.id && selectedProperty !== 'none') {
+      fetchCashflow();
     }
-  }, [selectedProperty, currentTenant, properties]);
+  }, [selectedProperty, currentTenant]);
 
   const fetchData = async () => {
     if (!currentTenant?.id) return;
@@ -186,9 +181,10 @@ const Reports = () => {
             </div>
             <Select value={selectedProperty} onValueChange={setSelectedProperty}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue />
+                <SelectValue placeholder="Elija la Propiedad" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">Elija la Propiedad</SelectItem>
                 {properties.map(prop => (
                   <SelectItem key={prop.id} value={prop.id}>
                     {prop.alias || prop.code}
@@ -198,69 +194,73 @@ const Reports = () => {
             </Select>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
-                Ingresos, Gastos y Resultado Neto
-              </CardTitle>
-            </CardHeader>
-          <CardContent>
-            {cashflowData.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No hay datos de flujo de caja disponibles</p>
-                <p className="text-sm mt-2">
-                  Los datos se generan automáticamente cuando se registran pagos y gastos
-                </p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Período</TableHead>
-                    <TableHead>Moneda</TableHead>
-                    <TableHead className="text-right">Ingresos</TableHead>
-                    <TableHead className="text-right">Gastos</TableHead>
-                    <TableHead className="text-right">Resultado Neto</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {cashflowData.map((cf) => (
-                    <TableRow key={cf.id}>
-                      <TableCell className="font-medium">{cf.period}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{cf.currency}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right text-green-600 font-medium">
-                        ${Number(cf.total_income || 0).toLocaleString('es-AR', {
-                          minimumFractionDigits: 2,
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right text-red-600">
-                        ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
-                          minimumFractionDigits: 2,
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right font-bold">
-                        <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
-                          ${Number(cf.net_result || 0).toLocaleString('es-AR', {
+          {selectedProperty !== 'none' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Ingresos, Gastos y Resultado Neto
+                </CardTitle>
+              </CardHeader>
+            <CardContent>
+              {cashflowData.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>No hay datos de flujo de caja disponibles</p>
+                  <p className="text-sm mt-2">
+                    Los datos se generan automáticamente cuando se registran pagos y gastos
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Período</TableHead>
+                      <TableHead>Moneda</TableHead>
+                      <TableHead className="text-right">Ingresos</TableHead>
+                      <TableHead className="text-right">Gastos</TableHead>
+                      <TableHead className="text-right">Resultado Neto</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {cashflowData.map((cf) => (
+                      <TableRow key={cf.id}>
+                        <TableCell className="font-medium">{cf.period}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{cf.currency}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right text-green-600 font-medium">
+                          ${Number(cf.total_income || 0).toLocaleString('es-AR', {
                             minimumFractionDigits: 2,
                           })}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                        </TableCell>
+                        <TableCell className="text-right text-red-600">
+                          ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
+                            minimumFractionDigits: 2,
+                          })}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
+                            ${Number(cf.net_result || 0).toLocaleString('es-AR', {
+                              minimumFractionDigits: 2,
+                            })}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+          )}
         </div>
 
-        <ExpenseDistributionReport 
-          tenantId={currentTenant?.id || ''} 
-          selectedProperty={selectedProperty}
-        />
+        {selectedProperty !== 'none' && (
+          <ExpenseDistributionReport 
+            tenantId={currentTenant?.id || ''} 
+            selectedProperty={selectedProperty}
+          />
+        )}
       </div>
     </PMSLayout>
   );
