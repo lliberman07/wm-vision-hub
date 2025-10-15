@@ -79,7 +79,7 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
         .select(`
           *,
           projection:pms_contract_monthly_projections(*),
-          payment:pms_payments(*),
+          payment:pms_payments!pms_payments_schedule_item_id_fkey(*),
           owner:pms_owners(id, full_name, email)
         `)
         .eq('contract_id', contractId)
