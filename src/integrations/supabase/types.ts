@@ -2164,6 +2164,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_orphan_payments: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          deleted_count: number
+        }[]
+      }
       deactivate_tenant_on_contract_expiry: {
         Args: Record<PropertyKey, never>
         Returns: undefined

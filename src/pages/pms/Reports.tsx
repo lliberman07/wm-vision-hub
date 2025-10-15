@@ -109,56 +109,53 @@ const Reports = () => {
   const handleRecalculateCashflow = async () => {
     try {
       setRecalculating(true);
-      console.log('Iniciando recálculo de cashflow...');
+      toast.info('Limpiando pagos duplicados...');
+
+      // Primero limpiar pagos huérfanos (duplicados)
+      const { data: cleanupResult, error: cleanupError } = await supabase.rpc('cleanup_orphan_payments');
+      
+      if (cleanupError) {
+        console.error('Error cleaning up orphan payments:', cleanupError);
+        throw cleanupError;
+      }
+
+      const deletedCount = cleanupResult?.[0]?.deleted_count || 0;
+      if (deletedCount > 0) {
+        toast.success(`${deletedCount} pagos duplicados eliminados`);
+      }
+
       toast.info('Vinculando pagos existentes...');
 
-      // Primero vincular pagos existentes de todos los contratos activos
+      // Vincular pagos existentes de todos los contratos activos
       const { data: contracts, error: contractsError } = await supabase
         .from('pms_contracts')
         .select('id')
         .eq('tenant_id', currentTenant?.id)
         .in('status', ['active', 'expired', 'cancelled']);
 
-      if (contractsError) {
-        console.error('Error obteniendo contratos:', contractsError);
-        throw contractsError;
-      }
-
-      console.log(`Vinculando pagos para ${contracts?.length || 0} contratos...`);
+      if (contractsError) throw contractsError;
 
       // Vincular pagos para cada contrato
       for (const contract of contracts || []) {
-        console.log(`Vinculando pagos del contrato ${contract.id}...`);
         const { error: linkError } = await supabase.rpc('link_existing_payments_to_schedule', {
           contract_id_param: contract.id
         });
-        if (linkError) {
-          console.error('Error linking payments for contract:', contract.id, linkError);
-        } else {
-          console.log(`Pagos vinculados exitosamente para contrato ${contract.id}`);
-        }
+        if (linkError) console.error('Error linking payments for contract:', contract.id, linkError);
       }
 
       toast.info('Recalculando flujo de caja...');
-      console.log('Ejecutando recalculate_all_cashflow...');
 
       const { error } = await supabase.rpc('recalculate_all_cashflow');
 
-      if (error) {
-        console.error('Error recalculating cashflow:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Cashflow recalculado exitosamente');
       toast.success('Flujo de caja recalculado exitosamente');
       
       // Recargar datos
-      console.log('Recargando datos...');
       await fetchData();
       if (selectedProperty !== 'none') {
         await fetchCashflow();
       }
-      console.log('Datos recargados');
     } catch (error: any) {
       console.error('Error recalculating cashflow:', error);
       toast.error('Error al recalcular flujo de caja', {
