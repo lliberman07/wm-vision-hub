@@ -158,35 +158,34 @@ const Reports = () => {
           </Card>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Flujo de Caja por Propiedad
-                </CardTitle>
-                <CardDescription>
-                  Ingresos, gastos y resultado neto
-                </CardDescription>
-              </div>
-              <div className="flex gap-3">
-                <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las propiedades</SelectItem>
-                    {properties.map(prop => (
-                      <SelectItem key={prop.id} value={prop.id}>
-                        {prop.code}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold">Flujo de Caja por Propiedad</h2>
+              <p className="text-muted-foreground">Seleccione una propiedad para ver el detalle</p>
             </div>
-          </CardHeader>
+            <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las propiedades</SelectItem>
+                {properties.map(prop => (
+                  <SelectItem key={prop.id} value={prop.id}>
+                    {prop.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Ingresos, Gastos y Resultado Neto
+              </CardTitle>
+            </CardHeader>
           <CardContent>
             {cashflowData.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
@@ -237,10 +236,11 @@ const Reports = () => {
             )}
           </CardContent>
         </Card>
+        </div>
 
         <ExpenseDistributionReport 
           tenantId={currentTenant?.id || ''} 
-          properties={properties}
+          selectedProperty={selectedProperty}
         />
       </div>
     </PMSLayout>

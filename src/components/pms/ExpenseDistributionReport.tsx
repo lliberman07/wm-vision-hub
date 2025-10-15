@@ -26,11 +26,10 @@ interface ExpenseDistribution {
 
 interface ExpenseDistributionReportProps {
   tenantId: string;
-  properties: Array<{ id: string; code: string; address: string }>;
+  selectedProperty: string;
 }
 
-export function ExpenseDistributionReport({ tenantId, properties }: ExpenseDistributionReportProps) {
-  const [selectedProperty, setSelectedProperty] = useState<string>('all');
+export function ExpenseDistributionReport({ tenantId, selectedProperty }: ExpenseDistributionReportProps) {
   const [distributions, setDistributions] = useState<ExpenseDistribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [ownerTotals, setOwnerTotals] = useState<Map<string, { name: string; total: number }>>(new Map());
@@ -166,30 +165,13 @@ export function ExpenseDistributionReport({ tenantId, properties }: ExpenseDistr
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
-              Distribución de Gastos por Propietario
-            </CardTitle>
-            <CardDescription>
-              Detalle de gastos distribuidos según porcentaje de participación
-            </CardDescription>
-          </div>
-          <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las propiedades</SelectItem>
-              {properties.map(prop => (
-                <SelectItem key={prop.id} value={prop.id}>
-                  {prop.code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <Receipt className="h-5 w-5" />
+          Distribución de Gastos por Propietario
+        </CardTitle>
+        <CardDescription>
+          Detalle de gastos distribuidos según porcentaje de participación
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {distributions.length === 0 ? (
