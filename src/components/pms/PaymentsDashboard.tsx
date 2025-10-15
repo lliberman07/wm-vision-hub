@@ -116,14 +116,14 @@ export function PaymentsDashboard() {
   const cards = [
     {
       title: "Total Cobrado (Mes Actual)",
-      value: `$${metrics.collectedThisMonth.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: `$${metrics.collectedThisMonth.toLocaleString('es-AR')}`,
       icon: DollarSign,
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
     {
       title: "Pendiente de Cobro",
-      value: `$${metrics.pendingThisMonth.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: `$${metrics.pendingThisMonth.toLocaleString('es-AR')}`,
       icon: Clock,
       color: "text-amber-600",
       bgColor: "bg-amber-50",
@@ -144,7 +144,7 @@ export function PaymentsDashboard() {
     },
     {
       title: "Próximos Vencimientos (30 días)",
-      value: `$${metrics.upcomingPayments.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: `$${metrics.upcomingPayments.toLocaleString('es-AR')}`,
       icon: Calendar,
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
