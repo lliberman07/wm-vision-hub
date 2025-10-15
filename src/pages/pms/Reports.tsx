@@ -9,7 +9,6 @@ import { TrendingUp, Building2, Users, FileText, DollarSign } from 'lucide-react
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
-import { ExpenseDistributionReport } from '@/components/pms/ExpenseDistributionReport';
 import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
 
 const Reports = () => {
@@ -257,17 +256,10 @@ const Reports = () => {
         </div>
 
         {selectedProperty !== 'none' && (
-          <>
-            <OwnerNetIncomeReport 
-              tenantId={currentTenant?.id || ''} 
-              selectedProperty={selectedProperty}
-            />
-            
-            <ExpenseDistributionReport 
-              tenantId={currentTenant?.id || ''} 
-              selectedProperty={selectedProperty}
-            />
-          </>
+          <OwnerNetIncomeReport 
+            tenantId={currentTenant?.id || ''} 
+            selectedProperty={selectedProperty}
+          />
         )}
       </div>
     </PMSLayout>
