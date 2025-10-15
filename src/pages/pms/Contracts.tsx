@@ -356,17 +356,30 @@ const Contracts = () => {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           {contract.status === 'draft' && (
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedContract(contract);
-                                setIsActivateOpen(true);
-                              }}
-                            >
-                              <CheckCircle2 className="h-4 w-4 mr-1" />
-                              Activar
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedContract(contract);
+                                  setIsFormOpen(true);
+                                }}
+                              >
+                                <FileEdit className="h-4 w-4 mr-1" />
+                                Editar
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedContract(contract);
+                                  setIsActivateOpen(true);
+                                }}
+                              >
+                                <CheckCircle2 className="h-4 w-4 mr-1" />
+                                Activar
+                              </Button>
+                            </>
                           )}
                           {contract.status === 'expired' && (
                             <Button
