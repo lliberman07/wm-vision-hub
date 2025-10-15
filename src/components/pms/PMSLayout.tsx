@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { useContractMaintenanceCheck } from '@/hooks/useContractMaintenanceCheck';
 
 interface PMSLayoutProps {
   children: ReactNode;
@@ -27,6 +28,9 @@ export function PMSLayout({ children }: PMSLayoutProps) {
   const { user } = useAuth();
   const { currentTenant, pmsRoles } = usePMS();
   const navigate = useNavigate();
+  
+  // Run automatic contract maintenance checks
+  useContractMaintenanceCheck();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
