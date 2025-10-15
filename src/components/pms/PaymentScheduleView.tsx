@@ -188,6 +188,16 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
             <CardTitle>Proyección de Pagos por Propietario</CardTitle>
             <div className="flex gap-2">
               <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateSchedule}
+                disabled={regenerating}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
+                {regenerating ? 'Actualizando...' : 'Regenerar Calendario'}
+              </Button>
+              <div className="h-8 w-px bg-border mx-2" />
+              <Button
                 variant={filterStatus === "all" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterStatus("all")}
