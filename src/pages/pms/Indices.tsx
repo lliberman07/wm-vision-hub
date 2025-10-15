@@ -25,6 +25,9 @@ interface EconomicIndex {
 export default function Indices() {
   const { currentTenant, userRole } = usePMS();
   const isSuperAdmin = userRole === 'SUPERADMIN';
+  
+  console.log('[Indices] userRole:', userRole);
+  console.log('[Indices] isSuperAdmin:', isSuperAdmin);
   const [indices, setIndices] = useState<EconomicIndex[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
