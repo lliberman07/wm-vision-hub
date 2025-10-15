@@ -9,6 +9,7 @@ import { TrendingUp, Building2, Users, FileText, DollarSign } from 'lucide-react
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
+import { ExpenseDistributionReport } from '@/components/pms/ExpenseDistributionReport';
 
 const Reports = () => {
   const navigate = useNavigate();
@@ -236,6 +237,11 @@ const Reports = () => {
             )}
           </CardContent>
         </Card>
+
+        <ExpenseDistributionReport 
+          tenantId={currentTenant?.id || ''} 
+          properties={properties}
+        />
       </div>
     </PMSLayout>
   );
