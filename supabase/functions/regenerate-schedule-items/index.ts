@@ -27,16 +27,28 @@ Deno.serve(async (req) => {
       throw new Error('contractId is required');
     }
 
-    console.log(`Regenerating schedule items for contract: ${contractId}`);
+    console.log(`Vinculando pagos existentes para contrato: ${contractId}`);
 
-    // Ejecutar la función de regeneración
-    const { data, error } = await supabaseClient.rpc('generate_payment_schedule_items', {
+    // Primero vincular pagos existentes
+    const { error: linkError } = await supabaseClient.rpc('link_existing_payments_to_schedule', {
       contract_id_param: contractId,
     });
 
-    if (error) {
-      console.error('Error regenerating schedule items:', error);
-      throw error;
+    if (linkError) {
+      console.error('Error vinculando pagos:', linkError);
+      throw linkError;
+    }
+
+    console.log(`Regenerando schedule items para contrato: ${contractId}`);
+
+    // Luego regenerar el calendario
+    const { error: generateError } = await supabaseClient.rpc('generate_payment_schedule_items', {
+      contract_id_param: contractId,
+    });
+
+    if (generateError) {
+      console.error('Error regenerando schedule items:', generateError);
+      throw generateError;
     }
 
     // Verificar cuántos items se crearon
@@ -46,17 +58,17 @@ Deno.serve(async (req) => {
       .eq('contract_id', contractId);
 
     if (countError) {
-      console.error('Error counting schedule items:', countError);
+      console.error('Error contando schedule items:', countError);
       throw countError;
     }
 
-    console.log(`Successfully created ${items?.length || 0} schedule items`);
+    console.log(`Successfully processed ${items?.length || 0} schedule items`);
 
     return new Response(
       JSON.stringify({
         success: true,
         itemsCreated: items?.length || 0,
-        message: `Se generaron ${items?.length || 0} items de calendario de pagos`,
+        message: `Se vincularon los pagos existentes y se regeneraron ${items?.length || 0} items de calendario de pagos`,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

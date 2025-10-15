@@ -141,19 +141,21 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
   const handleRegenerateSchedule = async () => {
     try {
       setRegenerating(true);
+      toast.info('Vinculando pagos y regenerando calendario...');
+      
       const { data, error } = await supabase.functions.invoke('regenerate-schedule-items', {
         body: { contractId },
       });
 
       if (error) throw error;
 
-      toast.success('Calendario regenerado', {
-        description: data.message || 'Se regeneraron los items del calendario',
+      toast.success('Calendario actualizado', {
+        description: data.message || 'Se vincularon los pagos existentes y se regeneró el calendario',
       });
 
       await fetchScheduleItems();
     } catch (error: any) {
-      toast.error('Error al regenerar calendario', {
+      toast.error('Error al actualizar calendario', {
         description: error.message,
       });
     } finally {

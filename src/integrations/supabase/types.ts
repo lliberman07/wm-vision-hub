@@ -2233,6 +2233,10 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: boolean
       }
+      link_existing_payments_to_schedule: {
+        Args: { contract_id_param: string }
+        Returns: undefined
+      }
       recalculate_all_active_contracts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
