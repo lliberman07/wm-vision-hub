@@ -2206,6 +2206,10 @@ export type Database = {
           deleted_count: number
         }[]
       }
+      clear_contract_payments: {
+        Args: { contract_id_param: string }
+        Returns: undefined
+      }
       deactivate_tenant_on_contract_expiry: {
         Args: Record<PropertyKey, never>
         Returns: undefined
