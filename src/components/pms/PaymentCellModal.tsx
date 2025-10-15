@@ -64,22 +64,33 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
   }, [open, scheduleItem?.id]);
 
   const loadPaymentHistory = async () => {
-    if (!scheduleItem?.id) return;
+    if (!scheduleItem?.id || !scheduleItem?.contract_id) return;
     
     try {
+      // Buscar pagos del mismo contrato, item y mes
+      const monthStart = new Date(scheduleItem.period_date);
+      monthStart.setDate(1);
+      const monthEnd = new Date(monthStart);
+      monthEnd.setMonth(monthEnd.getMonth() + 1);
+      monthEnd.setDate(0);
+
       const { data, error } = await supabase
         .from('pms_payments')
         .select('*')
         .eq('contract_id', scheduleItem.contract_id)
-        .eq('item', scheduleItem.item)
-        .contains('notes', `schedule_item:${scheduleItem.id}`)
-        .order('paid_date', { ascending: false });
-
-      if (!error && data) {
-        setPaymentHistory(data);
+        .gte('paid_date', monthStart.toISOString().split('T')[0])
+        .lte('paid_date', monthEnd.toISOString().split('T')[0])
+        .or(`notes.ilike.%[schedule_item:${scheduleItem.id}]%,id.eq.${scheduleItem.payment_id || '00000000-0000-0000-0000-000000000000'}`)
+        .order('paid_date', { ascending: true });
+      
+      if (error) {
+        console.error('[PaymentCellModal] Error loading payment history:', error);
+      } else {
+        console.log('[PaymentCellModal] Payment history loaded:', data);
+        setPaymentHistory(data || []);
       }
     } catch (error) {
-      console.error('Error loading payment history:', error);
+      console.error('[PaymentCellModal] Error loading payment history:', error);
     }
   };
 
@@ -99,7 +110,20 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
       const newPendingAmount = originalAmount - newAccumulatedPaid;
       const isFullyPaid = newPendingAmount <= 0.01; // Tolerancia de 1 centavo
 
-      // 1. Crear registro en pms_payments
+      console.log('[PaymentCellModal] Creating payment:', {
+        contract_id: scheduleItem.contract_id,
+        paid_amount: data.paid_amount,
+        schedule_item_id: scheduleItem.id,
+        newAccumulatedPaid,
+        newPendingAmount,
+        isFullyPaid
+      });
+
+      // 1. Crear registro en pms_payments con notas correctamente formateadas
+      const paymentNotes = data.notes 
+        ? `${data.notes}\n[schedule_item:${scheduleItem.id}]`
+        : `[schedule_item:${scheduleItem.id}]`;
+
       const paymentPayload = {
         contract_id: scheduleItem.contract_id,
         tenant_id: scheduleItem.tenant_id,
@@ -112,8 +136,8 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
         item: scheduleItem.item,
         payment_method: data.payment_method,
         reference_number: data.reference_number,
-        notes: `${data.notes || ''}\nschedule_item:${scheduleItem.id}`,
-        status: isFullyPaid ? 'paid' : 'partial',
+        notes: paymentNotes,
+        status: 'paid',
       };
 
       const { data: payment, error: paymentError } = await supabase
@@ -122,7 +146,12 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
         .select()
         .single();
 
-      if (paymentError) throw paymentError;
+      if (paymentError) {
+        console.error('[PaymentCellModal] Error creating payment:', paymentError);
+        throw paymentError;
+      }
+
+      console.log('[PaymentCellModal] Payment created successfully:', payment);
 
       // 2. Actualizar schedule item con montos acumulados
       const updatePayload: any = {
@@ -142,7 +171,12 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
         .update(updatePayload)
         .eq('id', scheduleItem.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('[PaymentCellModal] Error updating schedule item:', updateError);
+        throw updateError;
+      }
+
+      console.log('[PaymentCellModal] Schedule item updated successfully');
 
       const successMessage = isFullyPaid 
         ? 'Pago completo registrado exitosamente' 
