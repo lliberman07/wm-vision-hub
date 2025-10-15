@@ -138,31 +138,6 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
     setIsModalOpen(true);
   };
 
-  const handleFixPaymentDates = async () => {
-    try {
-      setRegenerating(true);
-      toast.info('Corrigiendo fechas de pago...');
-      
-      const { data, error } = await supabase.functions.invoke('fix-payment-dates', {
-        body: { contractId },
-      });
-
-      if (error) throw error;
-
-      toast.success('Fechas corregidas', {
-        description: data.message || 'Las fechas de pago han sido corregidas exitosamente',
-      });
-
-      await fetchScheduleItems();
-    } catch (error: any) {
-      toast.error('Error al corregir fechas', {
-        description: error.message,
-      });
-    } finally {
-      setRegenerating(false);
-    }
-  };
-
   const handleRegenerateSchedule = async () => {
     try {
       setRegenerating(true);
@@ -212,15 +187,6 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
           <div className="flex items-center justify-between">
             <CardTitle>Proyección de Pagos por Propietario</CardTitle>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleFixPaymentDates}
-                disabled={regenerating}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-                {regenerating ? 'Corrigiendo...' : 'Corregir Fechas'}
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
