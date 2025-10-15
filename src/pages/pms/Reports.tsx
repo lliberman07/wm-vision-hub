@@ -2,11 +2,11 @@ import { useNavigate } from 'react-router-dom';
 import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Building2, Users, FileText, DollarSign, RefreshCw } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { TrendingUp, Building2, Users, FileText, DollarSign, RefreshCw, Calendar, MapPin, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
@@ -17,11 +17,8 @@ const Reports = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentTenant, hasPMSAccess } = usePMS();
-  const [selectedProperty, setSelectedProperty] = useState<string>('none');
-  const [selectedContract, setSelectedContract] = useState<string>('current');
-  const [selectedPeriod, setSelectedPeriod] = useState<string>('current-month');
-  const [properties, setProperties] = useState<any[]>([]);
-  const [contracts, setContracts] = useState<any[]>([]);
+  const [propertiesWithContracts, setPropertiesWithContracts] = useState<any[]>([]);
+  const [selectedContract, setSelectedContract] = useState<string | null>(null);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
   const [recalculating, setRecalculating] = useState(false);
   const [stats, setStats] = useState({
@@ -40,13 +37,7 @@ const Reports = () => {
   }, [user, hasPMSAccess, navigate, currentTenant]);
 
   useEffect(() => {
-    if (currentTenant?.id && selectedProperty !== 'none') {
-      fetchContractsForProperty();
-    }
-  }, [selectedProperty, currentTenant]);
-
-  useEffect(() => {
-    if (currentTenant?.id && selectedContract && selectedContract !== 'none') {
+    if (currentTenant?.id && selectedContract) {
       fetchCashflow();
     }
   }, [selectedContract, currentTenant]);
@@ -55,11 +46,47 @@ const Reports = () => {
     if (!currentTenant?.id) return;
     
     try {
-      const [propsRes, contractsRes, tenantsRes, paymentsRes] = await Promise.all([
-        supabase
-          .from('pms_properties')
-          .select('id, code, address, alias')
-          .eq('tenant_id', currentTenant.id),
+      // Fetch properties with their contracts
+      const { data: properties, error: propsError } = await supabase
+        .from('pms_properties')
+        .select('id, code, address, alias, city')
+        .eq('tenant_id', currentTenant.id)
+        .order('code');
+
+      if (propsError) throw propsError;
+
+      // For each property, fetch its contracts
+      const propertiesData = await Promise.all(
+        (properties || []).map(async (property) => {
+          const { data: contracts, error: contractsError } = await supabase
+            .from('pms_contracts')
+            .select(`
+              id,
+              contract_number,
+              status,
+              start_date,
+              end_date,
+              monthly_rent,
+              currency,
+              pms_tenants_renters!inner(full_name)
+            `)
+            .eq('property_id', property.id)
+            .in('status', ['active', 'expired', 'cancelled'])
+            .order('start_date', { ascending: false });
+
+          if (contractsError) {
+            console.error('Error fetching contracts:', contractsError);
+            return { ...property, contracts: [] };
+          }
+
+          return { ...property, contracts: contracts || [] };
+        })
+      );
+
+      setPropertiesWithContracts(propertiesData);
+
+      // Fetch stats
+      const [contractsRes, tenantsRes, paymentsRes] = await Promise.all([
         supabase
           .from('pms_contracts')
           .select('id')
@@ -79,54 +106,22 @@ const Reports = () => {
           .lte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]),
       ]);
 
-      if (propsRes.data) setProperties(propsRes.data);
-
       const totalIncome = paymentsRes.data?.reduce((sum, p) => sum + Number(p.paid_amount || 0), 0) || 0;
 
       setStats({
-        totalProperties: propsRes.data?.length || 0,
+        totalProperties: properties?.length || 0,
         activeContracts: contractsRes.data?.length || 0,
         activeTenants: tenantsRes.data?.length || 0,
         monthlyIncome: totalIncome,
       });
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('Error fetching data:', error);
     }
   };
 
-  const fetchContractsForProperty = async () => {
-    if (!currentTenant?.id || !selectedProperty) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('pms_contracts')
-        .select('id, contract_number, status, start_date, end_date')
-        .eq('tenant_id', currentTenant.id)
-        .eq('property_id', selectedProperty)
-        .in('status', ['active', 'expired', 'cancelled'])
-        .order('start_date', { ascending: false });
-
-      if (error) throw error;
-      setContracts(data || []);
-      
-      // Auto-seleccionar el contrato activo si existe
-      const activeContract = data?.find(c => c.status === 'active');
-      if (activeContract) {
-        setSelectedContract(activeContract.id);
-      } else if (data && data.length > 0) {
-        setSelectedContract(data[0].id);
-      } else {
-        setSelectedContract('none');
-      }
-    } catch (error) {
-      console.error('Error fetching contracts:', error);
-      setContracts([]);
-      setSelectedContract('none');
-    }
-  };
 
   const fetchCashflow = async () => {
-    if (!currentTenant?.id || !selectedContract || selectedContract === 'none') return;
+    if (!currentTenant?.id || !selectedContract) return;
     
     try {
       const { data, error } = await supabase
@@ -142,6 +137,36 @@ const Reports = () => {
     } catch (error) {
       console.error('Error fetching cashflow:', error);
       setCashflowData([]);
+    }
+  };
+
+  const handleSelectContract = (contractId: string) => {
+    setSelectedContract(contractId);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'expired':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Activo';
+      case 'expired':
+        return 'Vencido';
+      case 'cancelled':
+        return 'Cancelado';
+      default:
+        return status;
     }
   };
 
@@ -192,7 +217,7 @@ const Reports = () => {
       
       // Forzar recarga de datos
       await fetchData();
-      if (selectedProperty !== 'none') {
+      if (selectedContract) {
         await fetchCashflow();
       }
       
@@ -283,116 +308,181 @@ const Reports = () => {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-bold">Flujo de Caja por Contrato</h2>
-              <p className="text-muted-foreground">Seleccione una propiedad y contrato para ver el detalle</p>
+              <h2 className="text-2xl font-bold">Propiedades y Contratos</h2>
+              <p className="text-muted-foreground">Seleccione un contrato para ver el reporte detallado</p>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRecalculateCashflow}
-                disabled={recalculating}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
-                {recalculating ? 'Recalculando...' : 'Recalcular Totales'}
-              </Button>
-              <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-                <SelectTrigger className="w-[220px]">
-                  <SelectValue placeholder="Elija la Propiedad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Elija la Propiedad</SelectItem>
-                  {properties.map(prop => (
-                    <SelectItem key={prop.id} value={prop.id}>
-                      {prop.alias || prop.code}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {selectedProperty !== 'none' && contracts.length > 0 && (
-                <Select value={selectedContract} onValueChange={setSelectedContract}>
-                  <SelectTrigger className="w-[220px]">
-                    <SelectValue placeholder="Seleccione Contrato" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contracts.map(contract => (
-                      <SelectItem key={contract.id} value={contract.id}>
-                        {contract.contract_number} ({contract.status})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRecalculateCashflow}
+              disabled={recalculating}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
+              {recalculating ? 'Recalculando...' : 'Recalcular Totales'}
+            </Button>
           </div>
 
-          {selectedProperty !== 'none' && selectedContract && selectedContract !== 'none' && (
+          {propertiesWithContracts.length === 0 ? (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Ingresos, Gastos y Resultado Neto
-                </CardTitle>
-              </CardHeader>
-            <CardContent>
-              {cashflowData.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <p>No hay datos de flujo de caja disponibles</p>
-                  <p className="text-sm mt-2">
-                    Los datos se generan automáticamente cuando se registran pagos y gastos
-                  </p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Período</TableHead>
-                      <TableHead>Moneda</TableHead>
-                      <TableHead className="text-right">Ingresos</TableHead>
-                      <TableHead className="text-right">Gastos</TableHead>
-                      <TableHead className="text-right">Resultado Neto</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {cashflowData.map((cf) => (
-                      <TableRow key={cf.id}>
-                        <TableCell className="font-medium">{cf.period}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{cf.currency}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right text-green-600 font-medium">
-                          ${Number(cf.total_income || 0).toLocaleString('es-AR', {
-                            minimumFractionDigits: 2,
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right text-red-600">
-                          ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
-                            minimumFractionDigits: 2,
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right font-bold">
-                          <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
-                            ${Number(cf.net_result || 0).toLocaleString('es-AR', {
-                              minimumFractionDigits: 2,
-                            })}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+              <CardContent className="text-center py-12 text-muted-foreground">
+                <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No hay propiedades registradas</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Accordion type="single" collapsible className="space-y-4">
+              {propertiesWithContracts.map((property) => (
+                <AccordionItem 
+                  key={property.id} 
+                  value={property.id}
+                  className="border rounded-lg bg-card"
+                >
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                    <div className="flex items-center gap-4 text-left w-full">
+                      <Building2 className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">
+                          {property.alias || property.code}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                          <MapPin className="h-4 w-4" />
+                          <span>{property.address}, {property.city}</span>
+                        </div>
+                      </div>
+                      <Badge variant="secondary">
+                        {property.contracts?.length || 0} contrato(s)
+                      </Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-4">
+                    {property.contracts?.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No hay contratos registrados para esta propiedad</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {property.contracts.map((contract: any) => (
+                          <Card 
+                            key={contract.id}
+                            className={`cursor-pointer transition-all hover:shadow-md ${
+                              selectedContract === contract.id ? 'ring-2 ring-primary' : ''
+                            }`}
+                            onClick={() => handleSelectContract(contract.id)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <FileText className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-semibold">
+                                      {contract.contract_number}
+                                    </span>
+                                    <Badge className={getStatusColor(contract.status)}>
+                                      {getStatusLabel(contract.status)}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Users className="h-4 w-4" />
+                                    <span>{contract.pms_tenants_renters.full_name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-4 text-sm">
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                                      <span>{new Date(contract.start_date).toLocaleDateString('es-AR')}</span>
+                                      <span className="text-muted-foreground">→</span>
+                                      <span>{new Date(contract.end_date).toLocaleDateString('es-AR')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                      <span className="font-medium">
+                                        {contract.currency} ${Number(contract.monthly_rent || 0).toLocaleString('es-AR')}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                {selectedContract === contract.id && (
+                                  <ChevronRight className="h-5 w-5 text-primary" />
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           )}
         </div>
 
-        {selectedProperty !== 'none' && selectedContract && selectedContract !== 'none' && (
-          <OwnerNetIncomeReport 
-            tenantId={currentTenant?.id || ''} 
-            selectedContract={selectedContract}
-          />
+        {selectedContract && (
+          <>
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Flujo de Caja del Contrato
+                </CardTitle>
+                <CardDescription>Últimos 12 meses</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {cashflowData.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No hay datos de flujo de caja disponibles</p>
+                    <p className="text-sm mt-2">
+                      Los datos se generan automáticamente cuando se registran pagos y gastos
+                    </p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Período</TableHead>
+                        <TableHead>Moneda</TableHead>
+                        <TableHead className="text-right">Ingresos</TableHead>
+                        <TableHead className="text-right">Gastos</TableHead>
+                        <TableHead className="text-right">Resultado Neto</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {cashflowData.map((cf) => (
+                        <TableRow key={cf.id}>
+                          <TableCell className="font-medium">{cf.period}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{cf.currency}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right text-green-600 font-medium">
+                            ${Number(cf.total_income || 0).toLocaleString('es-AR', {
+                              minimumFractionDigits: 2,
+                            })}
+                          </TableCell>
+                          <TableCell className="text-right text-red-600">
+                            ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
+                              minimumFractionDigits: 2,
+                            })}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
+                              ${Number(cf.net_result || 0).toLocaleString('es-AR', {
+                                minimumFractionDigits: 2,
+                              })}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+
+            <OwnerNetIncomeReport 
+              tenantId={currentTenant?.id || ''} 
+              selectedContract={selectedContract}
+            />
+          </>
         )}
       </div>
     </PMSLayout>
