@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, DollarSign, AlertCircle, TrendingUp } from 'lucide-react';
+import { Building2, DollarSign, AlertCircle, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ import { usePMS } from '@/contexts/PMSContext';
 interface KPIData {
   totalProperties: number;
   activeContracts: number;
+  overduePayments: number;
   pendingPayments: number;
   monthlyRevenue: number;
 }
@@ -18,6 +19,7 @@ export function DashboardKPIs() {
   const [data, setData] = useState<KPIData>({
     totalProperties: 0,
     activeContracts: 0,
+    overduePayments: 0,
     pendingPayments: 0,
     monthlyRevenue: 0,
   });
@@ -27,7 +29,7 @@ export function DashboardKPIs() {
       if (!currentTenant?.id) return;
 
       try {
-        const [properties, contracts, payments] = await Promise.all([
+        const [properties, contracts, overdueScheduleItems, pendingScheduleItems] = await Promise.all([
           supabase
             .from('pms_properties')
             .select('*', { count: 'exact', head: true })
@@ -38,8 +40,13 @@ export function DashboardKPIs() {
             .eq('tenant_id', currentTenant.id)
             .eq('status', 'active'),
           supabase
-            .from('pms_payments')
-            .select('amount')
+            .from('pms_payment_schedule_items')
+            .select('expected_amount')
+            .eq('tenant_id', currentTenant.id)
+            .eq('status', 'overdue'),
+          supabase
+            .from('pms_payment_schedule_items')
+            .select('expected_amount')
             .eq('tenant_id', currentTenant.id)
             .eq('status', 'pending'),
         ]);
@@ -51,10 +58,14 @@ export function DashboardKPIs() {
           .eq('status', 'paid')
           .gte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
 
+        const overdueTotal = overdueScheduleItems.data?.reduce((sum, item) => sum + (item.expected_amount || 0), 0) || 0;
+        const pendingTotal = pendingScheduleItems.data?.reduce((sum, item) => sum + (item.expected_amount || 0), 0) || 0;
+
         setData({
           totalProperties: properties.count || 0,
           activeContracts: contracts.count || 0,
-          pendingPayments: payments.data?.length || 0,
+          overduePayments: overdueTotal,
+          pendingPayments: pendingTotal,
           monthlyRevenue: revenue.data?.reduce((sum, p) => sum + (p.paid_amount || 0), 0) || 0,
         });
       } catch (error) {
@@ -83,9 +94,16 @@ export function DashboardKPIs() {
       iconColor: 'text-success',
     },
     {
+      title: 'Pagos Vencidos',
+      value: `$${data.overduePayments.toLocaleString()}`,
+      icon: AlertTriangle,
+      gradient: 'from-destructive/10 to-destructive/20',
+      iconColor: 'text-destructive',
+    },
+    {
       title: 'Pagos Pendientes',
-      value: data.pendingPayments,
-      icon: AlertCircle,
+      value: `$${data.pendingPayments.toLocaleString()}`,
+      icon: Clock,
       gradient: 'from-warning/10 to-warning/20',
       iconColor: 'text-warning',
     },
@@ -100,8 +118,8 @@ export function DashboardKPIs() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {[1, 2, 3, 4, 5].map((i) => (
           <Card key={i}>
             <CardHeader>
               <Skeleton className="h-4 w-32" />
@@ -116,7 +134,7 @@ export function DashboardKPIs() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
       {kpis.map((kpi) => {
         const Icon = kpi.icon;
         return (
