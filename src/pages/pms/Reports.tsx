@@ -15,7 +15,7 @@ const Reports = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentTenant, hasPMSAccess } = usePMS();
-  const [selectedProperty, setSelectedProperty] = useState<string>('all');
+  const [selectedProperty, setSelectedProperty] = useState<string>('');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current-month');
   const [properties, setProperties] = useState<any[]>([]);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
@@ -29,24 +29,46 @@ const Reports = () => {
   useEffect(() => {
     if (!user || !hasPMSAccess) {
       navigate('/pms');
-    } else {
+    } else if (currentTenant?.id) {
       fetchData();
     }
-  }, [user, hasPMSAccess, navigate]);
+  }, [user, hasPMSAccess, navigate, currentTenant]);
 
   useEffect(() => {
-    if (currentTenant?.id) {
-      fetchCashflow();
+    if (currentTenant?.id && properties.length > 0) {
+      // Set first property as default if not set
+      if (!selectedProperty && properties.length > 0) {
+        setSelectedProperty(properties[0].id);
+      } else {
+        fetchCashflow();
+      }
     }
-  }, [selectedProperty, selectedPeriod, currentTenant]);
+  }, [selectedProperty, currentTenant, properties]);
 
   const fetchData = async () => {
+    if (!currentTenant?.id) return;
+    
     try {
       const [propsRes, contractsRes, tenantsRes, paymentsRes] = await Promise.all([
-        supabase.from('pms_properties').select('id, code, address'),
-        supabase.from('pms_contracts').select('id').eq('status', 'active'),
-        supabase.from('pms_tenants_renters').select('id').eq('is_active', true),
-        supabase.from('pms_payments').select('paid_amount, currency').eq('status', 'paid'),
+        supabase
+          .from('pms_properties')
+          .select('id, code, address, alias')
+          .eq('tenant_id', currentTenant.id),
+        supabase
+          .from('pms_contracts')
+          .select('id')
+          .eq('status', 'active')
+          .eq('tenant_id', currentTenant.id),
+        supabase
+          .from('pms_tenants_renters')
+          .select('id')
+          .eq('is_active', true)
+          .eq('tenant_id', currentTenant.id),
+        supabase
+          .from('pms_payments')
+          .select('paid_amount, currency')
+          .eq('status', 'paid')
+          .eq('tenant_id', currentTenant.id),
       ]);
 
       if (propsRes.data) setProperties(propsRes.data);
@@ -65,24 +87,22 @@ const Reports = () => {
   };
 
   const fetchCashflow = async () => {
+    if (!currentTenant?.id || !selectedProperty) return;
+    
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('pms_cashflow_property')
         .select('*')
-        .eq('tenant_id', currentTenant?.id)
+        .eq('tenant_id', currentTenant.id)
+        .eq('property_id', selectedProperty)
         .order('period', { ascending: false })
         .limit(12);
-
-      if (selectedProperty !== 'all') {
-        query = query.eq('property_id', selectedProperty);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
       setCashflowData(data || []);
     } catch (error) {
       console.error('Error fetching cashflow:', error);
+      setCashflowData([]);
     }
   };
 
@@ -169,10 +189,9 @@ const Reports = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas las propiedades</SelectItem>
                 {properties.map(prop => (
                   <SelectItem key={prop.id} value={prop.id}>
-                    {prop.code}
+                    {prop.alias || prop.code}
                   </SelectItem>
                 ))}
               </SelectContent>
