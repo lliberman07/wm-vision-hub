@@ -103,10 +103,6 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
     }
   };
 
-  const handleMarkAsPaid = () => {
-    form.setValue('paid_amount', scheduleItem.expected_amount);
-    form.setValue('paid_date', new Date());
-  };
 
   if (!scheduleItem) return null;
 
@@ -249,14 +245,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
               )}
             />
 
-            <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleMarkAsPaid}
-              >
-                Marcar Total Pagado
-              </Button>
+            <DialogFooter>
               <Button type="submit" disabled={loading}>
                 {loading ? 'Guardando...' : 'Registrar Pago'}
               </Button>
