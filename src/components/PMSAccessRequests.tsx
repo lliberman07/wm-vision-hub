@@ -41,7 +41,7 @@ interface PMSAccessRequest {
   postal_code: string;
   requested_role: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'denied';
   created_at: string;
   tax_id?: string;
 }
@@ -85,7 +85,7 @@ const PMSAccessRequests = () => {
         tax_id: req.tax_id,
         requested_role: req.requested_role,
         reason: req.reason || '',
-        status: req.status as 'pending' | 'approved' | 'rejected',
+        status: req.status as 'pending' | 'approved' | 'denied',
         created_at: req.created_at,
         tenant_id: req.tenant_id,
       })));
@@ -227,7 +227,7 @@ const PMSAccessRequests = () => {
         const { error: updateError } = await supabase
           .from('pms_access_requests')
           .update({
-            status: 'rejected',
+            status: 'denied',
             reviewed_at: new Date().toISOString(),
             reviewed_by: (await supabase.auth.getUser()).data.user?.id,
           })
@@ -260,7 +260,7 @@ const PMSAccessRequests = () => {
         return <Badge variant="outline" className="flex items-center gap-1"><Clock className="h-3 w-3" />Pendiente</Badge>;
       case 'approved':
         return <Badge variant="default" className="flex items-center gap-1 bg-green-500"><CheckCircle className="h-3 w-3" />Aprobado</Badge>;
-      case 'rejected':
+      case 'denied':
         return <Badge variant="destructive" className="flex items-center gap-1"><XCircle className="h-3 w-3" />Rechazado</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
