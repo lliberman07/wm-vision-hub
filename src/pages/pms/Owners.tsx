@@ -11,6 +11,7 @@ import { Plus, Search, Edit, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { OwnerForm } from '@/components/pms/OwnerForm';
+import { OwnerDetailsDialog } from '@/components/pms/OwnerDetailsDialog';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 
 interface Owner {
@@ -33,6 +34,8 @@ const Owners = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState<Owner | undefined>();
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [detailsOwner, setDetailsOwner] = useState<Owner | null>(null);
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -131,7 +134,14 @@ const Owners = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => { 
+                            setDetailsOwner(owner); 
+                            setIsDetailsOpen(true); 
+                          }}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => { setSelectedOwner(owner); setIsFormOpen(true); }}>
@@ -151,6 +161,12 @@ const Owners = () => {
           onOpenChange={setIsFormOpen}
           onSuccess={fetchOwners}
           owner={selectedOwner}
+        />
+
+        <OwnerDetailsDialog
+          open={isDetailsOpen}
+          onOpenChange={setIsDetailsOpen}
+          owner={detailsOwner}
         />
       </div>
     </PMSLayout>
