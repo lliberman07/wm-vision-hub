@@ -12,16 +12,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { MaintenanceForm } from '@/components/pms/MaintenanceForm';
+import { MaintenanceDetailsDialog } from '@/components/pms/MaintenanceDetailsDialog';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 
 interface MaintenanceRequest {
   id: string;
   title: string;
+  description: string;
   category?: string;
   priority: string;
   status: string;
   created_at: string;
   estimated_cost?: number;
+  actual_cost?: number;
+  scheduled_date?: string;
+  completed_date?: string;
+  notes?: string;
+  property_id?: string;
+  contract_id?: string;
 }
 
 const Maintenance = () => {
@@ -32,6 +40,7 @@ const Maintenance = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | undefined>();
 
   useEffect(() => {
@@ -161,7 +170,7 @@ const Maintenance = () => {
                         }
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedRequest(request); setIsDetailsOpen(true); }}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => { setSelectedRequest(request); setIsFormOpen(true); }}>
@@ -180,6 +189,12 @@ const Maintenance = () => {
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
           onSuccess={fetchRequests}
+          maintenance={selectedRequest}
+        />
+
+        <MaintenanceDetailsDialog
+          open={isDetailsOpen}
+          onOpenChange={setIsDetailsOpen}
           maintenance={selectedRequest}
         />
       </div>
