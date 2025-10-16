@@ -1,7 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Building2 } from 'lucide-react';
+import { Building2, User, Building } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Property {
   id: string;
@@ -38,6 +40,47 @@ interface PropertyDetailsDialogProps {
 }
 
 export const PropertyDetailsDialog = ({ open, onOpenChange, property }: PropertyDetailsDialogProps) => {
+  const [owners, setOwners] = useState<any[]>([]);
+  const [loadingOwners, setLoadingOwners] = useState(false);
+
+  useEffect(() => {
+    if (property?.id) {
+      fetchOwners();
+    }
+  }, [property?.id]);
+
+  const fetchOwners = async () => {
+    if (!property?.id) return;
+    
+    setLoadingOwners(true);
+    try {
+      const { data, error } = await supabase
+        .from('pms_owner_properties')
+        .select(`
+          share_percent,
+          start_date,
+          end_date,
+          pms_owners!inner(
+            id,
+            full_name,
+            email,
+            owner_type
+          )
+        `)
+        .eq('property_id', property.id)
+        .or('end_date.is.null,end_date.gte.' + new Date().toISOString().split('T')[0])
+        .order('share_percent', { ascending: false });
+
+      if (error) throw error;
+      setOwners(data || []);
+    } catch (error) {
+      console.error('Error fetching owners:', error);
+      setOwners([]);
+    } finally {
+      setLoadingOwners(false);
+    }
+  };
+
   if (!property) return null;
 
   const getStatusBadge = (status: string) => {
@@ -198,6 +241,84 @@ export const PropertyDetailsDialog = ({ open, onOpenChange, property }: Property
             <div className="space-y-2">
               <Label className="text-muted-foreground">Estado de Publicación</Label>
               <p className="font-medium capitalize">{property.estado_publicacion}</p>
+            </div>
+          )}
+
+          {/* Propietarios */}
+          {owners.length > 0 && (
+            <div className="space-y-3 border-t pt-4">
+              <Label className="text-muted-foreground flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Propietarios
+              </Label>
+              <div className="space-y-2">
+                {owners.map((ownerRel: any, index: number) => {
+                  const owner = ownerRel.pms_owners;
+                  const isCompany = owner.owner_type === 'company';
+                  
+                  return (
+                    <div 
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                          {isCompany ? (
+                            <Building className="h-5 w-5 text-primary" />
+                          ) : (
+                            <User className="h-5 w-5 text-primary" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {owner.full_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {owner.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant="secondary" className="font-semibold">
+                          {ownerRel.share_percent}%
+                        </Badge>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {isCompany ? 'Empresa' : 'Persona'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Total Check */}
+                {owners.reduce((sum: number, o: any) => sum + o.share_percent, 0) === 100 ? (
+                  <div className="flex items-center justify-end gap-2 text-xs text-green-600 dark:text-green-400">
+                    <span>✓ Total: 100%</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-end gap-2 text-xs text-amber-600 dark:text-amber-400">
+                    <span>⚠ Total: {owners.reduce((sum: number, o: any) => sum + o.share_percent, 0)}%</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {loadingOwners && (
+            <div className="space-y-2 border-t pt-4">
+              <Label className="text-muted-foreground">Propietarios</Label>
+              <p className="text-sm text-muted-foreground">Cargando...</p>
+            </div>
+          )}
+
+          {!loadingOwners && owners.length === 0 && (
+            <div className="space-y-2 border-t pt-4">
+              <Label className="text-muted-foreground">Propietarios</Label>
+              <div className="p-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  ⚠ Esta propiedad no tiene propietarios asignados
+                </p>
+              </div>
             </div>
           )}
 
