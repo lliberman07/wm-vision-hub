@@ -244,6 +244,7 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="DNI">DNI</SelectItem>
+                            <SelectItem value="CUIT/CUIL">CUIT/CUIL</SelectItem>
                             <SelectItem value="Pasaporte">Pasaporte</SelectItem>
                           </SelectContent>
                         </Select>
