@@ -84,6 +84,14 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
   }, [open, owner, form]);
 
   const onSubmit = async (data: FormValues) => {
+    // Validación defensiva: verificar que currentTenant?.id existe
+    if (!currentTenant?.id) {
+      toast.error('Error', { 
+        description: 'No se pudo determinar el tenant. Por favor, recarga la página.' 
+      });
+      return;
+    }
+
     try {
       const payload: any = {
         full_name: data.full_name,
@@ -96,7 +104,7 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
         address: data.address,
         city: data.city,
         notes: data.notes,
-        tenant_id: currentTenant?.id,
+        tenant_id: currentTenant.id,
         is_active: true,
       };
 
@@ -305,7 +313,7 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={!currentTenant?.id}>
                 {owner ? 'Actualizar' : 'Crear'}
               </Button>
             </div>

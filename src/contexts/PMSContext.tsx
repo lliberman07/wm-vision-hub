@@ -93,13 +93,15 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.log('[PMSContext] Tenant query result:', { tenant, error: tenantError });
 
         if (tenant && !tenantError) {
+          console.log('[PMSContext] ✅ Tenant loaded successfully:', tenant);
           setCurrentTenant({
             id: tenant.id,
             name: tenant.name,
             slug: tenant.slug
           });
         } else {
-          console.warn('[PMSContext] Could not fetch tenant, but user has roles');
+          console.error('[PMSContext] ❌ Failed to load tenant:', tenantError);
+          console.error('[PMSContext] Tenant ID attempted:', roles[0].tenant_id);
           setCurrentTenant(null);
         }
       } else {
