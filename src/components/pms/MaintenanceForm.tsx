@@ -20,6 +20,9 @@ const formSchema = z.object({
   category: z.string().optional(),
   priority: z.string().min(1, 'Prioridad requerida'),
   status: z.string().min(1, 'Estado requerido'),
+  paid_by: z.string().optional(),
+  provider_contact: z.string().optional(),
+  provider_phone: z.string().optional(),
   estimated_cost: z.number().min(0).optional(),
   scheduled_date: z.string().optional(),
   notes: z.string().optional(),
@@ -49,6 +52,9 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
       category: 'plumbing',
       priority: 'medium',
       status: 'pending',
+      paid_by: '',
+      provider_contact: '',
+      provider_phone: '',
       estimated_cost: 0,
       scheduled_date: '',
       notes: '',
@@ -67,6 +73,9 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
           category: maintenance.category || 'plumbing',
           priority: maintenance.priority || 'medium',
           status: maintenance.status || 'pending',
+          paid_by: maintenance.paid_by || '',
+          provider_contact: maintenance.provider_contact || '',
+          provider_phone: maintenance.provider_phone || '',
           estimated_cost: maintenance.estimated_cost || 0,
           scheduled_date: maintenance.scheduled_date || '',
           notes: maintenance.notes || '',
@@ -80,6 +89,9 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
           category: 'plumbing',
           priority: 'medium',
           status: 'pending',
+          paid_by: '',
+          provider_contact: '',
+          provider_phone: '',
           estimated_cost: 0,
           scheduled_date: '',
           notes: '',
@@ -140,6 +152,9 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
         category: data.category,
         priority: data.priority,
         status: data.status,
+        paid_by: data.paid_by || null,
+        provider_contact: data.provider_contact || null,
+        provider_phone: data.provider_phone || null,
         estimated_cost: data.estimated_cost,
         scheduled_date: data.scheduled_date || null,
         notes: data.notes,
@@ -322,6 +337,59 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                         <SelectItem value="completed">Completado</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="paid_by"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pagado por</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar responsable" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="inquilino">Inquilino</SelectItem>
+                      <SelectItem value="propietario">Propietario</SelectItem>
+                      <SelectItem value="administracion">Administración</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="provider_contact"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contacto Proveedor</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Nombre del proveedor" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="provider_phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tel. Proveedor</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Teléfono" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

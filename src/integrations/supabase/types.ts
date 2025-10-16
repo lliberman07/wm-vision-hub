@@ -1301,9 +1301,12 @@ export type Database = {
           estimated_cost: number | null
           id: string
           notes: string | null
+          paid_by: string | null
           photos: Json | null
           priority: string | null
           property_id: string
+          provider_contact: string | null
+          provider_phone: string | null
           reported_by: string | null
           scheduled_date: string | null
           status: string | null
@@ -1322,9 +1325,12 @@ export type Database = {
           estimated_cost?: number | null
           id?: string
           notes?: string | null
+          paid_by?: string | null
           photos?: Json | null
           priority?: string | null
           property_id: string
+          provider_contact?: string | null
+          provider_phone?: string | null
           reported_by?: string | null
           scheduled_date?: string | null
           status?: string | null
@@ -1343,9 +1349,12 @@ export type Database = {
           estimated_cost?: number | null
           id?: string
           notes?: string | null
+          paid_by?: string | null
           photos?: Json | null
           priority?: string | null
           property_id?: string
+          provider_contact?: string | null
+          provider_phone?: string | null
           reported_by?: string | null
           scheduled_date?: string | null
           status?: string | null

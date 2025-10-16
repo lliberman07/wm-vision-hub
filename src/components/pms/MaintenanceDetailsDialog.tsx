@@ -18,6 +18,9 @@ interface MaintenanceRequest {
   notes?: string;
   property_id?: string;
   contract_id?: string;
+  paid_by?: string;
+  provider_contact?: string;
+  provider_phone?: string;
 }
 
 interface MaintenanceDetailsDialogProps {
@@ -107,6 +110,41 @@ export function MaintenanceDetailsDialog({ open, onOpenChange, maintenance }: Ma
             </div>
             <p className="text-sm text-muted-foreground pl-6">{getCategoryLabel(maintenance.category)}</p>
           </div>
+
+          {/* Pagado por */}
+          {maintenance.paid_by && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <DollarSign className="h-4 w-4" />
+                <span>Pagado por</span>
+              </div>
+              <p className="text-sm text-muted-foreground pl-6 capitalize">{maintenance.paid_by}</p>
+            </div>
+          )}
+
+          {/* Proveedor */}
+          {(maintenance.provider_contact || maintenance.provider_phone) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {maintenance.provider_contact && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <MapPin className="h-4 w-4" />
+                    <span>Contacto Proveedor</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground pl-6">{maintenance.provider_contact}</p>
+                </div>
+              )}
+              {maintenance.provider_phone && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <MapPin className="h-4 w-4" />
+                    <span>Tel. Proveedor</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground pl-6">{maintenance.provider_phone}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Fechas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
