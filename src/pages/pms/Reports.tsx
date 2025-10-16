@@ -71,7 +71,7 @@ const Reports = () => {
               pms_tenants_renters!inner(full_name)
             `)
             .eq('property_id', property.id)
-            .in('status', ['active', 'expired', 'cancelled'])
+            .eq('status', 'active')
             .order('start_date', { ascending: false });
 
           if (contractsError) {
