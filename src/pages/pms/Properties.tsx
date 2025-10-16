@@ -21,12 +21,27 @@ interface Property {
   code: string;
   address: string;
   city: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
   property_type: string;
   status: string;
   bedrooms?: number;
   bathrooms?: number;
   surface_total?: number;
+  surface_covered?: number;
+  latitude?: number;
+  longitude?: number;
+  amenities?: string[];
+  description?: string;
   photos?: string[];
+  alias?: string;
+  categoria?: string;
+  barrio?: string;
+  operacion?: string;
+  monto_alquiler?: number;
+  valor_venta?: number;
+  estado_publicacion?: string;
 }
 
 const Properties = () => {
