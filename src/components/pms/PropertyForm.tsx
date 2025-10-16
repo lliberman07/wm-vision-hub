@@ -27,10 +27,16 @@ const formSchema = z.object({
   postal_code: z.string().optional(),
   property_type: z.string().min(1, 'Tipo requerido'),
   status: z.string().min(1, 'Estado requerido'),
+  habitaciones: z.number().int().min(0).optional(),
   bedrooms: z.number().int().min(0).optional(),
   bathrooms: z.number().min(0).optional(),
   surface_total: z.number().min(0).optional(),
   surface_covered: z.number().min(0).optional(),
+  balcon: z.boolean().optional(),
+  patio: z.boolean().optional(),
+  baulera: z.boolean().optional(),
+  cocheras: z.number().int().min(0).optional(),
+  tiene_amenidades: z.boolean().optional(),
   description: z.string().optional(),
   alias: z.string().optional(),
   categoria: z.string().optional(),
@@ -67,10 +73,16 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
       postal_code: '',
       property_type: 'apartment',
       status: 'available',
+      habitaciones: undefined,
       bedrooms: undefined,
       bathrooms: undefined,
       surface_total: undefined,
       surface_covered: undefined,
+      balcon: false,
+      patio: false,
+      baulera: false,
+      cocheras: undefined,
+      tiene_amenidades: false,
       description: '',
       alias: '',
       categoria: '',
@@ -93,10 +105,16 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         postal_code: property.postal_code || '',
         property_type: property.property_type || 'apartment',
         status: property.status || 'available',
+        habitaciones: property.habitaciones || 0,
         bedrooms: property.bedrooms || 0,
         bathrooms: property.bathrooms || 0,
         surface_total: property.surface_total || 0,
         surface_covered: property.surface_covered || 0,
+        balcon: property.balcon || false,
+        patio: property.patio || false,
+        baulera: property.baulera || false,
+        cocheras: property.cocheras || 0,
+        tiene_amenidades: property.tiene_amenidades || false,
         description: property.description || '',
         alias: property.alias || '',
         categoria: property.categoria || '',
@@ -116,10 +134,16 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         postal_code: '',
         property_type: 'apartment',
         status: 'available',
+        habitaciones: 0,
         bedrooms: 0,
         bathrooms: 0,
         surface_total: 0,
         surface_covered: 0,
+        balcon: false,
+        patio: false,
+        baulera: false,
+        cocheras: 0,
+        tiene_amenidades: false,
         description: '',
         alias: '',
         categoria: '',
@@ -157,10 +181,16 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         postal_code: data.postal_code,
         property_type: data.property_type,
         status: data.status,
+        habitaciones: data.habitaciones,
         bedrooms: data.bedrooms,
         bathrooms: data.bathrooms,
         surface_total: data.surface_total,
         surface_covered: data.surface_covered,
+        balcon: data.balcon,
+        patio: data.patio,
+        baulera: data.baulera,
+        cocheras: data.cocheras,
+        tiene_amenidades: data.tiene_amenidades,
         description: data.description,
         alias: data.alias,
         categoria: data.categoria,
@@ -289,20 +319,20 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                 <FormItem>
                   <FormLabel>Dirección</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Av. Principal 123" />
+                    <Input {...field} placeholder="Calle/Avenida, número, piso, departamento" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <FormField
                 control={form.control}
-                name="city"
+                name="state"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ciudad</FormLabel>
+                    <FormLabel>Provincia</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="Buenos Aires" />
                     </FormControl>
@@ -313,12 +343,26 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
 
               <FormField
                 control={form.control}
-                name="state"
+                name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Provincia</FormLabel>
+                    <FormLabel>Ciudad</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="CABA" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="barrio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Barrio</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Palermo" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -341,6 +385,24 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
             </div>
 
             <div className="grid grid-cols-4 gap-4">
+              <FormField
+                control={form.control}
+                name="habitaciones"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Habitaciones</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="bedrooms"
@@ -378,6 +440,100 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="cocheras"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cocheras</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-4 gap-4">
+              <FormField
+                control={form.control}
+                name="balcon"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Balcón</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="patio"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Patio</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="baulera"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Baulera</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="tiene_amenidades"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Amenidades</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="surface_total"
@@ -536,44 +692,28 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="barrio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Barrio</FormLabel>
+            <FormField
+              control={form.control}
+              name="operacion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Operación</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <Input {...field} placeholder="Palermo" />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="operacion"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Operación</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Alquiler">Alquiler</SelectItem>
-                        <SelectItem value="Venta">Venta</SelectItem>
-                        <SelectItem value="Ambos">Ambos</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <SelectContent>
+                      <SelectItem value="Alquiler">Alquiler</SelectItem>
+                      <SelectItem value="Venta">Venta</SelectItem>
+                      <SelectItem value="Ambos">Ambos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
