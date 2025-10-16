@@ -112,7 +112,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
     if (activeContract) {
       form.setValue('contract_id', activeContract.id);
     } else {
-      form.setValue('contract_id', '');
+      form.setValue('contract_id', 'none');
     }
   };
 
@@ -120,7 +120,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
     try {
       const payload: any = {
         property_id: data.property_id,
-        contract_id: data.contract_id || null,
+        contract_id: data.contract_id && data.contract_id !== 'none' ? data.contract_id : null,
         title: data.title,
         description: data.description,
         category: data.category,
@@ -207,7 +207,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Sin contrato</SelectItem>
+                      <SelectItem value="none">Sin contrato</SelectItem>
                       {contracts
                         .filter(c => !form.watch('property_id') || c.property_id === form.watch('property_id'))
                         .map(contract => (
