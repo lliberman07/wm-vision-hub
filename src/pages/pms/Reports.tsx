@@ -22,6 +22,8 @@ const Reports = () => {
   const [selectedContract, setSelectedContract] = useState<string | null>(null);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
   const [recalculating, setRecalculating] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [selectedProperty, setSelectedProperty] = useState<any | null>(null);
   const [stats, setStats] = useState({
     totalProperties: 0,
     activeContracts: 0,
@@ -152,8 +154,22 @@ const Reports = () => {
     }
   };
 
-  const handleSelectContract = (contractId: string) => {
+  const handleSelectContract = (contractId: string, property: any) => {
     setSelectedContract(contractId);
+    setSelectedProperty(property);
+    setViewMode('detail');
+  };
+
+  const handleSelectPropertyWithoutContract = (property: any) => {
+    setSelectedContract(null);
+    setSelectedProperty(property);
+    setViewMode('detail');
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedContract(null);
+    setSelectedProperty(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -317,194 +333,270 @@ const Reports = () => {
           </Card>
         </div>
 
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-2xl font-bold">Propiedades y Contratos</h2>
-              <p className="text-muted-foreground">Seleccione un contrato para ver el reporte detallado</p>
+        {viewMode === 'list' ? (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold">Propiedades y Contratos</h2>
+                <p className="text-muted-foreground">Seleccione un contrato para ver el reporte detallado</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRecalculateCashflow}
+                disabled={recalculating}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
+                {recalculating ? 'Recalculando...' : 'Recalcular Totales'}
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRecalculateCashflow}
-              disabled={recalculating}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
-              {recalculating ? 'Recalculando...' : 'Recalcular Totales'}
-            </Button>
-          </div>
 
-          {propertiesWithContracts.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12 text-muted-foreground">
-                <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No hay propiedades registradas</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Accordion type="single" collapsible className="space-y-4">
-              {propertiesWithContracts.map((property) => (
-                <AccordionItem 
-                  key={property.id} 
-                  value={property.id}
-                  className="border rounded-lg bg-card"
-                >
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                    <div className="flex items-center gap-4 text-left w-full">
-                      <Building2 className="h-5 w-5 text-primary" />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">
-                          {property.alias || property.code}
-                        </h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{property.address}, {property.city}</span>
+            {propertiesWithContracts.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12 text-muted-foreground">
+                  <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No hay propiedades registradas</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Accordion type="single" collapsible className="space-y-4">
+                {propertiesWithContracts.map((property) => (
+                  <AccordionItem 
+                    key={property.id} 
+                    value={property.id}
+                    className="border rounded-lg bg-card"
+                  >
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                      <div className="flex items-center gap-4 text-left w-full">
+                        <Building2 className="h-5 w-5 text-primary" />
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">
+                            {property.alias || property.code}
+                          </h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>{property.address}, {property.city}</span>
+                          </div>
                         </div>
+                        <Badge variant="secondary">
+                          {property.contracts?.length > 0 
+                            ? `${property.contracts.length} contrato(s)` 
+                            : property.expenses_without_contract > 0
+                              ? `Sin contrato - ${property.expenses_without_contract} gasto(s)`
+                              : 'Sin actividad'
+                          }
+                        </Badge>
                       </div>
-                      <Badge variant="secondary">
-                        {property.contracts?.length > 0 
-                          ? `${property.contracts.length} contrato(s)` 
-                          : property.expenses_without_contract > 0
-                            ? `Sin contrato - ${property.expenses_without_contract} gasto(s)`
-                            : 'Sin actividad'
-                        }
-                      </Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-4">
-                    {property.contracts?.length === 0 && property.expenses_without_contract > 0 ? (
-                      <PropertyExpensesReport 
-                        propertyId={property.id}
-                        tenantId={currentTenant.id}
-                      />
-                    ) : property.contracts?.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>No hay contratos ni gastos registrados para esta propiedad</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {property.contracts.map((contract: any) => (
-                          <Card 
-                            key={contract.id}
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              selectedContract === contract.id ? 'ring-2 ring-primary' : ''
-                            }`}
-                            onClick={() => handleSelectContract(contract.id)}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1 space-y-2">
-                                  <div className="flex items-center gap-3">
-                                    <FileText className="h-4 w-4 text-muted-foreground" />
-                                    <span className="font-semibold">
-                                      {contract.contract_number}
-                                    </span>
-                                    <Badge className={getStatusColor(contract.status)}>
-                                      {getStatusLabel(contract.status)}
-                                    </Badge>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Users className="h-4 w-4" />
-                                    <span>{contract.pms_tenants_renters.full_name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-4 text-sm">
-                                    <div className="flex items-center gap-1">
-                                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                                      <span>{new Date(contract.start_date).toLocaleDateString('es-AR')}</span>
-                                      <span className="text-muted-foreground">→</span>
-                                      <span>{new Date(contract.end_date).toLocaleDateString('es-AR')}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                      <span className="font-medium">
-                                        {contract.currency} ${Number(contract.monthly_rent || 0).toLocaleString('es-AR')}
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-4">
+                      {property.contracts?.length === 0 && property.expenses_without_contract > 0 ? (
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectPropertyWithoutContract(property);
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          Ver Reporte de Gastos
+                        </Button>
+                      ) : property.contracts?.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>No hay contratos ni gastos registrados para esta propiedad</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {property.contracts.map((contract: any) => (
+                            <Card 
+                              key={contract.id}
+                              className="cursor-pointer transition-all hover:shadow-md"
+                              onClick={() => handleSelectContract(contract.id, property)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1 space-y-2">
+                                    <div className="flex items-center gap-3">
+                                      <FileText className="h-4 w-4 text-muted-foreground" />
+                                      <span className="font-semibold">
+                                        {contract.contract_number}
                                       </span>
+                                      <Badge className={getStatusColor(contract.status)}>
+                                        {getStatusLabel(contract.status)}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <Users className="h-4 w-4" />
+                                      <span>{contract.pms_tenants_renters.full_name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-sm">
+                                      <div className="flex items-center gap-1">
+                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                        <span>{new Date(contract.start_date).toLocaleDateString('es-AR')}</span>
+                                        <span className="text-muted-foreground">→</span>
+                                        <span>{new Date(contract.end_date).toLocaleDateString('es-AR')}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                        <span className="font-medium">
+                                          {contract.currency} ${Number(contract.monthly_rent || 0).toLocaleString('es-AR')}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                                {selectedContract === contract.id && (
-                                  <ChevronRight className="h-5 w-5 text-primary" />
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
-        </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <Button 
+              variant="ghost" 
+              onClick={handleBackToList}
+              className="mb-4"
+            >
+              <ChevronRight className="h-4 w-4 mr-2 rotate-180" />
+              Volver al listado
+            </Button>
 
-        {selectedContract && (
-          <>
-            <Card className="mb-6">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Flujo de Caja del Contrato
-                </CardTitle>
-                <CardDescription>Últimos 12 meses</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {cashflowData.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <p>No hay datos de flujo de caja disponibles</p>
-                    <p className="text-sm mt-2">
-                      Los datos se generan automáticamente cuando se registran pagos y gastos
-                    </p>
+                <div className="flex items-center gap-4">
+                  <Building2 className="h-8 w-8 text-primary" />
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl">
+                      {selectedProperty?.alias || selectedProperty?.code}
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-2 mt-1">
+                      <MapPin className="h-4 w-4" />
+                      {selectedProperty?.address}, {selectedProperty?.city}
+                    </CardDescription>
                   </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Período</TableHead>
-                        <TableHead>Moneda</TableHead>
-                        <TableHead className="text-right">Ingresos</TableHead>
-                        <TableHead className="text-right">Gastos</TableHead>
-                        <TableHead className="text-right">Resultado Neto</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {cashflowData.map((cf) => (
-                        <TableRow key={cf.id}>
-                          <TableCell className="font-medium">{cf.period}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{cf.currency}</Badge>
-                          </TableCell>
-                          <TableCell className="text-right text-green-600 font-medium">
-                            ${Number(cf.total_income || 0).toLocaleString('es-AR', {
-                              minimumFractionDigits: 2,
-                            })}
-                          </TableCell>
-                          <TableCell className="text-right text-red-600">
-                            ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
-                              minimumFractionDigits: 2,
-                            })}
-                          </TableCell>
-                          <TableCell className="text-right font-bold">
-                            <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
-                              ${Number(cf.net_result || 0).toLocaleString('es-AR', {
-                                minimumFractionDigits: 2,
-                              })}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
+                </div>
+              </CardHeader>
             </Card>
 
-            <OwnerNetIncomeReport 
-              tenantId={currentTenant?.id || ''} 
-              selectedContract={selectedContract}
-            />
-          </>
+            {!selectedContract && selectedProperty?.expenses_without_contract > 0 && (
+              <PropertyExpensesReport 
+                propertyId={selectedProperty.id}
+                tenantId={currentTenant.id}
+              />
+            )}
+
+            {selectedContract && (
+              <>
+                <Card>
+                  <CardContent className="pt-6">
+                    {selectedProperty?.contracts
+                      ?.filter((c: any) => c.id === selectedContract)
+                      .map((contract: any) => (
+                        <div key={contract.id} className="space-y-3">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-5 w-5 text-muted-foreground" />
+                            <span className="font-semibold text-lg">{contract.contract_number}</span>
+                            <Badge className={getStatusColor(contract.status)}>
+                              {getStatusLabel(contract.status)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Users className="h-4 w-4" />
+                            <span>{contract.pms_tenants_renters.full_name}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 text-sm">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span>{new Date(contract.start_date).toLocaleDateString('es-AR')}</span>
+                              <span className="text-muted-foreground">→</span>
+                              <span>{new Date(contract.end_date).toLocaleDateString('es-AR')}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">
+                                {contract.currency} ${Number(contract.monthly_rent || 0).toLocaleString('es-AR')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="h-5 w-5" />
+                      Flujo de Caja del Contrato
+                    </CardTitle>
+                    <CardDescription>Últimos 12 meses</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {cashflowData.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <p>No hay datos de flujo de caja disponibles</p>
+                        <p className="text-sm mt-2">
+                          Los datos se generan automáticamente cuando se registran pagos y gastos
+                        </p>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Período</TableHead>
+                            <TableHead>Moneda</TableHead>
+                            <TableHead className="text-right">Ingresos</TableHead>
+                            <TableHead className="text-right">Gastos</TableHead>
+                            <TableHead className="text-right">Resultado Neto</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {cashflowData.map((cf) => (
+                            <TableRow key={cf.id}>
+                              <TableCell className="font-medium">{cf.period}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{cf.currency}</Badge>
+                              </TableCell>
+                              <TableCell className="text-right text-green-600 font-medium">
+                                ${Number(cf.total_income || 0).toLocaleString('es-AR', {
+                                  minimumFractionDigits: 2,
+                                })}
+                              </TableCell>
+                              <TableCell className="text-right text-red-600">
+                                ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
+                                  minimumFractionDigits: 2,
+                                })}
+                              </TableCell>
+                              <TableCell className="text-right font-bold">
+                                <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
+                                  ${Number(cf.net_result || 0).toLocaleString('es-AR', {
+                                    minimumFractionDigits: 2,
+                                  })}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <OwnerNetIncomeReport 
+                  tenantId={currentTenant?.id || ''} 
+                  selectedContract={selectedContract}
+                />
+              </>
+            )}
+          </div>
         )}
       </div>
     </PMSLayout>
