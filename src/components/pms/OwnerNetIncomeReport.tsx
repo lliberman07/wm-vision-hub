@@ -10,18 +10,18 @@ interface OwnerNetIncomeReportProps {
   selectedContract: string;
 }
 
-interface OwnerTotal {
+interface MonthlyOwnerData {
+  period: string;
   owner_id: string;
   full_name: string;
   share_percent: number;
-  total_income: number;
-  total_expenses: number;
+  income: number;
+  expenses: number;
   net_result: number;
-  currency: string;
 }
 
 export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetIncomeReportProps) => {
-  const [ownerTotals, setOwnerTotals] = useState<OwnerTotal[]>([]);
+  const [ownerTotals, setOwnerTotals] = useState<MonthlyOwnerData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,93 +33,55 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
   const fetchOwnerTotals = async () => {
     setLoading(true);
     try {
-      // 1. Obtener información del contrato
-      const { data: contract, error: contractError } = await supabase
+      // 1. Obtener cashflow del contrato (ya tiene datos mes a mes)
+      const { data: cashflow, error: cashflowError } = await supabase
+        .from('pms_cashflow_property')
+        .select('*')
+        .eq('contract_id', selectedContract)
+        .order('period', { ascending: false })
+        .limit(12);
+
+      if (cashflowError) throw cashflowError;
+
+      // 2. Obtener información del contrato
+      const { data: contract } = await supabase
         .from('pms_contracts')
         .select('property_id')
         .eq('id', selectedContract)
         .single();
 
-      if (contractError) throw contractError;
-
-      // 2. Obtener distribuciones usando contract_id directamente
-      const { data: distributions, error: distError } = await supabase
-        .from('pms_payment_distributions')
-        .select(`
-          owner_id,
-          amount,
-          share_percent,
-          currency,
-          pms_owners!inner(full_name)
-        `)
-        .eq('contract_id', selectedContract)
-        .eq('tenant_id', tenantId);
-
-      if (distError) {
-        console.error('Error fetching distributions:', distError);
-        throw distError;
+      if (!contract) {
+        setOwnerTotals([]);
+        return;
       }
 
-      console.log('Distributions found for contract:', distributions);
-
-      // 3. Obtener TODOS los gastos de la propiedad (con o sin contract_id)
-      const { data: expenses, error: expError } = await supabase
-        .from('pms_expenses')
-        .select('amount, currency')
-        .eq('property_id', contract.property_id)
-        .neq('status', 'rejected');
-
-      if (expError) throw expError;
-
-      const totalExpenses = expenses?.reduce((sum, exp) => sum + Number(exp.amount || 0), 0) || 0;
-
-      // 4. Obtener propietarios del contrato (en el momento de su creación)
-      const { data: owners, error: ownersError } = await supabase
+      // 3. Obtener propietarios del contrato
+      const { data: owners } = await supabase
         .from('pms_owner_properties')
-        .select(`
-          owner_id,
-          share_percent,
-          pms_owners!inner(full_name)
-        `)
+        .select('owner_id, share_percent, pms_owners!inner(full_name)')
         .eq('property_id', contract.property_id)
         .or(`end_date.is.null,end_date.gte.${new Date().toISOString().split('T')[0]}`);
 
-      if (ownersError) throw ownersError;
-
-      // 5. Agrupar distribuciones por propietario
-      const incomeByOwner = new Map<string, { total: number; share: number; name: string }>();
+      // 4. Para cada período, distribuir según propietarios
+      const monthlyData: MonthlyOwnerData[] = [];
       
-      distributions?.forEach((dist: any) => {
-        const existing = incomeByOwner.get(dist.owner_id) || { total: 0, share: 0, name: '' };
-        incomeByOwner.set(dist.owner_id, {
-          total: existing.total + Number(dist.amount || 0),
-          share: dist.share_percent,
-          name: dist.pms_owners.full_name
+      cashflow?.forEach(cf => {
+        owners?.forEach((owner: any) => {
+          monthlyData.push({
+            period: cf.period,
+            owner_id: owner.owner_id,
+            full_name: owner.pms_owners.full_name,
+            share_percent: owner.share_percent,
+            income: (cf.total_income * owner.share_percent) / 100,
+            expenses: (cf.total_expenses * owner.share_percent) / 100,
+            net_result: ((cf.total_income - cf.total_expenses) * owner.share_percent) / 100
+          });
         });
       });
 
-      console.log('Income by owner:', incomeByOwner);
-
-      // 6. Calcular totales por propietario
-      const totals: OwnerTotal[] = owners?.map((owner: any) => {
-        const income = incomeByOwner.get(owner.owner_id)?.total || 0;
-        const ownerExpenses = totalExpenses * (owner.share_percent / 100);
-        
-        return {
-          owner_id: owner.owner_id,
-          full_name: owner.pms_owners.full_name,
-          share_percent: owner.share_percent,
-          total_income: income,
-          total_expenses: ownerExpenses,
-          net_result: income - ownerExpenses,
-          currency: 'ARS'
-        };
-      }) || [];
-
-      console.log('Final totals:', totals);
-      setOwnerTotals(totals);
+      setOwnerTotals(monthlyData);
     } catch (error) {
-      console.error('Error fetching owner totals:', error);
+      console.error('Error fetching monthly data:', error);
       setOwnerTotals([]);
     } finally {
       setLoading(false);
@@ -131,6 +93,16 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  };
+
+  const groupByPeriod = (data: MonthlyOwnerData[]) => {
+    return data.reduce((acc, item) => {
+      if (!acc[item.period]) {
+        acc[item.period] = [];
+      }
+      acc[item.period].push(item);
+      return acc;
+    }, {} as Record<string, MonthlyOwnerData[]>);
   };
 
   if (loading) {
@@ -179,51 +151,57 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Período</TableHead>
               <TableHead>Propietario</TableHead>
-              <TableHead className="text-center">Participación</TableHead>
+              <TableHead className="text-center">%</TableHead>
               <TableHead className="text-right">Ingresos</TableHead>
               <TableHead className="text-right">Gastos</TableHead>
-              <TableHead className="text-right">Resultado Neto</TableHead>
+              <TableHead className="text-right">Neto</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {ownerTotals.map((owner) => (
-              <TableRow key={owner.owner_id}>
-                <TableCell className="font-medium">{owner.full_name}</TableCell>
-                <TableCell className="text-center">
-                  <Badge variant="outline">{owner.share_percent}%</Badge>
-                </TableCell>
-                <TableCell className="text-right text-green-600 font-medium">
-                  ${formatCurrency(owner.total_income)}
-                </TableCell>
-                <TableCell className="text-right text-red-600">
-                  ${formatCurrency(owner.total_expenses)}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Badge variant={owner.net_result >= 0 ? 'default' : 'destructive'}>
-                    ${formatCurrency(owner.net_result)}
-                  </Badge>
-                </TableCell>
-              </TableRow>
+            {Object.entries(groupByPeriod(ownerTotals)).map(([period, periodData]) => (
+              <>
+                {periodData.map((data, index) => (
+                  <TableRow key={`${period}-${data.owner_id}`}>
+                    {index === 0 && (
+                      <TableCell rowSpan={periodData.length} className="font-bold align-top">
+                        {period}
+                      </TableCell>
+                    )}
+                    <TableCell className="bg-muted/30">{data.full_name}</TableCell>
+                    <TableCell className="text-center bg-muted/30">
+                      <Badge variant="outline">{data.share_percent}%</Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-green-600 bg-muted/30">
+                      ${formatCurrency(data.income)}
+                    </TableCell>
+                    <TableCell className="text-right text-red-600 bg-muted/30">
+                      ${formatCurrency(data.expenses)}
+                    </TableCell>
+                    <TableCell className="text-right bg-muted/30">
+                      <Badge variant={data.net_result >= 0 ? 'default' : 'destructive'}>
+                        ${formatCurrency(data.net_result)}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                <TableRow className="font-bold bg-primary/10">
+                  <TableCell colSpan={3}>Subtotal {period}</TableCell>
+                  <TableCell className="text-right text-green-600">
+                    ${formatCurrency(periodData.reduce((sum, d) => sum + d.income, 0))}
+                  </TableCell>
+                  <TableCell className="text-right text-red-600">
+                    ${formatCurrency(periodData.reduce((sum, d) => sum + d.expenses, 0))}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant={periodData.reduce((sum, d) => sum + d.net_result, 0) >= 0 ? 'default' : 'destructive'}>
+                      ${formatCurrency(periodData.reduce((sum, d) => sum + d.net_result, 0))}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              </>
             ))}
-            <TableRow className="font-bold bg-muted/50">
-              <TableCell colSpan={2}>TOTAL</TableCell>
-              <TableCell className="text-right text-green-600">
-                ${formatCurrency(ownerTotals.reduce((sum, o) => sum + o.total_income, 0))}
-              </TableCell>
-              <TableCell className="text-right text-red-600">
-                ${formatCurrency(ownerTotals.reduce((sum, o) => sum + o.total_expenses, 0))}
-              </TableCell>
-              <TableCell className="text-right">
-                <Badge variant={
-                  ownerTotals.reduce((sum, o) => sum + o.net_result, 0) >= 0 
-                    ? 'default' 
-                    : 'destructive'
-                }>
-                  ${formatCurrency(ownerTotals.reduce((sum, o) => sum + o.net_result, 0))}
-                </Badge>
-              </TableCell>
-            </TableRow>
           </TableBody>
         </Table>
       </CardContent>

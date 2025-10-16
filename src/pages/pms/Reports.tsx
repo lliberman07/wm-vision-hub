@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
+import { PropertyExpensesReport } from '@/components/pms/PropertyExpensesReport';
 import { toast } from 'sonner';
 
 const Reports = () => {
@@ -55,7 +56,7 @@ const Reports = () => {
 
       if (propsError) throw propsError;
 
-      // For each property, fetch its contracts
+      // For each property, fetch its contracts and expenses without contract
       const propertiesData = await Promise.all(
         (properties || []).map(async (property) => {
           const { data: contracts, error: contractsError } = await supabase
@@ -71,15 +72,26 @@ const Reports = () => {
               pms_tenants_renters!inner(full_name)
             `)
             .eq('property_id', property.id)
-            .eq('status', 'active')
+            .in('status', ['active', 'expired', 'cancelled'])
             .order('start_date', { ascending: false });
 
           if (contractsError) {
             console.error('Error fetching contracts:', contractsError);
-            return { ...property, contracts: [] };
           }
 
-          return { ...property, contracts: contracts || [] };
+          // Count expenses without contract
+          const { count: expensesCount } = await supabase
+            .from('pms_expenses')
+            .select('*', { count: 'exact', head: true })
+            .eq('property_id', property.id)
+            .is('contract_id', null)
+            .neq('status', 'rejected');
+
+          return { 
+            ...property, 
+            contracts: contracts || [],
+            expenses_without_contract: expensesCount || 0
+          };
         })
       );
 
@@ -350,15 +362,25 @@ const Reports = () => {
                         </div>
                       </div>
                       <Badge variant="secondary">
-                        {property.contracts?.length || 0} contrato(s)
+                        {property.contracts?.length > 0 
+                          ? `${property.contracts.length} contrato(s)` 
+                          : property.expenses_without_contract > 0
+                            ? `Sin contrato - ${property.expenses_without_contract} gasto(s)`
+                            : 'Sin actividad'
+                        }
                       </Badge>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-4">
-                    {property.contracts?.length === 0 ? (
+                    {property.contracts?.length === 0 && property.expenses_without_contract > 0 ? (
+                      <PropertyExpensesReport 
+                        propertyId={property.id}
+                        tenantId={currentTenant.id}
+                      />
+                    ) : property.contracts?.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>No hay contratos registrados para esta propiedad</p>
+                        <p>No hay contratos ni gastos registrados para esta propiedad</p>
                       </div>
                     ) : (
                       <div className="space-y-3">
