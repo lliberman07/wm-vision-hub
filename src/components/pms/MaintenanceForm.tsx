@@ -196,6 +196,8 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
     }
   };
 
+  const isCompleted = maintenance?.status === 'completed';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -206,6 +208,14 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
           </DialogDescription>
         </DialogHeader>
 
+        {isCompleted && (
+          <div className="bg-muted border border-border rounded-md p-4 mb-4">
+            <p className="text-sm text-muted-foreground">
+              ⚠️ Esta solicitud está finalizada y no puede ser modificada
+            </p>
+          </div>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -214,7 +224,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Propiedad</FormLabel>
-                  <Select onValueChange={handlePropertyChange} value={field.value}>
+                  <Select onValueChange={handlePropertyChange} value={field.value} disabled={isCompleted}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar propiedad" />
@@ -258,7 +268,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                 <FormItem>
                   <FormLabel>Título</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Fuga en el baño" />
+                    <Input {...field} placeholder="Fuga en el baño" disabled={isCompleted} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -272,7 +282,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                 <FormItem>
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
-                    <Textarea {...field} rows={3} placeholder="Detalle del problema..." />
+                    <Textarea {...field} rows={3} placeholder="Detalle del problema..." disabled={isCompleted} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -286,7 +296,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoría</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isCompleted}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -312,7 +322,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Prioridad</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isCompleted}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -335,7 +345,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Estado</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isCompleted}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -359,7 +369,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Pagado por</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={isCompleted}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar responsable" />
@@ -386,7 +396,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                   <FormItem>
                     <FormLabel>Contacto Proveedor</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Nombre del proveedor" />
+                      <Input {...field} placeholder="Nombre del proveedor" disabled={isCompleted} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -400,7 +410,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                   <FormItem>
                     <FormLabel>Tel. Proveedor</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Teléfono" />
+                      <Input {...field} placeholder="Teléfono" disabled={isCompleted} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -420,6 +430,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                         type="number" 
                         {...field} 
                         onChange={e => field.onChange(e.target.valueAsNumber)}
+                        disabled={isCompleted}
                       />
                     </FormControl>
                     <FormMessage />
@@ -434,7 +445,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                   <FormItem>
                     <FormLabel>Fecha Programada (opcional)</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="date" {...field} disabled={isCompleted} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -449,7 +460,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                 <FormItem>
                   <FormLabel>Notas Adicionales (opcional)</FormLabel>
                   <FormControl>
-                    <Textarea {...field} rows={2} />
+                    <Textarea {...field} rows={2} disabled={isCompleted} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -460,9 +471,15 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit">
-                {maintenance ? 'Actualizar' : 'Crear'}
-              </Button>
+              {isCompleted ? (
+                <Button disabled>
+                  Cerrado
+                </Button>
+              ) : (
+                <Button type="submit">
+                  {maintenance ? 'Actualizar' : 'Crear'}
+                </Button>
+              )}
             </div>
           </form>
         </Form>

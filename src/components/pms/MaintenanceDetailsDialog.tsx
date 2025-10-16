@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { format } from 'date-fns';
-import { Calendar, DollarSign, MapPin, FileText, AlertCircle } from 'lucide-react';
+import { Calendar, DollarSign, MapPin, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface MaintenanceRequest {
   id: string;
@@ -79,6 +80,15 @@ export function MaintenanceDetailsDialog({ open, onOpenChange, maintenance }: Ma
         <DialogHeader>
           <DialogTitle className="text-2xl">{maintenance.title}</DialogTitle>
         </DialogHeader>
+
+        {maintenance.status === 'completed' && (
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              Esta solicitud ha sido finalizada y no puede ser modificada
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="space-y-6">
           {/* Estado y Prioridad */}

@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Edit, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Eye, Lock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -173,9 +174,24 @@ const Maintenance = () => {
                         <Button variant="ghost" size="sm" onClick={() => { setSelectedRequest(request); setIsDetailsOpen(true); }}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => { setSelectedRequest(request); setIsFormOpen(true); }}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        {request.status === 'completed' ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="sm" disabled className="opacity-50">
+                                  <Lock className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>No se puede editar una solicitud finalizada</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <Button variant="ghost" size="sm" onClick={() => { setSelectedRequest(request); setIsFormOpen(true); }}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
