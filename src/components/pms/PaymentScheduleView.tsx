@@ -374,6 +374,7 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
             fetchScheduleItems();
             setIsModalOpen(false);
           }}
+          readOnly={false}
         />
       )}
     </>

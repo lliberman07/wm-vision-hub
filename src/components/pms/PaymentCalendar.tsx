@@ -255,6 +255,7 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
         onOpenChange={setIsModalOpen}
         scheduleItem={selectedItem}
         onSuccess={fetchScheduleItems}
+        readOnly={true}
       />
     </>
   );

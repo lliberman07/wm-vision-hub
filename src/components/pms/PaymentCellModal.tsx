@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CalendarIcon, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -35,15 +36,18 @@ interface PaymentCellModalProps {
   onOpenChange: (open: boolean) => void;
   scheduleItem: any;
   onSuccess: () => void;
+  readOnly?: boolean;
 }
 
-export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }: PaymentCellModalProps) {
+export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, readOnly = false }: PaymentCellModalProps) {
   const [loading, setLoading] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
 
   const pendingAmount = scheduleItem?.expected_amount || 0;
   const originalAmount = scheduleItem?.original_amount || scheduleItem?.expected_amount || 0;
   const accumulatedPaid = scheduleItem?.accumulated_paid_amount || 0;
+  const isFullyPaid = pendingAmount <= 0.01;
+  const shouldShowForm = !readOnly && !isFullyPaid;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -197,9 +201,19 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Registrar Pago</DialogTitle>
+          <DialogTitle>
+            {readOnly 
+              ? "Detalle del Pago" 
+              : isFullyPaid 
+                ? "Detalle del Pago" 
+                : "Registrar Pago"}
+          </DialogTitle>
           <DialogDescription>
-            {formatDateDisplay(scheduleItem.period_date)} - Item {scheduleItem.item}
+            {readOnly 
+              ? `Información del calendario - ${formatDateDisplay(scheduleItem.period_date)} - Item ${scheduleItem.item}`
+              : isFullyPaid 
+                ? `Este pago ya está completamente registrado - ${formatDateDisplay(scheduleItem.period_date)}`
+                : `${formatDateDisplay(scheduleItem.period_date)} - Item ${scheduleItem.item}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -255,6 +269,16 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
           </div>
         )}
 
+        {readOnly && !isFullyPaid && (
+          <Alert className="border-blue-200 bg-blue-50 mb-4">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-sm text-blue-800">
+              Para registrar este pago, dirígete a la sección <strong>Pagos</strong> del menú principal.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {shouldShowForm && (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -374,12 +398,24 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess }
             />
 
             <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
               <Button type="submit" disabled={loading}>
                 {loading ? 'Guardando...' : 'Registrar Pago'}
               </Button>
             </DialogFooter>
           </form>
         </Form>
+        )}
+
+        {!shouldShowForm && (
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cerrar
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
