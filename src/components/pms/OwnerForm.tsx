@@ -17,6 +17,7 @@ const formSchema = z.object({
   first_name: z.string().optional(),
   last_name: z.string().optional(),
   company_name: z.string().optional(),
+  contact_name: z.string().optional(),
   email: z.string().email('Email inválido'),
   phone: z.string().optional(),
   mobile_phone: z.string().optional(),
@@ -49,6 +50,7 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
       first_name: '',
       last_name: '',
       company_name: '',
+      contact_name: '',
       email: '',
       phone: '',
       mobile_phone: '',
@@ -72,6 +74,7 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
         first_name: owner.first_name || '',
         last_name: owner.last_name || '',
         company_name: owner.company_name || '',
+        contact_name: owner.contact_name || '',
         email: owner.email || '',
         phone: owner.phone || '',
         mobile_phone: owner.mobile_phone || '',
@@ -90,6 +93,7 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
         first_name: '',
         last_name: '',
         company_name: '',
+        contact_name: '',
         email: '',
         phone: '',
         mobile_phone: '',
@@ -120,6 +124,7 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
         first_name: data.first_name,
         last_name: data.last_name,
         company_name: data.company_name,
+        contact_name: data.contact_name,
         email: data.email,
         phone: data.phone,
         mobile_phone: data.mobile_phone,
@@ -341,6 +346,20 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
                       <FormLabel>Razón Social</FormLabel>
                       <FormControl>
                         <Input {...field} placeholder="Empresa S.A." />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="contact_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contacto - Nombre Apellido</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Juan Pérez" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
