@@ -91,11 +91,29 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
   const fetchData = async () => {
     const [propsRes, contractsRes] = await Promise.all([
       supabase.from('pms_properties').select('id, code, address'),
-      supabase.from('pms_contracts').select('id, contract_number'),
+      supabase
+        .from('pms_contracts')
+        .select('id, contract_number, property_id, status, start_date, end_date')
+        .eq('status', 'active'),
     ]);
 
     if (propsRes.data) setProperties(propsRes.data);
     if (contractsRes.data) setContracts(contractsRes.data);
+  };
+
+  const handlePropertyChange = async (propertyId: string) => {
+    form.setValue('property_id', propertyId);
+    
+    // Buscar contrato activo para esta propiedad
+    const activeContract = contracts.find(
+      c => c.property_id === propertyId && c.status === 'active'
+    );
+    
+    if (activeContract) {
+      form.setValue('contract_id', activeContract.id);
+    } else {
+      form.setValue('contract_id', '');
+    }
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -157,7 +175,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Propiedad</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={handlePropertyChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar propiedad" />
@@ -181,20 +199,22 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
               name="contract_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contrato (opcional)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Contrato (asignado automáticamente)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar contrato" />
+                        <SelectValue placeholder="Sin contrato activo" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">Sin contrato</SelectItem>
-                      {contracts.map(contract => (
-                        <SelectItem key={contract.id} value={contract.id}>
-                          {contract.contract_number}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="">Sin contrato</SelectItem>
+                      {contracts
+                        .filter(c => !form.watch('property_id') || c.property_id === form.watch('property_id'))
+                        .map(contract => (
+                          <SelectItem key={contract.id} value={contract.id}>
+                            {contract.contract_number}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
