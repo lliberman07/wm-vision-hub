@@ -6,10 +6,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Building2, ImageIcon } from 'lucide-react';
+import { Plus, Building2, ImageIcon, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PropertyForm } from '@/components/pms/PropertyForm';
+import { PropertyDetailsDialog } from '@/components/pms/PropertyDetailsDialog';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
 import { EmptyState } from '@/components/pms/EmptyState';
@@ -37,6 +38,8 @@ const Properties = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | undefined>();
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [detailsProperty, setDetailsProperty] = useState<Property | null>(null);
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -181,16 +184,28 @@ const Properties = () => {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedProperty(property);
-                              setIsFormOpen(true);
-                            }}
-                          >
-                            Editar
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setDetailsProperty(property);
+                                setIsDetailsOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedProperty(property);
+                                setIsFormOpen(true);
+                              }}
+                            >
+                              Editar
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -201,12 +216,18 @@ const Properties = () => {
           </CardContent>
         </Card>
 
-        {/* Dialog */}
+        {/* Dialogs */}
         <PropertyForm
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
           onSuccess={fetchProperties}
           property={selectedProperty}
+        />
+        
+        <PropertyDetailsDialog
+          open={isDetailsOpen}
+          onOpenChange={setIsDetailsOpen}
+          property={detailsProperty}
         />
       </div>
     </PMSLayout>
