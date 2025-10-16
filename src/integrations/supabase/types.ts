@@ -1440,16 +1440,22 @@ export type Database = {
           address: string | null
           bank_account: Json | null
           city: string | null
+          company_name: string | null
           created_at: string | null
           document_number: string
           document_type: string
           email: string
+          first_name: string | null
           full_name: string
           id: string
           is_active: boolean | null
+          last_name: string | null
+          mobile_phone: string | null
           notes: string | null
           owner_type: string
           phone: string | null
+          postal_code: string | null
+          state: string | null
           tax_id: string | null
           tenant_id: string
           updated_at: string | null
@@ -1459,16 +1465,22 @@ export type Database = {
           address?: string | null
           bank_account?: Json | null
           city?: string | null
+          company_name?: string | null
           created_at?: string | null
           document_number: string
           document_type: string
           email: string
+          first_name?: string | null
           full_name: string
           id?: string
           is_active?: boolean | null
+          last_name?: string | null
+          mobile_phone?: string | null
           notes?: string | null
           owner_type: string
           phone?: string | null
+          postal_code?: string | null
+          state?: string | null
           tax_id?: string | null
           tenant_id: string
           updated_at?: string | null
@@ -1478,16 +1490,22 @@ export type Database = {
           address?: string | null
           bank_account?: Json | null
           city?: string | null
+          company_name?: string | null
           created_at?: string | null
           document_number?: string
           document_type?: string
           email?: string
+          first_name?: string | null
           full_name?: string
           id?: string
           is_active?: boolean | null
+          last_name?: string | null
+          mobile_phone?: string | null
           notes?: string | null
           owner_type?: string
           phone?: string | null
+          postal_code?: string | null
+          state?: string | null
           tax_id?: string | null
           tenant_id?: string
           updated_at?: string | null
