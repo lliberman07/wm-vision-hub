@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { parseISO, format } from 'date-fns';
 import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -433,9 +434,9 @@ const Reports = () => {
                                     <div className="flex items-center gap-4 text-sm">
                                       <div className="flex items-center gap-1">
                                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                                        <span>{new Date(contract.start_date).toLocaleDateString('es-AR')}</span>
+                                        <span>{format(parseISO(contract.start_date), 'dd/MM/yyyy')}</span>
                                         <span className="text-muted-foreground">→</span>
-                                        <span>{new Date(contract.end_date).toLocaleDateString('es-AR')}</span>
+                                        <span>{format(parseISO(contract.end_date), 'dd/MM/yyyy')}</span>
                                       </div>
                                       <div className="flex items-center gap-1">
                                         <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -512,11 +513,11 @@ const Reports = () => {
                             <span>{contract.pms_tenants_renters.full_name}</span>
                           </div>
                           <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1 text-sm">
+                              <div className="flex items-center gap-1 text-sm">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span>{new Date(contract.start_date).toLocaleDateString('es-AR')}</span>
+                              <span>{format(parseISO(contract.start_date), 'dd/MM/yyyy')}</span>
                               <span className="text-muted-foreground">→</span>
-                              <span>{new Date(contract.end_date).toLocaleDateString('es-AR')}</span>
+                              <span>{format(parseISO(contract.end_date), 'dd/MM/yyyy')}</span>
                             </div>
                             <div className="flex items-center gap-1 text-sm">
                               <DollarSign className="h-4 w-4 text-muted-foreground" />
