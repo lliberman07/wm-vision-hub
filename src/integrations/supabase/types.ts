@@ -2013,6 +2013,10 @@ export type Database = {
       }
       pms_tenants_renters: {
         Row: {
+          address: string | null
+          city: string | null
+          company_name: string | null
+          contact_name: string | null
           created_at: string | null
           credit_score: number | null
           document_number: string
@@ -2020,11 +2024,17 @@ export type Database = {
           email: string
           emergency_contact: Json | null
           employment_info: Json | null
+          first_name: string | null
           full_name: string
           id: string
           is_active: boolean | null
+          last_name: string | null
+          mobile_phone: string | null
           notes: string | null
           phone: string | null
+          postal_code: string | null
+          state: string | null
+          tax_id: string | null
           tenant_id: string
           tenant_references: Json | null
           tenant_type: string
@@ -2032,6 +2042,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_name?: string | null
           created_at?: string | null
           credit_score?: number | null
           document_number: string
@@ -2039,11 +2053,17 @@ export type Database = {
           email: string
           emergency_contact?: Json | null
           employment_info?: Json | null
+          first_name?: string | null
           full_name: string
           id?: string
           is_active?: boolean | null
+          last_name?: string | null
+          mobile_phone?: string | null
           notes?: string | null
           phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          tax_id?: string | null
           tenant_id: string
           tenant_references?: Json | null
           tenant_type: string
@@ -2051,6 +2071,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_name?: string | null
           created_at?: string | null
           credit_score?: number | null
           document_number?: string
@@ -2058,11 +2082,17 @@ export type Database = {
           email?: string
           emergency_contact?: Json | null
           employment_info?: Json | null
+          first_name?: string | null
           full_name?: string
           id?: string
           is_active?: boolean | null
+          last_name?: string | null
+          mobile_phone?: string | null
           notes?: string | null
           phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          tax_id?: string | null
           tenant_id?: string
           tenant_references?: Json | null
           tenant_type?: string
