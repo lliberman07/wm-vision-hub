@@ -112,15 +112,29 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
     if (activeContract) {
       form.setValue('contract_id', activeContract.id);
     } else {
-      form.setValue('contract_id', 'none');
+      form.setValue('contract_id', '');
     }
+  };
+
+  const getContractDisplay = () => {
+    const propertyId = form.watch('property_id');
+    const contractId = form.watch('contract_id');
+    
+    if (!propertyId) return 'Seleccione una propiedad primero';
+    
+    if (contractId) {
+      const contract = contracts.find(c => c.id === contractId);
+      return contract?.contract_number || 'Sin Contrato';
+    }
+    
+    return 'Sin Contrato';
   };
 
   const onSubmit = async (data: FormValues) => {
     try {
       const payload: any = {
         property_id: data.property_id,
-        contract_id: data.contract_id && data.contract_id !== 'none' ? data.contract_id : null,
+        contract_id: data.contract_id || null,
         title: data.title,
         description: data.description,
         category: data.category,
@@ -200,23 +214,13 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Contrato (asignado automáticamente)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sin contrato activo" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Sin contrato</SelectItem>
-                      {contracts
-                        .filter(c => !form.watch('property_id') || c.property_id === form.watch('property_id'))
-                        .map(contract => (
-                          <SelectItem key={contract.id} value={contract.id}>
-                            {contract.contract_number}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input 
+                      value={getContractDisplay()} 
+                      readOnly 
+                      className="bg-muted cursor-not-allowed"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
