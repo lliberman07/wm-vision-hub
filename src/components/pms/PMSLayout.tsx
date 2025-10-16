@@ -35,7 +35,7 @@ export function PMSLayout({ children }: PMSLayoutProps) {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success('Sesión cerrada correctamente');
-    navigate('/pms-login');
+    navigate('/pms/login');
   };
 
   return (

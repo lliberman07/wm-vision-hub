@@ -36,7 +36,7 @@ export default function Expenses() {
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
-      navigate('/pms-login');
+      navigate('/pms/login');
       return;
     }
     fetchExpenses();
