@@ -1843,22 +1843,27 @@ export type Database = {
           address: string
           alias: string | null
           amenities: string[] | null
+          balcon: boolean | null
           barrio: string | null
           bathrooms: number | null
+          baulera: boolean | null
           bedrooms: number | null
           categoria: string | null
           city: string
+          cocheras: number | null
           code: string
           country: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
           estado_publicacion: string | null
+          habitaciones: number | null
           id: string
           latitude: number | null
           longitude: number | null
           monto_alquiler: number | null
           operacion: string | null
+          patio: boolean | null
           photos: Json | null
           postal_code: string | null
           property_type: string
@@ -1867,6 +1872,7 @@ export type Database = {
           surface_covered: number | null
           surface_total: number | null
           tenant_id: string
+          tiene_amenidades: boolean | null
           updated_at: string | null
           valor_venta: number | null
         }
@@ -1874,22 +1880,27 @@ export type Database = {
           address: string
           alias?: string | null
           amenities?: string[] | null
+          balcon?: boolean | null
           barrio?: string | null
           bathrooms?: number | null
+          baulera?: boolean | null
           bedrooms?: number | null
           categoria?: string | null
           city: string
+          cocheras?: number | null
           code: string
           country?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           estado_publicacion?: string | null
+          habitaciones?: number | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           monto_alquiler?: number | null
           operacion?: string | null
+          patio?: boolean | null
           photos?: Json | null
           postal_code?: string | null
           property_type: string
@@ -1898,6 +1909,7 @@ export type Database = {
           surface_covered?: number | null
           surface_total?: number | null
           tenant_id: string
+          tiene_amenidades?: boolean | null
           updated_at?: string | null
           valor_venta?: number | null
         }
@@ -1905,22 +1917,27 @@ export type Database = {
           address?: string
           alias?: string | null
           amenities?: string[] | null
+          balcon?: boolean | null
           barrio?: string | null
           bathrooms?: number | null
+          baulera?: boolean | null
           bedrooms?: number | null
           categoria?: string | null
           city?: string
+          cocheras?: number | null
           code?: string
           country?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           estado_publicacion?: string | null
+          habitaciones?: number | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           monto_alquiler?: number | null
           operacion?: string | null
+          patio?: boolean | null
           photos?: Json | null
           postal_code?: string | null
           property_type?: string
@@ -1929,6 +1946,7 @@ export type Database = {
           surface_covered?: number | null
           surface_total?: number | null
           tenant_id?: string
+          tiene_amenidades?: boolean | null
           updated_at?: string | null
           valor_venta?: number | null
         }
