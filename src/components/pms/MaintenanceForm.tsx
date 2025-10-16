@@ -125,6 +125,11 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
       form.setValue('contract_id', activeContract.id);
     } else {
       form.setValue('contract_id', '');
+      // Si no hay contrato y paid_by era "inquilino", resetear a vacío
+      const currentPaidBy = form.getValues('paid_by');
+      if (currentPaidBy === 'inquilino') {
+        form.setValue('paid_by', '');
+      }
     }
   };
 
@@ -140,6 +145,11 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
     }
     
     return 'Sin Contrato';
+  };
+
+  const hasActiveContract = () => {
+    const contractId = form.watch('contract_id');
+    return !!contractId;
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -356,7 +366,9 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="inquilino">Inquilino</SelectItem>
+                      {hasActiveContract() && (
+                        <SelectItem value="inquilino">Inquilino</SelectItem>
+                      )}
                       <SelectItem value="propietario">Propietario</SelectItem>
                       <SelectItem value="administracion">Administración</SelectItem>
                     </SelectContent>
