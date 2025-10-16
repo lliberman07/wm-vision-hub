@@ -37,7 +37,7 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
         .select(`
           *,
           projection:pms_contract_monthly_projections(*),
-          payment:pms_payments(*),
+          payment:pms_payments!payment_id(*),
           payment_method:pms_contract_payment_methods(*),
           owner:pms_owners(id, full_name, email)
         `)
