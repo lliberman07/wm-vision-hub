@@ -11,6 +11,7 @@ import { Plus, Search, Edit, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { TenantForm } from '@/components/pms/TenantForm';
+import { TenantDetailsDialog } from '@/components/pms/TenantDetailsDialog';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 
 interface Tenant {
@@ -33,6 +34,8 @@ const Tenants = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | undefined>();
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [detailsTenant, setDetailsTenant] = useState<Tenant | null>(null);
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -131,7 +134,14 @@ const Tenants = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => toast.info('Ver detalles')}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => { 
+                            setDetailsTenant(tenant); 
+                            setIsDetailsOpen(true); 
+                          }}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => { setSelectedTenant(tenant); setIsFormOpen(true); }}>
@@ -151,6 +161,12 @@ const Tenants = () => {
           onOpenChange={setIsFormOpen}
           onSuccess={fetchTenants}
           tenant={selectedTenant}
+        />
+
+        <TenantDetailsDialog
+          open={isDetailsOpen}
+          onOpenChange={setIsDetailsOpen}
+          tenant={detailsTenant}
         />
       </div>
     </PMSLayout>
