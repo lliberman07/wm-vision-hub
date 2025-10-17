@@ -2211,7 +2211,7 @@ const translations = {
     'simulator.financing.totalMonthlyPayment': 'Pago Mensual Total',
     'simulator.financing.monthlyPayment': 'Pago Mensual',
     'simulator.financing.amountToFinance': 'Monto a Financiar',
-    'simulator.financing.interestRate': 'Tasa de Interés (%)',
+    'simulator.financing.interestRate': 'Tasa de Interés (% anual)',
     'simulator.financing.termMonths': 'Plazo (meses)',
     'simulator.financing.creditSummary': 'Resumen del crédito:',
     'simulator.financing.principal': 'Capital:',

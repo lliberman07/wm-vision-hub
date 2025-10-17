@@ -137,7 +137,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Label htmlFor={`rate-${creditLine.type}`}>
-                        {t('simulator.financing.interestRate')} (% anual)
+                        {t('simulator.financing.interestRate')}
                       </Label>
                       <TooltipProvider>
                         <Tooltip>
