@@ -135,10 +135,8 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
                   </div>
                   
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor={`rate-${creditLine.type}`}>
-                        {t('simulator.financing.interestRate')}
-                      </Label>
+                    <Label htmlFor={`rate-${creditLine.type}`} className="flex items-center gap-2">
+                      {t('simulator.financing.interestRate')}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -151,7 +149,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                    </div>
+                    </Label>
                     <Input
                       id={`rate-${creditLine.type}`}
                       type="number"
