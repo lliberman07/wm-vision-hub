@@ -19,10 +19,21 @@ interface Tenant {
   full_name: string;
   email: string;
   phone?: string;
+  mobile_phone?: string;
   document_type: string;
   document_number: string;
   tenant_type: string;
   is_active: boolean;
+  first_name?: string;
+  last_name?: string;
+  company_name?: string;
+  contact_name?: string;
+  tax_id?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  notes?: string;
 }
 
 const Tenants = () => {
