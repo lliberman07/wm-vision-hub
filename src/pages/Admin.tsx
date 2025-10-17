@@ -19,6 +19,7 @@ import { PMSRolesView } from "@/components/admin/PMSRolesView";
 import { UserApprovalsView } from "@/components/admin/UserApprovalsView";
 import { AdminUsersView } from "@/components/admin/AdminUsersView";
 
+// Admin Dashboard with Sidebar Layout
 const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<{role: string, status: string} | null>(null);
