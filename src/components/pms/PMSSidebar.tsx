@@ -53,11 +53,34 @@ const menuItems = [
 export function PMSSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { currentTenant, pmsRoles } = usePMS();
+  const { currentTenant, pmsRoles, activeRoleContext } = usePMS();
   const currentPath = location.pathname;
   const isCollapsed = state === 'collapsed';
+  const activeRole = activeRoleContext?.role;
 
   const isActive = (path: string) => currentPath === path;
+
+  // Define which modules each role can see
+  const modulesByRole: Record<string, string[]> = {
+    SUPERADMIN: ['all'],
+    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'maintenance', 'reports', 'indices'],
+    ADMINISTRADOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'maintenance', 'reports'],
+    PROPIETARIO: ['properties', 'contracts', 'payments', 'expenses', 'reports'],
+    INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance'],
+    PROVEEDOR: ['maintenance']
+  };
+
+  const visibleModules = activeRole ? (modulesByRole[activeRole] || []) : [];
+
+  // Filter menu items based on active role
+  const filteredMenuItems = menuItems.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
+      if (visibleModules.includes('all')) return true;
+      const moduleKey = item.url.split('/').pop() || '';
+      return visibleModules.includes(moduleKey);
+    })
+  })).filter(section => section.items.length > 0);
 
   return (
     <Sidebar collapsible="icon" className="border-r">
@@ -66,7 +89,7 @@ export function PMSSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {menuItems.map((section, idx) => (
+        {filteredMenuItems.map((section, idx) => (
           <SidebarGroup key={idx}>
             {!isCollapsed && <SidebarGroupLabel>{section.group}</SidebarGroupLabel>}
             <SidebarGroupContent>
@@ -92,14 +115,10 @@ export function PMSSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t">
-        {!isCollapsed && pmsRoles.length > 0 && (
-          <div className="flex gap-1 flex-wrap">
-            {pmsRoles.map((role) => (
-              <Badge key={role} variant="secondary" className="text-xs">
-                {role}
-              </Badge>
-            ))}
-          </div>
+        {!isCollapsed && activeRoleContext && (
+          <Badge variant="secondary" className="text-xs font-mono">
+            {activeRoleContext.role}
+          </Badge>
         )}
       </SidebarFooter>
     </Sidebar>

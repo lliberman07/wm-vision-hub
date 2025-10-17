@@ -12,7 +12,7 @@ import { ModuleCard } from '@/components/pms/ModuleCard';
 const PMS = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { hasPMSAccess, pmsRoles, currentTenant, loading: pmsLoading } = usePMS();
+  const { hasPMSAccess, pmsRoles, currentTenant, loading: pmsLoading, allRoleContexts, activeRoleContext } = usePMS();
 
   useEffect(() => {
     if (!authLoading && !user) {

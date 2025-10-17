@@ -10,12 +10,22 @@ interface PMSTenant {
   slug: string;
 }
 
+interface PMSRoleContext {
+  role: PMSRole;
+  tenant_id: string;
+  tenant_name: string;
+  tenant_slug: string;
+}
+
 interface PMSContextType {
   hasPMSAccess: boolean;
   pmsRoles: PMSRole[];
+  allRoleContexts: PMSRoleContext[];
+  activeRoleContext: PMSRoleContext | null;
   userRole: PMSRole | null;
   currentTenant: PMSTenant | null;
   loading: boolean;
+  switchContext: (roleContext: PMSRoleContext) => void;
   requestAccess: (role: PMSRole, reason: string, userData?: {
     email: string;
     first_name: string;
@@ -46,6 +56,8 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const { user } = useAuth();
   const [hasPMSAccess, setHasPMSAccess] = useState(false);
   const [pmsRoles, setPMSRoles] = useState<PMSRole[]>([]);
+  const [allRoleContexts, setAllRoleContexts] = useState<PMSRoleContext[]>([]);
+  const [activeRoleContext, setActiveRoleContext] = useState<PMSRoleContext | null>(null);
   const [userRole, setUserRole] = useState<PMSRole | null>(null);
   const [currentTenant, setCurrentTenant] = useState<PMSTenant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,51 +75,82 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       console.log('[PMSContext] Checking PMS access for user:', user.id);
       
-      // Get user roles from unified user_roles table
-      const { data: roles, error: rolesError } = await supabase
+      // Get user roles with tenant info in a single query
+      const { data: rolesWithTenants, error: rolesError } = await supabase
         .from('user_roles')
-        .select('role, tenant_id')
+        .select(`
+          role,
+          tenant_id,
+          pms_tenants (
+            id,
+            name,
+            slug
+          )
+        `)
         .eq('user_id', user.id)
         .eq('module', 'PMS')
         .eq('status', 'approved');
 
-      console.log('[PMSContext] Roles query result:', { roles, error: rolesError });
+      console.log('[PMSContext] Roles query result:', { rolesWithTenants, error: rolesError });
 
       if (rolesError) {
         console.error('[PMSContext] Error fetching roles:', rolesError);
         throw rolesError;
       }
 
-      if (roles && roles.length > 0) {
-        setHasPMSAccess(true);
-        setPMSRoles(roles.map(r => r.role.toUpperCase() as PMSRole));
-        setUserRole(roles[0].role.toUpperCase() as PMSRole);
+      if (rolesWithTenants && rolesWithTenants.length > 0) {
+        // Build contexts array
+        const contexts: PMSRoleContext[] = rolesWithTenants.map(r => ({
+          role: r.role.toUpperCase() as PMSRole,
+          tenant_id: r.tenant_id,
+          tenant_name: r.pms_tenants?.name || 'Sin nombre',
+          tenant_slug: r.pms_tenants?.slug || ''
+        }));
+
+        console.log('[PMSContext] Built contexts:', contexts);
+        setAllRoleContexts(contexts);
         
-        // Then get tenant information separately
-        const { data: tenant, error: tenantError } = await supabase
-          .from('pms_tenants')
-          .select('id, name, slug')
-          .eq('id', roles[0].tenant_id)
-          .single();
-
-        console.log('[PMSContext] Tenant query result:', { tenant, error: tenantError });
-
-        if (tenant && !tenantError) {
-          console.log('[PMSContext] ✅ Tenant loaded successfully:', tenant);
-          setCurrentTenant({
-            id: tenant.id,
-            name: tenant.name,
-            slug: tenant.slug
-          });
-        } else {
-          console.error('[PMSContext] ❌ Failed to load tenant:', tenantError);
-          console.error('[PMSContext] Tenant ID attempted:', roles[0].tenant_id);
-          setCurrentTenant(null);
+        // Try to restore saved context from localStorage
+        const savedContextStr = localStorage.getItem('pms_active_context');
+        let activeContext: PMSRoleContext | null = null;
+        
+        if (savedContextStr) {
+          try {
+            const savedContext = JSON.parse(savedContextStr);
+            activeContext = contexts.find(
+              c => c.role === savedContext.role && c.tenant_id === savedContext.tenant_id
+            ) || null;
+            console.log('[PMSContext] Restored saved context:', activeContext);
+          } catch (e) {
+            console.warn('[PMSContext] Failed to parse saved context:', e);
+          }
         }
+        
+        // Default to first role if no saved context found
+        if (!activeContext) {
+          activeContext = contexts[0];
+          console.log('[PMSContext] Using default first context:', activeContext);
+        }
+        
+        setActiveRoleContext(activeContext);
+        setHasPMSAccess(true);
+        
+        // Maintain legacy state for compatibility
+        setPMSRoles(contexts.map(c => c.role));
+        setUserRole(activeContext.role);
+        setCurrentTenant({
+          id: activeContext.tenant_id,
+          name: activeContext.tenant_name,
+          slug: activeContext.tenant_slug
+        });
+        
+        console.log('[PMSContext] ✅ Multi-role context loaded successfully');
       } else {
         console.log('[PMSContext] No roles found for user');
         setHasPMSAccess(false);
         setPMSRoles([]);
+        setAllRoleContexts([]);
+        setActiveRoleContext(null);
         setUserRole(null);
         setCurrentTenant(null);
       }
@@ -120,6 +163,27 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } finally {
       setLoading(false);
     }
+  };
+
+  const switchContext = (roleContext: PMSRoleContext) => {
+    console.log('[PMSContext] Switching to context:', roleContext);
+    setActiveRoleContext(roleContext);
+    
+    // Update legacy states for compatibility
+    setUserRole(roleContext.role);
+    setCurrentTenant({
+      id: roleContext.tenant_id,
+      name: roleContext.tenant_name,
+      slug: roleContext.tenant_slug
+    });
+    
+    // Persist selection
+    localStorage.setItem('pms_active_context', JSON.stringify({
+      role: roleContext.role,
+      tenant_id: roleContext.tenant_id
+    }));
+    
+    console.log('[PMSContext] ✅ Context switched successfully');
   };
 
   const requestAccess = async (
@@ -211,9 +275,12 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const value = {
     hasPMSAccess,
     pmsRoles,
+    allRoleContexts,
+    activeRoleContext,
     userRole,
     currentTenant,
     loading,
+    switchContext,
     requestAccess,
     checkPMSAccess,
   };

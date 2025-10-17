@@ -9,6 +9,7 @@ import { usePMS } from '@/contexts/PMSContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { RoleTenantSelector } from './RoleTenantSelector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +27,7 @@ interface PMSLayoutProps {
 
 export function PMSLayout({ children }: PMSLayoutProps) {
   const { user } = useAuth();
-  const { currentTenant, pmsRoles } = usePMS();
+  const { currentTenant, pmsRoles, allRoleContexts, activeRoleContext, switchContext } = usePMS();
   const navigate = useNavigate();
   
   // Run automatic contract maintenance checks
@@ -65,6 +66,19 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                   <PMSBreadcrumbs />
                   
                   <div className="flex items-center gap-2">
+                    {/* Role/Tenant Selector - only show if multiple roles */}
+                    {allRoleContexts.length > 1 && activeRoleContext ? (
+                      <RoleTenantSelector
+                        allContexts={allRoleContexts}
+                        activeContext={activeRoleContext}
+                        onSwitch={switchContext}
+                      />
+                    ) : allRoleContexts.length === 1 ? (
+                      <Badge variant="outline" className="font-mono text-[10px]">
+                        {allRoleContexts[0].role}
+                      </Badge>
+                    ) : null}
+
                     {/* Notifications */}
                     <Button variant="ghost" size="icon" className="relative">
                       <Bell className="h-5 w-5" />
@@ -87,14 +101,14 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                         <DropdownMenuLabel>
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium">{user?.email}</p>
-                            <p className="text-xs text-muted-foreground">{currentTenant?.name}</p>
-                            <div className="flex gap-1 mt-1">
-                              {pmsRoles.map((role) => (
-                                <Badge key={role} variant="secondary" className="text-xs">
-                                  {role}
-                                </Badge>
-                              ))}
-                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {activeRoleContext?.tenant_name || currentTenant?.name}
+                            </p>
+                            {allRoleContexts.length === 1 && (
+                              <Badge variant="secondary" className="text-xs w-fit">
+                                {allRoleContexts[0].role}
+                              </Badge>
+                            )}
                           </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
