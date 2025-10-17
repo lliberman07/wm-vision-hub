@@ -16,16 +16,18 @@ const resend = new Resend(resendApiKey);
 
 interface ExportRequest {
   email: string;
-  simulationData: any;
+  simulationData: {
+    items: any[];
+    creditLines?: any[];
+    estimatedMonthlyIncome?: number;
+    grossMarginPercentage?: number;
+  };
   analysisResults: any;
   language?: 'en' | 'es';
-  creditLines?: any[];
-  estimatedMonthlyIncome?: number;
-  grossMarginPercentage?: number;
 }
 
-const generatePDFContent = (simulationData: any, analysisResults: any, referenceNumber: string, language: 'en' | 'es' = 'en', creditLines: any[] = [], estimatedMonthlyIncome = 0, grossMarginPercentage = 30) => {
-  const selectedItems = simulationData.filter((item: any) => item.isSelected);
+const generatePDFContent = (items: any[], analysisResults: any, referenceNumber: string, language: 'en' | 'es' = 'en', creditLines: any[] = [], estimatedMonthlyIncome = 0, grossMarginPercentage = 30) => {
+  const selectedItems = items.filter((item: any) => item.isSelected);
   const netMonthlyIncome = estimatedMonthlyIncome * (grossMarginPercentage / 100);
   const debtToIncomeRatio = estimatedMonthlyIncome > 0 ? (analysisResults.monthlyPaymentTotal / netMonthlyIncome) * 100 : 0;
   
@@ -327,11 +329,10 @@ const handler = async (req: Request): Promise<Response> => {
       email, 
       simulationData, 
       analysisResults, 
-      language = 'en', 
-      creditLines = [], 
-      estimatedMonthlyIncome = 0, 
-      grossMarginPercentage = 30 
+      language = 'en'
     }: ExportRequest = await req.json();
+
+    const { items, creditLines = [], estimatedMonthlyIncome = 0, grossMarginPercentage = 30 } = simulationData;
 
     console.log('Processing PDF export request for:', email);
     console.log('Resend API key available:', !!resendApiKey);
@@ -361,7 +362,12 @@ const handler = async (req: Request): Promise<Response> => {
       .insert({
         reference_number: referenceNumber,
         user_email: email,
-        simulation_data: simulationData,
+        simulation_data: {
+          items,
+          creditLines,
+          estimatedMonthlyIncome,
+          grossMarginPercentage
+        },
         analysis_results: analysisResults
       })
       .select()
@@ -387,7 +393,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Generate PDF content
     const htmlContent = generatePDFContent(
-      simulationData, 
+      items, 
       analysisResults, 
       referenceNumber, 
       language, 

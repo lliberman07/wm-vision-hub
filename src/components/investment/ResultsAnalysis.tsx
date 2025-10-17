@@ -71,37 +71,7 @@ export const ResultsAnalysis = ({
 
   const handleSaveScenario = async (email: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('save-simulation-scenario', {
-        body: {
-          email,
-          simulationData: {
-            items: selectedItems,
-            creditLines,
-            estimatedMonthlyIncome,
-            grossMarginPercentage
-          },
-          analysisResults: analysis
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "¡Escenario guardado!",
-        description: `Se ha guardado su simulación con el código: ${data.reference_number}. Le hemos enviado un email con los detalles.`,
-      });
-    } catch (error) {
-      console.error('Error saving scenario:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo guardar el escenario. Por favor intente nuevamente.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleExportPDF = async (email: string) => {
-    try {
+      // Use export-pdf-report to generate both the PDF and save the scenario with a single reference number
       const { data, error } = await supabase.functions.invoke('export-pdf-report', {
         body: {
           email,
@@ -111,24 +81,30 @@ export const ResultsAnalysis = ({
             estimatedMonthlyIncome,
             grossMarginPercentage
           },
-          analysisResults: analysis
+          analysisResults: analysis,
+          language
         }
       });
 
       if (error) throw error;
 
       toast({
-        title: "¡PDF generado!",
-        description: `Se ha generado su reporte con el código: ${data.reference_number}. Le hemos enviado el PDF por email.`,
+        title: t("Escenario guardado"),
+        description: t("Su código de simulación es: ") + data.referenceNumber + t(". Recibirá el reporte PDF por email."),
       });
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
+    } catch (error: any) {
+      console.error('Error saving scenario:', error);
       toast({
-        title: "Error",
-        description: "No se pudo generar el PDF. Por favor intente nuevamente.",
+        title: t("Error"),
+        description: t("No se pudo guardar el escenario. ") + (error.message || ""),
         variant: "destructive"
       });
     }
+  };
+
+  const handleExportPDF = async (email: string) => {
+    // Both actions are now unified - they save and send PDF with same reference number
+    return handleSaveScenario(email);
   };
 
   return (

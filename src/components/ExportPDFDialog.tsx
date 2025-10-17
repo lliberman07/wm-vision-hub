@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ExportPDFDialogProps {
-  simulationData: any;
+  items: any[];
   analysisResults: any;
   creditLines?: any[];
   estimatedMonthlyIncome?: number;
@@ -18,7 +18,7 @@ interface ExportPDFDialogProps {
 }
 
 export const ExportPDFDialog = ({ 
-  simulationData, 
+  items, 
   analysisResults, 
   creditLines = [], 
   estimatedMonthlyIncome = 0, 
@@ -57,12 +57,14 @@ export const ExportPDFDialog = ({
       const { data, error } = await supabase.functions.invoke('export-pdf-report', {
         body: {
           email,
-          simulationData,
+          simulationData: {
+            items,
+            creditLines,
+            estimatedMonthlyIncome,
+            grossMarginPercentage
+          },
           analysisResults,
-          language,
-          creditLines,
-          estimatedMonthlyIncome,
-          grossMarginPercentage
+          language
         }
       });
 
