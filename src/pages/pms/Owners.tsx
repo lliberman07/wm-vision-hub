@@ -28,7 +28,7 @@ interface Owner {
 const Owners = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentTenant, hasPMSAccess } = usePMS();
+  const { currentTenant, hasPMSAccess, loading: pmsLoading } = usePMS();
   const [owners, setOwners] = useState<Owner[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,12 +38,14 @@ const Owners = () => {
   const [detailsOwner, setDetailsOwner] = useState<Owner | null>(null);
 
   useEffect(() => {
+    if (pmsLoading) return;
+    
     if (!user || !hasPMSAccess) {
       navigate('/pms');
       return;
     }
     fetchOwners();
-  }, [user, hasPMSAccess, navigate]);
+  }, [pmsLoading, user?.id, hasPMSAccess, navigate]);
 
   const fetchOwners = async () => {
     try {

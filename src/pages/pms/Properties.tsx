@@ -47,7 +47,7 @@ interface Property {
 const Properties = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentTenant, hasPMSAccess } = usePMS();
+  const { currentTenant, hasPMSAccess, loading: pmsLoading } = usePMS();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,12 +57,14 @@ const Properties = () => {
   const [detailsProperty, setDetailsProperty] = useState<Property | null>(null);
 
   useEffect(() => {
+    if (pmsLoading) return;
+    
     if (!user || !hasPMSAccess) {
       navigate('/pms');
       return;
     }
     fetchProperties();
-  }, [user, hasPMSAccess, navigate]);
+  }, [pmsLoading, user?.id, hasPMSAccess, navigate]);
 
   const fetchProperties = async () => {
     try {

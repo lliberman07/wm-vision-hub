@@ -27,7 +27,7 @@ interface Expense {
 export default function Expenses() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { hasPMSAccess, currentTenant } = usePMS();
+  const { hasPMSAccess, currentTenant, loading: pmsLoading } = usePMS();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,12 +35,14 @@ export default function Expenses() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>();
 
   useEffect(() => {
+    if (pmsLoading) return;
+    
     if (!user || !hasPMSAccess) {
       navigate('/pms/login');
       return;
     }
     fetchExpenses();
-  }, [user, hasPMSAccess]);
+  }, [pmsLoading, user?.id, hasPMSAccess, navigate]);
 
   const fetchExpenses = async () => {
     if (!currentTenant?.id) return;

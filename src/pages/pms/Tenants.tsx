@@ -39,7 +39,7 @@ interface Tenant {
 const Tenants = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentTenant, hasPMSAccess } = usePMS();
+  const { currentTenant, hasPMSAccess, loading: pmsLoading } = usePMS();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,12 +49,14 @@ const Tenants = () => {
   const [detailsTenant, setDetailsTenant] = useState<Tenant | null>(null);
 
   useEffect(() => {
+    if (pmsLoading) return;
+    
     if (!user || !hasPMSAccess) {
       navigate('/pms');
       return;
     }
     fetchTenants();
-  }, [user, hasPMSAccess, navigate]);
+  }, [pmsLoading, user?.id, hasPMSAccess, navigate]);
 
   const fetchTenants = async () => {
     try {

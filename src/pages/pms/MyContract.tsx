@@ -62,7 +62,7 @@ interface Expense {
 export default function MyContract() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { hasPMSAccess, pmsRoles, currentTenant } = usePMS();
+  const { hasPMSAccess, pmsRoles, currentTenant, loading: pmsLoading } = usePMS();
   const [contract, setContract] = useState<Contract | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -71,6 +71,8 @@ export default function MyContract() {
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   useEffect(() => {
+    if (pmsLoading) return;
+    
     if (!user || !hasPMSAccess) {
       navigate("/pms");
       return;
@@ -86,7 +88,7 @@ export default function MyContract() {
     fetchContract();
     fetchSubmissions();
     fetchExpenses();
-  }, [user, hasPMSAccess, pmsRoles, navigate]);
+  }, [pmsLoading, user?.id, hasPMSAccess]);
 
   const fetchContract = async () => {
     try {
