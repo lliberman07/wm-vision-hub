@@ -1,46 +1,31 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Mail, Phone, Building, Calendar, MessageSquare, User, Eye, Users, FileText, TrendingUp, Shield } from "lucide-react";
-import { format } from "date-fns";
-import UserApprovals from "@/components/UserApprovals";
+import { LogOut, User } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { ApplicationManagement } from "@/components/ApplicationManagement";
-import { KnowledgeBaseInit } from "@/components/KnowledgeBaseInit";
-import { SimulationsManagement } from "@/components/SimulationsManagement";
-import PMSAccessRequests from "@/components/PMSAccessRequests";
-import PMSRolesManagement from "@/components/PMSRolesManagement";
-import { PMSTenantsManagement } from "@/components/PMSTenantsManagement";
-import WMAdminUsersManagement from "@/components/WMAdminUsersManagement";
-
-interface Contact {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-  company?: string;
-  message: string;
-  created_at: string;
-}
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { ContactSubmissionsView } from "@/components/admin/ContactSubmissionsView";
+import { SimulationsView } from "@/components/admin/SimulationsView";
+import { ApplicationsView } from "@/components/admin/ApplicationsView";
+import { ChatbotView } from "@/components/admin/ChatbotView";
+import { PMSTenantsView } from "@/components/admin/PMSTenantsView";
+import { PMSAccessView } from "@/components/admin/PMSAccessView";
+import { PMSRolesView } from "@/components/admin/PMSRolesView";
+import { UserApprovalsView } from "@/components/admin/UserApprovalsView";
+import { AdminUsersView } from "@/components/admin/AdminUsersView";
 
 const Admin = () => {
-  const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [userProfile, setUserProfile] = useState<{role: string, status: string} | null>(null);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchContacts();
     fetchUserProfile();
   }, []);
 
@@ -53,34 +38,6 @@ const Admin = () => {
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-    }
-  };
-
-  const fetchContacts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('contact_submissions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching contacts:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load contacts",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setContacts(data || []);
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load contacts",
-        variant: "destructive"
-      });
     } finally {
       setLoading(false);
     }
@@ -92,10 +49,6 @@ const Admin = () => {
       title: "Success",
       description: "Successfully signed out",
     });
-  };
-
-  const formatMessagePreview = (message: string) => {
-    return message.length > 50 ? `${message.substring(0, 50)}...` : message;
   };
 
   if (loading) {
@@ -112,363 +65,57 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">WM Management</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <LanguageSwitcher />
-            <Badge variant="outline" className="px-3 py-1">
-              <User className="h-3 w-3 mr-1" />
-              {user?.email}
-            </Badge>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AdminSidebar userRole={userProfile?.role} />
+        
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="border-b bg-card/50 backdrop-blur">
+            <div className="px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                  <p className="text-muted-foreground">WM Management</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <LanguageSwitcher />
+                <Badge variant="outline" className="px-3 py-1">
+                  <User className="h-3 w-3 mr-1" />
+                  {user?.email}
+                </Badge>
+                <Button variant="outline" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="flex-1 p-6">
+            <Routes>
+              <Route index element={<Navigate to="/admin/contacts" replace />} />
+              <Route path="contacts" element={<ContactSubmissionsView />} />
+              <Route path="simulations" element={<SimulationsView />} />
+              <Route path="applications" element={<ApplicationsView />} />
+              <Route path="chatbot" element={<ChatbotView />} />
+              {userProfile?.role === 'superadmin' && (
+                <>
+                  <Route path="pms-tenants" element={<PMSTenantsView />} />
+                  <Route path="pms-access" element={<PMSAccessView />} />
+                  <Route path="pms-roles" element={<PMSRolesView />} />
+                  <Route path="approvals" element={<UserApprovalsView />} />
+                  <Route path="admin-users" element={<AdminUsersView />} />
+                </>
+              )}
+            </Routes>
+          </main>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto p-6">
-        <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-9' : 'grid-cols-4'}`}>
-            <TabsTrigger value="contacts" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Contact Submissions
-            </TabsTrigger>
-            <TabsTrigger value="simulations" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Simulaciones
-            </TabsTrigger>
-            <TabsTrigger value="applications" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Financing Applications
-            </TabsTrigger>
-            <TabsTrigger value="chatbot" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              AI Chatbot
-            </TabsTrigger>
-            {userProfile?.role === 'superadmin' && (
-              <>
-                <TabsTrigger value="pms-tenants" className="flex items-center gap-2">
-                  <Building className="h-4 w-4" />
-                  Tenants PMS
-                </TabsTrigger>
-                <TabsTrigger value="pms-access" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Solicitudes PMS
-                </TabsTrigger>
-                <TabsTrigger value="pms-roles" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Roles PMS
-                </TabsTrigger>
-                <TabsTrigger value="approvals" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  User Approvals
-                </TabsTrigger>
-                <TabsTrigger value="wm-admin-users" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Admin Users
-                </TabsTrigger>
-              </>
-            )}
-          </TabsList>
-
-          <TabsContent value="contacts">
-            <Card className="shadow-strong">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <MessageSquare className="h-5 w-5" />
-                  <span>Contact Submissions</span>
-                </CardTitle>
-                <CardDescription>
-                  Total submissions: {contacts.length}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {contacts.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No contact submissions yet</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Company</TableHead>
-                          <TableHead>Message Preview</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {contacts.map((contact) => (
-                          <TableRow key={contact.id} className="hover:bg-muted/50">
-                            <TableCell className="font-medium">
-                              {contact.first_name} {contact.last_name}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center space-x-2">
-                                <Mail className="h-4 w-4 text-muted-foreground" />
-                                <span>{contact.email}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {contact.company && (
-                                <div className="flex items-center space-x-2">
-                                  <Building className="h-4 w-4 text-muted-foreground" />
-                                  <span>{contact.company}</span>
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm text-muted-foreground">
-                                {formatMessagePreview(contact.message)}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">
-                                  {format(new Date(contact.created_at), 'MMM d, yyyy')}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Sheet>
-                                <SheetTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => setSelectedContact(contact)}
-                                  >
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    View
-                                  </Button>
-                                </SheetTrigger>
-                                <SheetContent className="w-[400px] sm:w-[540px]">
-                                  {selectedContact && (
-                                    <>
-                                      <SheetHeader>
-                                        <SheetTitle className="flex items-center space-x-2">
-                                          <User className="h-5 w-5" />
-                                          <span>{selectedContact.first_name} {selectedContact.last_name}</span>
-                                        </SheetTitle>
-                                        <SheetDescription>
-                                          Contact submission details
-                                        </SheetDescription>
-                                      </SheetHeader>
-                                      
-                                      <div className="mt-6 space-y-6">
-                                        <div className="space-y-4">
-                                          <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                                            <Mail className="h-5 w-5 text-primary" />
-                                            <div>
-                                              <p className="font-semibold">Email</p>
-                                              <p className="text-sm text-muted-foreground">{selectedContact.email}</p>
-                                            </div>
-                                          </div>
-
-                                          {selectedContact.phone && (
-                                            <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                                              <Phone className="h-5 w-5 text-primary" />
-                                              <div>
-                                                <p className="font-semibold">Phone</p>
-                                                <p className="text-sm text-muted-foreground">{selectedContact.phone}</p>
-                                              </div>
-                                            </div>
-                                          )}
-
-                                          {selectedContact.company && (
-                                            <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                                              <Building className="h-5 w-5 text-primary" />
-                                              <div>
-                                                <p className="font-semibold">Company</p>
-                                                <p className="text-sm text-muted-foreground">{selectedContact.company}</p>
-                                              </div>
-                                            </div>
-                                          )}
-
-                                          <div className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
-                                            <Calendar className="h-5 w-5 text-primary mt-0.5" />
-                                            <div>
-                                              <p className="font-semibold">Submitted</p>
-                                              <p className="text-sm text-muted-foreground">
-                                                {format(new Date(selectedContact.created_at), 'MMMM d, yyyy \'at\' h:mm a')}
-                                              </p>
-                                            </div>
-                                          </div>
-
-                                          <div className="space-y-2">
-                                            <div className="flex items-center space-x-2">
-                                              <MessageSquare className="h-5 w-5 text-primary" />
-                                              <p className="font-semibold">Message</p>
-                                            </div>
-                                            <div className="bg-muted/50 p-4 rounded-lg">
-                                              <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                                                {selectedContact.message}
-                                              </p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </>
-                                  )}
-                                </SheetContent>
-                              </Sheet>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="simulations">
-            <Card className="shadow-strong">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5" />
-                  <span>Simulaciones de Inversión</span>
-                </CardTitle>
-                <CardDescription>
-                  Seguimiento de simulaciones y conversión a perfiles de proyecto
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SimulationsManagement />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="applications">
-            <Card className="shadow-strong">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <FileText className="h-5 w-5" />
-                  <span>Financing Applications</span>
-                </CardTitle>
-                <CardDescription>
-                  Manage individual and business financing applications
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ApplicationManagement />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="chatbot">
-            <Card className="shadow-strong">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <MessageSquare className="h-5 w-5" />
-                  <span>AI Chatbot Management</span>
-                </CardTitle>
-                <CardDescription>
-                  Initialize and manage the AI chatbot knowledge base
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-center py-8">
-                <KnowledgeBaseInit />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {userProfile?.role === 'superadmin' && (
-            <>
-              <TabsContent value="pms-tenants">
-                <Card className="shadow-strong">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Building className="h-5 w-5" />
-                      <span>Tenants del Sistema PMS</span>
-                    </CardTitle>
-                    <CardDescription>
-                      Gestionar organizaciones (inmobiliarias, administradores) en el sistema PMS
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <PMSTenantsManagement />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="pms-access">
-                <Card className="shadow-strong">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Users className="h-5 w-5" />
-                      <span>Solicitudes de Acceso PMS</span>
-                    </CardTitle>
-                    <CardDescription>
-                      Aprobar o rechazar solicitudes de acceso al sistema PMS
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <PMSAccessRequests />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="pms-roles">
-                <Card className="shadow-strong">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Users className="h-5 w-5" />
-                      <span>Roles PMS Asignados</span>
-                    </CardTitle>
-                    <CardDescription>
-                      Gestionar roles del sistema de gestión de propiedades (separado de roles de administración del sitio)
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <PMSRolesManagement />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="approvals">
-                <Card className="shadow-strong">
-                  <CardContent className="pt-6">
-                    <UserApprovals />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="wm-admin-users">
-                <Card className="shadow-strong">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Shield className="h-5 w-5" />
-                      <span>WM Admin Users Management</span>
-                    </CardTitle>
-                    <CardDescription>
-                      Gestionar roles y accesos de usuarios administradores de WM
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <WMAdminUsersManagement />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </>
-          )}
-        </Tabs>
-      </main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

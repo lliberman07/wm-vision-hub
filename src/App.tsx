@@ -71,7 +71,7 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/auth" element={<Auth />} />
               <Route 
-                path="/admin" 
+                path="/admin/*" 
                 element={
                   <ProtectedRoute>
                     <Admin />
