@@ -147,7 +147,9 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
         <div>
           <h3 className="text-xl font-semibold">{t('simulator.items.title')}</h3>
           <p className="text-muted-foreground">
-            {t('simulator.items.description')}
+            {t('simulator.items.description').split('**').map((part, index) => 
+              index % 2 === 1 ? <strong key={index}>{part}</strong> : part
+            )}
           </p>
         </div>
         <div className="text-right">
