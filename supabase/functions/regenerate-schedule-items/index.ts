@@ -11,68 +11,19 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          persistSession: false,
-        },
-      }
-    );
-
-    const { contractId } = await req.json();
-
-    if (!contractId) {
-      throw new Error('contractId is required');
-    }
-
-    console.log(`Vinculando pagos existentes para contrato: ${contractId}`);
-
-    // Primero vincular pagos existentes
-    const { error: linkError } = await supabaseClient.rpc('link_existing_payments_to_schedule', {
-      contract_id_param: contractId,
-    });
-
-    if (linkError) {
-      console.error('Error vinculando pagos:', linkError);
-      throw linkError;
-    }
-
-    console.log(`Regenerando schedule items para contrato: ${contractId}`);
-
-    // Luego regenerar el calendario
-    const { error: generateError } = await supabaseClient.rpc('generate_payment_schedule_items', {
-      contract_id_param: contractId,
-    });
-
-    if (generateError) {
-      console.error('Error regenerando schedule items:', generateError);
-      throw generateError;
-    }
-
-    // Verificar cuántos items se crearon
-    const { data: items, error: countError } = await supabaseClient
-      .from('pms_payment_schedule_items')
-      .select('id', { count: 'exact' })
-      .eq('contract_id', contractId);
-
-    if (countError) {
-      console.error('Error contando schedule items:', countError);
-      throw countError;
-    }
-
-    console.log(`Successfully processed ${items?.length || 0} schedule items`);
-
+    // FUNCIÓN DEPRECADA - ya no se permite regenerar calendarios manualmente
+    console.warn('Intento de usar función deprecada: regenerate-schedule-items');
+    
     return new Response(
       JSON.stringify({
-        success: true,
-        itemsCreated: items?.length || 0,
-        message: `Se vincularon los pagos existentes y se regeneraron ${items?.length || 0} items de calendario de pagos`,
+        success: false,
+        error: 'Esta función ha sido deprecada. Los calendarios de pago se actualizan automáticamente cuando se modifican contratos o índices económicos.',
+        deprecated: true,
+        message: 'No se permite regenerar calendarios manualmente para evitar duplicaciones de datos.'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 410, // Gone
       }
     );
   } catch (error) {

@@ -17,7 +17,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, DollarSign, Eye, FileText, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, DollarSign, Eye, FileText } from "lucide-react";
 import { PaymentCellModal } from "./PaymentCellModal";
 import { toast } from "sonner";
 import { formatDateDisplay } from "@/utils/dateUtils";
@@ -63,7 +63,6 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
-  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
     if (contractId) {
@@ -140,31 +139,6 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
     setIsModalOpen(true);
   };
 
-  const handleRegenerateSchedule = async () => {
-    try {
-      setRegenerating(true);
-      toast.info('Vinculando pagos y regenerando calendario...');
-      
-      const { data, error } = await supabase.functions.invoke('regenerate-schedule-items', {
-        body: { contractId },
-      });
-
-      if (error) throw error;
-
-      toast.success('Calendario actualizado', {
-        description: data.message || 'Se vincularon los pagos existentes y se regeneró el calendario',
-      });
-
-      await fetchScheduleItems();
-    } catch (error: any) {
-      toast.error('Error al actualizar calendario', {
-        description: error.message,
-      });
-    } finally {
-      setRegenerating(false);
-    }
-  };
-
   if (loading) {
     return (
       <Card>
@@ -189,16 +163,6 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
           <div className="flex items-center justify-between">
             <CardTitle>Proyección de Pagos por Propietario</CardTitle>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRegenerateSchedule}
-                disabled={regenerating}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-                {regenerating ? 'Actualizando...' : 'Regenerar Calendario'}
-              </Button>
-              <div className="h-8 w-px bg-border mx-2" />
               <Button
                 variant={filterStatus === "all" ? "default" : "outline"}
                 size="sm"
@@ -235,13 +199,9 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
             <div className="text-center py-12">
               <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No hay calendario de pagos</h3>
-              <p className="text-muted-foreground mb-4">
-                El calendario de pagos aún no ha sido generado para este contrato.
+              <p className="text-muted-foreground">
+                El calendario de pagos se generará automáticamente al activar el contrato.
               </p>
-              <Button onClick={handleRegenerateSchedule} disabled={regenerating}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-                {regenerating ? 'Generando...' : 'Generar Calendario'}
-              </Button>
             </div>
           ) : (
             <div className="space-y-2">
