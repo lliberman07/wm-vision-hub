@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { Save, AlertTriangle, TrendingUp, Calculator, DollarSign, FileDown } from 'lucide-react';
+import { Save, AlertTriangle, TrendingUp, Calculator, DollarSign, FileDown, AlertCircle } from 'lucide-react';
 import { InvestmentItem, CreditLine, FinancialAnalysis, Alert as AlertType } from '@/types/investment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency, formatNumber } from '@/utils/numberFormat';
@@ -119,7 +119,11 @@ export const ResultsAnalysis = ({
       </div>
 
       {/* Alerts */}
-      {alerts.length > 0 && (
+      {(alerts.length > 0 || (() => {
+        const customTotal = creditLines.reduce((s, cl) => s + cl.totalAmount, 0);
+        const calculatedTotal = analysis.totalFinanced;
+        return customTotal > 0 && Math.abs(customTotal - calculatedTotal) > 1;
+      })()) && (
         <div className="space-y-2">
           {alerts.map((alert, index) => (
             <Alert key={index} variant={alert.type === 'error' ? 'destructive' : 'default'}>
@@ -127,6 +131,21 @@ export const ResultsAnalysis = ({
               <AlertDescription>{alert.message}</AlertDescription>
             </Alert>
           ))}
+          
+          {(() => {
+            const customTotal = creditLines.reduce((s, cl) => s + cl.totalAmount, 0);
+            const calculatedTotal = analysis.totalFinanced;
+            return customTotal > 0 && Math.abs(customTotal - calculatedTotal) > 1 ? (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  ⚠️ Los montos de financiamiento personalizados ({formatCurrency(customTotal, language, currency)}) 
+                  difieren del cálculo automático ({formatCurrency(calculatedTotal, language, currency)}). 
+                  Considere resetear los valores en la pestaña de Financiamiento.
+                </AlertDescription>
+              </Alert>
+            ) : null;
+          })()}
         </div>
       )}
 

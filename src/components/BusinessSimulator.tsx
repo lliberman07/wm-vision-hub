@@ -31,6 +31,20 @@ const BusinessSimulator = ({ onComplete }: BusinessSimulatorProps = {}) => {
   // Use custom credit lines if available, otherwise use calculated ones
   const activeCreditLines = creditLines.length > 0 ? creditLines : calculatedCreditLines;
 
+  // Reset custom credit lines when calculated ones change significantly
+  useEffect(() => {
+    if (calculatedCreditLines.length > 0 && creditLines.length > 0) {
+      const needsReset = calculatedCreditLines.some(calcLine => {
+        const customLine = creditLines.find(cl => cl.type === calcLine.type);
+        return customLine && Math.abs(customLine.totalAmount - calcLine.totalAmount) > 1;
+      });
+      
+      if (needsReset) {
+        setCreditLines([]);
+      }
+    }
+  }, [calculatedCreditLines]);
+
   // Notify parent when reaching results tab
   useEffect(() => {
     if (currentTab === "results" && onComplete) {
@@ -109,6 +123,7 @@ const BusinessSimulator = ({ onComplete }: BusinessSimulatorProps = {}) => {
           <FinancingSources
             creditLines={activeCreditLines}
             onUpdateCreditLine={handleUpdateCreditLine}
+            onResetCreditLines={() => setCreditLines([])}
           />
         </TabsContent>
 

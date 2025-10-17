@@ -56,6 +56,8 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
       franchiseData.launchExpenses + 
       franchiseData.staffTraining + 
       franchiseData.initialStock + 
+      franchiseData.localRent +
+      franchiseData.localDeposit +
       franchiseData.others;
 
     const item = items.find(i => i.id === id);
@@ -136,6 +138,8 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
   const totalInvestment = items
     .filter(item => item.isSelected)
     .reduce((sum, item) => sum + item.amount, 0);
+  
+  const selectedItemsCount = items.filter(item => item.isSelected).length;
 
   return (
     <div className="space-y-6">
@@ -147,7 +151,9 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
           </p>
         </div>
         <div className="text-right">
-          <Label className="text-sm text-muted-foreground">{t('simulator.items.totalInvestment')}</Label>
+          <Label className="text-sm text-muted-foreground">
+            {t('simulator.items.totalInvestment')} ({selectedItemsCount} {selectedItemsCount === 1 ? 'item' : 'items'})
+          </Label>
           <div className="text-2xl font-bold text-primary">
             {formatCurrency(totalInvestment, language, currency)}
           </div>

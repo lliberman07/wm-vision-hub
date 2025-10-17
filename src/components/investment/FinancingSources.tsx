@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { CreditLine, CreditType } from '@/types/investment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '@/utils/numberFormat';
@@ -9,6 +10,7 @@ import { formatCurrency } from '@/utils/numberFormat';
 interface FinancingSourcesProps {
   creditLines: CreditLine[];
   onUpdateCreditLine: (type: CreditType, updates: Partial<CreditLine>) => void;
+  onResetCreditLines?: () => void;
 }
 
 const getCreditLabel = (type: CreditType, t: (key: string) => string) =>
@@ -24,7 +26,7 @@ const CREDIT_TYPE_COLORS: Record<CreditType, string> = {
   mortgage: 'bg-purple-100 text-purple-800'
 };
 
-export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingSourcesProps) => {
+export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCreditLines }: FinancingSourcesProps) => {
   const { t, language, currency } = useLanguage();
   const calculateMonthlyPayment = (amount: number, rate: number, months: number): number => {
     if (rate === 0) return Math.round(amount / months);
@@ -56,14 +58,24 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine }: FinancingS
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex-1">
           <h3 className="text-xl font-semibold">{t('simulator.financing.sourcesTitle')}</h3>
           <p className="text-muted-foreground">
             {t('simulator.financing.sourcesDescription')}
           </p>
         </div>
-          <div className="text-right space-y-1">
+        {onResetCreditLines && creditLines.length > 0 && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onResetCreditLines}
+            className="shrink-0"
+          >
+            Resetear valores
+          </Button>
+        )}
+        <div className="text-right space-y-1 shrink-0">
             <div>
               <Label className="text-sm text-muted-foreground">{t('simulator.financing.totalFinanced')}</Label>
               <div className="text-xl font-bold text-primary">
