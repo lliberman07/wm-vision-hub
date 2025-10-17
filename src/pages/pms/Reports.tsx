@@ -101,6 +101,7 @@ const Reports = () => {
       setPropertiesWithContracts(propertiesData);
 
       // Fetch stats
+      const today = new Date().toISOString().split('T')[0];
       const [contractsRes, tenantsRes, paymentsRes] = await Promise.all([
         supabase
           .from('pms_contracts')
@@ -109,9 +110,19 @@ const Reports = () => {
           .eq('tenant_id', currentTenant.id),
         supabase
           .from('pms_tenants_renters')
-          .select('id')
-          .eq('is_active', true)
-          .eq('tenant_id', currentTenant.id),
+          .select(`
+            id,
+            pms_contracts!inner(
+              id,
+              status,
+              start_date,
+              end_date
+            )
+          `)
+          .eq('tenant_id', currentTenant.id)
+          .eq('pms_contracts.status', 'active')
+          .lte('pms_contracts.start_date', today)
+          .gte('pms_contracts.end_date', today),
         supabase
           .from('pms_payments')
           .select('paid_amount')
