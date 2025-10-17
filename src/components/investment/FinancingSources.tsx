@@ -125,7 +125,9 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>{t('simulator.financing.amountToFinance')}</Label>
+                    <div className="h-9 flex items-center">
+                      <Label>{t('simulator.financing.amountToFinance')}</Label>
+                    </div>
                     <Input
                       type="number"
                       value={creditLine.totalAmount}
@@ -135,8 +137,10 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor={`rate-${creditLine.type}`} className="flex items-center gap-2">
-                      {t('simulator.financing.interestRate')}
+                    <div className="h-9 flex items-center gap-2">
+                      <Label htmlFor={`rate-${creditLine.type}`}>
+                        {t('simulator.financing.interestRate')}
+                      </Label>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -149,7 +153,7 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                    </Label>
+                    </div>
                     <Input
                       id={`rate-${creditLine.type}`}
                       type="number"
@@ -163,7 +167,9 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor={`term-${creditLine.type}`}>{t('simulator.financing.termMonths')}</Label>
+                    <div className="h-9 flex items-center">
+                      <Label htmlFor={`term-${creditLine.type}`}>{t('simulator.financing.termMonths')}</Label>
+                    </div>
                     <Input
                       id={`term-${creditLine.type}`}
                       type="number"
