@@ -407,34 +407,10 @@ const handler = async (req: Request): Promise<Response> => {
       const emailResponse = await resend.emails.send({
         from: 'WM Management <onboarding@resend.dev>',
         to: [email],
-        subject: `Investment Simulation Report - ${referenceNumber}`,
-        html: `
-          <h2>Your Investment Simulation Report is Ready</h2>
-          <p>Thank you for using our investment simulation tool. Your personalized report has been generated.</p>
-          
-          <h3>Report Summary:</h3>
-          <ul>
-            <li><strong>Reference Number:</strong> ${referenceNumber}</li>
-            <li><strong>Total Investment:</strong> $${Math.round(analysisResults.totalInvestment).toLocaleString()}</li>
-            <li><strong>Total Financed:</strong> $${Math.round(analysisResults.totalFinanced).toLocaleString()}</li>
-            <li><strong>ROI:</strong> ${analysisResults.roi}%</li>
-            <li><strong>Break-even Period:</strong> ${analysisResults.breakEvenMonths} months</li>
-          </ul>
-          
-          <p>The detailed PDF report is attached to this email.</p>
-          
-          <hr>
-          <p style="font-size: 12px; color: #666;">
-            This report was generated on ${new Date().toLocaleDateString()} by WM Management's investment simulation system.
-          </p>
-        `,
-        attachments: [
-          {
-            filename: `investment-report-${referenceNumber}.html`,
-            content: base64Encode(new TextEncoder().encode(htmlContent)),
-            contentType: 'text/html'
-          }
-        ]
+        subject: language === 'es' 
+          ? `Reporte de Simulación de Inversión - ${referenceNumber}`
+          : `Investment Simulation Report - ${referenceNumber}`,
+        html: htmlContent, // Send the full HTML report directly in email body
       });
 
       console.log('Email response:', emailResponse);
