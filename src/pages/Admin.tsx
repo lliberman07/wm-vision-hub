@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Mail, Phone, Building, Calendar, MessageSquare, User, Eye, Users, FileText, TrendingUp } from "lucide-react";
+import { LogOut, Mail, Phone, Building, Calendar, MessageSquare, User, Eye, Users, FileText, TrendingUp, Shield } from "lucide-react";
 import { format } from "date-fns";
 import UserApprovals from "@/components/UserApprovals";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -18,6 +18,7 @@ import { SimulationsManagement } from "@/components/SimulationsManagement";
 import PMSAccessRequests from "@/components/PMSAccessRequests";
 import PMSRolesManagement from "@/components/PMSRolesManagement";
 import { PMSTenantsManagement } from "@/components/PMSTenantsManagement";
+import WMAdminUsersManagement from "@/components/WMAdminUsersManagement";
 
 interface Contact {
   id: string;
@@ -136,7 +137,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto p-6">
         <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-8' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${userProfile?.role === 'superadmin' ? 'grid-cols-9' : 'grid-cols-4'}`}>
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Contact Submissions
@@ -170,6 +171,10 @@ const Admin = () => {
                 <TabsTrigger value="approvals" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   User Approvals
+                </TabsTrigger>
+                <TabsTrigger value="wm-admin-users" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Admin Users
                 </TabsTrigger>
               </>
             )}
@@ -439,6 +444,23 @@ const Admin = () => {
                 <Card className="shadow-strong">
                   <CardContent className="pt-6">
                     <UserApprovals />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="wm-admin-users">
+                <Card className="shadow-strong">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Shield className="h-5 w-5" />
+                      <span>WM Admin Users Management</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Gestionar roles y accesos de usuarios administradores de WM
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <WMAdminUsersManagement />
                   </CardContent>
                 </Card>
               </TabsContent>
