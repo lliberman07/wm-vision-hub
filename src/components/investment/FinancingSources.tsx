@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { CreditLine, CreditType } from '@/types/investment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '@/utils/numberFormat';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
 
 interface FinancingSourcesProps {
   creditLines: CreditLine[];
@@ -133,7 +135,23 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor={`rate-${creditLine.type}`}>{t('simulator.financing.interestRate')}</Label>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor={`rate-${creditLine.type}`}>
+                        {t('simulator.financing.interestRate')} (% anual)
+                      </Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="text-sm">
+                              {t('simulator.financing.rateTooltip')}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Input
                       id={`rate-${creditLine.type}`}
                       type="number"
@@ -162,6 +180,9 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
                 
                 <div className="mt-4 p-3 bg-muted rounded-lg">
                   <div className="text-sm text-muted-foreground">{t('simulator.financing.creditSummary')}</div>
+                  <div className="text-xs text-muted-foreground mt-1 mb-2">
+                    {t('simulator.financing.amortizationSystem')} • {t('simulator.financing.effectiveMonthlyRate')}: {(creditLine.interestRate / 12).toFixed(2)}%
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
                     <div>
                       <span className="font-medium">{t('simulator.financing.principal')}</span> {formatCurrency(creditLine.totalAmount, language, currency)}

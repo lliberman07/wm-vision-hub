@@ -4,7 +4,8 @@ import { InvestmentItem, CreditLine, FinancialAnalysis, Alert, CreditType } from
 export const useInvestmentCalculations = (
   items: InvestmentItem[],
   estimatedMonthlyIncome: number = 0,
-  grossMarginPercentage: number = 30
+  grossMarginPercentage: number = 30,
+  customRates?: Partial<Record<CreditType, { rate: number, term: number }>>
 ) => {
   return useMemo(() => {
     const selectedItems = items.filter(item => item.isSelected);
@@ -36,9 +37,9 @@ export const useInvestmentCalculations = (
     };
 
     const defaultRates: Record<CreditType, { rate: number, term: number }> = {
-      personal: { rate: 35.00, term: 24 },
-      capital: { rate: 25.00, term: 60 },
-      mortgage: { rate: 12.50, term: 240 }
+      personal: customRates?.personal || { rate: 35.00, term: 24 },
+      capital: customRates?.capital || { rate: 25.00, term: 60 },
+      mortgage: customRates?.mortgage || { rate: 12.50, term: 240 }
     };
 
     let monthlyPaymentTotal = 0;
@@ -118,5 +119,5 @@ export const useInvestmentCalculations = (
       alerts,
       debtToIncomeRatio
     };
-  }, [items, estimatedMonthlyIncome, grossMarginPercentage]);
+  }, [items, estimatedMonthlyIncome, grossMarginPercentage, customRates]);
 };

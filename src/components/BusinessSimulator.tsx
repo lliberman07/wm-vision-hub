@@ -19,13 +19,15 @@ const BusinessSimulator = ({ onComplete }: BusinessSimulatorProps = {}) => {
     DEFAULT_ITEMS.map((item, index) => ({ ...item, id: `item-${index}` }))
   );
   const [creditLines, setCreditLines] = useState<CreditLine[]>([]);
+  const [customRates, setCustomRates] = useState<Partial<Record<CreditType, { rate: number, term: number }>>>({});
   const [estimatedMonthlyIncome, setEstimatedMonthlyIncome] = useState<number>(0);
   const [grossMarginPercentage, setGrossMarginPercentage] = useState<number>(30);
 
   const { selectedItems, creditLines: calculatedCreditLines, analysis, alerts } = useInvestmentCalculations(
     items,
     estimatedMonthlyIncome,
-    grossMarginPercentage
+    grossMarginPercentage,
+    customRates
   );
 
   // Use custom credit lines if available, otherwise use calculated ones
@@ -74,6 +76,20 @@ const BusinessSimulator = ({ onComplete }: BusinessSimulatorProps = {}) => {
   };
 
   const handleUpdateCreditLine = (type: CreditType, updates: Partial<CreditLine>) => {
+    // Save custom rates if they were changed
+    if (updates.interestRate !== undefined || updates.termMonths !== undefined) {
+      setCustomRates(prev => {
+        const currentRate = prev[type];
+        return {
+          ...prev,
+          [type]: {
+            rate: updates.interestRate ?? currentRate?.rate ?? 0,
+            term: updates.termMonths ?? currentRate?.term ?? 0
+          }
+        };
+      });
+    }
+
     setCreditLines(prev => {
       const existingIndex = prev.findIndex(cl => cl.type === type);
       if (existingIndex >= 0) {
