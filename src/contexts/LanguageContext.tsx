@@ -301,7 +301,29 @@ const translations = {
     'financing.news.subtitle': 'Stay informed about financing opportunities',
     'financing.news.content': 'Stay up to date with the latest financing trends, interest rate updates, and new program announcements that could benefit your business investment.',
 
-    // Financing Two Column Layout
+    // Financing Consolidated Section
+    'financing.consolidated.section.title': 'Financing Strategy Advisory',
+    'financing.consolidated.section.description': 'We understand that starting a project or business requires financial backing and proper planning. At WM Management we accompany individuals and legal entities in the search, evaluation and selection of financing tools.',
+    
+    'financing.consolidated.card1.title': 'Interactive Financial Simulation',
+    'financing.consolidated.card1.desc': 'Calculate monthly installments, effective interest rates and total costs in real time. Compare different financing structures (personal, working capital, mortgage) to find the optimal combination for your project.',
+    
+    'financing.consolidated.card2.title': 'Professional Analysis with Intelligent Technology',
+    'financing.consolidated.card2.desc': 'Our platform of professionals and intelligent technologies with AI agents, integrations to external platforms, allow obtaining real and accurate information to generate a credit risk profile and structure a business plan.',
+    
+    'financing.consolidated.card3.title': 'Diversified Financing Options',
+    'financing.consolidated.card3.desc': 'Integrate information from different banking, financial and insurance entities to present the range of proposals adjusted to each profile. Compare terms, rates and structures for different risk profiles.',
+    
+    'financing.consolidated.card4.title': 'Comprehensive Product Coverage',
+    'financing.consolidated.card4.desc': 'Includes evaluation of financing for working capital, remodeling, equipment acquisition, real estate linked to the project and business. The system analyzes financial viability and generates projections based on estimated income and gross margins.',
+    
+    'financing.consolidated.card5.title': 'Agile Processes with Technological Integration',
+    'financing.consolidated.card5.desc': 'Agile processes thanks to integration with databases and technological tools. We facilitate the reception of proposals from financial and insurance entities to speed up response times.',
+    
+    'financing.consolidated.card6.title': 'Risk-Free Exploration',
+    'financing.consolidated.card6.desc': 'Freely explore all options without the need to initially share personal information. The information provided is processed securely to guarantee confidentiality. Once satisfied with the results, you can proceed with the formal application.',
+    
+    // Financing Two Column Layout (legacy - kept for compatibility)
     'financing.twoColumn.left.title': 'Ready to Drive Your Project with Smart Financing?',
     'financing.twoColumn.left.description': 'Our interactive simulator helps you visualize your business investment and financing options in real-time.',
     'financing.twoColumn.left.benefit1.title': 'Instant Financial Analysis',
@@ -1424,7 +1446,29 @@ const translations = {
     'financing.news.subtitle': 'Manténgase informado sobre oportunidades de financiamiento',
     'financing.news.content': 'Manténgase al día con las últimas tendencias de financiamiento, actualizaciones de tasas de interés y anuncios de nuevos programas que podrían beneficiar su inversión de proyecto y negocio.',
 
-    // Financing Two Column Layout
+    // Financing Consolidated Section
+    'financing.consolidated.section.title': 'Asesoramiento en Estrategias de Financiamiento',
+    'financing.consolidated.section.description': 'Entendemos que iniciar un proyecto o negocio requiere respaldo financiero y una adecuada planificación. En WM Management acompañamos a personas físicas y jurídicas en el proceso de búsqueda, evaluación y selección de herramientas de financiamiento.',
+    
+    'financing.consolidated.card1.title': 'Simulación Financiera Interactiva',
+    'financing.consolidated.card1.desc': 'Calcule cuotas mensuales, tasas de interés efectivas y costos totales en tiempo real. Compare diferentes estructuras de financiamiento (personal, capital de trabajo, hipotecario) para encontrar la combinación óptima para su proyecto.',
+    
+    'financing.consolidated.card2.title': 'Análisis Profesional con Tecnología Inteligente',
+    'financing.consolidated.card2.desc': 'Nuestra plataforma de profesionales y tecnologías inteligentes con agentes de IA, integraciones a plataformas externas, permiten obtener información real y precisa para generar un perfil de riesgo crediticio y estructurar un plan de negocios.',
+    
+    'financing.consolidated.card3.title': 'Opciones Diversificadas de Financiamiento',
+    'financing.consolidated.card3.desc': 'Integrar información de distintas entidades bancarias, financieras y aseguradoras para presentar el abanico de propuestas ajustadas a cada perfil. Compare términos, tasas y estructuras para diferentes perfiles de riesgo.',
+    
+    'financing.consolidated.card4.title': 'Cobertura Integral de Productos',
+    'financing.consolidated.card4.desc': 'Incluye la evaluación de financiamiento para capital de trabajo, remodelación, adquisición de equipos, bienes raíces vinculadas al proyecto y negocio. El sistema analiza viabilidad financiera y genera proyecciones basadas en ingresos estimados y márgenes brutos.',
+    
+    'financing.consolidated.card5.title': 'Procesos Ágiles con Integración Tecnológica',
+    'financing.consolidated.card5.desc': 'Procesos ágiles gracias a la integración con bases de datos y herramientas tecnológicas. Facilitamos la recepción de propuestas de entidades financieras y aseguradoras para agilizar tiempos de respuesta.',
+    
+    'financing.consolidated.card6.title': 'Exploración Sin Compromiso',
+    'financing.consolidated.card6.desc': 'Explore libremente todas las opciones sin necesidad de compartir información personal inicialmente. La información suministrada es procesada de manera segura para garantizar confidencialidad. Una vez satisfecho con los resultados, puede avanzar con la solicitud formal.',
+    
+    // Financing Two Column Layout (legacy - kept for compatibility)
     'financing.twoColumn.left.title': '¿Listo para Impulsar Su Proyecto con Financiamiento Inteligente?',
     'financing.twoColumn.left.description': 'Nuestro simulador interactivo le ayuda a visualizar su inversión de negocio y opciones de financiamiento en tiempo real.',
     'financing.twoColumn.left.benefit1.title': 'Análisis Financiero Instantáneo',
