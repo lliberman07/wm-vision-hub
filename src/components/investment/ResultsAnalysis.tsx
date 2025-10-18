@@ -469,14 +469,6 @@ export const ResultsAnalysis = ({
         </Button>
       </div>
 
-      {/* Disclaimer - Centered Full Width */}
-      <div className="w-full text-center">
-        <p className="text-xs text-muted-foreground max-w-4xl mx-auto">
-          Aviso: Los valores mostrados son simulaciones estimativas. WM Management S.A. no garantiza su exactitud ni se responsabiliza por decisiones basadas en esta herramienta.{' '}
-          <a href="/terms" className="underline hover:text-primary">Ver más</a>
-        </p>
-      </div>
-
       {/* Email Modals */}
       <EmailModal
         open={showSaveModal}
