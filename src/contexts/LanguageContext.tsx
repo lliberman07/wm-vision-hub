@@ -2203,7 +2203,7 @@ const translations = {
     'franchise.location.squareMeters': 'Metros Cuadrados',
     // Fuentes de Financiamiento
     'simulator.financing.sourcesTitle': 'Escenario Financiero del Negocio',
-    'simulator.financing.sourcesDescription': 'Evalúe el escenario financiero de su modelo de negocio.',
+    'simulator.financing.sourcesDescription': 'Evalúe el escenario financiero de su modelo de negocio, y luego <span class="font-bold">pase a la solapa de "Resultados y Análisis"</span>',
     'simulator.financing.rateTooltip': 'Tasa de interés anual (TEA). Se aplica usando Sistema Francés de amortización con cuota fija mensual. La tasa se divide por 12 para obtener la tasa mensual efectiva.',
     'simulator.financing.amortizationSystem': 'Sistema Francés',
     'simulator.financing.effectiveMonthlyRate': 'Tasa mensual efectiva',
