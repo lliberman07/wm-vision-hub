@@ -118,7 +118,7 @@ const BusinessSimulator = ({ onComplete }: BusinessSimulatorProps = {}) => {
           <TabsTrigger value="items">
             {t('simulator.tabs.configuration')}
           </TabsTrigger>
-          <TabsTrigger value="financing" className="text-black dark:text-white font-bold">
+          <TabsTrigger value="financing" className="text-black dark:text-white">
             {t('simulator.tabs.financing')}
           </TabsTrigger>
           <TabsTrigger value="results">
