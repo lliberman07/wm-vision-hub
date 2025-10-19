@@ -63,7 +63,9 @@ export const FinancingSources = ({ creditLines, onUpdateCreditLine, onResetCredi
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1">
           <h3 className="text-xl font-semibold">{t('simulator.financing.sourcesTitle')}</h3>
-          <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('simulator.financing.sourcesDescription') }} />
+          <p className="text-muted-foreground">
+            {t('simulator.financing.sourcesDescription')}
+          </p>
         </div>
         {onResetCreditLines && creditLines.length > 0 && (
           <Button 

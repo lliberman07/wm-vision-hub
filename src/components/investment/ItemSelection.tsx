@@ -146,7 +146,9 @@ export const ItemSelection = ({ items, onUpdateItem, onAddCustomItem, onRemoveIt
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-xl font-semibold">{t('simulator.items.title')}</h3>
-          <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('simulator.items.description') }} />
+          <p className="text-muted-foreground">
+            {t('simulator.items.description')}
+          </p>
         </div>
         <div className="text-right">
           <Label className="text-sm text-muted-foreground">
