@@ -2332,6 +2332,15 @@ export type Database = {
         Args: { property_id_param: string }
         Returns: string
       }
+      get_user_pms_role: {
+        Args: { _user_id: string }
+        Returns: {
+          role: string
+          tenant_id: string
+          tenant_name: string
+          tenant_slug: string
+        }[]
+      }
       has_pms_role: {
         Args:
           | {

@@ -66,6 +66,8 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user) {
       setHasPMSAccess(false);
       setPMSRoles([]);
+      setAllRoleContexts([]);
+      setActiveRoleContext(null);
       setUserRole(null);
       setCurrentTenant(null);
       setLoading(false);
@@ -75,89 +77,65 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       console.log('[PMSContext] Checking PMS access for user:', user.id);
       
-      // Get user roles with tenant info in a single query
-      const { data: rolesWithTenants, error: rolesError } = await supabase
-        .from('user_roles')
-        .select(`
-          role,
-          tenant_id,
-          pms_tenants (
-            id,
-            name,
-            slug
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('module', 'PMS')
-        .eq('status', 'approved');
+      // Call RPC to get user roles in real-time (no localStorage)
+      const { data: rolesData, error: rolesError } = await supabase
+        .rpc('get_user_pms_role', { _user_id: user.id });
 
-      console.log('[PMSContext] Roles query result:', { rolesWithTenants, error: rolesError });
+      console.log('[PMSContext] RPC result:', { rolesData, error: rolesError });
 
       if (rolesError) {
         console.error('[PMSContext] Error fetching roles:', rolesError);
         throw rolesError;
       }
 
-      if (rolesWithTenants && rolesWithTenants.length > 0) {
-        // Build contexts array
-        const contexts: PMSRoleContext[] = rolesWithTenants.map(r => ({
-          role: r.role.toUpperCase() as PMSRole,
-          tenant_id: r.tenant_id,
-          tenant_name: r.pms_tenants?.name || 'Sin nombre',
-          tenant_slug: r.pms_tenants?.slug || ''
-        }));
-
-        console.log('[PMSContext] Built contexts:', contexts);
-        setAllRoleContexts(contexts);
-        
-        // Try to restore saved context from localStorage
-        const savedContextStr = localStorage.getItem('pms_active_context');
-        let activeContext: PMSRoleContext | null = null;
-        
-        if (savedContextStr) {
-          try {
-            const savedContext = JSON.parse(savedContextStr);
-            activeContext = contexts.find(
-              c => c.role === savedContext.role && c.tenant_id === savedContext.tenant_id
-            ) || null;
-            console.log('[PMSContext] Restored saved context:', activeContext);
-          } catch (e) {
-            console.warn('[PMSContext] Failed to parse saved context:', e);
-          }
-        }
-        
-        // Default to first role if no saved context found
-        if (!activeContext) {
-          activeContext = contexts[0];
-          console.log('[PMSContext] Using default first context:', activeContext);
-        }
-        
-        setActiveRoleContext(activeContext);
-        setHasPMSAccess(true);
-        
-        // Maintain legacy state for compatibility
-        setPMSRoles(contexts.map(c => c.role));
-        setUserRole(activeContext.role);
-        setCurrentTenant({
-          id: activeContext.tenant_id,
-          name: activeContext.tenant_name,
-          slug: activeContext.tenant_slug
-        });
-        
-        console.log('[PMSContext] ✅ Multi-role context loaded successfully');
-      } else {
-        console.log('[PMSContext] No roles found for user');
+      if (!rolesData || rolesData.length === 0) {
+        console.log('[PMSContext] No PMS roles found');
         setHasPMSAccess(false);
         setPMSRoles([]);
         setAllRoleContexts([]);
         setActiveRoleContext(null);
         setUserRole(null);
         setCurrentTenant(null);
+        setLoading(false);
+        return;
       }
+
+      // Build role contexts from RPC result
+      const contexts: PMSRoleContext[] = rolesData.map((r: any) => ({
+        role: r.role.toUpperCase() as PMSRole,
+        tenant_id: r.tenant_id,
+        tenant_name: r.tenant_name || 'Sin nombre',
+        tenant_slug: r.tenant_slug || ''
+      }));
+
+      console.log('[PMSContext] Built contexts from RPC:', contexts);
+      setAllRoleContexts(contexts);
+      
+      // Set first context as active (no localStorage restoration)
+      const firstContext = contexts[0];
+      setActiveRoleContext(firstContext);
+      
+      // Extract unique roles
+      const uniqueRoles = Array.from(new Set(contexts.map(c => c.role))) as PMSRole[];
+      setPMSRoles(uniqueRoles);
+      
+      // Update legacy states for compatibility
+      setUserRole(firstContext.role);
+      setCurrentTenant({
+        id: firstContext.tenant_id,
+        name: firstContext.tenant_name,
+        slug: firstContext.tenant_slug
+      });
+      
+      setHasPMSAccess(true);
+      console.log('[PMSContext] Using first context from RPC:', firstContext);
+      console.log('[PMSContext] ✅ Multi-role context loaded successfully');
     } catch (error) {
-      console.error('[PMSContext] Error checking PMS access:', error);
+      console.error('[PMSContext] ❌ Error in checkPMSAccess:', error);
       setHasPMSAccess(false);
       setPMSRoles([]);
+      setAllRoleContexts([]);
+      setActiveRoleContext(null);
       setUserRole(null);
       setCurrentTenant(null);
     } finally {
@@ -177,13 +155,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       slug: roleContext.tenant_slug
     });
     
-    // Persist selection
-    localStorage.setItem('pms_active_context', JSON.stringify({
-      role: roleContext.role,
-      tenant_id: roleContext.tenant_id
-    }));
-    
-    console.log('[PMSContext] ✅ Context switched successfully');
+    console.log('[PMSContext] ✅ Context switched successfully (no localStorage)');
   };
 
   const requestAccess = async (
