@@ -111,24 +111,42 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.log('[PMSContext] Built contexts from RPC:', contexts);
       setAllRoleContexts(contexts);
       
-      // Set first context as active (no localStorage restoration)
-      const firstContext = contexts[0];
-      setActiveRoleContext(firstContext);
+      // Try to restore context from sessionStorage
+      const savedContext = sessionStorage.getItem('pms_active_context');
+      let activeContext = contexts[0]; // Default to first
+      
+      if (savedContext) {
+        try {
+          const parsed = JSON.parse(savedContext);
+          // Verify the saved context still exists in current contexts
+          const found = contexts.find(c => 
+            c.role === parsed.role && c.tenant_id === parsed.tenant_id
+          );
+          if (found) {
+            activeContext = found;
+            console.log('[PMSContext] Restored context from sessionStorage:', activeContext);
+          }
+        } catch (e) {
+          console.error('[PMSContext] Error parsing saved context:', e);
+        }
+      }
+      
+      setActiveRoleContext(activeContext);
       
       // Extract unique roles
       const uniqueRoles = Array.from(new Set(contexts.map(c => c.role))) as PMSRole[];
       setPMSRoles(uniqueRoles);
       
       // Update legacy states for compatibility
-      setUserRole(firstContext.role);
+      setUserRole(activeContext.role);
       setCurrentTenant({
-        id: firstContext.tenant_id,
-        name: firstContext.tenant_name,
-        slug: firstContext.tenant_slug
+        id: activeContext.tenant_id,
+        name: activeContext.tenant_name,
+        slug: activeContext.tenant_slug
       });
       
       setHasPMSAccess(true);
-      console.log('[PMSContext] Using first context from RPC:', firstContext);
+      console.log('[PMSContext] Using active context:', activeContext);
       console.log('[PMSContext] ✅ Multi-role context loaded successfully');
     } catch (error) {
       console.error('[PMSContext] ❌ Error in checkPMSAccess:', error);
@@ -147,6 +165,12 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     console.log('[PMSContext] Switching to context:', roleContext);
     setActiveRoleContext(roleContext);
     
+    // Save to sessionStorage (persists during session only)
+    sessionStorage.setItem('pms_active_context', JSON.stringify({
+      role: roleContext.role,
+      tenant_id: roleContext.tenant_id
+    }));
+    
     // Update legacy states for compatibility
     setUserRole(roleContext.role);
     setCurrentTenant({
@@ -155,7 +179,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       slug: roleContext.tenant_slug
     });
     
-    console.log('[PMSContext] ✅ Context switched successfully (no localStorage)');
+    console.log('[PMSContext] ✅ Context switched and saved to sessionStorage');
   };
 
   const requestAccess = async (
