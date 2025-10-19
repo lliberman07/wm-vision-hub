@@ -35,3 +35,6 @@ verify_jwt = true
 
 [functions.fix-partial-payments]
 verify_jwt = true
+
+[functions.send-contact-confirmation]
+verify_jwt = false
