@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -15,6 +16,44 @@ interface ApplicationEmailRequest {
   language?: string;
 }
 
+// Función auxiliar para verificar autenticación JWT
+async function authenticateUser(req: Request) {
+  const authHeader = req.headers.get('authorization');
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { 
+      user: null, 
+      error: { message: 'Missing or invalid authorization header', code: 'MISSING_AUTH' } 
+    };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    {
+      global: {
+        headers: { Authorization: `Bearer ${token}` }
+      },
+      auth: {
+        persistSession: false,
+      }
+    }
+  );
+
+  const { data: { user }, error } = await supabaseClient.auth.getUser(token);
+
+  if (error || !user) {
+    return { 
+      user: null, 
+      error: { message: 'Invalid or expired token', code: 'INVALID_TOKEN' } 
+    };
+  }
+
+  return { user, error: null };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -22,6 +61,19 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Verificar autenticación JWT
+    const { user, error: authError } = await authenticateUser(req);
+
+    if (authError || !user) {
+      console.error('[send-application-email] Authentication failed:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', details: authError?.message }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[send-application-email] Authenticated user: ${user.id}`);
+
     const { email, type, resumeCode, language = 'en' }: ApplicationEmailRequest = await req.json();
 
     console.log(`Sending ${type} email to: ${email}`);

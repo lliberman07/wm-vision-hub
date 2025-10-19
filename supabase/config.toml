@@ -23,3 +23,15 @@ verify_jwt = true
 
 [functions.regenerate-schedule-items]
 verify_jwt = true
+
+[functions.delete-user]
+verify_jwt = true
+
+[functions.send-approval-email]
+verify_jwt = true
+
+[functions.send-application-email]
+verify_jwt = true
+
+[functions.fix-partial-payments]
+verify_jwt = true

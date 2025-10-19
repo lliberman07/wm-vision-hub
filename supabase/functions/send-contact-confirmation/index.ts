@@ -26,6 +26,23 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { firstName, lastName, email, language }: ContactConfirmationRequest = await req.json();
 
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validar longitud de campos
+    if (!firstName || firstName.length > 100 || !lastName || lastName.length > 100) {
+      return new Response(
+        JSON.stringify({ error: 'Name fields are required and must be less than 100 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Email content based on language
     const emailContent = language === 'es' 
       ? {

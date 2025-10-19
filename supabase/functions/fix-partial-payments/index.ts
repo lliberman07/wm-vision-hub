@@ -5,6 +5,59 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Función auxiliar para verificar autenticación JWT
+async function authenticateUser(req: Request) {
+  const authHeader = req.headers.get('authorization');
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { 
+      user: null, 
+      error: { message: 'Missing or invalid authorization header', code: 'MISSING_AUTH' } 
+    };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    {
+      global: {
+        headers: { Authorization: `Bearer ${token}` }
+      },
+      auth: {
+        persistSession: false,
+      }
+    }
+  );
+
+  const { data: { user }, error } = await supabaseClient.auth.getUser(token);
+
+  if (error || !user) {
+    return { 
+      user: null, 
+      error: { message: 'Invalid or expired token', code: 'INVALID_TOKEN' } 
+    };
+  }
+
+  return { user, error: null, supabaseClient };
+}
+
+// Función auxiliar para verificar roles PMS
+async function checkPMSRole(supabaseClient: any, userId: string) {
+  const { data: isSuperAdmin } = await supabaseClient.rpc('has_role', {
+    _user_id: userId,
+    _role: 'superadmin'
+  });
+  
+  const { data: hasPMSRole } = await supabaseClient.rpc('has_pms_role', {
+    _user_id: userId,
+    _role: 'INMOBILIARIA'
+  });
+
+  return { hasPermission: isSuperAdmin || hasPMSRole };
+}
+
 interface ScheduleItem {
   id: string;
   contract_id: string;
@@ -31,6 +84,30 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verificar autenticación JWT
+    const { user, error: authError, supabaseClient: authClient } = await authenticateUser(req);
+
+    if (authError || !user) {
+      console.error('[fix-partial-payments] Authentication failed:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', details: authError?.message }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verificar que sea superadmin o tenga rol INMOBILIARIA en PMS
+    const { hasPermission } = await checkPMSRole(authClient, user.id);
+
+    if (!hasPermission) {
+      console.error('[fix-partial-payments] Forbidden: User lacks PMS admin permissions:', user.id);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden', details: 'Requiere permisos de administración PMS' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[fix-partial-payments] Authenticated admin: ${user.id}`);
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',

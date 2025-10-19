@@ -11,12 +11,88 @@ interface DeleteUserRequest {
   user_id: string;
 }
 
+// Función auxiliar para verificar autenticación JWT
+async function authenticateUser(req: Request) {
+  const authHeader = req.headers.get('authorization');
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { 
+      user: null, 
+      error: { message: 'Missing or invalid authorization header', code: 'MISSING_AUTH' } 
+    };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    {
+      global: {
+        headers: { Authorization: `Bearer ${token}` }
+      },
+      auth: {
+        persistSession: false,
+      }
+    }
+  );
+
+  const { data: { user }, error } = await supabaseClient.auth.getUser(token);
+
+  if (error || !user) {
+    return { 
+      user: null, 
+      error: { message: 'Invalid or expired token', code: 'INVALID_TOKEN' } 
+    };
+  }
+
+  return { user, error: null, supabaseClient };
+}
+
+// Función auxiliar para verificar rol superadmin
+async function checkSuperAdminRole(supabaseClient: any, userId: string) {
+  const { data, error } = await supabaseClient.rpc('has_role', {
+    _user_id: userId,
+    _role: 'superadmin'
+  });
+
+  if (error || !data) {
+    return { isSuperAdmin: false, error: error || { message: 'Role check failed' } };
+  }
+
+  return { isSuperAdmin: data, error: null };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Verificar autenticación JWT
+    const { user, error: authError, supabaseClient } = await authenticateUser(req);
+
+    if (authError || !user) {
+      console.error('[delete-user] Authentication failed:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', details: authError?.message }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verificar que sea superadmin
+    const { isSuperAdmin, error: roleError } = await checkSuperAdminRole(supabaseClient, user.id);
+
+    if (!isSuperAdmin || roleError) {
+      console.error('[delete-user] Forbidden: User is not superadmin:', user.id);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden', details: 'Solo superadmins pueden eliminar usuarios' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[delete-user] Authenticated superadmin: ${user.id}`);
+
     const { user_id }: DeleteUserRequest = await req.json();
 
     if (!user_id) {
