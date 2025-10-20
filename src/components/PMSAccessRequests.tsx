@@ -109,6 +109,8 @@ const PMSAccessRequests = () => {
         let userId = selectedRequest.user_id;
         let isNewUser = false;
         const isPropietario = selectedRequest.requested_role === 'PROPIETARIO';
+        const isInquilino = selectedRequest.requested_role === 'INQUILINO';
+        const needsOwnTenant = isPropietario || isInquilino;
 
         // Verificar si el usuario ya existe en auth.users
         if (!userId) {
@@ -170,12 +172,29 @@ const PMSAccessRequests = () => {
           }
         }
 
-        // Si es PROPIETARIO, crear tenant automáticamente
+        // Si es PROPIETARIO o INQUILINO, crear tenant automáticamente
         let finalTenantId = selectedRequest.tenant_id;
         
-        if (isPropietario) {
-          const tenantSlug = `prop-${selectedRequest.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
-          const tenantName = `${selectedRequest.first_name} ${selectedRequest.last_name}`.trim() || selectedRequest.email;
+        if (needsOwnTenant) {
+          // Determinar el tipo de tenant
+          const tenantType = isPropietario ? 'propietario' : 'inquilino';
+          
+          // Determinar el nombre del tenant
+          let tenantName: string;
+          if (selectedRequest.company_name && selectedRequest.company_name.trim()) {
+            // Es una empresa
+            tenantName = selectedRequest.company_name.trim();
+          } else {
+            // Es persona física
+            tenantName = `${selectedRequest.first_name} ${selectedRequest.last_name}`.trim() || selectedRequest.email;
+          }
+          
+          // Generar slug único
+          const baseSlug = selectedRequest.company_name 
+            ? selectedRequest.company_name.toLowerCase().replace(/[^a-z0-9]/g, '-')
+            : `${selectedRequest.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+          
+          const tenantSlug = `${tenantType === 'propietario' ? 'prop' : 'inq'}-${baseSlug}`;
           
           // Intentar crear el tenant
           const { data: newTenant, error: tenantError } = await supabase
@@ -183,7 +202,7 @@ const PMSAccessRequests = () => {
             .insert([{
               name: tenantName,
               slug: tenantSlug,
-              tenant_type: 'propietario',
+              tenant_type: tenantType,
               is_active: true,
               settings: {}
             }])
@@ -256,8 +275,8 @@ const PMSAccessRequests = () => {
 
         toast({
           title: "Solicitud aprobada",
-          description: isPropietario 
-            ? "Tenant de propietario creado automáticamente y usuario aprobado" 
+          description: needsOwnTenant
+            ? `Tenant de ${isPropietario ? 'propietario' : 'inquilino'} creado automáticamente y usuario aprobado` 
             : isNewUser 
               ? "Se creó la cuenta y se enviaron las credenciales por email" 
               : "El usuario ahora tiene acceso al sistema PMS",

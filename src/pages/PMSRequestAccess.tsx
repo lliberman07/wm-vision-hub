@@ -26,7 +26,8 @@ const requestSchema = z.object({
   postalCode: z.string().trim().min(4, "Código postal inválido").max(10, "Código postal muy largo"),
   role: z.string().min(1, "Debes seleccionar un rol"),
   reason: z.string().trim().min(10, "El motivo debe tener al menos 10 caracteres").max(500, "Motivo muy largo"),
-  // Campos opcionales para INMOBILIARIA
+  // Campos opcionales para INMOBILIARIA e INQUILINO
+  tenantType: z.string().optional(),
   companyName: z.string().trim().max(200, "Nombre de empresa muy largo").optional(),
   taxId: z.string().trim().max(20, "CUIT/CUIL muy largo").optional(),
 });
@@ -50,6 +51,7 @@ const PMSRequestAccess = () => {
     postalCode: '',
     role: '',
     reason: '',
+    tenantType: '',
     companyName: '',
     taxId: '',
   });
@@ -106,8 +108,12 @@ const PMSRequestAccess = () => {
         city: formData.city,
         state: formData.state,
         postal_code: formData.postalCode,
-        company_name: formData.role === 'INMOBILIARIA' ? formData.companyName : undefined,
-        tax_id: formData.role === 'INMOBILIARIA' ? formData.taxId : undefined,
+        company_name: (formData.role === 'INMOBILIARIA' || (formData.role === 'INQUILINO' && formData.tenantType === 'empresa')) 
+          ? formData.companyName 
+          : undefined,
+        tax_id: (formData.role === 'INMOBILIARIA' || (formData.role === 'INQUILINO' && formData.tenantType === 'empresa')) 
+          ? formData.taxId 
+          : undefined,
       }
     );
 
@@ -160,6 +166,7 @@ const PMSRequestAccess = () => {
   }
 
   const isInmobiliaria = formData.role === 'INMOBILIARIA';
+  const isInquilino = formData.role === 'INQUILINO';
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -354,6 +361,51 @@ const PMSRequestAccess = () => {
                       />
                       {errors.taxId && <p className="text-sm text-destructive">{errors.taxId}</p>}
                     </div>
+                  </div>
+                )}
+
+                {isInquilino && (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="tenantType">Tipo de Inquilino *</Label>
+                      <Select 
+                        value={formData.tenantType} 
+                        onValueChange={(value) => handleInputChange('tenantType', value)}
+                      >
+                        <SelectTrigger id="tenantType">
+                          <SelectValue placeholder="Selecciona el tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="persona">Persona Física</SelectItem>
+                          <SelectItem value="empresa">Empresa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {formData.tenantType === 'empresa' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="companyName">Nombre de Empresa *</Label>
+                          <Input
+                            id="companyName"
+                            value={formData.companyName}
+                            onChange={(e) => handleInputChange('companyName', e.target.value)}
+                            placeholder="Razón social"
+                          />
+                          {errors.companyName && <p className="text-sm text-destructive">{errors.companyName}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="taxId">CUIT *</Label>
+                          <Input
+                            id="taxId"
+                            value={formData.taxId}
+                            onChange={(e) => handleInputChange('taxId', e.target.value)}
+                            placeholder="20-12345678-9"
+                          />
+                          {errors.taxId && <p className="text-sm text-destructive">{errors.taxId}</p>}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
