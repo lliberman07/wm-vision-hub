@@ -14,7 +14,7 @@ interface KPIData {
 }
 
 export function DashboardKPIs() {
-  const { currentTenant } = usePMS();
+  const { currentTenant, userRole } = usePMS();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<KPIData>({
     totalProperties: 0,
@@ -29,33 +29,54 @@ export function DashboardKPIs() {
       if (!currentTenant?.id) return;
 
       try {
+        // SUPERADMIN ve todas las propiedades del sistema
+        const isSuperAdmin = userRole === 'SUPERADMIN';
+        
+        // Construir queries condicionalmente
+        let propertiesQuery = supabase
+          .from('pms_properties')
+          .select('*', { count: 'exact', head: true });
+        
+        let contractsQuery = supabase
+          .from('pms_contracts')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'active');
+        
+        let overdueQuery = supabase
+          .from('pms_payment_schedule_items')
+          .select('expected_amount, contract_id')
+          .eq('status', 'overdue');
+        
+        let pendingQuery = supabase
+          .from('pms_payment_schedule_items')
+          .select('expected_amount, contract_id')
+          .eq('status', 'pending');
+        
+        // Filtrar por tenant solo si NO es SUPERADMIN
+        if (!isSuperAdmin) {
+          propertiesQuery = propertiesQuery.eq('tenant_id', currentTenant.id);
+          contractsQuery = contractsQuery.eq('tenant_id', currentTenant.id);
+          overdueQuery = overdueQuery.eq('tenant_id', currentTenant.id);
+          pendingQuery = pendingQuery.eq('tenant_id', currentTenant.id);
+        }
+        
         const [properties, contracts, overdueScheduleItems, pendingScheduleItems] = await Promise.all([
-          supabase
-            .from('pms_properties')
-            .select('*', { count: 'exact', head: true })
-            .eq('tenant_id', currentTenant.id),
-          supabase
-            .from('pms_contracts')
-            .select('*', { count: 'exact', head: true })
-            .eq('tenant_id', currentTenant.id)
-            .eq('status', 'active'),
-          supabase
-            .from('pms_payment_schedule_items')
-            .select('expected_amount, contract_id')
-            .eq('tenant_id', currentTenant.id)
-            .eq('status', 'overdue'),
-          supabase
-            .from('pms_payment_schedule_items')
-            .select('expected_amount, contract_id')
-            .eq('tenant_id', currentTenant.id)
-            .eq('status', 'pending'),
+          propertiesQuery,
+          contractsQuery,
+          overdueQuery,
+          pendingQuery,
         ]);
 
         // Obtener contratos para conocer las monedas
-        const { data: contractsData } = await supabase
+        let contractsCurrencyQuery = supabase
           .from('pms_contracts')
-          .select('id, currency')
-          .eq('tenant_id', currentTenant.id);
+          .select('id, currency');
+        
+        if (!isSuperAdmin) {
+          contractsCurrencyQuery = contractsCurrencyQuery.eq('tenant_id', currentTenant.id);
+        }
+        
+        const { data: contractsData } = await contractsCurrencyQuery;
 
         const contractCurrencyMap = new Map(contractsData?.map(c => [c.id, c.currency]) || []);
 
@@ -74,12 +95,17 @@ export function DashboardKPIs() {
         });
 
         // Ingresos del mes por moneda
-        const revenue = await supabase
+        let revenueQuery = supabase
           .from('pms_payments')
           .select('paid_amount, contract_id')
-          .eq('tenant_id', currentTenant.id)
           .eq('status', 'paid')
           .gte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
+        
+        if (!isSuperAdmin) {
+          revenueQuery = revenueQuery.eq('tenant_id', currentTenant.id);
+        }
+        
+        const revenue = await revenueQuery;
 
         const revenueByCurrency = { ARS: 0, USD: 0 };
         revenue.data?.forEach(p => {
@@ -102,7 +128,7 @@ export function DashboardKPIs() {
     };
 
     fetchKPIs();
-  }, [currentTenant]);
+  }, [currentTenant, userRole]);
 
   const kpis = [
     {
