@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 const Reports = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentTenant, hasPMSAccess } = usePMS();
+  const { currentTenant, hasPMSAccess, userRole } = usePMS();
   const [propertiesWithContracts, setPropertiesWithContracts] = useState<any[]>([]);
   const [selectedContract, setSelectedContract] = useState<string | null>(null);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
@@ -50,12 +50,21 @@ const Reports = () => {
     if (!currentTenant?.id) return;
     
     try {
+      // Determinar si es SUPERADMIN
+      const isSuperAdmin = userRole === 'SUPERADMIN';
+
       // Fetch properties with their contracts
-      const { data: properties, error: propsError } = await supabase
+      let propertiesQuery = supabase
         .from('pms_properties')
         .select('id, code, address, alias, city')
-        .eq('tenant_id', currentTenant.id)
         .order('code');
+
+      // Solo filtrar por tenant si NO es SUPERADMIN
+      if (!isSuperAdmin) {
+        propertiesQuery = propertiesQuery.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data: properties, error: propsError } = await propertiesQuery;
 
       if (propsError) throw propsError;
 
@@ -100,36 +109,48 @@ const Reports = () => {
 
       setPropertiesWithContracts(propertiesData);
 
-      // Fetch stats
+      // Fetch stats con filtrado condicional
       const today = new Date().toISOString().split('T')[0];
-      const [contractsRes, tenantsRes, paymentsRes] = await Promise.all([
-        supabase
-          .from('pms_contracts')
-          .select('id')
-          .eq('status', 'active')
-          .eq('tenant_id', currentTenant.id),
-        supabase
-          .from('pms_tenants_renters')
-          .select(`
+      
+      // Construir consultas con filtrado condicional
+      let contractsQuery = supabase
+        .from('pms_contracts')
+        .select('id')
+        .eq('status', 'active');
+      
+      let tenantsQuery = supabase
+        .from('pms_tenants_renters')
+        .select(`
+          id,
+          pms_contracts!inner(
             id,
-            pms_contracts!inner(
-              id,
-              status,
-              start_date,
-              end_date
-            )
-          `)
-          .eq('tenant_id', currentTenant.id)
-          .eq('pms_contracts.status', 'active')
-          .lte('pms_contracts.start_date', today)
-          .gte('pms_contracts.end_date', today),
-        supabase
-          .from('pms_payments')
-          .select('paid_amount')
-          .eq('status', 'paid')
-          .eq('tenant_id', currentTenant.id)
-          .gte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0])
-          .lte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]),
+            status,
+            start_date,
+            end_date
+          )
+        `)
+        .eq('pms_contracts.status', 'active')
+        .lte('pms_contracts.start_date', today)
+        .gte('pms_contracts.end_date', today);
+      
+      let paymentsQuery = supabase
+        .from('pms_payments')
+        .select('paid_amount')
+        .eq('status', 'paid')
+        .gte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0])
+        .lte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]);
+
+      // Solo filtrar por tenant si NO es SUPERADMIN
+      if (!isSuperAdmin) {
+        contractsQuery = contractsQuery.eq('tenant_id', currentTenant.id);
+        tenantsQuery = tenantsQuery.eq('tenant_id', currentTenant.id);
+        paymentsQuery = paymentsQuery.eq('tenant_id', currentTenant.id);
+      }
+
+      const [contractsRes, tenantsRes, paymentsRes] = await Promise.all([
+        contractsQuery,
+        tenantsQuery,
+        paymentsQuery,
       ]);
 
       const totalIncome = paymentsRes.data?.reduce((sum, p) => sum + Number(p.paid_amount || 0), 0) || 0;
