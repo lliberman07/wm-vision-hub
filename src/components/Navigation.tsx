@@ -71,15 +71,15 @@ const Navigation = () => {
           {/* Right side controls - Premium styling */}
           <div className="hidden md:flex items-center space-x-4 w-48 justify-end flex-shrink-0">
             <LanguageSwitcher variant="header" />
-            {user ? (
+            {hasPMSAccess && !pmsLoading ? (
               <Button variant="outline" size="sm" className="shadow-sm" asChild>
-                <Link to="/admin">Admin</Link>
+                <Link to="/pms">PMS</Link>
               </Button>
-            ) : (
+            ) : !user ? (
               <Button variant="outline" size="sm" className="shadow-sm" asChild>
                 <Link to="/auth">Sign In</Link>
               </Button>
-            )}
+            ) : null}
           </div>
 
           {/* Mobile Navigation */}
@@ -107,11 +107,19 @@ const Navigation = () => {
                 ))}
                 <div className="mt-4 space-y-3">
                   <LanguageSwitcher variant="header" />
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link to={user ? "/admin" : "/auth"} onClick={() => setIsOpen(false)}>
-                      {user ? 'Admin Access' : 'Sign In'}
-                    </Link>
-                  </Button>
+                  {hasPMSAccess && !pmsLoading ? (
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/pms" onClick={() => setIsOpen(false)}>
+                        PMS Access
+                      </Link>
+                    </Button>
+                  ) : !user ? (
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/auth" onClick={() => setIsOpen(false)}>
+                        Sign In
+                      </Link>
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </SheetContent>
