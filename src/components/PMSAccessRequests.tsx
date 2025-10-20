@@ -107,34 +107,56 @@ const PMSAccessRequests = () => {
     try {
       if (actionType === 'approve') {
         let userId = selectedRequest.user_id;
+        let isNewUser = false;
 
-        // Si el usuario no existe en auth.users, crearlo
+        // Verificar si el usuario ya existe en auth.users
         if (!userId) {
-          const { data: userData, error: createError } = await supabase.functions.invoke('create-pms-user', {
-            body: {
-              email: selectedRequest.email,
-              first_name: selectedRequest.first_name,
-              last_name: selectedRequest.last_name,
-              company_name: selectedRequest.company_name,
-            }
+          const { data: existingAuthUser, error: checkError } = await supabase.rpc('get_user_by_email', {
+            email_param: selectedRequest.email
           });
 
-          if (createError || !userData) {
-            console.error('Error creating user:', createError);
-            throw new Error('No se pudo crear la cuenta de usuario: ' + (createError?.message || 'Error desconocido'));
+          if (checkError) {
+            console.error('Error checking existing user:', checkError);
+            throw new Error('Error al verificar usuario existente: ' + checkError.message);
           }
 
-          userId = userData.user_id;
-          const tempPassword = userData.temp_password;
+          if (existingAuthUser && existingAuthUser.length > 0) {
+            // Usuario existe: usar su ID directamente
+            userId = existingAuthUser[0].user_id;
+            
+            toast({
+              title: "Usuario existente detectado",
+              description: "Se asignará el rol al usuario existente sin crear una nueva cuenta",
+            });
+          } else {
+            // Usuario NO existe: crearlo
+            isNewUser = true;
+            const { data: userData, error: createError } = await supabase.functions.invoke('create-pms-user', {
+              body: {
+                email: selectedRequest.email,
+                first_name: selectedRequest.first_name,
+                last_name: selectedRequest.last_name,
+                company_name: selectedRequest.company_name,
+              }
+            });
 
-          // Enviar email con credenciales
-          await supabase.functions.invoke('send-welcome-email', {
-            body: {
-              email: selectedRequest.email,
-              first_name: selectedRequest.first_name,
-              password: tempPassword,
+            if (createError || !userData) {
+              console.error('Error creating user:', createError);
+              throw new Error('No se pudo crear la cuenta de usuario: ' + (createError?.message || 'Error desconocido'));
             }
-          });
+
+            userId = userData.user_id;
+            const tempPassword = userData.temp_password;
+
+            // Enviar email SOLO si el usuario es nuevo
+            await supabase.functions.invoke('send-welcome-email', {
+              body: {
+                email: selectedRequest.email,
+                first_name: selectedRequest.first_name,
+                password: tempPassword,
+              }
+            });
+          }
         }
 
         // Verificar si ya existe un rol para este usuario
@@ -189,9 +211,9 @@ const PMSAccessRequests = () => {
 
         toast({
           title: "Solicitud aprobada",
-          description: userId === selectedRequest.user_id 
-            ? "El usuario ahora tiene acceso al sistema PMS" 
-            : "Se creó la cuenta y se enviaron las credenciales por email",
+          description: isNewUser 
+            ? "Se creó la cuenta y se enviaron las credenciales por email" 
+            : "El usuario ahora tiene acceso al sistema PMS",
         });
       } else if (actionType === 'revert') {
         // Revertir aprobación: cambiar estado a pending
