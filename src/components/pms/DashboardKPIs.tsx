@@ -106,7 +106,7 @@ export function DashboardKPIs() {
 
   const kpis = [
     {
-      title: 'Propiedades Activas',
+      title: 'Total de Propiedades',
       value: data.totalProperties,
       icon: Building2,
       gradient: 'from-primary/10 to-primary/20',
