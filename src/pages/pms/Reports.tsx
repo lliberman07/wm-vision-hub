@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { TrendingUp, Building2, Users, FileText, DollarSign, RefreshCw, Calendar, MapPin, ChevronRight } from 'lucide-react';
+import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
@@ -22,7 +22,6 @@ const Reports = () => {
   const [propertiesWithContracts, setPropertiesWithContracts] = useState<any[]>([]);
   const [selectedContract, setSelectedContract] = useState<string | null>(null);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
-  const [recalculating, setRecalculating] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [selectedProperty, setSelectedProperty] = useState<any | null>(null);
   const [stats, setStats] = useState({
@@ -231,68 +230,6 @@ const Reports = () => {
     }
   };
 
-  const handleRecalculateCashflow = async () => {
-    try {
-      setRecalculating(true);
-      toast.info('Limpiando pagos duplicados...');
-
-      // Primero limpiar pagos huérfanos (duplicados)
-      const { data: cleanupResult, error: cleanupError } = await supabase.rpc('cleanup_orphan_payments');
-      
-      if (cleanupError) {
-        console.error('Error cleaning up orphan payments:', cleanupError);
-        throw cleanupError;
-      }
-
-      const deletedCount = cleanupResult?.[0]?.deleted_count || 0;
-      if (deletedCount > 0) {
-        toast.success(`${deletedCount} pagos duplicados eliminados`);
-      }
-
-      toast.info('Vinculando pagos existentes...');
-
-      // Vincular pagos existentes de todos los contratos activos
-      const { data: contracts, error: contractsError } = await supabase
-        .from('pms_contracts')
-        .select('id')
-        .eq('tenant_id', currentTenant?.id)
-        .in('status', ['active', 'expired', 'cancelled']);
-
-      if (contractsError) throw contractsError;
-
-      // Vincular pagos para cada contrato
-      for (const contract of contracts || []) {
-        const { error: linkError } = await supabase.rpc('link_existing_payments_to_schedule', {
-          contract_id_param: contract.id
-        });
-        if (linkError) console.error('Error linking payments for contract:', contract.id, linkError);
-      }
-
-      toast.info('Recalculando flujo de caja...');
-
-      const { error } = await supabase.rpc('recalculate_all_cashflow');
-
-      if (error) throw error;
-
-      toast.success('Flujo de caja recalculado exitosamente');
-      
-      // Forzar recarga de datos
-      await fetchData();
-      if (selectedContract) {
-        await fetchCashflow();
-      }
-      
-      // Forzar refresh de la página para mostrar datos actualizados
-      window.location.reload();
-    } catch (error: any) {
-      console.error('Error recalculating cashflow:', error);
-      toast.error('Error al recalcular flujo de caja', {
-        description: error.message,
-      });
-    } finally {
-      setRecalculating(false);
-    }
-  };
 
   return (
     <PMSLayout>
@@ -368,20 +305,9 @@ const Reports = () => {
 
         {viewMode === 'list' ? (
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold">Propiedades y Contratos</h2>
-                <p className="text-muted-foreground">Seleccione un contrato para ver el reporte detallado</p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRecalculateCashflow}
-                disabled={recalculating}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
-                {recalculating ? 'Recalculando...' : 'Recalcular Totales'}
-              </Button>
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold">Propiedades y Contratos</h2>
+              <p className="text-muted-foreground">Seleccione un contrato para ver el reporte detallado</p>
             </div>
 
             {propertiesWithContracts.length === 0 ? (
