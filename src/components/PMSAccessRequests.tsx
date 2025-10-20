@@ -124,9 +124,19 @@ const PMSAccessRequests = () => {
             // Usuario existe: usar su ID directamente
             userId = existingAuthUser[0].user_id;
             
+            // Enviar email de confirmación para usuario existente
+            await supabase.functions.invoke('send-approval-confirmation', {
+              body: {
+                email: selectedRequest.email,
+                first_name: selectedRequest.first_name,
+                role: selectedRequest.requested_role,
+                language: 'es'
+              }
+            });
+            
             toast({
               title: "Usuario existente detectado",
-              description: "Se asignará el rol al usuario existente sin crear una nueva cuenta",
+              description: "Se asignó el rol y se envió email de confirmación",
             });
           } else {
             // Usuario NO existe: crearlo
