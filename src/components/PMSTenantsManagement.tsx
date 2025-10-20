@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building, Edit, Check, X } from "lucide-react";
+import { Plus, Building, Edit, Check, X, User } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,8 @@ interface Tenant {
   created_at: string;
   settings: any;
   tenant_type: TenantType;
+  user_count?: number;
+  max_users?: number;
 }
 
 interface TenantStats {
@@ -49,6 +51,7 @@ export function PMSTenantsManagement() {
     slug: "",
     is_active: true,
     tenant_type: "inmobiliaria" as TenantType,
+    maxUsers: 2,
   });
   const { toast } = useToast();
 
@@ -68,9 +71,7 @@ export function PMSTenantsManagement() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("pms_tenants")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .rpc('get_tenants_with_user_count');
 
       if (error) throw error;
       setTenants(data || []);
@@ -91,6 +92,14 @@ export function PMSTenantsManagement() {
     
     try {
       if (editingTenant) {
+        const settingsToSave = {
+          ...editingTenant.settings,
+          limits: {
+            ...editingTenant.settings?.limits,
+            max_users: formData.maxUsers
+          }
+        };
+
         const { error } = await supabase
           .from("pms_tenants")
           .update({
@@ -98,6 +107,7 @@ export function PMSTenantsManagement() {
             slug: formData.slug,
             is_active: formData.is_active,
             tenant_type: formData.tenant_type,
+            settings: settingsToSave,
           })
           .eq("id", editingTenant.id);
 
@@ -108,6 +118,12 @@ export function PMSTenantsManagement() {
           description: "Tenant actualizado correctamente",
         });
       } else {
+        const settingsToSave = {
+          limits: {
+            max_users: formData.maxUsers
+          }
+        };
+
         const { error } = await supabase
           .from("pms_tenants")
           .insert([{
@@ -115,7 +131,7 @@ export function PMSTenantsManagement() {
             slug: formData.slug,
             is_active: formData.is_active,
             tenant_type: formData.tenant_type,
-            settings: {},
+            settings: settingsToSave,
           }]);
 
         if (error) throw error;
@@ -145,17 +161,21 @@ export function PMSTenantsManagement() {
       slug: "",
       is_active: true,
       tenant_type: "inmobiliaria",
+      maxUsers: 2,
     });
     setEditingTenant(null);
   };
 
   const handleEdit = (tenant: Tenant) => {
+    const maxUsers = tenant.settings?.limits?.max_users || tenant.max_users || 2;
+    
     setEditingTenant(tenant);
     setFormData({
       name: tenant.name,
       slug: tenant.slug,
       is_active: tenant.is_active,
       tenant_type: tenant.tenant_type,
+      maxUsers: maxUsers,
     });
     setIsDialogOpen(true);
   };
@@ -275,6 +295,23 @@ export function PMSTenantsManagement() {
                 <Label htmlFor="is_active">Activo</Label>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="maxUsers">Límite de Usuarios</Label>
+                <Input
+                  id="maxUsers"
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={formData.maxUsers}
+                  onChange={(e) =>
+                    setFormData({ ...formData, maxUsers: parseInt(e.target.value) || 2 })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Cantidad máxima de usuarios permitidos en este tenant
+                </p>
+              </div>
+
               <div className="flex justify-end gap-2">
                 <Button
                   type="button"
@@ -302,16 +339,17 @@ export function PMSTenantsManagement() {
       ) : (
         <div className="border rounded-lg overflow-hidden">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Fecha de Creación</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Slug</TableHead>
+                  <TableHead>Usuarios</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Fecha de Creación</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {tenants.map((tenant) => (
                 <TableRow key={tenant.id}>
@@ -330,6 +368,20 @@ export function PMSTenantsManagement() {
                     <code className="px-2 py-1 bg-muted rounded text-xs">
                       {tenant.slug}
                     </code>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{tenant.user_count || 0}</span>
+                      <span className="text-xs text-muted-foreground">
+                        / {tenant.max_users || 2}
+                      </span>
+                      {(tenant.user_count || 0) >= (tenant.max_users || 2) && (
+                        <Badge variant="destructive" className="text-xs">
+                          Límite
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant={tenant.is_active ? "default" : "secondary"}>

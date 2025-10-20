@@ -143,6 +143,40 @@ const PMSRolesManagement = () => {
         throw new Error('No se pudo obtener el tenant predeterminado');
       }
 
+      // Obtener info del tenant y límite de usuarios
+      const { data: tenantInfo } = await supabase
+        .from('pms_tenants')
+        .select('slug, name')
+        .eq('id', tenantId)
+        .single();
+
+      // Obtener límite de usuarios usando la función RPC
+      const { data: maxUsersAllowed, error: limitError } = await supabase
+        .rpc('get_tenant_user_limit', { tenant_id_param: tenantId });
+
+      if (limitError || !maxUsersAllowed) {
+        throw new Error('No se pudo obtener el límite de usuarios del tenant');
+      }
+
+      // VALIDACIÓN DE LÍMITE: Contar usuarios actuales en ese tenant
+      const { count: currentUserCount, error: countError } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .eq('module', 'PMS')
+        .eq('status', 'approved');
+
+      if (countError) throw countError;
+
+      if (currentUserCount !== null && currentUserCount >= maxUsersAllowed) {
+        toast({
+          title: "Límite Alcanzado",
+          description: `El tenant "${tenantInfo?.name}" ya tiene el máximo de ${maxUsersAllowed} usuarios permitidos`,
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Check if role already exists
       const { data: existingRole } = await supabase
         .from('user_roles')
@@ -179,7 +213,7 @@ const PMSRolesManagement = () => {
       const selectedUser = systemUsers.find(u => u.id === newRoleUserId);
       toast({
         title: "Rol Asignado",
-        description: `Rol ${newRoleType} asignado a ${selectedUser?.email}`,
+        description: `Rol ${newRoleType} asignado a ${selectedUser?.email}. ${(currentUserCount || 0) + 1}/${maxUsersAllowed} usuarios en el tenant.`,
       });
 
       await fetchRoles();
@@ -190,7 +224,7 @@ const PMSRolesManagement = () => {
       console.error('Error adding role:', error);
       toast({
         title: "Error",
-        description: "No se pudo asignar el rol",
+        description: error.message || "No se pudo asignar el rol",
         variant: "destructive"
       });
     }

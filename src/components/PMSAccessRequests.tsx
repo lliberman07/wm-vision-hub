@@ -223,6 +223,42 @@ const PMSAccessRequests = () => {
           }
         }
 
+        // VALIDAR LÍMITE DE USUARIOS PARA EL TENANT
+        const { data: tenantInfo } = await supabase
+          .from('pms_tenants')
+          .select('slug, name')
+          .eq('id', finalTenantId)
+          .single();
+
+        // Obtener límite de usuarios usando la función RPC
+        const { data: maxUsersAllowed, error: limitError } = await supabase
+          .rpc('get_tenant_user_limit', { tenant_id_param: finalTenantId });
+
+        if (limitError || !maxUsersAllowed) {
+          throw new Error('No se pudo obtener el límite de usuarios del tenant');
+        }
+
+        const { count: currentUserCount, error: countError } = await supabase
+          .from('user_roles')
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', finalTenantId)
+          .eq('module', 'PMS')
+          .eq('status', 'approved');
+
+        if (countError) {
+          console.error('Error counting users:', countError);
+          throw new Error('Error al verificar límite de usuarios');
+        }
+
+        if (currentUserCount !== null && currentUserCount >= maxUsersAllowed) {
+          toast({
+            title: "Límite Alcanzado",
+            description: `El tenant "${tenantInfo?.name}" ya alcanzó su límite de ${maxUsersAllowed} usuarios`,
+            variant: "destructive"
+          });
+          return;
+        }
+
         // Verificar si ya existe un rol para este usuario
         const { data: existingRole } = await supabase
           .from('user_roles')
@@ -276,10 +312,10 @@ const PMSAccessRequests = () => {
         toast({
           title: "Solicitud aprobada",
           description: needsOwnTenant
-            ? `Tenant de ${isPropietario ? 'propietario' : 'inquilino'} creado automáticamente y usuario aprobado` 
+            ? `Tenant de ${isPropietario ? 'propietario' : 'inquilino'} creado automáticamente. Usuario ${(currentUserCount || 0) + 1}/${maxUsersAllowed} en el tenant.` 
             : isNewUser 
-              ? "Se creó la cuenta y se enviaron las credenciales por email" 
-              : "El usuario ahora tiene acceso al sistema PMS",
+              ? `Cuenta creada y credenciales enviadas. Usuario ${(currentUserCount || 0) + 1}/${maxUsersAllowed} en el tenant.` 
+              : `Usuario aprobado. ${(currentUserCount || 0) + 1}/${maxUsersAllowed} en el tenant.`,
         });
       } else if (actionType === 'revert') {
         // Revertir aprobación: cambiar estado a pending

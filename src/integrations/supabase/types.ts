@@ -2332,6 +2332,24 @@ export type Database = {
         Args: { property_id_param: string }
         Returns: string
       }
+      get_tenant_user_limit: {
+        Args: { tenant_id_param: string }
+        Returns: number
+      }
+      get_tenants_with_user_count: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          id: string
+          is_active: boolean
+          max_users: number
+          name: string
+          settings: Json
+          slug: string
+          tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
+          user_count: number
+        }[]
+      }
       get_user_by_email: {
         Args: { email_param: string }
         Returns: {
