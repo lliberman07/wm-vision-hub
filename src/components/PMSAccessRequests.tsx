@@ -108,6 +108,7 @@ const PMSAccessRequests = () => {
       if (actionType === 'approve') {
         let userId = selectedRequest.user_id;
         let isNewUser = false;
+        const isPropietario = selectedRequest.requested_role === 'PROPIETARIO';
 
         // Verificar si el usuario ya existe en auth.users
         if (!userId) {
@@ -169,6 +170,40 @@ const PMSAccessRequests = () => {
           }
         }
 
+        // Si es PROPIETARIO, crear tenant automáticamente
+        let finalTenantId = selectedRequest.tenant_id;
+        
+        if (isPropietario) {
+          const tenantSlug = `prop-${selectedRequest.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+          const tenantName = `${selectedRequest.first_name} ${selectedRequest.last_name}`.trim() || selectedRequest.email;
+          
+          // Intentar crear el tenant
+          const { data: newTenant, error: tenantError } = await supabase
+            .from('pms_tenants')
+            .insert([{
+              name: tenantName,
+              slug: tenantSlug,
+              tenant_type: 'propietario',
+              is_active: true,
+              settings: {}
+            }])
+            .select()
+            .single();
+            
+          if (tenantError) {
+            // Si ya existe, buscar el tenant existente
+            const { data: existingTenant } = await supabase
+              .from('pms_tenants')
+              .select('id')
+              .eq('slug', tenantSlug)
+              .single();
+              
+            finalTenantId = existingTenant?.id || selectedRequest.tenant_id;
+          } else {
+            finalTenantId = newTenant.id;
+          }
+        }
+
         // Verificar si ya existe un rol para este usuario
         const { data: existingRole } = await supabase
           .from('user_roles')
@@ -176,7 +211,7 @@ const PMSAccessRequests = () => {
           .eq('user_id', userId)
           .eq('role', selectedRequest.requested_role.toLowerCase() as any)
           .eq('module', 'PMS')
-          .eq('tenant_id', selectedRequest.tenant_id)
+          .eq('tenant_id', finalTenantId)
           .maybeSingle();
 
         if (existingRole) {
@@ -198,7 +233,7 @@ const PMSAccessRequests = () => {
               user_id: userId,
               role: selectedRequest.requested_role.toLowerCase() as any,
               module: 'PMS',
-              tenant_id: selectedRequest.tenant_id,
+              tenant_id: finalTenantId,
               status: 'approved',
               approved_at: new Date().toISOString(),
             }]);
@@ -221,9 +256,11 @@ const PMSAccessRequests = () => {
 
         toast({
           title: "Solicitud aprobada",
-          description: isNewUser 
-            ? "Se creó la cuenta y se enviaron las credenciales por email" 
-            : "El usuario ahora tiene acceso al sistema PMS",
+          description: isPropietario 
+            ? "Tenant de propietario creado automáticamente y usuario aprobado" 
+            : isNewUser 
+              ? "Se creó la cuenta y se enviaron las credenciales por email" 
+              : "El usuario ahora tiene acceso al sistema PMS",
         });
       } else if (actionType === 'revert') {
         // Revertir aprobación: cambiar estado a pending
