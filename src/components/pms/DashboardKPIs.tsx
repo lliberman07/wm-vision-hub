@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, DollarSign, AlertCircle, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
+import { Building2, DollarSign, AlertCircle, TrendingUp, AlertTriangle, Clock, Home, Key } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +7,8 @@ import { usePMS } from '@/contexts/PMSContext';
 
 interface KPIData {
   totalProperties: number;
+  availableProperties: number;
+  rentedProperties: number;
   activeContracts: number;
   overduePayments: { ARS: number; USD: number };
   pendingPayments: { ARS: number; USD: number };
@@ -18,6 +20,8 @@ export function DashboardKPIs() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<KPIData>({
     totalProperties: 0,
+    availableProperties: 0,
+    rentedProperties: 0,
     activeContracts: 0,
     overduePayments: { ARS: 0, USD: 0 },
     pendingPayments: { ARS: 0, USD: 0 },
@@ -60,12 +64,30 @@ export function DashboardKPIs() {
           pendingQuery = pendingQuery.eq('tenant_id', currentTenant.id);
         }
         
-        const [properties, contracts, overdueScheduleItems, pendingScheduleItems] = await Promise.all([
+        // Query para propiedades con contrato activo vigente
+        let activeContractsPropertiesQuery = supabase
+          .from('pms_contracts')
+          .select('property_id')
+          .eq('status', 'active')
+          .lte('start_date', new Date().toISOString().split('T')[0])
+          .gte('end_date', new Date().toISOString().split('T')[0]);
+        
+        if (!isSuperAdmin) {
+          activeContractsPropertiesQuery = activeContractsPropertiesQuery.eq('tenant_id', currentTenant.id);
+        }
+        
+        const [properties, contracts, overdueScheduleItems, pendingScheduleItems, activeContractsProperties] = await Promise.all([
           propertiesQuery,
           contractsQuery,
           overdueQuery,
           pendingQuery,
+          activeContractsPropertiesQuery,
         ]);
+
+        // Calcular propiedades disponibles vs en contrato
+        const rentedPropertyIds = new Set(activeContractsProperties.data?.map(c => c.property_id) || []);
+        const rentedPropertiesCount = rentedPropertyIds.size;
+        const availablePropertiesCount = (properties.count || 0) - rentedPropertiesCount;
 
         // Obtener contratos para conocer las monedas
         let contractsCurrencyQuery = supabase
@@ -115,6 +137,8 @@ export function DashboardKPIs() {
 
         setData({
           totalProperties: properties.count || 0,
+          availableProperties: availablePropertiesCount,
+          rentedProperties: rentedPropertiesCount,
           activeContracts: contracts.count || 0,
           overduePayments: overdueByurrency,
           pendingPayments: pendingByCurrency,
@@ -130,13 +154,29 @@ export function DashboardKPIs() {
     fetchKPIs();
   }, [currentTenant, userRole]);
 
-  const kpis = [
+  const propertyKpis = [
     {
       title: 'Total de Propiedades',
       value: data.totalProperties,
       icon: Building2,
-      gradient: 'from-primary/10 to-primary/20',
-      iconColor: 'text-primary',
+      gradient: 'from-blue-500/10 to-blue-500/20',
+      iconColor: 'text-blue-500',
+      type: 'number' as const,
+    },
+    {
+      title: 'Propiedades Disponibles',
+      value: data.availableProperties,
+      icon: Home,
+      gradient: 'from-green-500/10 to-green-500/20',
+      iconColor: 'text-green-500',
+      type: 'number' as const,
+    },
+    {
+      title: 'Propiedades en Contrato',
+      value: data.rentedProperties,
+      icon: Key,
+      gradient: 'from-purple-500/10 to-purple-500/20',
+      iconColor: 'text-purple-500',
       type: 'number' as const,
     },
     {
@@ -147,6 +187,9 @@ export function DashboardKPIs() {
       iconColor: 'text-success',
       type: 'number' as const,
     },
+  ];
+
+  const financialKpis = [
     {
       title: 'Pagos Vencidos',
       value: data.overduePayments,
@@ -175,54 +218,87 @@ export function DashboardKPIs() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-4 w-32" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-24" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[5, 6, 7].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-      {kpis.map((kpi) => {
-        const Icon = kpi.icon;
-        return (
-          <Card key={kpi.title} className="card-elevated hover:shadow-lg transition-all">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {kpi.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg bg-gradient-to-br ${kpi.gradient}`}>
-                <Icon className={`h-4 w-4 ${kpi.iconColor}`} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {kpi.type === 'currency' ? (
-                <>
-                  <div className="flex flex-col gap-1">
-                    <div className="text-base font-bold">
-                      ${(kpi.value as { ARS: number; USD: number }).ARS.toLocaleString()}
-                    </div>
-                    <div className="text-base font-bold">
-                      USD {(kpi.value as { ARS: number; USD: number }).USD.toLocaleString()}
-                    </div>
+    <div className="space-y-6">
+      {/* Fila 1: Métricas de Propiedades y Contratos */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {propertyKpis.map((kpi) => {
+          const Icon = kpi.icon;
+          return (
+            <Card key={kpi.title} className="card-elevated hover:shadow-lg transition-all">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {kpi.title}
+                </CardTitle>
+                <div className={`p-2 rounded-lg bg-gradient-to-br ${kpi.gradient}`}>
+                  <Icon className={`h-4 w-4 ${kpi.iconColor}`} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpi.value}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Fila 2: Métricas Financieras */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {financialKpis.map((kpi) => {
+          const Icon = kpi.icon;
+          return (
+            <Card key={kpi.title} className="card-elevated hover:shadow-lg transition-all">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {kpi.title}
+                </CardTitle>
+                <div className={`p-2 rounded-lg bg-gradient-to-br ${kpi.gradient}`}>
+                  <Icon className={`h-4 w-4 ${kpi.iconColor}`} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex flex-col gap-1">
+                  <div className="text-base font-bold">
+                    ${(kpi.value as { ARS: number; USD: number }).ARS.toLocaleString()}
                   </div>
-                </>
-              ) : (
-                <div className="text-lg font-bold">{kpi.value}</div>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+                  <div className="text-base font-bold">
+                    USD {(kpi.value as { ARS: number; USD: number }).USD.toLocaleString()}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }
