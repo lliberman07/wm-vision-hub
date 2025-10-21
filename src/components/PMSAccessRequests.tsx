@@ -128,7 +128,7 @@ const PMSAccessRequests = () => {
             userId = existingAuthUser[0].user_id;
             
             // Enviar email de confirmación para usuario existente
-            await supabase.functions.invoke('send-approval-confirmation', {
+            const { data: emailData, error: emailError } = await supabase.functions.invoke('send-approval-confirmation', {
               body: {
                 email: selectedRequest.email,
                 first_name: selectedRequest.first_name,
@@ -136,6 +136,17 @@ const PMSAccessRequests = () => {
                 language: 'es'
               }
             });
+
+            if (emailError) {
+              console.error('Error sending approval email:', emailError);
+              toast({
+                title: "⚠️ Usuario asignado pero email falló",
+                description: "El rol fue asignado correctamente, pero no se pudo enviar el email de confirmación. Por favor, notifica al usuario manualmente.",
+                variant: "destructive"
+              });
+            } else {
+              console.log('Approval email sent successfully to:', selectedRequest.email);
+            }
             
             toast({
               title: "Usuario existente detectado",
@@ -162,13 +173,25 @@ const PMSAccessRequests = () => {
             const tempPassword = userData.temp_password;
 
             // Enviar email SOLO si el usuario es nuevo
-            await supabase.functions.invoke('send-welcome-email', {
+            const { data: welcomeData, error: welcomeError } = await supabase.functions.invoke('send-welcome-email', {
               body: {
                 email: selectedRequest.email,
                 first_name: selectedRequest.first_name,
                 password: tempPassword,
               }
             });
+
+            if (welcomeError) {
+              console.error('Error sending welcome email:', welcomeError);
+              toast({
+                title: "⚠️ Usuario creado pero email falló",
+                description: `Credenciales: ${selectedRequest.email} / ${tempPassword}. Por favor, envía estas credenciales manualmente.`,
+                variant: "destructive",
+                duration: 10000, // 10 segundos para que el admin pueda copiar
+              });
+            } else {
+              console.log('Welcome email sent successfully to:', selectedRequest.email);
+            }
           }
         }
 
