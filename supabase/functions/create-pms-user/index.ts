@@ -51,7 +51,6 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (authError) {
-      console.error('Error creating user:', authError);
       throw new Error('No se pudo crear la cuenta de usuario: ' + authError.message);
     }
 

@@ -119,7 +119,6 @@ const PMSAccessRequests = () => {
           });
 
           if (checkError) {
-            console.error('Error checking existing user:', checkError);
             throw new Error('Error al verificar usuario existente: ' + checkError.message);
           }
 
@@ -128,7 +127,7 @@ const PMSAccessRequests = () => {
             userId = existingAuthUser[0].user_id;
             
             // Enviar email de confirmación para usuario existente
-            const { data: emailData, error: emailError } = await supabase.functions.invoke('send-approval-confirmation', {
+            const { error: emailError } = await supabase.functions.invoke('send-approval-confirmation', {
               body: {
                 email: selectedRequest.email,
                 first_name: selectedRequest.first_name,
@@ -138,14 +137,11 @@ const PMSAccessRequests = () => {
             });
 
             if (emailError) {
-              console.error('Error sending approval email:', emailError);
               toast({
                 title: "⚠️ Usuario asignado pero email falló",
                 description: "El rol fue asignado correctamente, pero no se pudo enviar el email de confirmación. Por favor, notifica al usuario manualmente.",
                 variant: "destructive"
               });
-            } else {
-              console.log('Approval email sent successfully to:', selectedRequest.email);
             }
             
             toast({
@@ -165,7 +161,6 @@ const PMSAccessRequests = () => {
             });
 
             if (createError || !userData) {
-              console.error('Error creating user:', createError);
               throw new Error('No se pudo crear la cuenta de usuario: ' + (createError?.message || 'Error desconocido'));
             }
 
@@ -173,7 +168,7 @@ const PMSAccessRequests = () => {
             const tempPassword = userData.temp_password;
 
             // Enviar email SOLO si el usuario es nuevo
-            const { data: welcomeData, error: welcomeError } = await supabase.functions.invoke('send-welcome-email', {
+            const { error: welcomeError } = await supabase.functions.invoke('send-welcome-email', {
               body: {
                 email: selectedRequest.email,
                 first_name: selectedRequest.first_name,
@@ -182,15 +177,12 @@ const PMSAccessRequests = () => {
             });
 
             if (welcomeError) {
-              console.error('Error sending welcome email:', welcomeError);
               toast({
                 title: "⚠️ Usuario creado pero email falló",
                 description: `Credenciales: ${selectedRequest.email} / ${tempPassword}. Por favor, envía estas credenciales manualmente.`,
                 variant: "destructive",
                 duration: 10000, // 10 segundos para que el admin pueda copiar
               });
-            } else {
-              console.log('Welcome email sent successfully to:', selectedRequest.email);
             }
           }
         }
@@ -269,7 +261,6 @@ const PMSAccessRequests = () => {
           .eq('status', 'approved');
 
         if (countError) {
-          console.error('Error counting users:', countError);
           throw new Error('Error al verificar límite de usuarios');
         }
 
@@ -367,8 +358,6 @@ const PMSAccessRequests = () => {
             .eq('role', selectedRequest.requested_role.toLowerCase() as any)
             .eq('module', 'PMS')
             .eq('tenant_id', selectedRequest.tenant_id);
-
-          if (roleError) console.error('Error updating role status:', roleError);
         }
 
         const { error: updateError } = await supabase
@@ -392,7 +381,6 @@ const PMSAccessRequests = () => {
       setSelectedRequest(null);
       setActionType(null);
     } catch (error: any) {
-      console.error('Error processing request:', error);
       toast({
         title: "Error",
         description: error.message || "No se pudo procesar la solicitud",

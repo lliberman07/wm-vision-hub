@@ -75,13 +75,9 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     try {
-      console.log('[PMSContext] Checking PMS access for user:', user.id);
-      
       // Call RPC to get user roles in real-time (no localStorage)
       const { data: rolesData, error: rolesError } = await supabase
         .rpc('get_user_pms_role', { _user_id: user.id });
-
-      console.log('[PMSContext] RPC result:', { rolesData, error: rolesError });
 
       if (rolesError) {
         console.error('[PMSContext] Error fetching roles:', rolesError);
@@ -89,7 +85,6 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       if (!rolesData || rolesData.length === 0) {
-        console.log('[PMSContext] No PMS roles found');
         setHasPMSAccess(false);
         setPMSRoles([]);
         setAllRoleContexts([]);
@@ -108,26 +103,29 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         tenant_slug: r.tenant_slug || ''
       }));
 
-      console.log('[PMSContext] Built contexts from RPC:', contexts);
       setAllRoleContexts(contexts);
       
-      // Try to restore context from sessionStorage
+      // Try to restore context from sessionStorage with integrity verification
       const savedContext = sessionStorage.getItem('pms_active_context');
       let activeContext = contexts[0]; // Default to first
       
       if (savedContext) {
         try {
           const parsed = JSON.parse(savedContext);
-          // Verify the saved context still exists in current contexts
-          const found = contexts.find(c => 
+          // SECURITY: Verify the saved context still exists in current contexts
+          // This prevents manipulation of sessionStorage to access unauthorized contexts
+          const verified = contexts.find(c => 
             c.role === parsed.role && c.tenant_id === parsed.tenant_id
           );
-          if (found) {
-            activeContext = found;
-            console.log('[PMSContext] Restored context from sessionStorage:', activeContext);
+          if (verified) {
+            activeContext = verified;
+          } else {
+            // Context was tampered with or no longer valid, clear it
+            sessionStorage.removeItem('pms_active_context');
           }
         } catch (e) {
-          console.error('[PMSContext] Error parsing saved context:', e);
+          // Invalid JSON in sessionStorage, clear it
+          sessionStorage.removeItem('pms_active_context');
         }
       }
       
@@ -146,10 +144,8 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       
       setHasPMSAccess(true);
-      console.log('[PMSContext] Using active context:', activeContext);
-      console.log('[PMSContext] ✅ Multi-role context loaded successfully');
     } catch (error) {
-      console.error('[PMSContext] ❌ Error in checkPMSAccess:', error);
+      console.error('[PMSContext] Error in checkPMSAccess:', error);
       setHasPMSAccess(false);
       setPMSRoles([]);
       setAllRoleContexts([]);
@@ -162,7 +158,6 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const switchContext = (roleContext: PMSRoleContext) => {
-    console.log('[PMSContext] Switching to context:', roleContext);
     setActiveRoleContext(roleContext);
     
     // Save to sessionStorage (persists during session only)
@@ -178,8 +173,6 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       name: roleContext.tenant_name,
       slug: roleContext.tenant_slug
     });
-    
-    console.log('[PMSContext] ✅ Context switched and saved to sessionStorage');
   };
 
   const requestAccess = async (

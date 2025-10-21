@@ -23,8 +23,6 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, first_name, password }: WelcomeEmailRequest = await req.json();
 
-    console.log('Sending welcome email to:', email);
-
     const emailResponse = await resend.emails.send({
       from: "WM Real Estate <onboarding@resend.dev>",
       to: [email],
@@ -56,8 +54,6 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `,
     });
-
-    console.log("Email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,

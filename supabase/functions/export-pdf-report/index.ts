@@ -365,9 +365,6 @@ const handler = async (req: Request): Promise<Response> => {
     } = validationResult.data;
 
     const { items, creditLines = [], estimatedMonthlyIncome = 0, grossMarginPercentage = 30 } = simulationData;
-
-    console.log('Processing PDF export request - email validated');
-    console.log('Resend API key available:', !!resendApiKey);
     console.log('Resend API key available:', !!resendApiKey);
     console.log('Resend API key length:', resendApiKey?.length || 'undefined');
 
@@ -491,15 +488,10 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Error in export-pdf-report function:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: error.name,
-        stack: error.stack
+        error: error.message
       }),
       {
         status: 500,

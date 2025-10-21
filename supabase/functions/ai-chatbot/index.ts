@@ -39,8 +39,6 @@ serve(async (req) => {
     
     const { message, sessionId, language = 'en' } = validationResult.data;
 
-    console.log('Processing message - length:', message.length, 'session:', sessionId.substring(0, 8));
-
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
