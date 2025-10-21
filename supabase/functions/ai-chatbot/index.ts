@@ -1,11 +1,19 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const ChatInputSchema = z.object({
+  message: z.string().min(1).max(2000),
+  sessionId: z.string().min(1).max(100),
+  language: z.enum(['en', 'es']).optional(),
+});
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -18,13 +26,20 @@ serve(async (req) => {
   }
 
   try {
-    const { message, sessionId, language = 'en' } = await req.json();
+    // Parse and validate input
+    const rawInput = await req.json();
+    const validationResult = ChatInputSchema.safeParse(rawInput);
     
-    if (!message || !sessionId) {
-      throw new Error('Message and sessionId are required');
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validationResult.error.issues }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+    
+    const { message, sessionId, language = 'en' } = validationResult.data;
 
-    console.log('Processing message:', message, 'for session:', sessionId);
+    console.log('Processing message - length:', message.length, 'session:', sessionId.substring(0, 8));
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);

@@ -2,10 +2,31 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { Resend } from "npm:resend@4.0.0";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const PDFRequestSchema = z.object({
+  email: z.string().email().max(255),
+  simulationData: z.object({
+    items: z.array(z.any()).max(100),
+    estimatedMonthlyIncome: z.number().nonnegative().optional(),
+    grossMarginPercentage: z.number().min(0).max(100).optional(),
+    creditLines: z.array(z.any()).max(50).optional(),
+  }),
+  analysisResults: z.object({}).passthrough(),
+  language: z.enum(['en', 'es']).optional(),
+}).refine(
+  (data) => {
+    const payloadSize = JSON.stringify(data).length;
+    return payloadSize < 1000000; // 1MB limit
+  },
+  { message: "Payload size exceeds 1MB limit" }
+);
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -325,16 +346,27 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Parse and validate input
+    const rawInput = await req.json();
+    const validationResult = PDFRequestSchema.safeParse(rawInput);
+    
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validationResult.error.issues }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     const { 
       email, 
       simulationData, 
       analysisResults, 
       language = 'en'
-    }: ExportRequest = await req.json();
+    } = validationResult.data;
 
     const { items, creditLines = [], estimatedMonthlyIncome = 0, grossMarginPercentage = 30 } = simulationData;
 
-    console.log('Processing PDF export request for:', email);
+    console.log('Processing PDF export request - email validated');
     console.log('Resend API key available:', !!resendApiKey);
     console.log('Resend API key available:', !!resendApiKey);
     console.log('Resend API key length:', resendApiKey?.length || 'undefined');

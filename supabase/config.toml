@@ -7,7 +7,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.scrape-website-content]
-verify_jwt = false
+verify_jwt = true
 
 [functions.save-simulation-scenario]
 verify_jwt = false
@@ -16,10 +16,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-welcome-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-approval-confirmation]
-verify_jwt = false
+verify_jwt = true
 
 [functions.create-pms-user]
 verify_jwt = true
