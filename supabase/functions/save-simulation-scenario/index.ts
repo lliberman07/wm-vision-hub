@@ -20,14 +20,29 @@ serve(async (req) => {
 
     console.log('Saving simulation for email:', email);
 
+    // Obtener el user_id si está autenticado
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
+
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user } } = await supabase.auth.getUser(token);
+        userId = user?.id || null;
+      } catch (error) {
+        console.log('No authenticated user, proceeding as anonymous');
+      }
+    }
+
     // Generate reference number
     const referenceNumber = `SIM-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
-    // Insert simulation record
+    // Insert simulation record con user_id
     const { data, error } = await supabase
       .from('investment_simulations')
       .insert({
         user_email: email,
+        user_id: userId,
         reference_number: referenceNumber,
         simulation_data: simulationData,
         analysis_results: analysisResults,

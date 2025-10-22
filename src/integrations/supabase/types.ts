@@ -128,6 +128,7 @@ export type Database = {
           status: Database["public"]["Enums"]["application_status"]
           type: Database["public"]["Enums"]["application_type"]
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -138,6 +139,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["application_status"]
           type: Database["public"]["Enums"]["application_type"]
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -148,6 +150,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["application_status"]
           type?: Database["public"]["Enums"]["application_type"]
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -490,6 +493,7 @@ export type Database = {
           simulation_data: Json
           updated_at: string
           user_email: string
+          user_id: string | null
         }
         Insert: {
           analysis_results: Json
@@ -503,6 +507,7 @@ export type Database = {
           simulation_data: Json
           updated_at?: string
           user_email: string
+          user_id?: string | null
         }
         Update: {
           analysis_results?: Json
@@ -516,6 +521,7 @@ export type Database = {
           simulation_data?: Json
           updated_at?: string
           user_email?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -2250,18 +2256,12 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: undefined
       }
-      apply_automatic_adjustments: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      apply_automatic_adjustments: { Args: never; Returns: undefined }
       approve_payment_submission: {
         Args: { submission_id_param: string }
         Returns: undefined
       }
-      approve_user: {
-        Args: { user_id_param: string }
-        Returns: undefined
-      }
+      approve_user: { Args: { user_id_param: string }; Returns: undefined }
       cancel_contract: {
         Args: {
           cancellation_date_param: string
@@ -2271,12 +2271,9 @@ export type Database = {
         }
         Returns: undefined
       }
-      check_expired_contracts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      check_expired_contracts: { Args: never; Returns: undefined }
       cleanup_orphan_payments: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           deleted_count: number
         }[]
@@ -2285,18 +2282,12 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: undefined
       }
-      deactivate_tenant_on_contract_expiry: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      deactivate_tenant_on_contract_expiry: { Args: never; Returns: undefined }
       deduct_approved_expense_from_next_payment: {
         Args: { expense_id_param: string }
         Returns: undefined
       }
-      deny_user: {
-        Args: { user_id_param: string }
-        Returns: undefined
-      }
+      deny_user: { Args: { user_id_param: string }; Returns: undefined }
       extend_contract: {
         Args: {
           contract_id_param: string
@@ -2313,21 +2304,15 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: undefined
       }
-      generate_reference_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_reference_number: { Args: never; Returns: string }
       get_current_user_profile: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           role: Database["public"]["Enums"]["user_role_type"]
           status: Database["public"]["Enums"]["request_status"]
         }[]
       }
-      get_default_tenant_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_default_tenant_id: { Args: never; Returns: string }
       get_property_auto_status: {
         Args: { property_id_param: string }
         Returns: string
@@ -2337,7 +2322,7 @@ export type Database = {
         Returns: number
       }
       get_tenants_with_user_count: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           id: string
@@ -2366,16 +2351,19 @@ export type Database = {
           tenant_slug: string
         }[]
       }
-      has_pms_role: {
-        Args:
-          | {
+      has_pms_role:
+        | {
+            Args: {
               _role: Database["public"]["Enums"]["pms_app_role"]
               _tenant_id?: string
               _user_id: string
             }
-          | { _role: string; _tenant_id?: string; _user_id: string }
-        Returns: boolean
-      }
+            Returns: boolean
+          }
+        | {
+            Args: { _role: string; _tenant_id?: string; _user_id: string }
+            Returns: boolean
+          }
       has_role: {
         Args: {
           _module?: Database["public"]["Enums"]["module_type"]
@@ -2392,14 +2380,8 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: undefined
       }
-      recalculate_all_active_contracts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      recalculate_all_cashflow: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      recalculate_all_active_contracts: { Args: never; Returns: undefined }
+      recalculate_all_cashflow: { Args: never; Returns: undefined }
       recalculate_projections_for_index_type: {
         Args: { index_type_param: string }
         Returns: undefined
@@ -2409,13 +2391,10 @@ export type Database = {
         Returns: undefined
       }
       update_contract_projections_with_indices: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: undefined
       }
-      update_overdue_payment_items: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      update_overdue_payment_items: { Args: never; Returns: undefined }
     }
     Enums: {
       application_status:

@@ -184,11 +184,15 @@ export const FinancingApplication = () => {
           return;
         }
         
+        // Obtener el user actual
+        const { data: { user } } = await supabase.auth.getUser();
+
         // Create new application with simulation link
         const insertData: any = {
           type: stepData.type || applicationData.type,
           email: email,
           phone: stepData.phone || applicationData.phone,
+          user_id: user?.id || null,
           status: (step === steps.length - 1 ? 'completed' : 'draft') as 'draft' | 'completed'
         };
         
