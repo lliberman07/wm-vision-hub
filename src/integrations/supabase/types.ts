@@ -650,14 +650,19 @@ export type Database = {
           address: string | null
           city: string | null
           company_name: string | null
+          contact_name: string | null
+          contract_number: string | null
           created_at: string | null
+          cuit_cuil: string | null
           document_id: string | null
           email: string
+          entity_type: string | null
           first_name: string | null
           id: string
           last_name: string | null
           phone: string | null
           postal_code: string | null
+          razon_social: string | null
           reason: string | null
           requested_role: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at: string | null
@@ -672,14 +677,19 @@ export type Database = {
           address?: string | null
           city?: string | null
           company_name?: string | null
+          contact_name?: string | null
+          contract_number?: string | null
           created_at?: string | null
+          cuit_cuil?: string | null
           document_id?: string | null
           email: string
+          entity_type?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
           postal_code?: string | null
+          razon_social?: string | null
           reason?: string | null
           requested_role: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at?: string | null
@@ -694,14 +704,19 @@ export type Database = {
           address?: string | null
           city?: string | null
           company_name?: string | null
+          contact_name?: string | null
+          contract_number?: string | null
           created_at?: string | null
+          cuit_cuil?: string | null
           document_id?: string | null
           email?: string
+          entity_type?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
           postal_code?: string | null
+          razon_social?: string | null
           reason?: string | null
           requested_role?: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at?: string | null

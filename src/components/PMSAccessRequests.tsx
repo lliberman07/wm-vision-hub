@@ -30,20 +30,25 @@ interface PMSAccessRequest {
   user_id?: string;
   tenant_id: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  entity_type?: 'fisica' | 'juridica';
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  document_id?: string;
+  cuit_cuil?: string;
+  razon_social?: string;
+  contact_name?: string;
   company_name?: string;
-  phone: string;
-  document_id: string;
+  tax_id?: string;
   address: string;
   city: string;
   state: string;
   postal_code: string;
   requested_role: string;
   reason: string;
+  contract_number?: string;
   status: 'pending' | 'approved' | 'denied';
   created_at: string;
-  tax_id?: string;
 }
 
 const PMSAccessRequests = () => {
@@ -73,18 +78,23 @@ const PMSAccessRequests = () => {
         id: req.id,
         user_id: req.user_id || undefined,
         email: req.email || 'Sin email',
-        first_name: req.first_name || 'Sin nombre',
-        last_name: req.last_name || '',
-        company_name: req.company_name,
-        phone: req.phone || '-',
-        document_id: req.document_id || '-',
+        entity_type: req.entity_type as 'fisica' | 'juridica' | undefined,
+        first_name: req.first_name || undefined,
+        last_name: req.last_name || undefined,
+        phone: req.phone || undefined,
+        document_id: req.document_id || undefined,
+        cuit_cuil: req.cuit_cuil || undefined,
+        razon_social: req.razon_social || undefined,
+        contact_name: req.contact_name || undefined,
+        company_name: req.company_name || undefined,
+        tax_id: req.tax_id || undefined,
         address: req.address || '-',
         city: req.city || '-',
         state: req.state || '-',
         postal_code: req.postal_code || '-',
-        tax_id: req.tax_id,
         requested_role: req.requested_role,
         reason: req.reason || '',
+        contract_number: req.contract_number || undefined,
         status: req.status as 'pending' | 'approved' | 'denied',
         created_at: req.created_at,
         tenant_id: req.tenant_id,
@@ -452,6 +462,7 @@ const PMSAccessRequests = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Usuario</TableHead>
+                <TableHead>Tipo</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Fecha</TableHead>
@@ -465,8 +476,18 @@ const PMSAccessRequests = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{request.first_name} {request.last_name}</span>
+                      <span className="font-medium">
+                        {request.entity_type === 'fisica' 
+                          ? `${request.first_name} ${request.last_name}`
+                          : request.razon_social
+                        }
+                      </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={request.entity_type === 'fisica' ? 'outline' : 'secondary'}>
+                      {request.entity_type === 'fisica' ? 'Persona Física' : 'Persona Jurídica'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -506,30 +527,64 @@ const PMSAccessRequests = () => {
                                 <div className="space-y-3">
                                   <h3 className="font-semibold flex items-center gap-2">
                                     <User className="h-4 w-4" />
-                                    Datos Personales
+                                    {viewingRequest.entity_type === 'fisica' ? 'Datos Personales' : 'Datos de la Empresa'}
                                   </h3>
-                                  <div className="grid grid-cols-2 gap-3 text-sm">
-                                    <div>
-                                      <p className="text-muted-foreground">Nombre</p>
-                                      <p className="font-medium">{viewingRequest.first_name}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground">Apellido</p>
-                                      <p className="font-medium">{viewingRequest.last_name}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground">Email</p>
-                                      <p className="font-medium">{viewingRequest.email}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground">Teléfono</p>
-                                      <p className="font-medium">{viewingRequest.phone}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground">DNI</p>
-                                      <p className="font-medium">{viewingRequest.document_id}</p>
-                                    </div>
-                                  </div>
+                                  
+                                  {viewingRequest.entity_type === 'fisica' ? (
+                                    <>
+                                      <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                          <p className="text-muted-foreground">Nombre</p>
+                                          <p className="font-medium">{viewingRequest.first_name}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground">Apellido</p>
+                                          <p className="font-medium">{viewingRequest.last_name}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground">DNI</p>
+                                          <p className="font-medium">{viewingRequest.document_id}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground">CUIT/CUIL</p>
+                                          <p className="font-medium">{viewingRequest.cuit_cuil}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground">Teléfono</p>
+                                          <p className="font-medium">{viewingRequest.phone}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground">Email</p>
+                                          <p className="font-medium">{viewingRequest.email}</p>
+                                        </div>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                          <p className="text-muted-foreground">Razón Social</p>
+                                          <p className="font-medium">{viewingRequest.razon_social}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground">CUIT</p>
+                                          <p className="font-medium">{viewingRequest.tax_id}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground">Contacto</p>
+                                          <p className="font-medium">{viewingRequest.contact_name}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground">Teléfono</p>
+                                          <p className="font-medium">{viewingRequest.phone}</p>
+                                        </div>
+                                        <div className="col-span-2">
+                                          <p className="text-muted-foreground">Email</p>
+                                          <p className="font-medium">{viewingRequest.email}</p>
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
 
                                 <div className="space-y-3">
@@ -559,21 +614,15 @@ const PMSAccessRequests = () => {
                                   </div>
                                 </div>
 
-                                {viewingRequest.requested_role === 'INMOBILIARIA' && (
+                                {viewingRequest.contract_number && (
                                   <div className="space-y-3">
                                     <h3 className="font-semibold flex items-center gap-2">
-                                      <Building className="h-4 w-4" />
-                                      Datos de Empresa
+                                      <FileText className="h-4 w-4" />
+                                      Contrato
                                     </h3>
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
-                                      <div>
-                                        <p className="text-muted-foreground">Empresa</p>
-                                        <p className="font-medium">{viewingRequest.company_name}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-muted-foreground">CUIT/CUIL</p>
-                                        <p className="font-medium">{viewingRequest.tax_id}</p>
-                                      </div>
+                                    <div className="text-sm">
+                                      <p className="text-muted-foreground">Número de Contrato</p>
+                                      <p className="font-medium">{viewingRequest.contract_number}</p>
                                     </div>
                                   </div>
                                 )}
@@ -703,10 +752,10 @@ const PMSAccessRequests = () => {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {actionType === 'approve' 
-                ? `¿Confirmas que deseas aprobar la solicitud de ${selectedRequest?.first_name} ${selectedRequest?.last_name}? Se le otorgará acceso al sistema PMS.` 
+                ? `¿Confirmas que deseas aprobar la solicitud de ${selectedRequest?.entity_type === 'fisica' ? `${selectedRequest?.first_name} ${selectedRequest?.last_name}` : selectedRequest?.razon_social}? Se le otorgará acceso al sistema PMS.` 
                 : actionType === 'revert'
-                ? `¿Confirmas que deseas revertir la aprobación de ${selectedRequest?.first_name} ${selectedRequest?.last_name}? La solicitud volverá a estado pendiente y podrás aprobarla nuevamente para re-enviar el email de bienvenida.`
-                : `¿Confirmas que deseas rechazar la solicitud de ${selectedRequest?.first_name} ${selectedRequest?.last_name}?`
+                ? `¿Confirmas que deseas revertir la aprobación de ${selectedRequest?.entity_type === 'fisica' ? `${selectedRequest?.first_name} ${selectedRequest?.last_name}` : selectedRequest?.razon_social}? La solicitud volverá a estado pendiente y podrás aprobarla nuevamente para re-enviar el email de bienvenida.`
+                : `¿Confirmas que deseas rechazar la solicitud de ${selectedRequest?.entity_type === 'fisica' ? `${selectedRequest?.first_name} ${selectedRequest?.last_name}` : selectedRequest?.razon_social}?`
               }
             </AlertDialogDescription>
           </AlertDialogHeader>

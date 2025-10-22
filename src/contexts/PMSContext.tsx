@@ -28,16 +28,20 @@ interface PMSContextType {
   switchContext: (roleContext: PMSRoleContext) => void;
   requestAccess: (role: PMSRole, reason: string, userData?: {
     email: string;
-    first_name: string;
-    last_name: string;
-    phone: string;
-    document_id: string;
+    entity_type: 'fisica' | 'juridica';
     address: string;
     city: string;
     state: string;
     postal_code: string;
-    company_name?: string;
-    tax_id?: string;
+    contract_number?: string;
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+    document_id?: string;
+    cuit_cuil?: string;
+    razon_social?: string;
+    cuit?: string;
+    contact_name?: string;
   }) => Promise<{ error: any }>;
   checkPMSAccess: () => Promise<void>;
 }
@@ -180,16 +184,20 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     reason: string,
     userData?: {
       email: string;
-      first_name: string;
-      last_name: string;
-      phone: string;
-      document_id: string;
+      entity_type: 'fisica' | 'juridica';
       address: string;
       city: string;
       state: string;
       postal_code: string;
-      company_name?: string;
-      tax_id?: string;
+      contract_number?: string;
+      first_name?: string;
+      last_name?: string;
+      phone?: string;
+      document_id?: string;
+      cuit_cuil?: string;
+      razon_social?: string;
+      cuit?: string;
+      contact_name?: string;
     }
   ) => {
     if (!userData?.email) {
@@ -223,27 +231,43 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ? existingUsers[0].id 
         : null;
 
-      // Insert into pms_access_requests table (which doesn't require authentication)
+      // Preparar datos según entity_type
+      const insertData: any = {
+        user_id: userId,
+        tenant_id: tenantId,
+        email: userData.email,
+        requested_role: role.toUpperCase() as any,
+        reason: reason,
+        entity_type: userData.entity_type,
+        address: userData.address,
+        city: userData.city,
+        state: userData.state,
+        postal_code: userData.postal_code,
+        contract_number: userData.contract_number || null,
+        status: 'pending',
+      };
+
+      // Si es Persona Física
+      if (userData.entity_type === 'fisica') {
+        insertData.first_name = userData.first_name;
+        insertData.last_name = userData.last_name;
+        insertData.phone = userData.phone;
+        insertData.document_id = userData.document_id;
+        insertData.cuit_cuil = userData.cuit_cuil;
+      }
+      
+      // Si es Persona Jurídica
+      if (userData.entity_type === 'juridica') {
+        insertData.razon_social = userData.razon_social;
+        insertData.tax_id = userData.cuit; // El CUIT va a tax_id
+        insertData.contact_name = userData.contact_name;
+        insertData.phone = userData.phone;
+      }
+
+      // Insert into pms_access_requests table
       const { error: requestError } = await supabase
         .from('pms_access_requests')
-        .insert([{
-          user_id: userId,
-          tenant_id: tenantId,
-          email: userData.email,
-          requested_role: role.toUpperCase() as any,
-          reason: reason,
-          first_name: userData.first_name,
-          last_name: userData.last_name,
-          phone: userData.phone,
-          document_id: userData.document_id,
-          address: userData.address,
-          city: userData.city,
-          state: userData.state,
-          postal_code: userData.postal_code,
-          company_name: userData.company_name || null,
-          tax_id: userData.tax_id || null,
-          status: 'pending',
-        }]);
+        .insert([insertData]);
 
       if (requestError) {
         console.error('Error creating access request:', requestError);

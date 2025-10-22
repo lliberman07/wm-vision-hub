@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePMS } from '@/contexts/PMSContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -13,26 +12,77 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle, CheckCircle2, User, Mail, Phone, FileText, MapPin, Building2 } from 'lucide-react';
 import { z } from 'zod';
 
-// Validation schema
-const requestSchema = z.object({
-  firstName: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "Nombre muy largo"),
-  lastName: z.string().trim().min(2, "El apellido debe tener al menos 2 caracteres").max(100, "Apellido muy largo"),
+// Esquema base común
+const baseSchema = z.object({
+  entityType: z.enum(['fisica', 'juridica'], {
+    errorMap: () => ({ message: "Debes seleccionar el tipo de persona" })
+  }),
   email: z.string().trim().email("Email inválido").max(255, "Email muy largo"),
-  phone: z.string().trim().min(8, "Teléfono inválido").max(20, "Teléfono muy largo"),
-  documentId: z.string().trim().min(6, "DNI inválido").max(20, "DNI muy largo"),
   address: z.string().trim().min(5, "Dirección muy corta").max(200, "Dirección muy larga"),
   city: z.string().trim().min(2, "Ciudad inválida").max(100, "Ciudad muy larga"),
   state: z.string().trim().min(2, "Provincia inválida").max(100, "Provincia muy larga"),
   postalCode: z.string().trim().min(4, "Código postal inválido").max(10, "Código postal muy largo"),
   role: z.string().min(1, "Debes seleccionar un rol"),
   reason: z.string().trim().min(10, "El motivo debe tener al menos 10 caracteres").max(500, "Motivo muy largo"),
-  // Campos opcionales para INMOBILIARIA e INQUILINO
-  tenantType: z.string().optional(),
-  companyName: z.string().trim().max(200, "Nombre de empresa muy largo").optional(),
-  taxId: z.string().trim().max(20, "CUIT/CUIL muy largo").optional(),
+  contractNumber: z.string().trim().optional(),
 });
 
-type FormData = z.infer<typeof requestSchema>;
+// Esquema para Persona Física
+const personaFisicaSchema = baseSchema.extend({
+  entityType: z.literal('fisica'),
+  firstName: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "Nombre muy largo"),
+  lastName: z.string().trim().min(2, "El apellido debe tener al menos 2 caracteres").max(100, "Apellido muy largo"),
+  phone: z.string().trim().min(8, "Teléfono inválido").max(20, "Teléfono muy largo"),
+  documentId: z.string().trim().min(6, "DNI inválido").max(20, "DNI muy largo"),
+  cuitCuil: z.string().trim().refine(
+    (val) => {
+      const cleanedCuit = val.replace(/[^0-9]/g, '');
+      return cleanedCuit.length === 11;
+    },
+    { message: "El CUIT/CUIL debe tener exactamente 11 dígitos numéricos" }
+  ),
+});
+
+// Esquema para Persona Jurídica
+const personaJuridicaSchema = baseSchema.extend({
+  entityType: z.literal('juridica'),
+  razonSocial: z.string().trim().min(3, "La razón social debe tener al menos 3 caracteres").max(200, "Razón social muy larga"),
+  cuit: z.string().trim().refine(
+    (val) => {
+      const cleanedCuit = val.replace(/[^0-9]/g, '');
+      return cleanedCuit.length === 11;
+    },
+    { message: "El CUIT debe tener exactamente 11 dígitos numéricos" }
+  ),
+  contactName: z.string().trim().min(3, "El nombre de contacto debe tener al menos 3 caracteres").max(150, "Nombre de contacto muy largo"),
+  phone: z.string().trim().min(8, "Teléfono inválido").max(20, "Teléfono muy largo"),
+});
+
+// Esquema discriminado (usa entityType para determinar qué esquema aplicar)
+const requestSchema = z.discriminatedUnion('entityType', [
+  personaFisicaSchema,
+  personaJuridicaSchema,
+]);
+
+interface FormData {
+  entityType: 'fisica' | 'juridica' | '';
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  role: string;
+  reason: string;
+  contractNumber: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  documentId: string;
+  cuitCuil: string;
+  razonSocial: string;
+  cuit: string;
+  contactName: string;
+}
 
 const PMSRequestAccess = () => {
   const navigate = useNavigate();
@@ -40,20 +90,23 @@ const PMSRequestAccess = () => {
   const { toast } = useToast();
   
   const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
+    entityType: '',
     email: '',
-    phone: '',
-    documentId: '',
     address: '',
     city: '',
     state: '',
     postalCode: '',
     role: '',
     reason: '',
-    tenantType: '',
-    companyName: '',
-    taxId: '',
+    contractNumber: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    documentId: '',
+    cuitCuil: '',
+    razonSocial: '',
+    cuit: '',
+    contactName: '',
   });
   
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -95,26 +148,33 @@ const PMSRequestAccess = () => {
 
     setLoading(true);
 
+    const userData: any = {
+      email: formData.email,
+      entity_type: formData.entityType,
+      address: formData.address,
+      city: formData.city,
+      state: formData.state,
+      postal_code: formData.postalCode,
+      contract_number: formData.contractNumber || undefined,
+    };
+
+    if (formData.entityType === 'fisica') {
+      userData.first_name = formData.firstName;
+      userData.last_name = formData.lastName;
+      userData.phone = formData.phone;
+      userData.document_id = formData.documentId;
+      userData.cuit_cuil = formData.cuitCuil;
+    } else if (formData.entityType === 'juridica') {
+      userData.razon_social = formData.razonSocial;
+      userData.cuit = formData.cuit;
+      userData.contact_name = formData.contactName;
+      userData.phone = formData.phone;
+    }
+
     const { error } = await requestAccess(
       formData.role as any,
       formData.reason,
-      {
-        email: formData.email,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.phone,
-        document_id: formData.documentId,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        postal_code: formData.postalCode,
-        company_name: (formData.role === 'INMOBILIARIA' || (formData.role === 'INQUILINO' && formData.tenantType === 'empresa')) 
-          ? formData.companyName 
-          : undefined,
-        tax_id: (formData.role === 'INMOBILIARIA' || (formData.role === 'INQUILINO' && formData.tenantType === 'empresa')) 
-          ? formData.taxId 
-          : undefined,
-      }
+      userData
     );
 
     if (error) {
@@ -165,9 +225,6 @@ const PMSRequestAccess = () => {
     );
   }
 
-  const isInmobiliaria = formData.role === 'INMOBILIARIA';
-  const isInquilino = formData.role === 'INQUILINO';
-
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="container mx-auto max-w-3xl">
@@ -180,268 +237,329 @@ const PMSRequestAccess = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Datos Personales */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b">
-                  <User className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Datos Personales</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">Nombre *</Label>
-                    <Input
-                      id="firstName"
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      placeholder="Tu nombre"
-                    />
-                    {errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Apellido *</Label>
-                    <Input
-                      id="lastName"
-                      value={formData.lastName}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      placeholder="Tu apellido"
-                    />
-                    {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Teléfono *</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="phone"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        placeholder="+54 11 1234-5678"
-                        className="pl-10"
-                      />
-                    </div>
-                    {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="documentId">DNI *</Label>
-                    <div className="relative">
-                      <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="documentId"
-                        value={formData.documentId}
-                        onChange={(e) => handleInputChange('documentId', e.target.value)}
-                        placeholder="12345678"
-                        className="pl-10"
-                      />
-                    </div>
-                    {errors.documentId && <p className="text-sm text-destructive">{errors.documentId}</p>}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      placeholder="tu@email.com"
-                      className="pl-10"
-                    />
-                  </div>
-                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                  <p className="text-xs text-muted-foreground">Te notificaremos a este email sobre tu solicitud</p>
-                </div>
-              </div>
-
-              {/* Dirección */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Dirección</h3>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="address">Dirección *</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    placeholder="Calle y número"
-                  />
-                  {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">Ciudad *</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => handleInputChange('city', e.target.value)}
-                      placeholder="Buenos Aires"
-                    />
-                    {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="state">Provincia *</Label>
-                    <Input
-                      id="state"
-                      value={formData.state}
-                      onChange={(e) => handleInputChange('state', e.target.value)}
-                      placeholder="CABA"
-                    />
-                    {errors.state && <p className="text-sm text-destructive">{errors.state}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="postalCode">Código Postal *</Label>
-                    <Input
-                      id="postalCode"
-                      value={formData.postalCode}
-                      onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                      placeholder="C1000"
-                    />
-                    {errors.postalCode && <p className="text-sm text-destructive">{errors.postalCode}</p>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Rol y Solicitud */}
+              {/* Tipo de Solicitante */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b">
                   <Building2 className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Información de Acceso</h3>
+                  <h3 className="font-semibold">Tipo de Solicitante</h3>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <Label htmlFor="role">Rol Solicitado *</Label>
-                  <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
-                    <SelectTrigger id="role">
-                      <SelectValue placeholder="Selecciona un rol" />
+                  <Label htmlFor="entityType">¿Es Persona Física o Persona Jurídica? *</Label>
+                  <Select 
+                    value={formData.entityType} 
+                    onValueChange={(value) => handleInputChange('entityType', value)}
+                  >
+                    <SelectTrigger id="entityType">
+                      <SelectValue placeholder="Selecciona el tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="INMOBILIARIA">Inmobiliaria</SelectItem>
-                      <SelectItem value="ADMINISTRADOR">Administrador</SelectItem>
-                      <SelectItem value="PROPIETARIO">Propietario</SelectItem>
-                      <SelectItem value="INQUILINO">Inquilino</SelectItem>
+                      <SelectItem value="fisica">Persona Física</SelectItem>
+                      <SelectItem value="juridica">Persona Jurídica</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.role && <p className="text-sm text-destructive">{errors.role}</p>}
+                  {errors.entityType && <p className="text-sm text-destructive">{errors.entityType}</p>}
                 </div>
+              </div>
 
-                {isInmobiliaria && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+              {/* Datos - Persona Física */}
+              {formData.entityType === 'fisica' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b">
+                    <User className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold">Datos Personales</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="companyName">Nombre de Empresa *</Label>
+                      <Label htmlFor="firstName">Nombre *</Label>
                       <Input
-                        id="companyName"
-                        value={formData.companyName}
-                        onChange={(e) => handleInputChange('companyName', e.target.value)}
-                        placeholder="Nombre de la inmobiliaria"
+                        id="firstName"
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        placeholder="Tu nombre"
                       />
-                      {errors.companyName && <p className="text-sm text-destructive">{errors.companyName}</p>}
+                      {errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="taxId">CUIT/CUIL *</Label>
+                      <Label htmlFor="lastName">Apellido *</Label>
                       <Input
-                        id="taxId"
-                        value={formData.taxId}
-                        onChange={(e) => handleInputChange('taxId', e.target.value)}
-                        placeholder="20-12345678-9"
+                        id="lastName"
+                        value={formData.lastName}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        placeholder="Tu apellido"
                       />
-                      {errors.taxId && <p className="text-sm text-destructive">{errors.taxId}</p>}
+                      {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
                     </div>
                   </div>
-                )}
 
-                {isInquilino && (
-                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="tenantType">Tipo de Inquilino *</Label>
-                      <Select 
-                        value={formData.tenantType} 
-                        onValueChange={(value) => handleInputChange('tenantType', value)}
-                      >
-                        <SelectTrigger id="tenantType">
-                          <SelectValue placeholder="Selecciona el tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="persona">Persona Física</SelectItem>
-                          <SelectItem value="empresa">Empresa</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {formData.tenantType === 'empresa' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="companyName">Nombre de Empresa *</Label>
-                          <Input
-                            id="companyName"
-                            value={formData.companyName}
-                            onChange={(e) => handleInputChange('companyName', e.target.value)}
-                            placeholder="Razón social"
-                          />
-                          {errors.companyName && <p className="text-sm text-destructive">{errors.companyName}</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="taxId">CUIT *</Label>
-                          <Input
-                            id="taxId"
-                            value={formData.taxId}
-                            onChange={(e) => handleInputChange('taxId', e.target.value)}
-                            placeholder="20-12345678-9"
-                          />
-                          {errors.taxId && <p className="text-sm text-destructive">{errors.taxId}</p>}
-                        </div>
+                      <Label htmlFor="phone">Teléfono *</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          placeholder="+54 11 1234-5678"
+                          className="pl-10"
+                        />
                       </div>
-                    )}
+                      {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="documentId">DNI *</Label>
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="documentId"
+                          type="text"
+                          value={formData.documentId}
+                          onChange={(e) => handleInputChange('documentId', e.target.value)}
+                          placeholder="12345678"
+                          className="pl-10"
+                        />
+                      </div>
+                      {errors.documentId && <p className="text-sm text-destructive">{errors.documentId}</p>}
+                    </div>
                   </div>
-                )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="reason">Motivo de la Solicitud *</Label>
-                  <Textarea
-                    id="reason"
-                    value={formData.reason}
-                    onChange={(e) => handleInputChange('reason', e.target.value)}
-                    placeholder="Explica por qué necesitas acceso al sistema..."
-                    rows={4}
-                  />
-                  {errors.reason && <p className="text-sm text-destructive">{errors.reason}</p>}
+                  <div className="space-y-2">
+                    <Label htmlFor="cuitCuil">CUIT/CUIL *</Label>
+                    <Input
+                      id="cuitCuil"
+                      type="text"
+                      value={formData.cuitCuil}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9-]/g, '').slice(0, 13);
+                        handleInputChange('cuitCuil', value);
+                      }}
+                      placeholder="20-12345678-9"
+                      maxLength={13}
+                    />
+                    <p className="text-xs text-muted-foreground">Debe tener exactamente 11 dígitos numéricos</p>
+                    {errors.cuitCuil && <p className="text-sm text-destructive">{errors.cuitCuil}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        placeholder="tu@email.com"
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                    <p className="text-xs text-muted-foreground">Te notificaremos a este email sobre tu solicitud</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="space-y-2 pt-4">
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Enviando...
-                    </>
-                  ) : (
-                    'Enviar Solicitud'
-                  )}
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => navigate('/')}
-                >
-                  Cancelar
-                </Button>
-              </div>
+              {/* Datos - Persona Jurídica */}
+              {formData.entityType === 'juridica' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold">Datos de la Empresa</h3>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="razonSocial">Razón Social *</Label>
+                    <Input
+                      id="razonSocial"
+                      value={formData.razonSocial}
+                      onChange={(e) => handleInputChange('razonSocial', e.target.value)}
+                      placeholder="Nombre legal de la empresa"
+                    />
+                    {errors.razonSocial && <p className="text-sm text-destructive">{errors.razonSocial}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cuit">CUIT *</Label>
+                    <Input
+                      id="cuit"
+                      type="text"
+                      value={formData.cuit}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9-]/g, '').slice(0, 13);
+                        handleInputChange('cuit', value);
+                      }}
+                      placeholder="30-12345678-9"
+                      maxLength={13}
+                    />
+                    <p className="text-xs text-muted-foreground">Debe tener exactamente 11 dígitos numéricos</p>
+                    {errors.cuit && <p className="text-sm text-destructive">{errors.cuit}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="contactName">Contacto *</Label>
+                      <Input
+                        id="contactName"
+                        value={formData.contactName}
+                        onChange={(e) => handleInputChange('contactName', e.target.value)}
+                        placeholder="Ej: Juan Pérez"
+                      />
+                      {errors.contactName && <p className="text-sm text-destructive">{errors.contactName}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Tel. *</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          placeholder="+54 11 1234-5678"
+                          className="pl-10"
+                        />
+                      </div>
+                      {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        placeholder="contacto@empresa.com"
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                    <p className="text-xs text-muted-foreground">Te notificaremos a este email sobre tu solicitud</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Dirección (común) */}
+              {formData.entityType && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold">Dirección</h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Dirección *</Label>
+                    <Input
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      placeholder="Calle, número, piso y depto."
+                    />
+                    <p className="text-xs text-muted-foreground">Incluye calle, número, piso y departamento</p>
+                    {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="state">Provincia *</Label>
+                      <Input
+                        id="state"
+                        value={formData.state}
+                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        placeholder="Buenos Aires"
+                      />
+                      {errors.state && <p className="text-sm text-destructive">{errors.state}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="city">Ciudad *</Label>
+                      <Input
+                        id="city"
+                        value={formData.city}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        placeholder="CABA"
+                      />
+                      {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="postalCode">Código Postal *</Label>
+                      <Input
+                        id="postalCode"
+                        value={formData.postalCode}
+                        onChange={(e) => handleInputChange('postalCode', e.target.value)}
+                        placeholder=""
+                      />
+                      {errors.postalCode && <p className="text-sm text-destructive">{errors.postalCode}</p>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Información de Acceso (Simplificada) */}
+              {formData.entityType && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold">Información de Acceso</h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Rol Solicitado *</Label>
+                    <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
+                      <SelectTrigger id="role">
+                        <SelectValue placeholder="Selecciona un rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="INMOBILIARIA">Inmobiliaria</SelectItem>
+                        <SelectItem value="ADMINISTRADOR">Administrador</SelectItem>
+                        <SelectItem value="PROPIETARIO">Propietario</SelectItem>
+                        <SelectItem value="INQUILINO">Inquilino</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.role && <p className="text-sm text-destructive">{errors.role}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reason">Motivo de la Solicitud *</Label>
+                    <Textarea
+                      id="reason"
+                      value={formData.reason}
+                      onChange={(e) => handleInputChange('reason', e.target.value)}
+                      placeholder="Describe brevemente por qué necesitas acceso al PMS"
+                      rows={4}
+                    />
+                    <p className="text-xs text-muted-foreground">Mínimo 10 caracteres</p>
+                    {errors.reason && <p className="text-sm text-destructive">{errors.reason}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="contractNumber">Número de Contrato</Label>
+                    <Input
+                      id="contractNumber"
+                      value={formData.contractNumber}
+                      onChange={(e) => handleInputChange('contractNumber', e.target.value)}
+                      placeholder="Opcional"
+                    />
+                    <p className="text-xs text-muted-foreground">Si ya tienes un contrato asociado, ingresa el número aquí</p>
+                    {errors.contractNumber && <p className="text-sm text-destructive">{errors.contractNumber}</p>}
+                  </div>
+                </div>
+              )}
+
+              <Button type="submit" className="w-full" disabled={loading || !formData.entityType}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Enviar Solicitud
+              </Button>
             </form>
           </CardContent>
         </Card>
