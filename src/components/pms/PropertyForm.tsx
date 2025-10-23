@@ -335,12 +335,12 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
               />
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-12 gap-4">
               <FormField
                 control={form.control}
                 name="street_name"
                 render={({ field }) => (
-                  <FormItem className="col-span-2">
+                  <FormItem className="col-span-6">
                     <FormLabel>Calle/Avenida</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="Ej: Av. Corrientes" />
@@ -354,7 +354,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                 control={form.control}
                 name="street_number"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="col-span-3">
                     <FormLabel>Número</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="1234" />
@@ -368,10 +368,10 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                 control={form.control}
                 name="floor"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="col-span-3">
                     <FormLabel>Piso</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="5" />
+                      <Input {...field} placeholder="5" maxLength={3} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -379,19 +379,21 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="apartment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Departamento</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="A" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-12 gap-4">
+              <FormField
+                control={form.control}
+                name="apartment"
+                render={({ field }) => (
+                  <FormItem className="col-span-3">
+                    <FormLabel>Departamento</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="A" maxLength={3} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-4 gap-4">
               <FormField
