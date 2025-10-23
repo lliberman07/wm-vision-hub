@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Eye, FileText, CheckCircle2, FileEdit, AlertCircle, Clock, X } from 'lucide-react';
+import { Plus, Eye, FileText, CheckCircle2, FileEdit, AlertCircle, Clock, X, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContractForm } from '@/components/pms/ContractForm';
@@ -18,6 +18,7 @@ import { ContractMonthlyProjections } from '@/components/pms/ContractMonthlyProj
 import { CancelContractDialog } from '@/components/pms/CancelContractDialog';
 import { ActivateContractDialog } from '@/components/pms/ActivateContractDialog';
 import { ExtendContractDialog } from '@/components/pms/ExtendContractDialog';
+import { RenewContractDialog } from '@/components/pms/RenewContractDialog';
 import { PaymentCalendar } from '@/components/pms/PaymentCalendar';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
@@ -38,6 +39,10 @@ interface Contract {
   cancelled_at?: string;
   cancellation_reason?: string;
   cancelled_by?: string;
+  base_contract_number?: string | null;
+  renewal_count?: number;
+  parent_contract_id?: string | null;
+  is_renewal?: boolean;
 }
 
 const Contracts = () => {
@@ -53,6 +58,7 @@ const Contracts = () => {
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [isActivateOpen, setIsActivateOpen] = useState(false);
   const [isExtendOpen, setIsExtendOpen] = useState(false);
+  const [isRenewOpen, setIsRenewOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
 
   useEffect(() => {
@@ -197,6 +203,11 @@ const Contracts = () => {
     fetchContracts();
   };
 
+  const handleRenewal = () => {
+    setIsRenewOpen(false);
+    fetchContracts();
+  };
+
   return (
     <PMSLayout>
       <div className="container mx-auto px-4 py-6">
@@ -327,7 +338,16 @@ const Contracts = () => {
                 <TableBody>
                   {filteredContracts.map((contract: any) => (
                     <TableRow key={contract.id}>
-                      <TableCell className="font-medium">{contract.contract_number}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {contract.contract_number}
+                          {contract.is_renewal && (
+                            <Badge variant="outline" className="text-xs">
+                              R{contract.renewal_count}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium">{contract.pms_properties.code}</p>
@@ -392,6 +412,20 @@ const Contracts = () => {
                             >
                               <Clock className="h-4 w-4 mr-1" />
                               Extender
+                            </Button>
+                          )}
+                          {(contract.status === 'active' || contract.status === 'expired') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedContract(contract);
+                                setIsRenewOpen(true);
+                              }}
+                              className="gap-1"
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                              Renovación
                             </Button>
                           )}
                           {contract.status === 'active' && (
@@ -466,6 +500,16 @@ const Contracts = () => {
             open={isExtendOpen}
             onOpenChange={setIsExtendOpen}
             onSuccess={handleExtend}
+          />
+        )}
+
+        {/* Renew Contract Dialog */}
+        {selectedContract && (
+          <RenewContractDialog
+            open={isRenewOpen}
+            onOpenChange={setIsRenewOpen}
+            onSuccess={handleRenewal}
+            contract={selectedContract}
           />
         )}
 
