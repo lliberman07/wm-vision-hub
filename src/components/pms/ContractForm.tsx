@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { CalendarIcon, AlertCircle } from 'lucide-react';
 import { formatDateForDB, parseDateFromDB, formatDateToDisplay } from '@/utils/dateUtils';
+import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
@@ -80,6 +81,10 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   const [properties, setProperties] = useState<any[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
   const [propertyOwners, setPropertyOwners] = useState<any[]>([]);
+  
+  // FASE 5: Detectar propiedad clonada
+  const [isClonedProperty, setIsClonedProperty] = useState(false);
+  const [parentContractInfo, setParentContractInfo] = useState<any>(null);
   
   // Helper para determinar si un campo está deshabilitado
   const isFieldDisabled = (fieldName: string) => {
@@ -258,6 +263,62 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       setPropertyOwners(ownersInfo);
     }
   };
+  
+  // FASE 5: Detectar si la propiedad es un clon y pre-cargar fecha
+  useEffect(() => {
+    const checkIfCloned = async () => {
+      const propertyId = form.watch('property_id');
+      if (!propertyId) {
+        setIsClonedProperty(false);
+        setParentContractInfo(null);
+        return;
+      }
+      
+      try {
+        const { data: property } = await supabase
+          .from('pms_properties')
+          .select('is_clone, parent_property_id, base_property_code')
+          .eq('id', propertyId)
+          .single();
+        
+        if (property?.is_clone && property.parent_property_id) {
+          setIsClonedProperty(true);
+          
+          // Buscar último contrato cancelado de la propiedad padre
+          const { data: parentContract } = await supabase
+            .from('pms_contracts')
+            .select('*')
+            .eq('property_id', property.parent_property_id)
+            .eq('status', 'cancelled')
+            .order('cancelled_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          if (parentContract) {
+            setParentContractInfo(parentContract);
+            
+            // Pre-cargar fecha de inicio automáticamente
+            const cancelDate = parseDateFromDB(parentContract.cancelled_at);
+            const newStartDate = new Date(cancelDate);
+            newStartDate.setDate(newStartDate.getDate() + 1);
+            
+            form.setValue('start_date', newStartDate);
+            
+            toast.info('Propiedad Clonada Detectada', {
+              description: `Se sugiere iniciar el contrato el ${format(newStartDate, 'dd/MM/yyyy')}`
+            });
+          }
+        } else {
+          setIsClonedProperty(false);
+          setParentContractInfo(null);
+        }
+      } catch (error) {
+        console.error('Error checking cloned property:', error);
+      }
+    };
+    
+    checkIfCloned();
+  }, [form.watch('property_id')]);
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -378,6 +439,24 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           </DialogDescription>
         </DialogHeader>
         
+        {isClonedProperty && parentContractInfo && (
+          <Alert className="mb-4 border-blue-500 bg-blue-50 dark:bg-blue-950">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertTitle className="text-blue-800 dark:text-blue-200">🏠 Propiedad Clonada</AlertTitle>
+            <AlertDescription className="text-blue-700 dark:text-blue-300 space-y-2">
+              <p>Esta propiedad es una clonación para nuevos propietarios.</p>
+              <div className="p-2 bg-white dark:bg-gray-900 rounded border text-sm">
+                <p><strong>Contrato anterior:</strong> {parentContractInfo.contract_number}</p>
+                <p><strong>Cancelado:</strong> {format(parseDateFromDB(parentContractInfo.cancelled_at), 'dd/MM/yyyy')}</p>
+                <p><strong>Razón:</strong> {parentContractInfo.cancellation_reason}</p>
+              </div>
+              <p className="text-xs italic">
+                💡 El nuevo contrato debe iniciar el día siguiente a la cancelación del anterior.
+              </p>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         {contract?.status === 'active' && (
           <Alert className="mb-4">
             <AlertCircle className="h-4 w-4" />
@@ -398,7 +477,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 name="contract_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Número de Contrato</FormLabel>
+                    <FormLabel>Código de Contrato</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="CONT-001" />
                     </FormControl>

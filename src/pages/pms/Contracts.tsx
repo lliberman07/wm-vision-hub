@@ -326,8 +326,8 @@ const Contracts = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Número</TableHead>
-                    <TableHead>Propiedad</TableHead>
+                      <TableHead>Código</TableHead>
+                      <TableHead>Propiedad</TableHead>
                     <TableHead>Período</TableHead>
                     <TableHead>Renta</TableHead>
                     <TableHead>Estado</TableHead>

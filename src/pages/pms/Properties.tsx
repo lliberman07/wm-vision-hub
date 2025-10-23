@@ -106,7 +106,9 @@ const Properties = () => {
   };
 
   const canCloneProperty = (property: any): boolean => {
-    return property.status === 'rented' || property.status === 'maintenance';
+    // PERMITIR clonación en TODOS los estados
+    // El dialog maneja las advertencias y confirmaciones
+    return true;
   };
 
   return (
