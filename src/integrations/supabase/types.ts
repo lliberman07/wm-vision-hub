@@ -983,6 +983,7 @@ export type Database = {
           adjustment_config: Json | null
           adjustment_type: string | null
           aplica_a_items: string | null
+          base_contract_number: string | null
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
@@ -1005,14 +1006,17 @@ export type Database = {
           guarantors: Json | null
           id: string
           indice_ajuste: string | null
+          is_renewal: boolean | null
           monthly_rent: number
           monto_a: number | null
           monto_ajustado_actual_a: number | null
           monto_ajustado_actual_b: number | null
           monto_b: number | null
+          parent_contract_id: string | null
           payment_day: number | null
           pdf_url: string | null
           property_id: string
+          renewal_count: number | null
           special_clauses: string | null
           start_date: string
           status: string | null
@@ -1026,6 +1030,7 @@ export type Database = {
           adjustment_config?: Json | null
           adjustment_type?: string | null
           aplica_a_items?: string | null
+          base_contract_number?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -1048,14 +1053,17 @@ export type Database = {
           guarantors?: Json | null
           id?: string
           indice_ajuste?: string | null
+          is_renewal?: boolean | null
           monthly_rent: number
           monto_a?: number | null
           monto_ajustado_actual_a?: number | null
           monto_ajustado_actual_b?: number | null
           monto_b?: number | null
+          parent_contract_id?: string | null
           payment_day?: number | null
           pdf_url?: string | null
           property_id: string
+          renewal_count?: number | null
           special_clauses?: string | null
           start_date: string
           status?: string | null
@@ -1069,6 +1077,7 @@ export type Database = {
           adjustment_config?: Json | null
           adjustment_type?: string | null
           aplica_a_items?: string | null
+          base_contract_number?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -1091,14 +1100,17 @@ export type Database = {
           guarantors?: Json | null
           id?: string
           indice_ajuste?: string | null
+          is_renewal?: boolean | null
           monthly_rent?: number
           monto_a?: number | null
           monto_ajustado_actual_a?: number | null
           monto_ajustado_actual_b?: number | null
           monto_b?: number | null
+          parent_contract_id?: string | null
           payment_day?: number | null
           pdf_url?: string | null
           property_id?: string
+          renewal_count?: number | null
           special_clauses?: string | null
           start_date?: string
           status?: string | null
@@ -1109,6 +1121,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pms_contracts_parent_contract_id_fkey"
+            columns: ["parent_contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pms_contracts_property_id_fkey"
             columns: ["property_id"]
@@ -2277,6 +2296,7 @@ export type Database = {
         Returns: undefined
       }
       approve_user: { Args: { user_id_param: string }; Returns: undefined }
+      can_renew_contract: { Args: { contract_id_param: string }; Returns: Json }
       cancel_contract: {
         Args: {
           cancellation_date_param: string
@@ -2320,6 +2340,10 @@ export type Database = {
         Returns: undefined
       }
       generate_reference_number: { Args: never; Returns: string }
+      generate_renewal_code: {
+        Args: { parent_contract_id_param: string }
+        Returns: string
+      }
       get_current_user_profile: {
         Args: never
         Returns: {
@@ -2410,6 +2434,10 @@ export type Database = {
         Returns: undefined
       }
       update_overdue_payment_items: { Args: never; Returns: undefined }
+      validate_renewal_dates: {
+        Args: { parent_contract_id_param: string; proposed_start_date: string }
+        Returns: boolean
+      }
     }
     Enums: {
       application_status:
