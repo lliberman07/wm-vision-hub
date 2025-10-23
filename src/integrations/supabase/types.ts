@@ -1910,6 +1910,7 @@ export type Database = {
           address: string
           alias: string | null
           amenities: string[] | null
+          apartment: string | null
           balcon: boolean | null
           barrio: string | null
           bathrooms: number | null
@@ -1924,6 +1925,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           estado_publicacion: string | null
+          floor: string | null
           habitaciones: number | null
           id: string
           latitude: number | null
@@ -1936,6 +1938,8 @@ export type Database = {
           property_type: string
           state: string | null
           status: string | null
+          street_name: string | null
+          street_number: string | null
           surface_covered: number | null
           surface_total: number | null
           tenant_id: string
@@ -1947,6 +1951,7 @@ export type Database = {
           address: string
           alias?: string | null
           amenities?: string[] | null
+          apartment?: string | null
           balcon?: boolean | null
           barrio?: string | null
           bathrooms?: number | null
@@ -1961,6 +1966,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           estado_publicacion?: string | null
+          floor?: string | null
           habitaciones?: number | null
           id?: string
           latitude?: number | null
@@ -1973,6 +1979,8 @@ export type Database = {
           property_type: string
           state?: string | null
           status?: string | null
+          street_name?: string | null
+          street_number?: string | null
           surface_covered?: number | null
           surface_total?: number | null
           tenant_id: string
@@ -1984,6 +1992,7 @@ export type Database = {
           address?: string
           alias?: string | null
           amenities?: string[] | null
+          apartment?: string | null
           balcon?: boolean | null
           barrio?: string | null
           bathrooms?: number | null
@@ -1998,6 +2007,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           estado_publicacion?: string | null
+          floor?: string | null
           habitaciones?: number | null
           id?: string
           latitude?: number | null
@@ -2010,6 +2020,8 @@ export type Database = {
           property_type?: string
           state?: string | null
           status?: string | null
+          street_name?: string | null
+          street_number?: string | null
           surface_covered?: number | null
           surface_total?: number | null
           tenant_id?: string

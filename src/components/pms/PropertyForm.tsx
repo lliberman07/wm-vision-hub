@@ -21,7 +21,10 @@ import { Bot, Wrench } from 'lucide-react';
 
 const formSchema = z.object({
   code: z.string().min(1, 'Código requerido'),
-  address: z.string().min(1, 'Dirección requerida'),
+  street_name: z.string().min(1, 'Calle/Avenida requerida'),
+  street_number: z.string().optional(),
+  floor: z.string().optional(),
+  apartment: z.string().optional(),
   city: z.string().min(1, 'Ciudad requerida'),
   state: z.string().optional(),
   postal_code: z.string().optional(),
@@ -67,7 +70,10 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
     resolver: zodResolver(formSchema),
     defaultValues: {
       code: '',
-      address: '',
+      street_name: '',
+      street_number: '',
+      floor: '',
+      apartment: '',
       city: '',
       state: '',
       postal_code: '',
@@ -99,7 +105,10 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
       setForceMaintenanceMode(property.status === 'maintenance');
       form.reset({
         code: property.code || '',
-        address: property.address || '',
+        street_name: property.street_name || property.address || '',
+        street_number: property.street_number || '',
+        floor: property.floor || '',
+        apartment: property.apartment || '',
         city: property.city || '',
         state: property.state || '',
         postal_code: property.postal_code || '',
@@ -128,7 +137,10 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
     } else if (open && !property) {
       form.reset({
         code: '',
-        address: '',
+        street_name: '',
+        street_number: '',
+        floor: '',
+        apartment: '',
         city: '',
         state: '',
         postal_code: '',
@@ -173,9 +185,20 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         }
       }
 
+      const fullAddress = [
+        data.street_name,
+        data.street_number,
+        data.floor ? `Piso ${data.floor}` : '',
+        data.apartment ? `Depto ${data.apartment}` : ''
+      ].filter(Boolean).join(', ');
+
       const payload: any = {
         code: data.code,
-        address: data.address,
+        street_name: data.street_name,
+        street_number: data.street_number || null,
+        floor: data.floor || null,
+        apartment: data.apartment || null,
+        address: fullAddress,
         city: data.city,
         state: data.state,
         postal_code: data.postal_code,
@@ -312,14 +335,58 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
               />
             </div>
 
+            <div className="grid grid-cols-4 gap-4">
+              <FormField
+                control={form.control}
+                name="street_name"
+                render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>Calle/Avenida</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Ej: Av. Corrientes" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="street_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="1234" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="floor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Piso</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="5" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
-              name="address"
+              name="apartment"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dirección</FormLabel>
+                  <FormLabel>Departamento</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Calle/Avenida, número, piso, departamento" />
+                    <Input {...field} placeholder="A" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
