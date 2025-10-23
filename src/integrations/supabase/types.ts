@@ -2477,6 +2477,18 @@ export type Database = {
         Returns: undefined
       }
       update_overdue_payment_items: { Args: never; Returns: undefined }
+      validate_contract_number: {
+        Args: {
+          p_contract_id?: string
+          p_contract_number: string
+          p_tenant_id?: string
+        }
+        Returns: boolean
+      }
+      validate_property_code: {
+        Args: { p_code: string; p_property_id?: string; p_tenant_id?: string }
+        Returns: boolean
+      }
       validate_renewal_dates: {
         Args: { parent_contract_id_param: string; proposed_start_date: string }
         Returns: boolean
