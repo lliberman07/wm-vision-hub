@@ -6,11 +6,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Building2, ImageIcon, Eye } from 'lucide-react';
+import { Plus, Building2, ImageIcon, Eye, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PropertyForm } from '@/components/pms/PropertyForm';
 import { PropertyDetailsDialog } from '@/components/pms/PropertyDetailsDialog';
+import { ClonePropertyDialog } from '@/components/pms/ClonePropertyDialog';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
 import { EmptyState } from '@/components/pms/EmptyState';
@@ -55,6 +56,8 @@ const Properties = () => {
   const [selectedProperty, setSelectedProperty] = useState<Property | undefined>();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [detailsProperty, setDetailsProperty] = useState<Property | null>(null);
+  const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
+  const [propertyToClone, setPropertyToClone] = useState<Property | null>(null);
 
   useEffect(() => {
     if (pmsLoading) return;
@@ -100,6 +103,10 @@ const Properties = () => {
       maintenance: 'destructive',
     };
     return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
+  };
+
+  const canCloneProperty = (property: any): boolean => {
+    return property.status === 'rented' || property.status === 'maintenance';
   };
 
   return (
@@ -170,7 +177,22 @@ const Properties = () => {
                   <TableBody>
                     {filteredProperties.map((property) => (
                       <TableRow key={property.id} className="hover:bg-muted/50 cursor-pointer">
-                        <TableCell className="font-mono">{property.code}</TableCell>
+                        <TableCell className="font-mono">
+                          <div className="flex items-center gap-2">
+                            {property.code}
+                            {(property as any).is_clone && (
+                              <Badge variant="outline" className="text-xs bg-blue-50 dark:bg-blue-950">
+                                <Copy className="h-3 w-3 mr-1" />
+                                Clon
+                              </Badge>
+                            )}
+                            {(property as any).clone_count > 0 && (
+                              <Badge variant="outline" className="text-xs bg-purple-50 dark:bg-purple-950">
+                                {(property as any).clone_count} {(property as any).clone_count === 1 ? 'clon' : 'clones'}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="font-medium">{property.address}</TableCell>
                         <TableCell>{property.city}</TableCell>
                         <TableCell>{property.property_type}</TableCell>
@@ -212,6 +234,21 @@ const Properties = () => {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
+                            
+                            {canCloneProperty(property) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setPropertyToClone(property);
+                                  setIsCloneDialogOpen(true);
+                                }}
+                                title="Clonar propiedad"
+                              >
+                                <Copy className="h-4 w-4 text-blue-500" />
+                              </Button>
+                            )}
+                            
                             <Button
                               variant="ghost"
                               size="sm"
@@ -245,6 +282,13 @@ const Properties = () => {
           open={isDetailsOpen}
           onOpenChange={setIsDetailsOpen}
           property={detailsProperty}
+        />
+        
+        <ClonePropertyDialog
+          open={isCloneDialogOpen}
+          onOpenChange={setIsCloneDialogOpen}
+          property={propertyToClone}
+          onSuccess={fetchProperties}
         />
       </div>
     </PMSLayout>

@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Building2, User, Building } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Building2, User, Building, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -42,10 +43,13 @@ interface PropertyDetailsDialogProps {
 export const PropertyDetailsDialog = ({ open, onOpenChange, property }: PropertyDetailsDialogProps) => {
   const [owners, setOwners] = useState<any[]>([]);
   const [loadingOwners, setLoadingOwners] = useState(false);
+  const [contracts, setContracts] = useState<any[]>([]);
+  const [loadingContracts, setLoadingContracts] = useState(false);
 
   useEffect(() => {
     if (property?.id) {
       fetchOwners();
+      fetchContracts();
     }
   }, [property?.id]);
 
@@ -78,6 +82,37 @@ export const PropertyDetailsDialog = ({ open, onOpenChange, property }: Property
       setOwners([]);
     } finally {
       setLoadingOwners(false);
+    }
+  };
+
+  const fetchContracts = async () => {
+    if (!property?.id) return;
+    
+    setLoadingContracts(true);
+    try {
+      const { data, error } = await supabase
+        .from('pms_contracts')
+        .select(`
+          id,
+          contract_number,
+          start_date,
+          end_date,
+          status,
+          monthly_rent,
+          currency,
+          tenant_renter_id,
+          pms_tenants_renters!inner(full_name)
+        `)
+        .eq('property_id', property.id)
+        .order('start_date', { ascending: false });
+      
+      if (error) throw error;
+      setContracts(data || []);
+    } catch (error) {
+      console.error('Error fetching contracts:', error);
+      setContracts([]);
+    } finally {
+      setLoadingContracts(false);
     }
   };
 
@@ -321,6 +356,78 @@ export const PropertyDetailsDialog = ({ open, onOpenChange, property }: Property
               </div>
             </div>
           )}
+
+          {/* FASE 4: Historial de Contratos */}
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-muted-foreground flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Historial de Contratos
+            </Label>
+            
+            {loadingContracts && (
+              <p className="text-sm text-muted-foreground">Cargando contratos...</p>
+            )}
+            
+            {!loadingContracts && contracts.length === 0 && (
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Esta propiedad no tiene contratos registrados
+                </p>
+              </div>
+            )}
+            
+            {!loadingContracts && contracts.length > 0 && (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Inquilino</TableHead>
+                    <TableHead>Inicio</TableHead>
+                    <TableHead>Fin</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-right">Monto</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {contracts.map((contract) => {
+                    const isActive = contract.status === 'active';
+                    const startDate = new Date(contract.start_date).toLocaleDateString('es-AR');
+                    const endDate = new Date(contract.end_date).toLocaleDateString('es-AR');
+                    const tenant = contract.pms_tenants_renters;
+                    
+                    return (
+                      <TableRow 
+                        key={contract.id}
+                        className={isActive ? 'bg-green-50 dark:bg-green-950/20' : ''}
+                      >
+                        <TableCell className="font-mono text-sm">
+                          {contract.contract_number}
+                          {isActive && (
+                            <Badge variant="default" className="ml-2">Activo</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">{tenant?.full_name || 'N/A'}</TableCell>
+                        <TableCell className="text-sm">{startDate}</TableCell>
+                        <TableCell className="text-sm">{endDate}</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            isActive ? 'default' :
+                            contract.status === 'completed' ? 'secondary' :
+                            'destructive'
+                          }>
+                            {contract.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-sm">
+                          {contract.currency} {contract.monthly_rent?.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </div>
 
           {/* Amenities */}
           {property.amenities && property.amenities.length > 0 && (

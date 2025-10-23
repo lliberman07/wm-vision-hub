@@ -27,9 +27,10 @@ interface OwnerPropertyManagerProps {
   tenantId: string;
   onOwnersChange?: (owners: OwnerProperty[]) => void;
   initialOwners?: OwnerProperty[];
+  disabled?: boolean;
 }
 
-export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, initialOwners = [] }: OwnerPropertyManagerProps) {
+export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, initialOwners = [], disabled = false }: OwnerPropertyManagerProps) {
   const [owners, setOwners] = useState<Owner[]>([]);
   const [propertyOwners, setPropertyOwners] = useState<OwnerProperty[]>(initialOwners);
   const [selectedOwnerId, setSelectedOwnerId] = useState<string>("");
@@ -145,6 +146,15 @@ export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, ini
 
   return (
     <div className="space-y-4">
+      {disabled && (
+        <Alert variant="default" className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-700 dark:text-amber-300">
+            No puedes modificar propietarios de una propiedad con contrato activo o historial.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="flex items-center justify-between">
         <Label className="text-base font-semibold">Propietarios de la Propiedad</Label>
         <div className="text-sm">
@@ -165,7 +175,7 @@ export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, ini
 
       <div className="grid grid-cols-3 gap-2">
         <div className="col-span-2">
-          <Select value={selectedOwnerId} onValueChange={setSelectedOwnerId}>
+          <Select value={selectedOwnerId} onValueChange={setSelectedOwnerId} disabled={disabled}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar propietario" />
             </SelectTrigger>
@@ -187,8 +197,9 @@ export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, ini
             step="0.01"
             value={sharePercent}
             onChange={(e) => setSharePercent(e.target.value)}
+            disabled={disabled}
           />
-          <Button type="button" onClick={handleAddOwner} size="icon">
+          <Button type="button" onClick={handleAddOwner} size="icon" disabled={disabled}>
             <Plus className="h-4 w-4" />
           </Button>
         </div>
@@ -214,6 +225,7 @@ export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, ini
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveOwner(index)}
+                    disabled={disabled}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>

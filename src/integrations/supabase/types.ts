@@ -1913,11 +1913,13 @@ export type Database = {
           apartment: string | null
           balcon: boolean | null
           barrio: string | null
+          base_property_code: string | null
           bathrooms: number | null
           baulera: boolean | null
           bedrooms: number | null
           categoria: string | null
           city: string
+          clone_count: number | null
           cocheras: number | null
           code: string
           country: string | null
@@ -1928,10 +1930,12 @@ export type Database = {
           floor: string | null
           habitaciones: number | null
           id: string
+          is_clone: boolean | null
           latitude: number | null
           longitude: number | null
           monto_alquiler: number | null
           operacion: string | null
+          parent_property_id: string | null
           patio: boolean | null
           photos: Json | null
           postal_code: string | null
@@ -1954,11 +1958,13 @@ export type Database = {
           apartment?: string | null
           balcon?: boolean | null
           barrio?: string | null
+          base_property_code?: string | null
           bathrooms?: number | null
           baulera?: boolean | null
           bedrooms?: number | null
           categoria?: string | null
           city: string
+          clone_count?: number | null
           cocheras?: number | null
           code: string
           country?: string | null
@@ -1969,10 +1975,12 @@ export type Database = {
           floor?: string | null
           habitaciones?: number | null
           id?: string
+          is_clone?: boolean | null
           latitude?: number | null
           longitude?: number | null
           monto_alquiler?: number | null
           operacion?: string | null
+          parent_property_id?: string | null
           patio?: boolean | null
           photos?: Json | null
           postal_code?: string | null
@@ -1995,11 +2003,13 @@ export type Database = {
           apartment?: string | null
           balcon?: boolean | null
           barrio?: string | null
+          base_property_code?: string | null
           bathrooms?: number | null
           baulera?: boolean | null
           bedrooms?: number | null
           categoria?: string | null
           city?: string
+          clone_count?: number | null
           cocheras?: number | null
           code?: string
           country?: string | null
@@ -2010,10 +2020,12 @@ export type Database = {
           floor?: string | null
           habitaciones?: number | null
           id?: string
+          is_clone?: boolean | null
           latitude?: number | null
           longitude?: number | null
           monto_alquiler?: number | null
           operacion?: string | null
+          parent_property_id?: string | null
           patio?: boolean | null
           photos?: Json | null
           postal_code?: string | null
@@ -2030,6 +2042,13 @@ export type Database = {
           valor_venta?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pms_properties_parent_property_id_fkey"
+            columns: ["parent_property_id"]
+            isOneToOne: false
+            referencedRelation: "pms_properties"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pms_properties_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -2319,6 +2338,10 @@ export type Database = {
         Returns: undefined
       }
       check_expired_contracts: { Args: never; Returns: undefined }
+      check_property_code_uniqueness: {
+        Args: { p_code: string; p_property_id?: string; p_tenant_id?: string }
+        Returns: boolean
+      }
       cleanup_orphan_payments: {
         Args: never
         Returns: {
@@ -2350,6 +2373,10 @@ export type Database = {
       generate_payment_schedule_items: {
         Args: { contract_id_param: string }
         Returns: undefined
+      }
+      generate_property_clone_code: {
+        Args: { p_parent_code: string }
+        Returns: string
       }
       generate_reference_number: { Args: never; Returns: string }
       generate_renewal_code: {
@@ -2430,6 +2457,10 @@ export type Database = {
       link_existing_payments_to_schedule: {
         Args: { contract_id_param: string }
         Returns: undefined
+      }
+      property_has_contract_history: {
+        Args: { p_property_id: string }
+        Returns: boolean
       }
       recalculate_all_active_contracts: { Args: never; Returns: undefined }
       recalculate_all_cashflow: { Args: never; Returns: undefined }
