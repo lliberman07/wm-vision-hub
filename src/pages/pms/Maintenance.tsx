@@ -31,6 +31,12 @@ interface MaintenanceRequest {
   notes?: string;
   property_id?: string;
   contract_id?: string;
+  property_code?: string;
+  property_address?: string;
+  reporter_email?: string;
+  reporter_name?: string;
+  assignee_email?: string;
+  assignee_name?: string;
 }
 
 const Maintenance = () => {
@@ -56,11 +62,31 @@ const Maintenance = () => {
     try {
       const { data, error } = await supabase
         .from('pms_maintenance_requests')
-        .select('*')
+        .select(`
+          *,
+          pms_properties!inner(code, address),
+          reporter:users!pms_maintenance_requests_reported_by_fkey(email, first_name, last_name),
+          assignee:users!pms_maintenance_requests_assigned_to_fkey(email, first_name, last_name)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      
+      const formattedData = (data || []).map((item: any) => ({
+        ...item,
+        property_code: item.pms_properties?.code,
+        property_address: item.pms_properties?.address,
+        reporter_email: item.reporter?.email,
+        reporter_name: item.reporter?.first_name && item.reporter?.last_name
+          ? `${item.reporter.first_name} ${item.reporter.last_name}`
+          : item.reporter?.email,
+        assignee_email: item.assignee?.email,
+        assignee_name: item.assignee?.first_name && item.assignee?.last_name
+          ? `${item.assignee.first_name} ${item.assignee.last_name}`
+          : item.assignee?.email,
+      }));
+      
+      setRequests(formattedData);
     } catch (error: any) {
       toast.error('Error al cargar solicitudes', {
         description: error.message,
@@ -145,30 +171,38 @@ const Maintenance = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Propiedad</TableHead>
                     <TableHead>Título</TableHead>
                     <TableHead>Categoría</TableHead>
                     <TableHead>Prioridad</TableHead>
                     <TableHead>Estado</TableHead>
+                    <TableHead>Asignado a</TableHead>
                     <TableHead>Fecha</TableHead>
-                    <TableHead>Costo Estimado</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredRequests.map((request) => (
                     <TableRow key={request.id}>
+                      <TableCell>
+                        {request.property_code && (
+                          <div className="text-xs text-muted-foreground">
+                            {request.property_code}
+                          </div>
+                        )}
+                        <div className="text-sm">
+                          {request.property_address || 'Sin dirección'}
+                        </div>
+                      </TableCell>
                       <TableCell className="font-medium">{request.title}</TableCell>
                       <TableCell>{request.category || '-'}</TableCell>
                       <TableCell>{getPriorityBadge(request.priority)}</TableCell>
                       <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>
-                        {format(new Date(request.created_at), 'dd/MM/yyyy')}
+                      <TableCell className="text-sm text-muted-foreground">
+                        {request.assignee_name || request.assignee_email || 'Sin asignar'}
                       </TableCell>
                       <TableCell>
-                        {request.estimated_cost 
-                          ? `$${request.estimated_cost.toLocaleString()}`
-                          : '-'
-                        }
+                        {format(new Date(request.created_at), 'dd/MM/yyyy')}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="sm" onClick={() => { setSelectedRequest(request); setIsDetailsOpen(true); }}>

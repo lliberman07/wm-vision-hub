@@ -26,6 +26,7 @@ const formSchema = z.object({
   estimated_cost: z.number().min(0).optional(),
   scheduled_date: z.string().optional(),
   notes: z.string().optional(),
+  assigned_to: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,6 +42,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
   const { currentTenant } = usePMS();
   const [properties, setProperties] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
+  const [staffUsers, setStaffUsers] = useState<any[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -58,6 +60,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
       estimated_cost: 0,
       scheduled_date: '',
       notes: '',
+      assigned_to: '',
     },
   });
 
@@ -79,6 +82,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
           estimated_cost: maintenance.estimated_cost || 0,
           scheduled_date: maintenance.scheduled_date || '',
           notes: maintenance.notes || '',
+          assigned_to: maintenance.assigned_to || '',
         });
       } else {
         form.reset({
@@ -95,22 +99,43 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
           estimated_cost: 0,
           scheduled_date: '',
           notes: '',
+          assigned_to: '',
         });
       }
     }
   }, [open, maintenance, form]);
 
   const fetchData = async () => {
-    const [propsRes, contractsRes] = await Promise.all([
+    const [propsRes, contractsRes, staffRes] = await Promise.all([
       supabase.from('pms_properties').select('id, code, address'),
       supabase
         .from('pms_contracts')
         .select('id, contract_number, property_id, status, start_date, end_date')
         .eq('status', 'active'),
+      supabase
+        .from('user_roles')
+        .select(`
+          user_id,
+          users!inner(email, first_name, last_name)
+        `)
+        .eq('tenant_id', currentTenant?.id)
+        .eq('module', 'PMS')
+        .eq('status', 'approved')
+        .in('role', ['inmobiliaria', 'admin']),
     ]);
 
     if (propsRes.data) setProperties(propsRes.data);
     if (contractsRes.data) setContracts(contractsRes.data);
+    if (staffRes.data) {
+      const formattedStaff = staffRes.data.map((item: any) => ({
+        id: item.user_id,
+        email: item.users.email,
+        name: item.users.first_name && item.users.last_name 
+          ? `${item.users.first_name} ${item.users.last_name}`
+          : item.users.email
+      }));
+      setStaffUsers(formattedStaff);
+    }
   };
 
   const handlePropertyChange = async (propertyId: string) => {
@@ -154,6 +179,10 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
 
   const onSubmit = async (data: FormValues) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const isNewRequest = !maintenance?.id;
+      const statusChangedToCompleted = maintenance?.status !== 'completed' && data.status === 'completed';
+
       const payload: any = {
         property_id: data.property_id,
         contract_id: data.contract_id || null,
@@ -169,7 +198,11 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
         scheduled_date: data.scheduled_date || null,
         notes: data.notes,
         tenant_id: currentTenant?.id,
+        assigned_to: data.assigned_to || null,
+        reported_by: isNewRequest ? user?.id : maintenance?.reported_by,
       };
+
+      let savedId = maintenance?.id;
 
       if (maintenance?.id) {
         const { error } = await supabase
@@ -180,12 +213,77 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
         if (error) throw error;
         toast.success('Solicitud actualizada');
       } else {
-        const { error } = await supabase
+        const { data: insertedData, error } = await supabase
           .from('pms_maintenance_requests')
-          .insert([payload]);
+          .insert([payload])
+          .select()
+          .single();
         
         if (error) throw error;
+        savedId = insertedData.id;
         toast.success('Solicitud creada');
+      }
+
+      // Send email notifications
+      try {
+        const { data: propertyData } = await supabase
+          .from('pms_properties')
+          .select('code, address')
+          .eq('id', data.property_id)
+          .single();
+
+        // Notification when creating with assignee
+        if (isNewRequest && data.assigned_to) {
+          const { data: assigneeData } = await supabase
+            .from('users')
+            .select('email, first_name, last_name')
+            .eq('id', data.assigned_to)
+            .single();
+
+          if (assigneeData) {
+            await supabase.functions.invoke('send-maintenance-notification', {
+              body: {
+                action: 'created',
+                maintenance_title: data.title,
+                property_address: propertyData?.address || 'Sin dirección',
+                property_code: propertyData?.code,
+                assignee_email: assigneeData.email,
+                assignee_name: assigneeData.first_name && assigneeData.last_name
+                  ? `${assigneeData.first_name} ${assigneeData.last_name}`
+                  : assigneeData.email,
+                priority: data.priority,
+                description: data.description || '',
+                category: data.category,
+              }
+            });
+          }
+        }
+
+        // Notification when completed
+        if (statusChangedToCompleted && maintenance?.reported_by) {
+          const { data: reporterData } = await supabase
+            .from('users')
+            .select('email')
+            .eq('id', maintenance.reported_by)
+            .single();
+
+          if (reporterData) {
+            await supabase.functions.invoke('send-maintenance-notification', {
+              body: {
+                action: 'completed',
+                maintenance_title: data.title,
+                property_address: propertyData?.address || 'Sin dirección',
+                property_code: propertyData?.code,
+                reporter_email: reporterData.email,
+                priority: data.priority,
+                description: data.description || '',
+                category: data.category,
+              }
+            });
+          }
+        }
+      } catch (emailError: any) {
+        console.error("Error sending email:", emailError);
       }
 
       onSuccess();
@@ -362,6 +460,32 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="assigned_to"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Asignar a (opcional)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={isCompleted}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar usuario..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">Sin asignar</SelectItem>
+                      {staffUsers.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

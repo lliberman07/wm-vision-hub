@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { format } from 'date-fns';
-import { Calendar, DollarSign, MapPin, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calendar, DollarSign, MapPin, FileText, AlertCircle, CheckCircle2, Home, User, UserCheck } from 'lucide-react';
 
 interface MaintenanceRequest {
   id: string;
@@ -22,6 +22,12 @@ interface MaintenanceRequest {
   paid_by?: string;
   provider_contact?: string;
   provider_phone?: string;
+  property_code?: string;
+  property_address?: string;
+  reporter_email?: string;
+  reporter_name?: string;
+  assignee_email?: string;
+  assignee_name?: string;
 }
 
 interface MaintenanceDetailsDialogProps {
@@ -101,6 +107,42 @@ export function MaintenanceDetailsDialog({ open, onOpenChange, maintenance }: Ma
               <span className="text-sm text-muted-foreground">Prioridad:</span>
               {getPriorityBadge(maintenance.priority)}
             </div>
+          </div>
+
+          {/* Propiedad */}
+          {(maintenance.property_code || maintenance.property_address) && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Home className="h-4 w-4 text-muted-foreground" />
+                <span>Propiedad</span>
+              </div>
+              <p className="text-sm text-muted-foreground pl-6">
+                {maintenance.property_code && `${maintenance.property_code} - `}
+                {maintenance.property_address || 'Sin dirección'}
+              </p>
+            </div>
+          )}
+
+          {/* Reportado por */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span>Reportado por</span>
+            </div>
+            <p className="text-sm text-muted-foreground pl-6">
+              {maintenance.reporter_name || maintenance.reporter_email || 'Sistema'}
+            </p>
+          </div>
+
+          {/* Asignado a */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+              <span>Asignado a</span>
+            </div>
+            <p className="text-sm text-muted-foreground pl-6">
+              {maintenance.assignee_name || maintenance.assignee_email || 'Sin asignar'}
+            </p>
           </div>
 
           {/* Descripción */}
