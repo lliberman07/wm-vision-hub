@@ -16,6 +16,7 @@ import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
 import { PropertyExpensesReport } from '@/components/pms/PropertyExpensesReport';
 import { TenantsAnalytics } from '@/components/pms/TenantsAnalytics';
 import { OwnerReportExportDialog } from '@/components/pms/OwnerReportExportDialog';
+import { OwnerReportDirectDownload } from '@/components/pms/OwnerReportDirectDownload';
 import { toast } from 'sonner';
 import { Download, Mail } from 'lucide-react';
 
@@ -684,17 +685,16 @@ const Reports = () => {
 
                 {/* Botones de Exportación de Reportes */}
                 <div className="flex justify-end gap-2">
-                  <OwnerReportExportDialog
+                  <OwnerReportDirectDownload
                     contractId={selectedContract}
                     propertyId={selectedProperty.id}
-                    contractStartDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.start_date || ''}
-                    contractEndDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.end_date || ''}
+                    propertyCode={selectedProperty.code}
                   >
                     <Button variant="outline" size="sm">
                       <Download className="h-4 w-4 mr-2" />
                       Descargar PDF
                     </Button>
-                  </OwnerReportExportDialog>
+                  </OwnerReportDirectDownload>
                   
                   <OwnerReportExportDialog
                     contractId={selectedContract}

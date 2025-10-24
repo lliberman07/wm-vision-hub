@@ -99,6 +99,36 @@ serve(async (req: Request) => {
     const ownerExpenses = totalExpenses * (sharePercent / 100);
     const ownerNet = netResult * (sharePercent / 100);
 
+    // 4b. Si no se envía email, obtener detalles de pagos y gastos para generar PDF
+    let payments = [];
+    let expenses = [];
+    
+    if (!send_email) {
+      const startOfMonth = `${period}-01`;
+      const endOfMonth = new Date(parseInt(period.split('-')[0]), parseInt(period.split('-')[1]), 0).toISOString().split('T')[0];
+      
+      const { data: paymentsData } = await supabase
+        .from("pms_payments")
+        .select("*")
+        .eq("contract_id", contract_id)
+        .eq("status", "paid")
+        .gte("paid_date", startOfMonth)
+        .lte("paid_date", endOfMonth)
+        .order("paid_date");
+      
+      const { data: expensesData } = await supabase
+        .from("pms_expenses")
+        .select("*")
+        .eq("property_id", contract.pms_properties.id)
+        .in("status", ["approved", "paid", "deducted"])
+        .gte("expense_date", startOfMonth)
+        .lte("expense_date", endOfMonth)
+        .order("expense_date");
+      
+      payments = paymentsData || [];
+      expenses = expensesData || [];
+    }
+
     // 5. Generar HTML del email
     const [year, month] = period.split("-");
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
@@ -239,20 +269,52 @@ serve(async (req: Request) => {
 
     return new Response(
       JSON.stringify({
-        success: emailStatus === "sent",
+        success: emailStatus === "sent" || !send_email,
         message: emailStatus === "sent" 
           ? `Report sent to ${owner.email}` 
-          : `Failed to send to ${owner.email}: ${errorMessage}`,
+          : (!send_email ? "Data retrieved successfully" : `Failed to send to ${owner.email}: ${errorMessage}`),
         data: {
           owner: owner.full_name,
           email: owner.email,
           period: periodText,
+          periodRaw: period,
+          property: {
+            code: contract.pms_properties.code,
+            address: contract.pms_properties.address,
+            city: contract.pms_properties.city,
+            state: contract.pms_properties.state,
+            country: contract.pms_properties.country,
+          },
+          contract: {
+            number: contract.contract_number,
+            tenant: contract.pms_tenants_renters.full_name,
+            start_date: contract.start_date,
+            end_date: contract.end_date,
+            currency: contract.currency || 'ARS',
+          },
           summary: {
             income: ownerIncome,
             expenses: ownerExpenses,
             net: ownerNet,
             sharePercent,
+            totalIncome,
+            totalExpenses,
           },
+          details: !send_email ? {
+            payments: payments.map((p: any) => ({
+              date: p.paid_date || p.due_date,
+              description: p.payment_type || 'Pago de Alquiler',
+              amount: p.paid_amount,
+              reference: p.reference_number,
+            })),
+            expenses: expenses.map((e: any) => ({
+              date: e.expense_date,
+              description: e.description,
+              category: e.category,
+              amount: e.amount,
+              attributable_to: e.attributable_to,
+            })),
+          } : undefined,
         },
       }),
       {
