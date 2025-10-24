@@ -390,7 +390,7 @@ const Contracts = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex flex-col items-end gap-2">
+                        <div className="flex justify-end gap-2">
                           {contract.status === 'draft' && <>
                               <Button variant="outline" size="sm" onClick={() => {
                         setSelectedContract(contract);
@@ -435,7 +435,7 @@ const Contracts = () => {
                             <Eye className="h-4 w-4 mr-1" />
                             Ver
                           </Button>
-                          {contract.pdf_url && <Button variant="ghost" size="sm" asChild className="min-w-[110px] justify-center">
+                          {contract.pdf_url && <Button variant="ghost" size="sm" asChild>
                               <a href={contract.pdf_url} target="_blank" rel="noopener noreferrer">
                                 <FileText className="h-4 w-4" />
                               </a>
