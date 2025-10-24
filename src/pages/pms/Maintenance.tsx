@@ -199,7 +199,6 @@ const Maintenance = () => {
                     <TableHead>Categoría</TableHead>
                     <TableHead>Prioridad</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead>Asignado a</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
@@ -221,9 +220,6 @@ const Maintenance = () => {
                       <TableCell>{request.category || '-'}</TableCell>
                       <TableCell>{getPriorityBadge(request.priority)}</TableCell>
                       <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {request.assignee_name || request.assignee_email || 'Sin asignar'}
-                      </TableCell>
                       <TableCell>
                         {format(new Date(request.created_at), 'dd/MM/yyyy')}
                       </TableCell>
