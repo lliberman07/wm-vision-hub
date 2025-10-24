@@ -247,7 +247,7 @@ const Properties = () => {
                                 }}
                                 title="Clonar propiedad"
                               >
-                                <Copy className="h-4 w-4 text-blue-500" />
+                                <Copy className="h-4 w-4 text-foreground" />
                               </Button>
                             )}
                             
