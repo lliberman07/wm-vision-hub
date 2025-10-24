@@ -26,7 +26,6 @@ import { EmptyState } from '@/components/pms/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, differenceInDays } from 'date-fns';
 import { parseDateFromDB } from '@/utils/dateUtils';
-
 interface Contract {
   id: string;
   contract_number: string;
@@ -49,11 +48,15 @@ interface Contract {
   tenant_document?: string;
   tenant_type?: string;
 }
-
 const Contracts = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { currentTenant, hasPMSAccess } = usePMS();
+  const {
+    user
+  } = useAuth();
+  const {
+    currentTenant,
+    hasPMSAccess
+  } = usePMS();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,7 +68,6 @@ const Contracts = () => {
   const [isExtendOpen, setIsExtendOpen] = useState(false);
   const [isRenewOpen, setIsRenewOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
-
   useEffect(() => {
     if (!user || !hasPMSAccess) {
       navigate('/pms');
@@ -73,18 +75,17 @@ const Contracts = () => {
     }
     fetchContracts();
   }, [user, hasPMSAccess, navigate]);
-
   const fetchContracts = async () => {
     try {
       // Verificar contratos vencidos primero
       await supabase.rpc('check_expired_contracts');
-      
+
       // Actualizar items vencidos
       await supabase.rpc('update_overdue_payment_items');
-
-      const { data, error } = await supabase
-        .from('pms_contracts')
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from('pms_contracts').select(`
           *,
           pms_properties!inner(
             id,
@@ -98,24 +99,23 @@ const Contracts = () => {
             document_number,
             tenant_type
           )
-        `)
-        .order('created_at', { ascending: false });
-
+        `).order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
-      
+
       // Mapear datos del inquilino
       const mappedContracts = (data || []).map((contract: any) => ({
         ...contract,
         tenant_name: contract.pms_tenants_renters?.full_name,
         tenant_email: contract.pms_tenants_renters?.email,
         tenant_document: contract.pms_tenants_renters?.document_number,
-        tenant_type: contract.pms_tenants_renters?.tenant_type,
+        tenant_type: contract.pms_tenants_renters?.tenant_type
       }));
-      
       setContracts(mappedContracts);
     } catch (error: any) {
       toast.error('Error al cargar contratos', {
-        description: error.message,
+        description: error.message
       });
     } finally {
       setLoading(false);
@@ -133,105 +133,104 @@ const Contracts = () => {
   const metrics = {
     active: contracts.filter(c => c.status === 'active').length,
     draft: contracts.filter(c => c.status === 'draft').length,
-    expiringSoon: contracts.filter(c => 
-      c.status === 'active' && 
-      differenceInDays(new Date(c.end_date), new Date()) <= 30 &&
-      differenceInDays(new Date(c.end_date), new Date()) >= 0
-    ).length,
-    expired: contracts.filter(c => c.status === 'expired').length,
+    expiringSoon: contracts.filter(c => c.status === 'active' && differenceInDays(new Date(c.end_date), new Date()) <= 30 && differenceInDays(new Date(c.end_date), new Date()) >= 0).length,
+    expired: contracts.filter(c => c.status === 'expired').length
   };
-
   const fetchContractOwners = async (propertyId: string) => {
-    const { data } = await supabase
-      .from('pms_owner_properties')
-      .select(`
+    const {
+      data
+    } = await supabase.from('pms_owner_properties').select(`
         share_percent,
         pms_owners!inner(id, full_name)
-      `)
-      .eq('property_id', propertyId)
-      .is('end_date', null);
-    
+      `).eq('property_id', propertyId).is('end_date', null);
     return data?.map(op => ({
       name: op.pms_owners.full_name,
       percentage: op.share_percent
     })) || [];
   };
-
   const [contractOwners, setContractOwners] = useState<any[]>([]);
-
   useEffect(() => {
     if (selectedContract && isViewOpen) {
       fetchContractOwners((selectedContract as any).property_id).then(setContractOwners);
     }
   }, [selectedContract, isViewOpen]);
-
   const getStatusBadge = (status: string) => {
-    const configs: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline', label: string, icon: any }> = {
-      active: { variant: 'default', label: 'Activo', icon: CheckCircle2 },
-      draft: { variant: 'secondary', label: 'Borrador', icon: FileEdit },
-      expired: { variant: 'outline', label: 'Vencido', icon: Clock },
-      cancelled: { variant: 'destructive', label: 'Cancelado', icon: X },
+    const configs: Record<string, {
+      variant: 'default' | 'secondary' | 'destructive' | 'outline';
+      label: string;
+      icon: any;
+    }> = {
+      active: {
+        variant: 'default',
+        label: 'Activo',
+        icon: CheckCircle2
+      },
+      draft: {
+        variant: 'secondary',
+        label: 'Borrador',
+        icon: FileEdit
+      },
+      expired: {
+        variant: 'outline',
+        label: 'Vencido',
+        icon: Clock
+      },
+      cancelled: {
+        variant: 'destructive',
+        label: 'Cancelado',
+        icon: X
+      }
     };
-    const config = configs[status] || { variant: 'outline' as const, label: status, icon: AlertCircle };
+    const config = configs[status] || {
+      variant: 'outline' as const,
+      label: status,
+      icon: AlertCircle
+    };
     const Icon = config.icon;
-    
-    return (
-      <Badge variant={config.variant} className="gap-1">
+    return <Badge variant={config.variant} className="gap-1">
         <Icon className="h-3 w-3" />
         {config.label}
-      </Badge>
-    );
+      </Badge>;
   };
-
   const getAlertBadges = (contract: any) => {
     const badges = [];
-    
+
     // Próximo a vencer (dentro de 30 días)
     if (contract.status === 'active') {
       const daysUntilExpiry = differenceInDays(new Date(contract.end_date), new Date());
       if (daysUntilExpiry >= 0 && daysUntilExpiry <= 30) {
-        badges.push(
-          <Badge key="expiring" variant="outline" className="gap-1 border-orange-500 text-orange-700">
+        badges.push(<Badge key="expiring" variant="outline" className="gap-1 border-orange-500 text-orange-700">
             <Clock className="h-3 w-3" />
             Vence en {daysUntilExpiry} días
-          </Badge>
-        );
+          </Badge>);
       }
     }
-    
+
     // Recién vencido
     if (contract.status === 'expired') {
       const daysSinceExpiry = differenceInDays(new Date(), new Date(contract.end_date));
       if (daysSinceExpiry <= 7) {
-        badges.push(
-          <Badge key="recent" variant="outline" className="gap-1">
+        badges.push(<Badge key="recent" variant="outline" className="gap-1">
             <AlertCircle className="h-3 w-3" />
             Recién Vencido
-          </Badge>
-        );
+          </Badge>);
       }
     }
-    
     return badges;
   };
-
   const handleActivate = () => {
     setIsActivateOpen(false);
     fetchContracts();
   };
-
   const handleExtend = () => {
     setIsExtendOpen(false);
     fetchContracts();
   };
-
   const handleRenewal = () => {
     setIsRenewOpen(false);
     fetchContracts();
   };
-
-  return (
-    <PMSLayout>
+  return <PMSLayout>
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
@@ -242,7 +241,10 @@ const Contracts = () => {
                 {filteredContracts.length} {filteredContracts.length === 1 ? 'contrato registrado' : 'contratos registrados'}
               </p>
             </div>
-            <Button onClick={() => { setSelectedContract(undefined); setIsFormOpen(true); }} size="lg">
+            <Button onClick={() => {
+            setSelectedContract(undefined);
+            setIsFormOpen(true);
+          }} size="lg">
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Contrato
             </Button>
@@ -301,51 +303,39 @@ const Contracts = () => {
         </div>
 
         {/* Filters */}
-        <FilterBar 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          filters={[
-            {
-              key: 'status',
-              label: 'Estado',
-              value: statusFilter,
-              options: [
-                { value: 'draft', label: 'Borradores' },
-                { value: 'active', label: 'Activos' },
-                { value: 'expired', label: 'Vencidos' },
-                { value: 'cancelled', label: 'Cancelados' },
-              ]
-            }
-          ]}
-          onFilterChange={(key, value) => {
-            if (key === 'status') setStatusFilter(value);
-          }}
-          onClearFilters={() => {
-            setSearchTerm('');
-            setStatusFilter('all');
-          }}
-          activeFiltersCount={statusFilter !== 'all' ? 1 : 0}
-        />
+        <FilterBar searchTerm={searchTerm} onSearchChange={setSearchTerm} filters={[{
+        key: 'status',
+        label: 'Estado',
+        value: statusFilter,
+        options: [{
+          value: 'draft',
+          label: 'Borradores'
+        }, {
+          value: 'active',
+          label: 'Activos'
+        }, {
+          value: 'expired',
+          label: 'Vencidos'
+        }, {
+          value: 'cancelled',
+          label: 'Cancelados'
+        }]
+      }]} onFilterChange={(key, value) => {
+        if (key === 'status') setStatusFilter(value);
+      }} onClearFilters={() => {
+        setSearchTerm('');
+        setStatusFilter('all');
+      }} activeFiltersCount={statusFilter !== 'all' ? 1 : 0} />
 
         {/* Contracts Table */}
         <Card className="mt-6">
           <CardContent className="p-6">
-            {loading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : filteredContracts.length === 0 ? (
-              <EmptyState
-                icon={FileEdit}
-                title="No hay contratos"
-                description="Comienza creando tu primer contrato"
-                actionLabel="Nuevo Contrato"
-                onAction={() => { setSelectedContract(undefined); setIsFormOpen(true); }}
-              />
-            ) : (
-              <Table>
+            {loading ? <div className="space-y-3">
+                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+              </div> : filteredContracts.length === 0 ? <EmptyState icon={FileEdit} title="No hay contratos" description="Comienza creando tu primer contrato" actionLabel="Nuevo Contrato" onAction={() => {
+            setSelectedContract(undefined);
+            setIsFormOpen(true);
+          }} /> : <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Código</TableHead>
@@ -359,16 +349,13 @@ const Contracts = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredContracts.map((contract: any) => (
-                    <TableRow key={contract.id}>
+                  {filteredContracts.map((contract: any) => <TableRow key={contract.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {contract.contract_number}
-                          {contract.is_renewal && (
-                            <Badge variant="outline" className="text-xs">
+                          {contract.is_renewal && <Badge variant="outline" className="text-xs">
                               R{contract.renewal_count}
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -404,156 +391,83 @@ const Contracts = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          {contract.status === 'draft' && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedContract(contract);
-                                  setIsFormOpen(true);
-                                }}
-                              >
+                          {contract.status === 'draft' && <>
+                              <Button variant="outline" size="sm" onClick={() => {
+                        setSelectedContract(contract);
+                        setIsFormOpen(true);
+                      }} className="py-[10px] px-[20px]">
                                 <FileEdit className="h-4 w-4 mr-1" />
                                 Editar
                               </Button>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedContract(contract);
-                                  setIsActivateOpen(true);
-                                }}
-                              >
+                              <Button variant="default" size="sm" onClick={() => {
+                        setSelectedContract(contract);
+                        setIsActivateOpen(true);
+                      }}>
                                 <CheckCircle2 className="h-4 w-4 mr-1" />
                                 Activar
                               </Button>
-                            </>
-                          )}
-                          {contract.status === 'expired' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedContract(contract);
-                                setIsExtendOpen(true);
-                              }}
-                            >
+                            </>}
+                          {contract.status === 'expired' && <Button variant="outline" size="sm" onClick={() => {
+                      setSelectedContract(contract);
+                      setIsExtendOpen(true);
+                    }}>
                               <Clock className="h-4 w-4 mr-1" />
                               Extender
-                            </Button>
-                          )}
-                          {(contract.status === 'active' || contract.status === 'expired') && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedContract(contract);
-                                setIsRenewOpen(true);
-                              }}
-                              className="gap-1"
-                            >
+                            </Button>}
+                          {(contract.status === 'active' || contract.status === 'expired') && <Button variant="outline" size="sm" onClick={() => {
+                      setSelectedContract(contract);
+                      setIsRenewOpen(true);
+                    }} className="gap-1">
                               <RefreshCw className="h-4 w-4" />
                               Renovación
-                            </Button>
-                          )}
-                          {contract.status === 'active' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedContract(contract);
-                                setIsCancelOpen(true);
-                              }}
-                            >
+                            </Button>}
+                          {contract.status === 'active' && <Button variant="outline" size="sm" onClick={() => {
+                      setSelectedContract(contract);
+                      setIsCancelOpen(true);
+                    }}>
                               <X className="h-4 w-4 mr-1" />
                               Cancelar
-                            </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedContract(contract);
-                              setIsViewOpen(true);
-                            }}
-                          >
+                            </Button>}
+                          <Button variant="outline" size="sm" onClick={() => {
+                      setSelectedContract(contract);
+                      setIsViewOpen(true);
+                    }}>
                             <Eye className="h-4 w-4 mr-1" />
                             Ver
                           </Button>
-                          {contract.pdf_url && (
-                            <Button variant="ghost" size="sm" asChild>
+                          {contract.pdf_url && <Button variant="ghost" size="sm" asChild>
                               <a href={contract.pdf_url} target="_blank" rel="noopener noreferrer">
                                 <FileText className="h-4 w-4" />
                               </a>
-                            </Button>
-                          )}
+                            </Button>}
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
-              </Table>
-            )}
+              </Table>}
           </CardContent>
         </Card>
 
         {/* Contract Form Dialog */}
-        <ContractForm
-          open={isFormOpen}
-          onOpenChange={setIsFormOpen}
-          onSuccess={() => {
-            setIsFormOpen(false);
-            fetchContracts();
-          }}
-          contract={selectedContract}
-        />
+        <ContractForm open={isFormOpen} onOpenChange={setIsFormOpen} onSuccess={() => {
+        setIsFormOpen(false);
+        fetchContracts();
+      }} contract={selectedContract} />
 
         {/* Activate Contract Dialog */}
-        {selectedContract && (
-          <ActivateContractDialog
-            contractId={selectedContract.id}
-            contractNumber={selectedContract.contract_number}
-            open={isActivateOpen}
-            onOpenChange={setIsActivateOpen}
-            onSuccess={handleActivate}
-          />
-        )}
+        {selectedContract && <ActivateContractDialog contractId={selectedContract.id} contractNumber={selectedContract.contract_number} open={isActivateOpen} onOpenChange={setIsActivateOpen} onSuccess={handleActivate} />}
 
         {/* Extend Contract Dialog */}
-        {selectedContract && (
-          <ExtendContractDialog
-            contractId={selectedContract.id}
-            contractNumber={selectedContract.contract_number}
-            currentEndDate={selectedContract.end_date}
-            open={isExtendOpen}
-            onOpenChange={setIsExtendOpen}
-            onSuccess={handleExtend}
-          />
-        )}
+        {selectedContract && <ExtendContractDialog contractId={selectedContract.id} contractNumber={selectedContract.contract_number} currentEndDate={selectedContract.end_date} open={isExtendOpen} onOpenChange={setIsExtendOpen} onSuccess={handleExtend} />}
 
         {/* Renew Contract Dialog */}
-        {selectedContract && (
-          <RenewContractDialog
-            open={isRenewOpen}
-            onOpenChange={setIsRenewOpen}
-            onSuccess={handleRenewal}
-            contract={selectedContract}
-          />
-        )}
+        {selectedContract && <RenewContractDialog open={isRenewOpen} onOpenChange={setIsRenewOpen} onSuccess={handleRenewal} contract={selectedContract} />}
 
         {/* Cancel Contract Dialog */}
-        {selectedContract && (
-          <CancelContractDialog
-            contract={selectedContract}
-            open={isCancelOpen}
-            onOpenChange={setIsCancelOpen}
-            onSuccess={() => {
-              setIsCancelOpen(false);
-              fetchContracts();
-            }}
-          />
-        )}
+        {selectedContract && <CancelContractDialog contract={selectedContract} open={isCancelOpen} onOpenChange={setIsCancelOpen} onSuccess={() => {
+        setIsCancelOpen(false);
+        fetchContracts();
+      }} />}
 
         {/* View Contract Dialog */}
         <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
@@ -575,11 +489,9 @@ const Contracts = () => {
               </TabsList>
 
               <TabsContent value="details" className="space-y-4 max-h-[60vh] overflow-y-auto">
-                {selectedContract && (
-                  <div className="space-y-6">
+                {selectedContract && <div className="space-y-6">
                     {/* Información del Inquilino */}
-                    {selectedContract.tenant_name && (
-                      <div className="bg-muted/50 p-4 rounded-lg">
+                    {selectedContract.tenant_name && <div className="bg-muted/50 p-4 rounded-lg">
                         <p className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
                           <FileText className="h-4 w-4" />
                           Inquilino
@@ -602,8 +514,7 @@ const Contracts = () => {
                             <Badge variant="outline">{selectedContract.tenant_type || '-'}</Badge>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      </div>}
 
                     {/* Información del Contrato */}
                     <div className="grid grid-cols-2 gap-4">
@@ -627,68 +538,39 @@ const Contracts = () => {
                         <p className="text-sm font-medium text-muted-foreground">Renta Mensual</p>
                         <p className="text-lg">{selectedContract.currency} {selectedContract.monthly_rent.toLocaleString()}</p>
                       </div>
-                      {contractOwners.length > 0 && (
-                        <div className="col-span-2">
+                      {contractOwners.length > 0 && <div className="col-span-2">
                           <p className="text-sm font-medium text-muted-foreground mb-2">Propietarios</p>
                           <div className="flex flex-wrap gap-2">
-                            {contractOwners.map((owner, idx) => (
-                              <Badge key={idx} variant="secondary">
+                            {contractOwners.map((owner, idx) => <Badge key={idx} variant="secondary">
                                 {owner.name} ({owner.percentage}%)
-                              </Badge>
-                            ))}
+                              </Badge>)}
                           </div>
-                        </div>
-                      )}
+                        </div>}
                     </div>
-                  </div>
-                )}
+                  </div>}
               </TabsContent>
 
               <TabsContent value="calendar" className="max-h-[60vh] overflow-y-auto">
-                {selectedContract && selectedContract.status === 'active' ? (
-                  <PaymentCalendar 
-                    contractId={selectedContract.id} 
-                    currency={selectedContract.currency}
-                  />
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
+                {selectedContract && selectedContract.status === 'active' ? <PaymentCalendar contractId={selectedContract.id} currency={selectedContract.currency} /> : <div className="text-center py-8 text-muted-foreground">
                     El calendario de pagos solo está disponible para contratos activos
-                  </div>
-                )}
+                  </div>}
               </TabsContent>
 
               <TabsContent value="projections" className="max-h-[60vh] overflow-y-auto">
-                {selectedContract && (
-                  <ContractMonthlyProjections 
-                    contractId={selectedContract.id}
-                    currency={selectedContract.currency}
-                  />
-                )}
+                {selectedContract && <ContractMonthlyProjections contractId={selectedContract.id} currency={selectedContract.currency} />}
               </TabsContent>
 
               <TabsContent value="distribution" className="max-h-[60vh] overflow-y-auto">
-                {selectedContract && (
-                  <ContractPaymentDistribution 
-                    contractId={selectedContract.id}
-                    propertyId={(selectedContract as any).property_id}
-                    monto_a={(selectedContract as any).monto_a}
-                    monto_b={(selectedContract as any).monto_b}
-                    currency={selectedContract.currency}
-                  />
-                )}
+                {selectedContract && <ContractPaymentDistribution contractId={selectedContract.id} propertyId={(selectedContract as any).property_id} monto_a={(selectedContract as any).monto_a} monto_b={(selectedContract as any).monto_b} currency={selectedContract.currency} />}
               </TabsContent>
 
               <TabsContent value="adjustments" className="max-h-[60vh] overflow-y-auto">
-                {selectedContract && (
-                  <ContractAdjustments contractId={selectedContract.id} />
-                )}
+                {selectedContract && <ContractAdjustments contractId={selectedContract.id} />}
               </TabsContent>
             </Tabs>
           </DialogContent>
         </Dialog>
       </div>
-    </PMSLayout>
-  );
+    </PMSLayout>;
 };
-
 export default Contracts;
