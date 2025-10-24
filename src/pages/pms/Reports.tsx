@@ -15,7 +15,9 @@ import { PMSLayout } from '@/components/pms/PMSLayout';
 import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
 import { PropertyExpensesReport } from '@/components/pms/PropertyExpensesReport';
 import { TenantsAnalytics } from '@/components/pms/TenantsAnalytics';
+import { OwnerReportExportDialog } from '@/components/pms/OwnerReportExportDialog';
 import { toast } from 'sonner';
+import { Download, Mail } from 'lucide-react';
 
 const Reports = () => {
   const navigate = useNavigate();
@@ -615,6 +617,34 @@ const Reports = () => {
                     }
                   </CardContent>
                 </Card>
+
+                {/* Botones de Exportación de Reportes */}
+                <div className="flex gap-2">
+                  <OwnerReportExportDialog
+                    contractId={selectedContract}
+                    propertyId={selectedProperty.id}
+                    contractStartDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.start_date || ''}
+                    contractEndDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.end_date || ''}
+                  >
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Descargar PDF
+                    </Button>
+                  </OwnerReportExportDialog>
+                  
+                  <OwnerReportExportDialog
+                    contractId={selectedContract}
+                    propertyId={selectedProperty.id}
+                    contractStartDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.start_date || ''}
+                    contractEndDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.end_date || ''}
+                    sendEmail
+                  >
+                    <Button variant="default" size="sm">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Enviar por Email
+                    </Button>
+                  </OwnerReportExportDialog>
+                </div>
 
                 <Card>
                   <CardHeader>

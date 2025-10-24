@@ -1484,6 +1484,86 @@ export type Database = {
           },
         ]
       }
+      pms_owner_report_logs: {
+        Row: {
+          contract_id: string | null
+          created_at: string | null
+          email_sent_to: string
+          error_message: string | null
+          id: string
+          owner_id: string
+          pdf_generated: boolean | null
+          pdf_url: string | null
+          period: string
+          property_id: string
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string | null
+          email_sent_to: string
+          error_message?: string | null
+          id?: string
+          owner_id: string
+          pdf_generated?: boolean | null
+          pdf_url?: string | null
+          period: string
+          property_id: string
+          sent_at?: string | null
+          sent_by?: string | null
+          status: string
+          tenant_id: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string | null
+          email_sent_to?: string
+          error_message?: string | null
+          id?: string
+          owner_id?: string
+          pdf_generated?: boolean | null
+          pdf_url?: string | null
+          period?: string
+          property_id?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_owner_report_logs_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_owner_report_logs_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "pms_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_owner_report_logs_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "pms_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_owner_report_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_owners: {
         Row: {
           address: string | null
@@ -2060,6 +2140,7 @@ export type Database = {
       }
       pms_tenants: {
         Row: {
+          admin_email: string | null
           created_at: string | null
           id: string
           is_active: boolean | null
@@ -2070,6 +2151,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          admin_email?: string | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null
@@ -2080,6 +2162,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          admin_email?: string | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null

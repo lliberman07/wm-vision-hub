@@ -3,6 +3,12 @@ project_id = "jrzeabjpxkhccopxfwqa"
 [functions.export-pdf-report]
 verify_jwt = false
 
+[functions.send-owner-monthly-report]
+verify_jwt = false
+
+[functions.generate-monthly-reports-batch]
+verify_jwt = false
+
 [functions.ai-chatbot]
 verify_jwt = false
 
