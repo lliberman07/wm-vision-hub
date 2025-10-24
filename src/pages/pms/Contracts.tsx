@@ -43,6 +43,11 @@ interface Contract {
   renewal_count?: number;
   parent_contract_id?: string | null;
   is_renewal?: boolean;
+  tenant_renter_id?: string;
+  tenant_name?: string;
+  tenant_email?: string;
+  tenant_document?: string;
+  tenant_type?: string;
 }
 
 const Contracts = () => {
@@ -85,12 +90,29 @@ const Contracts = () => {
             id,
             code,
             address
+          ),
+          pms_tenants_renters!inner(
+            id,
+            full_name,
+            email,
+            document_number,
+            tenant_type
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setContracts(data || []);
+      
+      // Mapear datos del inquilino
+      const mappedContracts = (data || []).map((contract: any) => ({
+        ...contract,
+        tenant_name: contract.pms_tenants_renters?.full_name,
+        tenant_email: contract.pms_tenants_renters?.email,
+        tenant_document: contract.pms_tenants_renters?.document_number,
+        tenant_type: contract.pms_tenants_renters?.tenant_type,
+      }));
+      
+      setContracts(mappedContracts);
     } catch (error: any) {
       toast.error('Error al cargar contratos', {
         description: error.message,
@@ -326,8 +348,9 @@ const Contracts = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Propiedad</TableHead>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Propiedad</TableHead>
+                    <TableHead>Inquilino</TableHead>
                     <TableHead>Período</TableHead>
                     <TableHead>Renta</TableHead>
                     <TableHead>Estado</TableHead>
@@ -352,6 +375,12 @@ const Contracts = () => {
                         <div>
                           <p className="font-medium">{contract.pms_properties.code}</p>
                           <p className="text-sm text-muted-foreground">{contract.pms_properties.address}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{contract.tenant_name || '-'}</p>
+                          <p className="text-sm text-muted-foreground">{contract.tenant_document || ''}</p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -547,39 +576,70 @@ const Contracts = () => {
 
               <TabsContent value="details" className="space-y-4 max-h-[60vh] overflow-y-auto">
                 {selectedContract && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Número de Contrato</p>
-                      <p className="text-lg">{selectedContract.contract_number}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Estado</p>
-                      <div className="mt-1">{getStatusBadge(selectedContract.status)}</div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Fecha Inicio</p>
-                      <p className="text-lg">{format(parseDateFromDB(selectedContract.start_date), 'dd/MM/yyyy')}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Fecha Fin</p>
-                      <p className="text-lg">{format(parseDateFromDB(selectedContract.end_date), 'dd/MM/yyyy')}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Renta Mensual</p>
-                      <p className="text-lg">{selectedContract.currency} {selectedContract.monthly_rent.toLocaleString()}</p>
-                    </div>
-                    {contractOwners.length > 0 && (
-                      <div className="col-span-2">
-                        <p className="text-sm font-medium text-muted-foreground mb-2">Propietarios</p>
-                        <div className="flex flex-wrap gap-2">
-                          {contractOwners.map((owner, idx) => (
-                            <Badge key={idx} variant="secondary">
-                              {owner.name} ({owner.percentage}%)
-                            </Badge>
-                          ))}
+                  <div className="space-y-6">
+                    {/* Información del Inquilino */}
+                    {selectedContract.tenant_name && (
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Inquilino
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Nombre Completo</p>
+                            <p className="font-medium">{selectedContract.tenant_name}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Email</p>
+                            <p className="font-medium text-sm">{selectedContract.tenant_email || '-'}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Documento</p>
+                            <p className="font-medium">{selectedContract.tenant_document || '-'}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Tipo</p>
+                            <Badge variant="outline">{selectedContract.tenant_type || '-'}</Badge>
+                          </div>
                         </div>
                       </div>
                     )}
+
+                    {/* Información del Contrato */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Número de Contrato</p>
+                        <p className="text-lg">{selectedContract.contract_number}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Estado</p>
+                        <div className="mt-1">{getStatusBadge(selectedContract.status)}</div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Fecha Inicio</p>
+                        <p className="text-lg">{format(parseDateFromDB(selectedContract.start_date), 'dd/MM/yyyy')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Fecha Fin</p>
+                        <p className="text-lg">{format(parseDateFromDB(selectedContract.end_date), 'dd/MM/yyyy')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Renta Mensual</p>
+                        <p className="text-lg">{selectedContract.currency} {selectedContract.monthly_rent.toLocaleString()}</p>
+                      </div>
+                      {contractOwners.length > 0 && (
+                        <div className="col-span-2">
+                          <p className="text-sm font-medium text-muted-foreground mb-2">Propietarios</p>
+                          <div className="flex flex-wrap gap-2">
+                            {contractOwners.map((owner, idx) => (
+                              <Badge key={idx} variant="secondary">
+                                {owner.name} ({owner.percentage}%)
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </TabsContent>

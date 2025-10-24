@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Edit, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Eye, FileText } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { TenantForm } from '@/components/pms/TenantForm';
@@ -34,6 +35,8 @@ interface Tenant {
   state?: string;
   postal_code?: string;
   notes?: string;
+  active_contract_id?: string;
+  active_contract_number?: string;
 }
 
 const Tenants = () => {
@@ -62,11 +65,36 @@ const Tenants = () => {
     try {
       const { data, error } = await supabase
         .from('pms_tenants_renters')
-        .select('*')
+        .select(`
+          *,
+          pms_contracts!left(
+            id,
+            contract_number,
+            status,
+            start_date,
+            end_date
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTenants(data || []);
+      
+      // Mapear datos y filtrar solo contratos activos vigentes
+      const mappedTenants = (data || []).map((tenant: any) => {
+        const activeContract = tenant.pms_contracts?.find((c: any) => 
+          c.status === 'active' && 
+          new Date(c.start_date) <= new Date() && 
+          new Date(c.end_date) >= new Date()
+        );
+        
+        return {
+          ...tenant,
+          active_contract_id: activeContract?.id,
+          active_contract_number: activeContract?.contract_number,
+        };
+      });
+      
+      setTenants(mappedTenants);
     } catch (error: any) {
       toast.error('Error al cargar inquilinos', {
         description: error.message,
@@ -84,7 +112,8 @@ const Tenants = () => {
 
   return (
     <PMSLayout>
-      <div className="container mx-auto px-4 py-8">
+      <TooltipProvider>
+        <div className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Inquilinos</h1>
@@ -136,7 +165,28 @@ const Tenants = () => {
                 <TableBody>
                   {filteredTenants.map((tenant) => (
                     <TableRow key={tenant.id}>
-                      <TableCell className="font-medium">{tenant.full_name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {tenant.full_name}
+                          {tenant.active_contract_id && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 hover:bg-sky-100 dark:hover:bg-sky-900"
+                                  onClick={() => navigate(`/pms/contracts?highlight=${tenant.active_contract_id}`)}
+                                >
+                                  <FileText className="h-4 w-4 text-sky-500" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Contrato: {tenant.active_contract_number}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>{tenant.email}</TableCell>
                       <TableCell>{tenant.phone || '-'}</TableCell>
                       <TableCell>{tenant.document_type} {tenant.document_number}</TableCell>
@@ -181,7 +231,8 @@ const Tenants = () => {
           onOpenChange={setIsDetailsOpen}
           tenant={detailsTenant}
         />
-      </div>
+        </div>
+      </TooltipProvider>
     </PMSLayout>
   );
 };
