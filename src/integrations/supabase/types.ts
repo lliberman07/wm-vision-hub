@@ -2383,6 +2383,18 @@ export type Database = {
         Args: { parent_contract_id_param: string }
         Returns: string
       }
+      get_contract_activity_by_tenant: {
+        Args: never
+        Returns: {
+          active_contracts: number
+          active_tenants: number
+          cancelled_contracts: number
+          expired_contracts: number
+          renewal_contracts: number
+          tenant_id: string
+          tenant_name: string
+        }[]
+      }
       get_current_user_profile: {
         Args: never
         Returns: {
@@ -2391,13 +2403,61 @@ export type Database = {
         }[]
       }
       get_default_tenant_id: { Args: never; Returns: string }
+      get_property_analysis_by_tenant: {
+        Args: never
+        Returns: {
+          avg_ownership_percentage: number
+          full_ownership_properties: number
+          shared_properties: number
+          tenant_id: string
+          tenant_name: string
+          total_properties: number
+          unique_owners: number
+        }[]
+      }
       get_property_auto_status: {
         Args: { property_id_param: string }
         Returns: string
       }
+      get_role_distribution_by_tenant: {
+        Args: never
+        Returns: {
+          administradores: number
+          inmobiliarias: number
+          inquilinos: number
+          max_users: string
+          propietarios: number
+          proveedores: number
+          tenant_id: string
+          tenant_name: string
+          tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
+          total_users: number
+        }[]
+      }
+      get_tenant_growth_over_time: {
+        Args: never
+        Returns: {
+          count: number
+          month: string
+          tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
+        }[]
+      }
       get_tenant_user_limit: {
         Args: { tenant_id_param: string }
         Returns: number
+      }
+      get_tenants_kpis: {
+        Args: never
+        Returns: {
+          full_ownership_properties: number
+          shared_properties: number
+          total_administradores: number
+          total_inmobiliarias: number
+          total_inquilinos: number
+          total_properties: number
+          total_propietarios_individuales: number
+          total_propietarios_tenants: number
+        }[]
       }
       get_tenants_with_user_count: {
         Args: never

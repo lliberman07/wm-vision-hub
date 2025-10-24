@@ -7,12 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight, BarChart3 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
 import { PropertyExpensesReport } from '@/components/pms/PropertyExpensesReport';
+import { TenantsAnalytics } from '@/components/pms/TenantsAnalytics';
 import { toast } from 'sonner';
 
 const Reports = () => {
@@ -30,6 +32,9 @@ const Reports = () => {
     activeTenants: 0,
     monthlyIncome: 0,
   });
+  const [activeTab, setActiveTab] = useState<'properties' | 'tenants'>('properties');
+  const [hasWMAccess, setHasWMAccess] = useState(false);
+  const [loadingWMAccess, setLoadingWMAccess] = useState(true);
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -40,10 +45,42 @@ const Reports = () => {
   }, [user, hasPMSAccess, navigate, currentTenant]);
 
   useEffect(() => {
+    if (user) {
+      checkWMAccess();
+    }
+  }, [user, userRole]);
+
+  useEffect(() => {
     if (currentTenant?.id && selectedContract) {
       fetchCashflow();
     }
   }, [selectedContract, currentTenant]);
+
+  const checkWMAccess = async () => {
+    if (userRole === 'SUPERADMIN') {
+      setHasWMAccess(true);
+      setLoadingWMAccess(false);
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', user?.id)
+        .eq('module', 'WM')
+        .eq('role', 'admin')
+        .eq('status', 'approved')
+        .maybeSingle();
+      
+      setHasWMAccess(!!data);
+    } catch (error) {
+      console.error('Error checking WM access:', error);
+      setHasWMAccess(false);
+    } finally {
+      setLoadingWMAccess(false);
+    }
+  };
 
   const fetchData = async () => {
     if (!currentTenant?.id) return;
@@ -239,6 +276,21 @@ const Reports = () => {
           <p className="text-muted-foreground">{currentTenant?.name}</p>
         </div>
 
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="properties" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Propiedades y Contratos
+            </TabsTrigger>
+            {hasWMAccess && (
+              <TabsTrigger value="tenants" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Análisis de Tenants
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </Tabs>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -303,6 +355,7 @@ const Reports = () => {
           </Card>
         </div>
 
+        <TabsContent value="properties">
         {viewMode === 'list' ? (
           <div className="mb-6">
             <div className="mb-4">
@@ -557,6 +610,21 @@ const Reports = () => {
             )}
           </div>
         )}
+        </TabsContent>
+
+        <TabsContent value="tenants">
+          {hasWMAccess ? (
+            <TenantsAnalytics />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground">
+                  No tienes permisos para ver esta sección
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
       </div>
     </PMSLayout>
   );
