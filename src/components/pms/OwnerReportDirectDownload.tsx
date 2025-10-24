@@ -24,12 +24,23 @@ export const OwnerReportDirectDownload = ({
     setLoading(true);
     
     try {
-      // Calcular último mes cerrado (mes anterior)
-      const today = new Date();
-      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const period = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
+      // Buscar el último período con datos en cashflow
+      const { data: latestCashflow, error: cashflowError } = await supabase
+        .from("pms_cashflow_property")
+        .select("period")
+        .eq("property_id", propertyId)
+        .order("period", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      console.log("Generando PDF para período:", period);
+      if (cashflowError || !latestCashflow) {
+        toast.error("No hay datos disponibles para generar el reporte");
+        setLoading(false);
+        return;
+      }
+
+      const period = latestCashflow.period;
+      console.log("Generando PDF para período con datos:", period);
 
       // Obtener propietarios activos de la propiedad
       const { data: ownersData, error: ownersError } = await supabase
