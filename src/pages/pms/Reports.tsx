@@ -289,9 +289,8 @@ const Reports = () => {
               </TabsTrigger>
             )}
           </TabsList>
-        </Tabs>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 my-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -353,9 +352,9 @@ const Reports = () => {
               </p>
             </CardContent>
           </Card>
-        </div>
+          </div>
 
-        <TabsContent value="properties">
+          <TabsContent value="properties">
         {viewMode === 'list' ? (
           <div className="mb-6">
             <div className="mb-4">
@@ -625,6 +624,7 @@ const Reports = () => {
             </Card>
           )}
         </TabsContent>
+        </Tabs>
       </div>
     </PMSLayout>
   );
