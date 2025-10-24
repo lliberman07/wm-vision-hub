@@ -21,7 +21,10 @@ const Reports = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentTenant, hasPMSAccess, userRole } = usePMS();
-  const [propertiesWithContracts, setPropertiesWithContracts] = useState<any[]>([]);
+  const [propertiesWithContracts, setPropertiesWithContracts] = useState<{
+    withContracts: any[];
+    withoutContracts: any[];
+  }>({ withContracts: [], withoutContracts: [] });
   const [selectedContract, setSelectedContract] = useState<string | null>(null);
   const [cashflowData, setCashflowData] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
@@ -143,7 +146,19 @@ const Reports = () => {
         })
       );
 
-      setPropertiesWithContracts(propertiesData);
+      // Separar propiedades con contratos y sin contratos
+      const propertiesWithActiveContracts = propertiesData.filter(p => 
+        p.contracts && p.contracts.length > 0
+      );
+
+      const propertiesWithoutContracts = propertiesData.filter(p => 
+        !p.contracts || p.contracts.length === 0
+      );
+
+      setPropertiesWithContracts({
+        withContracts: propertiesWithActiveContracts,
+        withoutContracts: propertiesWithoutContracts
+      });
 
       // Fetch stats con filtrado condicional
       const today = new Date().toISOString().split('T')[0];
@@ -362,7 +377,7 @@ const Reports = () => {
               <p className="text-muted-foreground">Seleccione un contrato para ver el reporte detallado</p>
             </div>
 
-            {propertiesWithContracts.length === 0 ? (
+            {propertiesWithContracts.withContracts.length === 0 && propertiesWithContracts.withoutContracts.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12 text-muted-foreground">
                   <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -370,102 +385,161 @@ const Reports = () => {
                 </CardContent>
               </Card>
             ) : (
-              <Accordion type="single" collapsible className="space-y-4">
-                {propertiesWithContracts.map((property) => (
-                  <AccordionItem 
-                    key={property.id} 
-                    value={property.id}
-                    className="border rounded-lg bg-card"
-                  >
-                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                      <div className="flex items-center gap-4 text-left w-full">
-                        <Building2 className="h-5 w-5 text-primary" />
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg">
-                            {property.alias || property.code}
-                          </h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                            <MapPin className="h-4 w-4" />
-                            <span>{property.address}, {property.city}</span>
-                          </div>
-                        </div>
-                        <Badge variant="secondary">
-                          {property.contracts?.length > 0 
-                            ? `${property.contracts.length} contrato(s)` 
-                            : property.expenses_without_contract > 0
-                              ? `Sin contrato - ${property.expenses_without_contract} gasto(s)`
-                              : 'Sin actividad'
-                          }
-                        </Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-6 pb-4">
-                      {property.contracts?.length === 0 && property.expenses_without_contract > 0 ? (
-                        <Button 
-                          variant="outline" 
-                          className="w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectPropertyWithoutContract(property);
-                          }}
+              <>
+                {/* Sección 1: Propiedades CON contratos */}
+                {propertiesWithContracts.withContracts.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      Propiedades con Contratos Activos ({propertiesWithContracts.withContracts.length})
+                    </h3>
+                    <Accordion type="single" collapsible className="space-y-4">
+                      {propertiesWithContracts.withContracts.map((property) => (
+                        <AccordionItem 
+                          key={property.id} 
+                          value={property.id}
+                          className="border rounded-lg bg-card"
                         >
-                          <FileText className="h-4 w-4 mr-2" />
-                          Ver Reporte de Gastos
-                        </Button>
-                      ) : property.contracts?.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>No hay contratos ni gastos registrados para esta propiedad</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {property.contracts.map((contract: any) => (
-                            <Card 
-                              key={contract.id}
-                              className="cursor-pointer transition-all hover:shadow-md"
-                              onClick={() => handleSelectContract(contract.id, property)}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex-1 space-y-2">
-                                    <div className="flex items-center gap-3">
-                                      <FileText className="h-4 w-4 text-muted-foreground" />
-                                      <span className="font-semibold">
-                                        {contract.contract_number}
-                                      </span>
-                                      <Badge className={getStatusColor(contract.status)}>
-                                        {getStatusLabel(contract.status)}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <Users className="h-4 w-4" />
-                                      <span>{contract.pms_tenants_renters.full_name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-4 text-sm">
-                                      <div className="flex items-center gap-1">
-                                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                                        <span>{format(parseISO(contract.start_date), 'dd/MM/yyyy')}</span>
-                                        <span className="text-muted-foreground">→</span>
-                                        <span>{format(parseISO(contract.end_date), 'dd/MM/yyyy')}</span>
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                        <span className="font-medium">
-                                          {contract.currency} ${Number(contract.monthly_rent || 0).toLocaleString('es-AR')}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
+                          <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                            <div className="flex items-center gap-4 text-left w-full">
+                              <Building2 className="h-5 w-5 text-primary" />
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-lg">
+                                  {property.alias || property.code}
+                                </h3>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{property.address}, {property.city}</span>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+                              </div>
+                              <Badge variant="secondary">
+                                {property.contracts?.length} contrato(s)
+                              </Badge>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-6 pb-4">
+                            <div className="space-y-3">
+                              {property.contracts.map((contract: any) => (
+                                <Card key={contract.id}>
+                                  <CardContent className="p-4">
+                                    <div className="space-y-3">
+                                      <div className="flex items-center gap-3">
+                                        <FileText className="h-4 w-4 text-muted-foreground" />
+                                        <span className="font-semibold">
+                                          {contract.contract_number}
+                                        </span>
+                                        <Badge className={getStatusColor(contract.status)}>
+                                          {getStatusLabel(contract.status)}
+                                        </Badge>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Users className="h-4 w-4" />
+                                        <span>{contract.pms_tenants_renters.full_name}</span>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-4 text-sm">
+                                        <div className="flex items-center gap-1">
+                                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                                          <span>{format(parseISO(contract.start_date), 'dd/MM/yyyy')}</span>
+                                          <span className="text-muted-foreground">→</span>
+                                          <span>{format(parseISO(contract.end_date), 'dd/MM/yyyy')}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                          <span className="font-medium">
+                                            {contract.currency} ${Number(contract.monthly_rent || 0).toLocaleString('es-AR')}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="pt-2 border-t">
+                                        <Button 
+                                          variant="default"
+                                          className="w-full"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSelectContract(contract.id, property);
+                                          }}
+                                        >
+                                          Ver Reporte Detallado
+                                          <ChevronRight className="h-4 w-4 ml-2" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Sección 2: Propiedades SIN contratos */}
+                {propertiesWithContracts.withoutContracts.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      Propiedades sin Contrato ({propertiesWithContracts.withoutContracts.length})
+                    </h3>
+                    <Accordion type="single" collapsible className="space-y-4">
+                      {propertiesWithContracts.withoutContracts.map((property) => (
+                        <AccordionItem 
+                          key={property.id} 
+                          value={property.id}
+                          className="border border-dashed rounded-lg bg-card"
+                        >
+                          <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                            <div className="flex items-center gap-4 text-left w-full">
+                              <Building2 className="h-5 w-5 text-muted-foreground" />
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-lg">
+                                  {property.alias || property.code}
+                                </h3>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{property.address}, {property.city}</span>
+                                </div>
+                              </div>
+                              <Badge variant="outline">
+                                {property.expenses_without_contract > 0
+                                  ? `${property.expenses_without_contract} gasto(s)`
+                                  : 'Sin actividad'
+                                }
+                              </Badge>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-6 pb-4">
+                            {property.expenses_without_contract > 0 ? (
+                              <Button 
+                                variant="outline" 
+                                className="w-full"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectPropertyWithoutContract(property);
+                                }}
+                              >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Ver Reporte de Gastos
+                                <ChevronRight className="h-4 w-4 ml-auto" />
+                              </Button>
+                            ) : (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <Building2 className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                                <p className="font-medium">Sin actividad registrada</p>
+                                <p className="text-sm mt-1">Esta propiedad no tiene contratos ni gastos</p>
+                              </div>
+                            )}
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : (
