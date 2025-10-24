@@ -49,6 +49,7 @@ export const OwnerReportExportDialog = ({
   }, [open]);
 
   const fetchOwners = async () => {
+    console.log("Fetching owners for property:", propertyId);
     const { data, error } = await supabase
       .from("pms_owner_properties")
       .select(`
@@ -57,13 +58,16 @@ export const OwnerReportExportDialog = ({
         pms_owners!inner(id, full_name, email)
       `)
       .eq("property_id", propertyId)
-      .gt("share_percent", 0);
+      .gt("share_percent", 0)
+      .or("end_date.is.null,end_date.gte." + new Date().toISOString().split('T')[0]);
 
     if (error) {
       console.error("Error fetching owners:", error);
       toast.error("Error al cargar propietarios");
       return;
     }
+
+    console.log("Owners data received:", data);
 
     const ownersData = data.map((item: any) => ({
       id: item.pms_owners.id,
@@ -72,6 +76,7 @@ export const OwnerReportExportDialog = ({
       share_percent: item.share_percent,
     }));
 
+    console.log("Processed owners:", ownersData);
     setOwners(ownersData);
   };
 
@@ -120,6 +125,8 @@ export const OwnerReportExportDialog = ({
   };
 
   const handleGenerate = async () => {
+    console.log("handleGenerate called - selectedOwners:", selectedOwners, "selectedPeriod:", selectedPeriod);
+    
     if (selectedOwners.length === 0) {
       toast.error("Seleccione al menos un propietario");
       return;
@@ -131,6 +138,7 @@ export const OwnerReportExportDialog = ({
     }
 
     setLoading(true);
+    console.log("Starting report generation...");
 
     try {
       let successCount = 0;
@@ -138,6 +146,7 @@ export const OwnerReportExportDialog = ({
       const errors: string[] = [];
 
       for (const ownerId of selectedOwners) {
+        console.log("Processing owner:", ownerId);
         const { data, error } = await supabase.functions.invoke("send-owner-monthly-report", {
           body: {
             contract_id: contractId,
@@ -147,6 +156,8 @@ export const OwnerReportExportDialog = ({
             manual: true,
           },
         });
+
+        console.log("Response for owner", ownerId, ":", { data, error });
 
         if (error) {
           console.error("Edge function error:", error);
@@ -160,6 +171,7 @@ export const OwnerReportExportDialog = ({
           const errorMsg = data?.error || "Error al generar reporte";
           errors.push(`${owner?.email || "Desconocido"} (${errorMsg})`);
         } else {
+          console.log("Success for owner:", ownerId);
           successCount++;
         }
       }
