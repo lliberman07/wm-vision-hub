@@ -121,7 +121,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
         .eq('tenant_id', currentTenant?.id)
         .eq('module', 'PMS')
         .eq('status', 'approved')
-        .in('role', ['inmobiliaria', 'admin']),
+        .in('role', ['inmobiliaria', 'superadmin']),
     ]);
 
     if (propsRes.data) setProperties(propsRes.data);
