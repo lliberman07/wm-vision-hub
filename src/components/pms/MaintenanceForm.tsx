@@ -461,7 +461,7 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
               />
             </div>
 
-            <FormField
+<FormField
               control={form.control}
               name="assigned_to"
               render={({ field }) => (
@@ -470,11 +470,10 @@ export function MaintenanceForm({ open, onOpenChange, onSuccess, maintenance }: 
                   <Select onValueChange={field.onChange} value={field.value} disabled={isCompleted}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar usuario..." />
+                        <SelectValue placeholder="Sin asignar" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Sin asignar</SelectItem>
                       {staffUsers.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.name}
