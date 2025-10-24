@@ -151,92 +151,78 @@ export function TenantsAnalytics() {
   return (
     <div className="space-y-8">
       {/* SECCIÓN 1: KPIs */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Visión General del Sistema</h2>
-        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                Inmobiliarias
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpis?.total_inmobiliarias || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <UserCheck className="h-4 w-4" />
-                Administradores
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpis?.total_administradores || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Building className="h-4 w-4 text-primary" />
-                Propietarios (Tenants)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpis?.total_propietarios_tenants || 0}</div>
-              <p className="text-xs text-muted-foreground">Organizaciones</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />
-                Propietarios
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpis?.total_propietarios_individuales || 0}</div>
-              <p className="text-xs text-muted-foreground">Individuales</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Home className="h-4 w-4" />
-                Propiedades
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpis?.total_properties || 0}</div>
-              <div className="flex gap-2 mt-1">
-                <Badge variant="secondary" className="text-xs">
-                  {kpis?.full_ownership_properties || 0} únicas
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {kpis?.shared_properties || 0} compartidas
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Inquilinos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpis?.total_inquilinos || 0}</div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Visión General del Sistema</CardTitle>
+          <CardDescription>
+            Métricas principales del sistema de gestión de propiedades
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">Inmobiliarias</TableHead>
+                <TableHead className="text-center">Administradores</TableHead>
+                <TableHead className="text-center">Propietarios (Tenants)</TableHead>
+                <TableHead className="text-center">Propietarios Individuales</TableHead>
+                <TableHead className="text-center">Propiedades</TableHead>
+                <TableHead className="text-center">Inquilinos</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Building className="h-5 w-5 text-primary" />
+                    <span className="text-2xl font-bold">{kpis?.total_inmobiliarias || 0}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <UserCheck className="h-5 w-5 text-primary" />
+                    <span className="text-2xl font-bold">{kpis?.total_administradores || 0}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Building className="h-5 w-5 text-primary" />
+                    <span className="text-2xl font-bold">{kpis?.total_propietarios_tenants || 0}</span>
+                    <Badge variant="secondary" className="text-xs">Organizaciones</Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" />
+                    <span className="text-2xl font-bold">{kpis?.total_propietarios_individuales || 0}</span>
+                    <Badge variant="secondary" className="text-xs">Individuales</Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Home className="h-5 w-5 text-primary" />
+                    <span className="text-2xl font-bold">{kpis?.total_properties || 0}</span>
+                    <div className="flex gap-1 mt-1">
+                      <Badge variant="secondary" className="text-xs">
+                        {kpis?.full_ownership_properties || 0} únicas
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {kpis?.shared_properties || 0} compartidas
+                      </Badge>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" />
+                    <span className="text-2xl font-bold">{kpis?.total_inquilinos || 0}</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* SECCIÓN 2: TABLAS DETALLADAS */}
       <div className="space-y-6">
