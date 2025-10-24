@@ -87,7 +87,8 @@ export const OwnerReportExportDialog = ({
     const periods: string[] = [];
 
     let current = new Date(start.getFullYear(), start.getMonth(), 1);
-    const lastAvailable = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    // Incluir el mes en curso
+    const lastAvailable = new Date(now.getFullYear(), now.getMonth(), 1);
 
     while (current <= end && current <= lastAvailable) {
       const periodStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;

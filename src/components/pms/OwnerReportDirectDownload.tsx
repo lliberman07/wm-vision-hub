@@ -24,23 +24,11 @@ export const OwnerReportDirectDownload = ({
     setLoading(true);
     
     try {
-      // Buscar el último período con datos en cashflow
-      const { data: latestCashflow, error: cashflowError } = await supabase
-        .from("pms_cashflow_property")
-        .select("period")
-        .eq("property_id", propertyId)
-        .order("period", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (cashflowError || !latestCashflow) {
-        toast.error("No hay datos disponibles para generar el reporte");
-        setLoading(false);
-        return;
-      }
-
-      const period = latestCashflow.period;
-      console.log("Generando PDF para período con datos:", period);
+      // Usar el mes en curso al momento de la consulta
+      const today = new Date();
+      const currentPeriod = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+      
+      console.log("Generando PDF para período en curso:", currentPeriod);
 
       // Obtener propietarios activos de la propiedad
       const { data: ownersData, error: ownersError } = await supabase
@@ -72,7 +60,7 @@ export const OwnerReportDirectDownload = ({
         const { data, error } = await supabase.functions.invoke("send-owner-monthly-report", {
           body: {
             contract_id: contractId,
-            period,
+            period: currentPeriod,
             owner_id: ownerItem.pms_owners.id,
             send_email: false,
             manual: true,
