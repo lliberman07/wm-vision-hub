@@ -618,34 +618,6 @@ const Reports = () => {
                   </CardContent>
                 </Card>
 
-                {/* Botones de Exportación de Reportes */}
-                <div className="flex gap-2">
-                  <OwnerReportExportDialog
-                    contractId={selectedContract}
-                    propertyId={selectedProperty.id}
-                    contractStartDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.start_date || ''}
-                    contractEndDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.end_date || ''}
-                  >
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Descargar PDF
-                    </Button>
-                  </OwnerReportExportDialog>
-                  
-                  <OwnerReportExportDialog
-                    contractId={selectedContract}
-                    propertyId={selectedProperty.id}
-                    contractStartDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.start_date || ''}
-                    contractEndDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.end_date || ''}
-                    sendEmail
-                  >
-                    <Button variant="default" size="sm">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Enviar por Email
-                    </Button>
-                  </OwnerReportExportDialog>
-                </div>
-
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -709,6 +681,34 @@ const Reports = () => {
                   tenantId={currentTenant?.id || ''} 
                   selectedContract={selectedContract}
                 />
+
+                {/* Botones de Exportación de Reportes */}
+                <div className="flex justify-end gap-2">
+                  <OwnerReportExportDialog
+                    contractId={selectedContract}
+                    propertyId={selectedProperty.id}
+                    contractStartDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.start_date || ''}
+                    contractEndDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.end_date || ''}
+                  >
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Descargar PDF
+                    </Button>
+                  </OwnerReportExportDialog>
+                  
+                  <OwnerReportExportDialog
+                    contractId={selectedContract}
+                    propertyId={selectedProperty.id}
+                    contractStartDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.start_date || ''}
+                    contractEndDate={selectedProperty?.contracts?.find((c: any) => c.id === selectedContract)?.end_date || ''}
+                    sendEmail
+                  >
+                    <Button variant="default" size="sm">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Enviar por Email
+                    </Button>
+                  </OwnerReportExportDialog>
+                </div>
               </>
             )}
           </div>

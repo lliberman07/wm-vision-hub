@@ -148,10 +148,17 @@ export const OwnerReportExportDialog = ({
           },
         });
 
-        if (error || !data?.success) {
+        if (error) {
+          console.error("Edge function error:", error);
           failCount++;
           const owner = owners.find(o => o.id === ownerId);
-          errors.push(owner?.email || "Desconocido");
+          errors.push(`${owner?.email || "Desconocido"} (${error.message || "Error desconocido"})`);
+        } else if (!data?.success) {
+          console.error("Function returned failure:", data);
+          failCount++;
+          const owner = owners.find(o => o.id === ownerId);
+          const errorMsg = data?.error || "Error al generar reporte";
+          errors.push(`${owner?.email || "Desconocido"} (${errorMsg})`);
         } else {
           successCount++;
         }
