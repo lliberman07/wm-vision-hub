@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Eye, FileText, CheckCircle2, FileEdit, AlertCircle, Clock, X, RefreshCw } from 'lucide-react';
+import { Plus, Eye, FileText, CheckCircle2, FileEdit, AlertCircle, Clock, X, RefreshCw, Wrench, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContractForm } from '@/components/pms/ContractForm';
@@ -47,6 +47,8 @@ interface Contract {
   tenant_email?: string;
   tenant_document?: string;
   tenant_type?: string;
+  has_pending_maintenance?: boolean;
+  has_overdue_payments?: boolean;
 }
 const Contracts = () => {
   const navigate = useNavigate();
@@ -104,13 +106,44 @@ const Contracts = () => {
       });
       if (error) throw error;
 
-      // Mapear datos del inquilino
+      // Obtener alertas para contratos activos
+      const activeContracts = (data || []).filter((c: any) => c.status === 'active');
+      const contractIds = activeContracts.map((c: any) => c.id);
+
+      // Verificar mantenimientos pendientes
+      const { data: maintenanceData } = await supabase
+        .from('pms_maintenance_requests')
+        .select('contract_id')
+        .in('contract_id', contractIds)
+        .neq('status', 'completed');
+
+      const contractsWithMaintenance = new Set(
+        maintenanceData?.map(m => m.contract_id) || []
+      );
+
+      // Verificar pagos vencidos
+      const { data: overdueData } = await supabase
+        .from('pms_payment_schedule_items')
+        .select('contract_id, expected_amount')
+        .in('contract_id', contractIds)
+        .eq('status', 'overdue');
+
+      const contractsWithOverdue = new Set<string>();
+      overdueData?.forEach(item => {
+        if (item.expected_amount > 0) {
+          contractsWithOverdue.add(item.contract_id);
+        }
+      });
+
+      // Mapear datos del inquilino y alertas
       const mappedContracts = (data || []).map((contract: any) => ({
         ...contract,
         tenant_name: contract.pms_tenants_renters?.full_name,
         tenant_email: contract.pms_tenants_renters?.email,
         tenant_document: contract.pms_tenants_renters?.document_number,
-        tenant_type: contract.pms_tenants_renters?.tenant_type
+        tenant_type: contract.pms_tenants_renters?.tenant_type,
+        has_pending_maintenance: contractsWithMaintenance.has(contract.id),
+        has_overdue_payments: contractsWithOverdue.has(contract.id)
       }));
       setContracts(mappedContracts);
     } catch (error: any) {
@@ -193,30 +226,27 @@ const Contracts = () => {
       </Badge>;
   };
   const getAlertBadges = (contract: any) => {
-    const badges = [];
+    const icons = [];
 
-    // Próximo a vencer (dentro de 30 días)
-    if (contract.status === 'active') {
-      const daysUntilExpiry = differenceInDays(new Date(contract.end_date), new Date());
-      if (daysUntilExpiry >= 0 && daysUntilExpiry <= 30) {
-        badges.push(<Badge key="expiring" variant="outline" className="gap-1 border-orange-500 text-orange-700">
-            <Clock className="h-3 w-3" />
-            Vence en {daysUntilExpiry} días
-          </Badge>);
-      }
+    // Mantenimiento pendiente (solo para contratos activos)
+    if (contract.status === 'active' && contract.has_pending_maintenance) {
+      icons.push(
+        <div key="maintenance" className="inline-flex" title="Solicitud de mantenimiento pendiente">
+          <Wrench className="h-5 w-5 text-blue-500" />
+        </div>
+      );
     }
 
-    // Recién vencido
-    if (contract.status === 'expired') {
-      const daysSinceExpiry = differenceInDays(new Date(), new Date(contract.end_date));
-      if (daysSinceExpiry <= 7) {
-        badges.push(<Badge key="recent" variant="outline" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Recién Vencido
-          </Badge>);
-      }
+    // Pagos vencidos (solo para contratos activos)
+    if (contract.status === 'active' && contract.has_overdue_payments) {
+      icons.push(
+        <div key="overdue" className="inline-flex" title="Pagos vencidos">
+          <DollarSign className="h-5 w-5 text-red-500" />
+        </div>
+      );
     }
-    return badges;
+
+    return icons;
   };
   const handleActivate = () => {
     setIsActivateOpen(false);
