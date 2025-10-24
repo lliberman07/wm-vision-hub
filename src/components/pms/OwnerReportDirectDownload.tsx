@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { formatCurrency } from '@/utils/numberFormat';
 
 interface OwnerReportDirectDownloadProps {
   contractId: string;
@@ -87,6 +86,17 @@ export const OwnerReportDirectDownload = ({
 
       console.log("Datos obtenidos, generando PDF...");
 
+      // Función local para formatear montos en el PDF
+      const formatAmount = (amount: number, currency: string = 'ARS') => {
+        const rounded = Math.round(amount);
+        const formatted = rounded.toLocaleString('es-AR', { 
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0 
+        });
+        const symbol = currency === 'USD' ? 'USD ' : '$';
+        return `${symbol}${formatted}`;
+      };
+
       // Generar PDF con todos los datos
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -138,9 +148,9 @@ export const OwnerReportDirectDownload = ({
 
       const summaryData = [
         ['Concepto', 'Monto Total'],
-        ['Ingresos Totales', formatCurrency(firstReport.summary.totalIncome, 'es', firstReport.contract.currency)],
-        ['Gastos Totales', formatCurrency(firstReport.summary.totalExpenses, 'es', firstReport.contract.currency)],
-        ['Resultado Neto', formatCurrency(firstReport.summary.totalIncome - firstReport.summary.totalExpenses, 'es', firstReport.contract.currency)],
+        ['Ingresos Totales', formatAmount(firstReport.summary.totalIncome, firstReport.contract.currency)],
+        ['Gastos Totales', formatAmount(firstReport.summary.totalExpenses, firstReport.contract.currency)],
+        ['Resultado Neto', formatAmount(firstReport.summary.totalIncome - firstReport.summary.totalExpenses, firstReport.contract.currency)],
       ];
 
       autoTable(doc, {
@@ -167,7 +177,7 @@ export const OwnerReportDirectDownload = ({
             new Date(p.date).toLocaleDateString('es-AR'),
             p.description,
             p.reference || '-',
-            formatCurrency(p.amount, 'es', firstReport.contract.currency),
+            formatAmount(p.amount, firstReport.contract.currency),
           ]),
         ];
 
@@ -202,7 +212,7 @@ export const OwnerReportDirectDownload = ({
             e.description,
             e.category || '-',
             e.attributable_to === 'propietario' ? 'Propietario' : 'Inquilino',
-            formatCurrency(e.amount, 'es', firstReport.contract.currency),
+            formatAmount(e.amount, firstReport.contract.currency),
           ]),
         ];
 
@@ -235,9 +245,9 @@ export const OwnerReportDirectDownload = ({
           ...validReports.map((report: any) => [
             report.owner,
             `${report.summary.sharePercent}%`,
-            formatCurrency(report.summary.income, 'es', firstReport.contract.currency),
-            formatCurrency(report.summary.expenses, 'es', firstReport.contract.currency),
-            formatCurrency(report.summary.net, 'es', firstReport.contract.currency),
+            formatAmount(report.summary.income, firstReport.contract.currency),
+            formatAmount(report.summary.expenses, firstReport.contract.currency),
+            formatAmount(report.summary.net, firstReport.contract.currency),
           ]),
         ];
 
