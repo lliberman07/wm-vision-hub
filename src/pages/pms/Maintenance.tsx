@@ -64,27 +64,50 @@ const Maintenance = () => {
         .from('pms_maintenance_requests')
         .select(`
           *,
-          pms_properties!inner(code, address),
-          reporter:users!pms_maintenance_requests_reported_by_fkey(email, first_name, last_name),
-          assignee:users!pms_maintenance_requests_assigned_to_fkey(email, first_name, last_name)
+          pms_properties(code, address)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      const formattedData = (data || []).map((item: any) => ({
-        ...item,
-        property_code: item.pms_properties?.code,
-        property_address: item.pms_properties?.address,
-        reporter_email: item.reporter?.email,
-        reporter_name: item.reporter?.first_name && item.reporter?.last_name
-          ? `${item.reporter.first_name} ${item.reporter.last_name}`
-          : item.reporter?.email,
-        assignee_email: item.assignee?.email,
-        assignee_name: item.assignee?.first_name && item.assignee?.last_name
-          ? `${item.assignee.first_name} ${item.assignee.last_name}`
-          : item.assignee?.email,
-      }));
+      // Get unique user IDs for reporter and assignee
+      const userIds = new Set<string>();
+      (data || []).forEach((item: any) => {
+        if (item.reported_by) userIds.add(item.reported_by);
+        if (item.assigned_to) userIds.add(item.assigned_to);
+      });
+
+      // Fetch user details
+      const usersMap = new Map();
+      if (userIds.size > 0) {
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('id, email, first_name, last_name')
+          .in('id', Array.from(userIds));
+        
+        (usersData || []).forEach((user: any) => {
+          usersMap.set(user.id, user);
+        });
+      }
+      
+      const formattedData = (data || []).map((item: any) => {
+        const reporter = usersMap.get(item.reported_by);
+        const assignee = usersMap.get(item.assigned_to);
+        
+        return {
+          ...item,
+          property_code: item.pms_properties?.code,
+          property_address: item.pms_properties?.address,
+          reporter_email: reporter?.email,
+          reporter_name: reporter?.first_name && reporter?.last_name
+            ? `${reporter.first_name} ${reporter.last_name}`
+            : reporter?.email,
+          assignee_email: assignee?.email,
+          assignee_name: assignee?.first_name && assignee?.last_name
+            ? `${assignee.first_name} ${assignee.last_name}`
+            : assignee?.email,
+        };
+      });
       
       setRequests(formattedData);
     } catch (error: any) {
