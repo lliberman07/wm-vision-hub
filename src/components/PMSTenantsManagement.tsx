@@ -6,7 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building, Edit, Check, X, User } from "lucide-react";
+import { Plus, Building, Edit, Check, X, User, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +56,8 @@ export function PMSTenantsManagement() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+  const [deletingTenant, setDeletingTenant] = useState<Tenant | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -184,6 +196,59 @@ export function PMSTenantsManagement() {
     setIsDialogOpen(open);
     if (!open) {
       resetForm();
+    }
+  };
+
+  const handleDelete = async (tenant: Tenant) => {
+    setDeletingTenant(tenant);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingTenant) return;
+
+    try {
+      // Verificar si tiene registros asociados
+      const { data: recordsCheck, error: checkError } = await supabase
+        .rpc('check_tenant_has_records', { tenant_id_param: deletingTenant.id });
+
+      if (checkError) throw checkError;
+
+      if (recordsCheck && recordsCheck.has_records) {
+        toast({
+          title: "No se puede eliminar",
+          description: `El tenant tiene ${recordsCheck.total_records} registros asociados. Debe eliminar todos los datos antes de borrar el tenant.`,
+          variant: "destructive",
+        });
+        setIsDeleteDialogOpen(false);
+        setDeletingTenant(null);
+        return;
+      }
+
+      // Si no tiene registros, proceder a eliminar
+      const { error: deleteError } = await supabase
+        .from("pms_tenants")
+        .delete()
+        .eq("id", deletingTenant.id);
+
+      if (deleteError) throw deleteError;
+
+      toast({
+        title: "Éxito",
+        description: "Tenant eliminado correctamente",
+      });
+
+      fetchTenants();
+    } catch (error: any) {
+      console.error("Error deleting tenant:", error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo eliminar el tenant",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setDeletingTenant(null);
     }
   };
 
@@ -406,13 +471,23 @@ export function PMSTenantsManagement() {
                     })}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(tenant)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(tenant)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(tenant)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -420,6 +495,28 @@ export function PMSTenantsManagement() {
           </Table>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar tenant?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente el tenant <strong>{deletingTenant?.name}</strong>.
+              Solo se puede eliminar si no tiene registros asociados (propiedades, contratos, usuarios, etc.).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
