@@ -2425,6 +2425,14 @@ export type Database = {
         Args: { p_code: string; p_property_id?: string; p_tenant_id?: string }
         Returns: boolean
       }
+      check_tenant_has_records: {
+        Args: { tenant_id_param: string }
+        Returns: {
+          details: Json
+          has_records: boolean
+          total_records: number
+        }[]
+      }
       cleanup_orphan_payments: {
         Args: never
         Returns: {

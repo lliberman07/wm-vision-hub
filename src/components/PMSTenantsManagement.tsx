@@ -210,14 +210,21 @@ export function PMSTenantsManagement() {
     try {
       // Verificar si tiene registros asociados
       const { data: recordsCheck, error: checkError } = await supabase
-        .rpc('check_tenant_has_records', { tenant_id_param: deletingTenant.id });
+        .rpc('check_tenant_has_records' as any, { tenant_id_param: deletingTenant.id });
 
       if (checkError) throw checkError;
 
-      if (recordsCheck && recordsCheck.has_records) {
+      // Tipear correctamente la respuesta
+      const checkResult = recordsCheck as unknown as Array<{
+        has_records: boolean;
+        total_records: number;
+        details: any;
+      }>;
+
+      if (checkResult && checkResult.length > 0 && checkResult[0].has_records) {
         toast({
           title: "No se puede eliminar",
-          description: `El tenant tiene ${recordsCheck.total_records} registros asociados. Debe eliminar todos los datos antes de borrar el tenant.`,
+          description: `El tenant tiene ${checkResult[0].total_records} registros asociados. Debe eliminar todos los datos antes de borrar el tenant.`,
           variant: "destructive",
         });
         setIsDeleteDialogOpen(false);
