@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Building2 } from "lucide-react";
+import { AlertCircle, Building2, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -218,8 +218,16 @@ const PMSLogin = () => {
         </Card>
 
         {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground">
-          <p>Sistema de gestión exclusivo para usuarios autorizados</p>
+        <div className="text-center space-y-3">
+          <p className="text-sm text-muted-foreground">Sistema de gestión exclusivo para usuarios autorizados</p>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="text-sm"
+          >
+            <Home className="h-4 w-4 mr-2" />
+            Volver a la página de inicio
+          </Button>
         </div>
       </div>
     </div>
