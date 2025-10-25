@@ -568,38 +568,38 @@ const Contracts = () => {
                     {/* Grid de Información - Visual Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Card: Propiedad */}
-                      <Card className="overflow-hidden border-l-4 border-l-primary">
+                      <Card className="card-elevated">
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-center gap-2 text-primary">
                             <Building2 className="h-5 w-5" />
-                            <h3 className="font-semibold text-base">PROPIEDAD</h3>
+                            <h3 className="font-semibold text-sm">PROPIEDAD</h3>
                           </div>
                           <div className="space-y-2">
                             <div className="flex items-start gap-2">
                               <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Dirección</p>
-                                <p className="font-medium text-sm">{selectedContract.property_address || '-'}</p>
+                                <p className="text-sm text-foreground font-semibold">{selectedContract.property_address || '-'}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <Home className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Tipo</p>
-                                <p className="font-medium text-sm">{selectedContract.property_type || '-'}</p>
+                                <p className="text-sm text-foreground">{selectedContract.property_type || '-'}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-4">
                               {selectedContract.property_bedrooms && (
                                 <div className="flex items-center gap-1.5">
                                   <BedDouble className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm font-medium">{selectedContract.property_bedrooms}</span>
+                                  <span className="text-sm text-foreground">{selectedContract.property_bedrooms}</span>
                                 </div>
                               )}
                               {selectedContract.property_bathrooms && (
                                 <div className="flex items-center gap-1.5">
                                   <Bath className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm font-medium">{selectedContract.property_bathrooms}</span>
+                                  <span className="text-sm text-foreground">{selectedContract.property_bathrooms}</span>
                                 </div>
                               )}
                             </div>
@@ -608,25 +608,25 @@ const Contracts = () => {
                       </Card>
 
                       {/* Card: Contrato */}
-                      <Card className="overflow-hidden border-l-4 border-l-blue-500">
+                      <Card className="card-elevated">
                         <CardContent className="p-4 space-y-3">
-                          <div className="flex items-center gap-2 text-blue-500">
+                          <div className="flex items-center gap-2 text-primary">
                             <FileText className="h-5 w-5" />
-                            <h3 className="font-semibold text-base">CONTRATO</h3>
+                            <h3 className="font-semibold text-sm">CONTRATO</h3>
                           </div>
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
                               <CreditCard className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Número</p>
-                                <p className="font-medium text-sm">{selectedContract.contract_number}</p>
+                                <p className="text-sm text-foreground font-semibold">{selectedContract.contract_number}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Vigencia</p>
-                                <p className="font-medium text-sm">
+                                <p className="text-sm text-foreground">
                                   {format(parseDateFromDB(selectedContract.start_date), 'dd/MM/yy')} → {format(parseDateFromDB(selectedContract.end_date), 'dd/MM/yy')}
                                 </p>
                               </div>
@@ -635,7 +635,7 @@ const Contracts = () => {
                               <DollarSign className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Renta Mensual</p>
-                                <p className="font-semibold text-base">{selectedContract.currency} {selectedContract.monthly_rent.toLocaleString()}</p>
+                                <p className="text-sm text-foreground font-semibold">{selectedContract.currency} {selectedContract.monthly_rent.toLocaleString()}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -652,39 +652,39 @@ const Contracts = () => {
 
                     {/* Card: Inquilino - Full Width */}
                     {selectedContract.tenant_name && (
-                      <Card className="overflow-hidden border-l-4 border-l-green-500">
+                      <Card className="card-elevated">
                         <CardContent className="p-4">
-                          <div className="flex items-center gap-2 text-green-500 mb-3">
+                          <div className="flex items-center gap-2 text-success mb-3">
                             <User className="h-5 w-5" />
-                            <h3 className="font-semibold text-base">INQUILINO</h3>
+                            <h3 className="font-semibold text-sm">INQUILINO</h3>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="flex items-center gap-2">
                               <User className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Nombre</p>
-                                <p className="font-medium">{selectedContract.tenant_name}</p>
+                                <p className="text-sm text-foreground font-semibold">{selectedContract.tenant_name}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <Mail className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Email</p>
-                                <p className="font-medium text-sm">{selectedContract.tenant_email || '-'}</p>
+                                <p className="text-sm text-foreground">{selectedContract.tenant_email || '-'}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <CreditCard className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Documento</p>
-                                <p className="font-medium">{selectedContract.tenant_document || '-'}</p>
+                                <p className="text-sm text-foreground">{selectedContract.tenant_document || '-'}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <Building2 className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="text-xs text-muted-foreground">Tipo</p>
-                                <Badge variant="outline">{selectedContract.tenant_type || '-'}</Badge>
+                                <Badge variant="outline" className="text-sm text-foreground">{selectedContract.tenant_type || '-'}</Badge>
                               </div>
                             </div>
                           </div>
@@ -694,15 +694,15 @@ const Contracts = () => {
 
                     {/* Card: Propietarios - Full Width */}
                     {contractOwners.length > 0 && (
-                      <Card className="overflow-hidden border-l-4 border-l-purple-500">
+                      <Card className="card-elevated">
                         <CardContent className="p-4">
-                          <div className="flex items-center gap-2 text-purple-500 mb-3">
+                          <div className="flex items-center gap-2 text-accent mb-3">
                             <Users className="h-5 w-5" />
-                            <h3 className="font-semibold text-base">PROPIETARIOS</h3>
+                            <h3 className="font-semibold text-sm">PROPIETARIOS</h3>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {contractOwners.map((owner, idx) => (
-                              <Badge key={idx} variant="secondary" className="px-3 py-1.5 text-sm">
+                              <Badge key={idx} variant="secondary" className="px-3 py-1.5 text-sm text-foreground">
                                 {owner.name} ({owner.percentage}%)
                               </Badge>
                             ))}
