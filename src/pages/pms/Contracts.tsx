@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Eye, FileText, CheckCircle2, FileEdit, AlertCircle, Clock, X, RefreshCw, Wrench, DollarSign } from 'lucide-react';
+import { Plus, Eye, FileText, CheckCircle2, FileEdit, AlertCircle, Clock, X, RefreshCw, Wrench, DollarSign, MapPin, Home, BedDouble, Bath, Calendar, Building2, User, Mail, CreditCard, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContractForm } from '@/components/pms/ContractForm';
@@ -24,6 +24,7 @@ import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
 import { EmptyState } from '@/components/pms/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { format, differenceInDays } from 'date-fns';
 import { parseDateFromDB } from '@/utils/dateUtils';
 interface Contract {
@@ -49,6 +50,12 @@ interface Contract {
   tenant_type?: string;
   has_pending_maintenance?: boolean;
   has_overdue_payments?: boolean;
+  property_code?: string;
+  property_address?: string;
+  property_type?: string;
+  property_bedrooms?: number;
+  property_bathrooms?: number;
+  property_photos?: string[];
 }
 const Contracts = () => {
   const navigate = useNavigate();
@@ -92,7 +99,11 @@ const Contracts = () => {
           pms_properties!inner(
             id,
             code,
-            address
+            address,
+            property_type,
+            bedrooms,
+            bathrooms,
+            photos
           ),
           pms_tenants_renters!inner(
             id,
@@ -135,13 +146,19 @@ const Contracts = () => {
         }
       });
 
-      // Mapear datos del inquilino y alertas
+      // Mapear datos del inquilino, propiedad y alertas
       const mappedContracts = (data || []).map((contract: any) => ({
         ...contract,
         tenant_name: contract.pms_tenants_renters?.full_name,
         tenant_email: contract.pms_tenants_renters?.email,
         tenant_document: contract.pms_tenants_renters?.document_number,
         tenant_type: contract.pms_tenants_renters?.tenant_type,
+        property_code: contract.pms_properties?.code,
+        property_address: contract.pms_properties?.address,
+        property_type: contract.pms_properties?.property_type,
+        property_bedrooms: contract.pms_properties?.bedrooms,
+        property_bathrooms: contract.pms_properties?.bathrooms,
+        property_photos: contract.pms_properties?.photos || [],
         has_pending_maintenance: contractsWithMaintenance.has(contract.id),
         has_overdue_payments: contractsWithOverdue.has(contract.id)
       }));
@@ -518,65 +535,181 @@ const Contracts = () => {
                 <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="details" className="space-y-4 max-h-[60vh] overflow-y-auto">
+              <TabsContent value="details" className="space-y-6 max-h-[60vh] overflow-y-auto">
                 {selectedContract && <div className="space-y-6">
-                    {/* Información del Inquilino */}
-                    {selectedContract.tenant_name && <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Inquilino
-                        </p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <p className="text-xs text-muted-foreground">Nombre Completo</p>
-                            <p className="font-medium">{selectedContract.tenant_name}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Email</p>
-                            <p className="font-medium text-sm">{selectedContract.tenant_email || '-'}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Documento</p>
-                            <p className="font-medium">{selectedContract.tenant_document || '-'}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Tipo</p>
-                            <Badge variant="outline">{selectedContract.tenant_type || '-'}</Badge>
-                          </div>
-                        </div>
-                      </div>}
+                    {/* Carousel de Fotos - Prominente */}
+                    {selectedContract.property_photos && selectedContract.property_photos.length > 0 ? (
+                      <div className="w-full">
+                        <Carousel className="w-full">
+                          <CarouselContent>
+                            {selectedContract.property_photos.map((photo: string, index: number) => (
+                              <CarouselItem key={index}>
+                                <div className="relative w-full h-[300px] md:h-[400px] rounded-lg overflow-hidden bg-muted">
+                                  <img
+                                    src={photo}
+                                    alt={`Propiedad ${selectedContract.property_code} - Foto ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              </CarouselItem>
+                            ))}
+                          </CarouselContent>
+                          <CarouselPrevious className="left-4" />
+                          <CarouselNext className="right-4" />
+                        </Carousel>
+                      </div>
+                    ) : (
+                      <div className="w-full h-[250px] bg-muted rounded-lg flex flex-col items-center justify-center gap-3">
+                        <Home className="h-16 w-16 text-muted-foreground/40" />
+                        <p className="text-muted-foreground">No hay fotos disponibles para esta propiedad</p>
+                      </div>
+                    )}
 
-                    {/* Información del Contrato */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Número de Contrato</p>
-                        <p className="text-lg">{selectedContract.contract_number}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Estado</p>
-                        <div className="mt-1">{getStatusBadge(selectedContract.status)}</div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Fecha Inicio</p>
-                        <p className="text-lg">{format(parseDateFromDB(selectedContract.start_date), 'dd/MM/yyyy')}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Fecha Fin</p>
-                        <p className="text-lg">{format(parseDateFromDB(selectedContract.end_date), 'dd/MM/yyyy')}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Renta Mensual</p>
-                        <p className="text-lg">{selectedContract.currency} {selectedContract.monthly_rent.toLocaleString()}</p>
-                      </div>
-                      {contractOwners.length > 0 && <div className="col-span-2">
-                          <p className="text-sm font-medium text-muted-foreground mb-2">Propietarios</p>
-                          <div className="flex flex-wrap gap-2">
-                            {contractOwners.map((owner, idx) => <Badge key={idx} variant="secondary">
-                                {owner.name} ({owner.percentage}%)
-                              </Badge>)}
+                    {/* Grid de Información - Visual Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Card: Propiedad */}
+                      <Card className="overflow-hidden border-l-4 border-l-primary">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 text-primary">
+                            <Building2 className="h-5 w-5" />
+                            <h3 className="font-semibold text-base">PROPIEDAD</h3>
                           </div>
-                        </div>}
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-2">
+                              <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Dirección</p>
+                                <p className="font-medium text-sm">{selectedContract.property_address || '-'}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Home className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Tipo</p>
+                                <p className="font-medium text-sm">{selectedContract.property_type || '-'}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              {selectedContract.property_bedrooms && (
+                                <div className="flex items-center gap-1.5">
+                                  <BedDouble className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm font-medium">{selectedContract.property_bedrooms}</span>
+                                </div>
+                              )}
+                              {selectedContract.property_bathrooms && (
+                                <div className="flex items-center gap-1.5">
+                                  <Bath className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm font-medium">{selectedContract.property_bathrooms}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Card: Contrato */}
+                      <Card className="overflow-hidden border-l-4 border-l-blue-500">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 text-blue-500">
+                            <FileText className="h-5 w-5" />
+                            <h3 className="font-semibold text-base">CONTRATO</h3>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Número</p>
+                                <p className="font-medium text-sm">{selectedContract.contract_number}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Vigencia</p>
+                                <p className="font-medium text-sm">
+                                  {format(parseDateFromDB(selectedContract.start_date), 'dd/MM/yy')} → {format(parseDateFromDB(selectedContract.end_date), 'dd/MM/yy')}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Renta Mensual</p>
+                                <p className="font-semibold text-base">{selectedContract.currency} {selectedContract.monthly_rent.toLocaleString()}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Estado</p>
+                                <div className="mt-0.5">{getStatusBadge(selectedContract.status)}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
+
+                    {/* Card: Inquilino - Full Width */}
+                    {selectedContract.tenant_name && (
+                      <Card className="overflow-hidden border-l-4 border-l-green-500">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 text-green-500 mb-3">
+                            <User className="h-5 w-5" />
+                            <h3 className="font-semibold text-base">INQUILINO</h3>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Nombre</p>
+                                <p className="font-medium">{selectedContract.tenant_name}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Email</p>
+                                <p className="font-medium text-sm">{selectedContract.tenant_email || '-'}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Documento</p>
+                                <p className="font-medium">{selectedContract.tenant_document || '-'}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Tipo</p>
+                                <Badge variant="outline">{selectedContract.tenant_type || '-'}</Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Card: Propietarios - Full Width */}
+                    {contractOwners.length > 0 && (
+                      <Card className="overflow-hidden border-l-4 border-l-purple-500">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 text-purple-500 mb-3">
+                            <Users className="h-5 w-5" />
+                            <h3 className="font-semibold text-base">PROPIETARIOS</h3>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {contractOwners.map((owner, idx) => (
+                              <Badge key={idx} variant="secondary" className="px-3 py-1.5 text-sm">
+                                {owner.name} ({owner.percentage}%)
+                              </Badge>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>}
               </TabsContent>
 
