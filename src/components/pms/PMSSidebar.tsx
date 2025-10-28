@@ -65,7 +65,7 @@ export function PMSSidebar() {
     SUPERADMIN: ['all'],
     INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'maintenance', 'reports', 'indices'],
     ADMINISTRADOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'maintenance', 'reports'],
-    PROPIETARIO: ['properties', 'contracts', 'payments', 'expenses', 'reports'],
+    PROPIETARIO: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'reports'],
     INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance'],
     PROVEEDOR: ['maintenance']
   };
