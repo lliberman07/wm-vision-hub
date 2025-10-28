@@ -30,8 +30,8 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
 
   const wmPMSItems = [
     { title: "Tenants PMS", path: "/admin/pms-tenants", icon: Building },
-    { title: "Solicitudes PMS", path: "/admin/pms-access", icon: Users },
     { title: "Roles PMS", path: "/admin/pms-roles", icon: Shield },
+    { title: "Solicitudes PMS", path: "/admin/pms-access", icon: Users },
   ];
 
   const wmUsersItems = [
