@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Plus, Trash2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { OwnerForm } from "./OwnerForm";
 
 interface Owner {
   id: string;
@@ -35,6 +36,7 @@ export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, ini
   const [propertyOwners, setPropertyOwners] = useState<OwnerProperty[]>(initialOwners);
   const [selectedOwnerId, setSelectedOwnerId] = useState<string>("");
   const [sharePercent, setSharePercent] = useState<string>("");
+  const [showOwnerForm, setShowOwnerForm] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -144,6 +146,14 @@ export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, ini
     onOwnersChange?.(updated);
   };
 
+  const handleOwnerCreated = (newOwnerId?: string) => {
+    fetchOwners();
+    if (newOwnerId) {
+      setSelectedOwnerId(newOwnerId);
+    }
+    setShowOwnerForm(false);
+  };
+
   return (
     <div className="space-y-4">
       {disabled && (
@@ -172,6 +182,20 @@ export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, ini
           </AlertDescription>
         </Alert>
       )}
+
+      <div className="flex items-center justify-between mb-2">
+        <Label className="text-sm">Seleccionar Propietario</Label>
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm"
+          onClick={() => setShowOwnerForm(true)}
+          disabled={disabled}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Nuevo Propietario
+        </Button>
+      </div>
 
       <div className="grid grid-cols-3 gap-2">
         <div className="col-span-2">
@@ -235,6 +259,12 @@ export function OwnerPropertyManager({ propertyId, tenantId, onOwnersChange, ini
           </TableBody>
         </Table>
       )}
+
+      <OwnerForm
+        open={showOwnerForm}
+        onOpenChange={setShowOwnerForm}
+        onSuccess={handleOwnerCreated}
+      />
     </div>
   );
 }

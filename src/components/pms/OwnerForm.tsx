@@ -36,7 +36,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface OwnerFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess: (newOwnerId?: string) => void;
   owner?: any;
 }
 
@@ -152,16 +152,19 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
         
         if (error) throw error;
         toast.success('Propietario actualizado');
+        onSuccess();
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('pms_owners')
-          .insert([payload]);
+          .insert([payload])
+          .select('id')
+          .single();
         
         if (error) throw error;
         toast.success('Propietario creado');
+        onSuccess(data?.id);
       }
 
-      onSuccess();
       onOpenChange(false);
       form.reset();
     } catch (error: any) {
