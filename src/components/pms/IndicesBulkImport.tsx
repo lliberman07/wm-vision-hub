@@ -11,20 +11,46 @@ interface IndicesBulkImportProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  indexType: 'ICL' | 'UVA' | 'IPC';
 }
 
-interface ParsedICL {
-  date: string; // YYYY-MM-DD format
+interface ParsedIndexData {
+  date: string; // YYYY-MM-DD for ICL/UVA, YYYY-MM for IPC
   value: number;
 }
 
-export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulkImportProps) {
+const indexConfig = {
+  ICL: {
+    title: 'Importación Masiva de ICL',
+    description: 'Carga valores diarios de ICL desde Excel del IVC',
+    source: 'IVC',
+    format: 'dd/mm/yyyy',
+    periodFormat: 'YYYY-MM-DD'
+  },
+  UVA: {
+    title: 'Importación Masiva de UVA',
+    description: 'Carga valores diarios de UVA desde Excel del BCRA',
+    source: 'BCRA',
+    format: 'dd/mm/yyyy',
+    periodFormat: 'YYYY-MM-DD'
+  },
+  IPC: {
+    title: 'Importación Masiva de IPC',
+    description: 'Carga valores mensuales de IPC desde Excel del INDEC',
+    source: 'INDEC',
+    format: 'mm/yyyy',
+    periodFormat: 'YYYY-MM'
+  }
+};
+
+export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: IndicesBulkImportProps) {
   const { toast } = useToast();
+  const config = indexConfig[indexType];
   const [isProcessing, setIsProcessing] = useState(false);
   const [preview, setPreview] = useState<{ total: number; toImport: number; lastDate: string | null } | null>(null);
-  const [parsedData, setParsedData] = useState<ParsedICL[]>([]);
+  const [parsedData, setParsedData] = useState<ParsedIndexData[]>([]);
 
-  const parseExcelFile = async (file: File): Promise<ParsedICL[]> => {
+  const parseExcelFile = async (file: File): Promise<ParsedIndexData[]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       
@@ -36,7 +62,7 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulk
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
           
-          const parsed: ParsedICL[] = [];
+          const parsed: ParsedIndexData[] = [];
           
           // Skip header row (index 0)
           for (let i = 1; i < jsonData.length; i++) {
@@ -46,14 +72,24 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulk
             const dateStr = String(row[0]).trim();
             const valueStr = String(row[1]).trim();
             
-            // Parse dd/mm/yyyy format
-            const dateParts = dateStr.split('/');
-            if (dateParts.length !== 3) continue;
+            let isoDate: string;
             
-            const day = dateParts[0].padStart(2, '0');
-            const month = dateParts[1].padStart(2, '0');
-            const year = dateParts[2];
-            const isoDate = `${year}-${month}-${day}`;
+            if (indexType === 'IPC') {
+              // Parse mm/yyyy format
+              const monthParts = dateStr.split('/');
+              if (monthParts.length !== 2) continue;
+              const month = monthParts[0].padStart(2, '0');
+              const year = monthParts[1];
+              isoDate = `${year}-${month}`;
+            } else {
+              // Parse dd/mm/yyyy format for ICL and UVA
+              const dateParts = dateStr.split('/');
+              if (dateParts.length !== 3) continue;
+              const day = dateParts[0].padStart(2, '0');
+              const month = dateParts[1].padStart(2, '0');
+              const year = dateParts[2];
+              isoDate = `${year}-${month}-${day}`;
+            }
             
             // Parse value (replace comma with dot)
             const value = parseFloat(valueStr.replace(',', '.'));
@@ -73,11 +109,11 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulk
     });
   };
 
-  const getLastICLDate = async (): Promise<string | null> => {
+  const getLastIndexDate = async (indexType: string): Promise<string | null> => {
     const { data, error } = await supabase
       .from('pms_economic_indices')
       .select('period')
-      .eq('index_type', 'ICL')
+      .eq('index_type', indexType)
       .order('period', { ascending: false })
       .limit(1);
     
@@ -107,8 +143,8 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulk
         return;
       }
 
-      // Get last ICL date from database
-      const lastDate = await getLastICLDate();
+      // Get last index date from database
+      const lastDate = await getLastIndexDate(indexType);
       
       // Filter only dates after last loaded date
       const toImport = lastDate 
@@ -149,10 +185,10 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulk
       
       // Prepare batch insert data
       const records = parsedData.map(item => ({
-        index_type: 'ICL',
+        index_type: indexType,
         period: item.date,
         value: item.value,
-        source: 'IVC',
+        source: config.source,
         created_by: user?.id
       }));
 
@@ -169,7 +205,7 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulk
 
       toast({
         title: "Importación exitosa",
-        description: `Se importaron ${parsedData.length} registros de ICL`,
+        description: `Se importaron ${parsedData.length} registros de ${indexType}`,
       });
 
       onSuccess();
@@ -191,9 +227,9 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulk
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Importación Masiva de ICL</DialogTitle>
+          <DialogTitle>{config.title}</DialogTitle>
           <DialogDescription>
-            Carga valores de ICL desde un archivo Excel. Solo se importarán fechas posteriores a la última cargada.
+            {config.description}. Solo se importarán fechas posteriores a la última cargada.
           </DialogDescription>
         </DialogHeader>
 
@@ -201,7 +237,7 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess }: IndicesBulk
           <div className="border-2 border-dashed rounded-lg p-8 text-center">
             <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-sm text-muted-foreground mb-4">
-              Formato esperado: Excel con columnas "Fecha (dd/mm/yyyy)" y "Valor"
+              Formato esperado: Excel con columnas "Fecha ({config.format})" y "Valor"
             </p>
             <input
               type="file"

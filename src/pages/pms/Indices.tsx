@@ -150,10 +150,12 @@ export default function Indices() {
                   <Plus className="h-4 w-4 mr-2" />
                   Cargar Índice
                 </Button>
-                <Button onClick={() => setBulkImportOpen(true)} variant="secondary" size="lg">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Importar ICL
-                </Button>
+                {selectedIndexType && ['ICL', 'UVA'].includes(selectedIndexType) && (
+                  <Button onClick={() => setBulkImportOpen(true)} variant="secondary" size="lg">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Importar {selectedIndexType}
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -359,11 +361,14 @@ export default function Indices() {
               onSuccess={fetchIndices}
               indice={selectedIndex}
             />
-            <IndicesBulkImport
-              open={bulkImportOpen}
-              onOpenChange={setBulkImportOpen}
-              onSuccess={fetchIndices}
-            />
+            {selectedIndexType && ['ICL', 'UVA'].includes(selectedIndexType) && (
+              <IndicesBulkImport
+                open={bulkImportOpen}
+                onOpenChange={setBulkImportOpen}
+                onSuccess={fetchIndices}
+                indexType={selectedIndexType as 'ICL' | 'UVA'}
+              />
+            )}
           </>
         )}
       </div>
