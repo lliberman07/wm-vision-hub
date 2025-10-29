@@ -92,10 +92,10 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
               const excelEpoch = new Date(1899, 11, 30);
               const jsDate = new Date(excelEpoch.getTime() + dateCell.v * 86400000);
               
-              // Extraer componentes de la fecha
-              const day = String(jsDate.getDate()).padStart(2, '0');
-              const month = String(jsDate.getMonth() + 1).padStart(2, '0');
-              const year = jsDate.getFullYear();
+              // Extraer componentes de la fecha usando UTC para evitar timezone issues
+              const day = String(jsDate.getUTCDate()).padStart(2, '0');
+              const month = String(jsDate.getUTCMonth() + 1).padStart(2, '0');
+              const year = jsDate.getUTCFullYear();
               
               dateStr = `${day}/${month}/${year}`;
               
