@@ -10,7 +10,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { IndicesForm } from "@/components/pms/IndicesForm";
 import { IndicesBulkImport } from "@/components/pms/IndicesBulkImport";
-import { Plus, TrendingUp, RefreshCw, CalendarIcon, Upload } from "lucide-react";
+import { Plus, TrendingUp, RefreshCw, CalendarIcon, Upload, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { PMSLayout } from "@/components/pms/PMSLayout";
@@ -40,6 +41,8 @@ export default function Indices() {
   const [selectedIndexType, setSelectedIndexType] = useState<string | null>(null);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [showCleanupDialog, setShowCleanupDialog] = useState(false);
+  const [cleanupYear, setCleanupYear] = useState<string>('2025');
 
   useEffect(() => {
     fetchIndices();
@@ -71,6 +74,38 @@ export default function Indices() {
     } finally {
       setRecalculating(false);
     }
+  };
+
+  const handleCleanupIndices = async () => {
+    if (!selectedIndexType || !cleanupYear) {
+      toast.error("Selecciona un tipo de índice y año para limpiar");
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      
+      const { error, count } = await supabase
+        .from('pms_economic_indices')
+        .delete()
+        .eq('index_type', selectedIndexType)
+        .gte('period', `${cleanupYear}-01-01`)
+        .lt('period', `${parseInt(cleanupYear) + 1}-01-01`);
+      
+      if (error) throw error;
+      
+      toast.success(`Se eliminaron ${count || 0} registros de ${selectedIndexType} del año ${cleanupYear}`);
+      setShowCleanupDialog(false);
+      fetchIndices();
+    } catch (error: any) {
+      toast.error(error.message || "Error al limpiar índices");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const setIsProcessing = (value: boolean) => {
+    setRecalculating(value);
   };
 
   const filteredIndices = indices.filter(idx => {
@@ -151,10 +186,20 @@ export default function Indices() {
                   Cargar Índice
                 </Button>
                 {selectedIndexType && ['ICL', 'UVA'].includes(selectedIndexType) && (
-                  <Button onClick={() => setBulkImportOpen(true)} variant="secondary" size="lg">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Importar {selectedIndexType}
-                  </Button>
+                  <>
+                    <Button onClick={() => setBulkImportOpen(true)} variant="secondary" size="lg">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Importar {selectedIndexType}
+                    </Button>
+                    <Button 
+                      onClick={() => setShowCleanupDialog(true)} 
+                      variant="destructive" 
+                      size="lg"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Limpiar {selectedIndexType}
+                    </Button>
+                  </>
                 )}
               </div>
             )}
@@ -369,6 +414,39 @@ export default function Indices() {
                 indexType={selectedIndexType as 'ICL' | 'UVA'}
               />
             )}
+            
+            <AlertDialog open={showCleanupDialog} onOpenChange={setShowCleanupDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Limpiar registros de {selectedIndexType}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción eliminará TODOS los registros de {selectedIndexType} del año {cleanupYear}.
+                    Esta acción no se puede deshacer.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="py-4">
+                  <Label htmlFor="cleanup-year">Año a limpiar:</Label>
+                  <input
+                    id="cleanup-year"
+                    type="number"
+                    className="w-full mt-2 px-3 py-2 border rounded-md"
+                    value={cleanupYear}
+                    onChange={(e) => setCleanupYear(e.target.value)}
+                    min="2020"
+                    max="2030"
+                  />
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleCleanupIndices}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Eliminar Registros
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
       </div>

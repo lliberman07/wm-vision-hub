@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, AlertTriangle } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { format } from "date-fns";
 
 interface IndicesBulkImportProps {
   open: boolean;
@@ -43,11 +44,21 @@ const indexConfig = {
   }
 };
 
+interface PreviewData {
+  total: number;
+  toImport: number;
+  lastDate: string | null;
+  firstDate: string | null;
+  lastParsedDate: string | null;
+  expectedDays: number | null;
+  warnings: string[];
+}
+
 export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: IndicesBulkImportProps) {
   const { toast } = useToast();
   const config = indexConfig[indexType];
   const [isProcessing, setIsProcessing] = useState(false);
-  const [preview, setPreview] = useState<{ total: number; toImport: number; lastDate: string | null } | null>(null);
+  const [preview, setPreview] = useState<PreviewData | null>(null);
   const [parsedData, setParsedData] = useState<ParsedIndexData[]>([]);
 
   const parseExcelFile = async (file: File): Promise<ParsedIndexData[]> => {
@@ -60,17 +71,24 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
           const workbook = XLSX.read(data, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
           
+          // Get the range
+          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
           const parsed: ParsedIndexData[] = [];
           
-          // Skip header row (index 0)
-          for (let i = 1; i < jsonData.length; i++) {
-            const row = jsonData[i];
-            if (!row[0] || !row[1]) continue;
+          // Skip header row (start from row 1 instead of 0)
+          for (let rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
+            const dateCell = worksheet[XLSX.utils.encode_cell({ r: rowNum, c: 0 })];
+            const valueCell = worksheet[XLSX.utils.encode_cell({ r: rowNum, c: 1 })];
             
-            const dateStr = String(row[0]).trim();
-            const valueStr = String(row[1]).trim();
+            if (!dateCell || !valueCell) continue;
+            
+            // Use .w (formatted text) to get exactly what's displayed in Excel
+            // This prevents XLSX from misinterpreting dd/mm/yyyy as mm/dd/yyyy
+            let dateStr = dateCell.w || String(dateCell.v);
+            dateStr = dateStr.trim();
+            
+            const valueStr = String(valueCell.v).trim();
             
             let isoDate: string;
             
@@ -151,11 +169,41 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
         ? parsed.filter(item => item.date > lastDate)
         : parsed;
       
+      // Validations for daily indices
+      const warnings: string[] = [];
+      let expectedDays: number | null = null;
+      
+      if ((indexType === 'ICL' || indexType === 'UVA') && toImport.length > 0) {
+        const firstDate = new Date(toImport[0].date);
+        const lastParsedDate = new Date(toImport[toImport.length - 1].date);
+        const daysDiff = Math.floor((lastParsedDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        expectedDays = daysDiff;
+        
+        // Check for date coherence
+        if (daysDiff > toImport.length * 1.5) {
+          warnings.push(`⚠️ Hay ${daysDiff} días entre primera y última fecha, pero solo ${toImport.length} registros`);
+        }
+        
+        // Check for suspicious date patterns (all starting on same day)
+        const daysOfMonth = toImport.map(item => {
+          const d = new Date(item.date);
+          return d.getDate();
+        });
+        const uniqueDays = new Set(daysOfMonth);
+        if (uniqueDays.size === 1 && toImport.length > 10) {
+          warnings.push(`⚠️ Todas las fechas caen el día ${Array.from(uniqueDays)[0]} del mes - verifica el formato`);
+        }
+      }
+      
       setParsedData(toImport);
       setPreview({
         total: parsed.length,
         toImport: toImport.length,
-        lastDate
+        lastDate,
+        firstDate: toImport.length > 0 ? toImport[0].date : null,
+        lastParsedDate: toImport.length > 0 ? toImport[toImport.length - 1].date : null,
+        expectedDays,
+        warnings
       });
 
       if (toImport.length === 0) {
@@ -259,13 +307,35 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
 
           {preview && (
             <div className="space-y-3">
+              {preview.warnings.length > 0 && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <div className="space-y-1">
+                      {preview.warnings.map((warning, idx) => (
+                        <p key={idx}>{warning}</p>
+                      ))}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
                   <div className="space-y-1">
                     <p><strong>Total de registros en el archivo:</strong> {preview.total}</p>
-                    <p><strong>Última fecha en base de datos:</strong> {preview.lastDate || 'Sin datos previos'}</p>
+                    <p><strong>Última fecha en base de datos:</strong> {preview.lastDate ? format(new Date(preview.lastDate), 'dd/MM/yyyy') : 'Sin datos previos'}</p>
                     <p><strong>Registros nuevos a importar:</strong> {preview.toImport}</p>
+                    {preview.firstDate && preview.lastParsedDate && (
+                      <>
+                        <p><strong>Primera fecha a importar:</strong> {format(new Date(preview.firstDate), 'dd/MM/yyyy')}</p>
+                        <p><strong>Última fecha a importar:</strong> {format(new Date(preview.lastParsedDate), 'dd/MM/yyyy')}</p>
+                        {preview.expectedDays && (
+                          <p><strong>Días en el rango:</strong> {preview.expectedDays}</p>
+                        )}
+                      </>
+                    )}
                   </div>
                 </AlertDescription>
               </Alert>
