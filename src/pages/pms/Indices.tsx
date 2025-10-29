@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { IndicesForm } from "@/components/pms/IndicesForm";
-import { Plus, TrendingUp, RefreshCw, CalendarIcon } from "lucide-react";
+import { IndicesBulkImport } from "@/components/pms/IndicesBulkImport";
+import { Plus, TrendingUp, RefreshCw, CalendarIcon, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { PMSLayout } from "@/components/pms/PMSLayout";
@@ -35,6 +36,7 @@ export default function Indices() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<EconomicIndex | undefined>();
   const [recalculating, setRecalculating] = useState(false);
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
   const [selectedIndexType, setSelectedIndexType] = useState<string | null>(null);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
@@ -147,6 +149,10 @@ export default function Indices() {
                 }} size="lg">
                   <Plus className="h-4 w-4 mr-2" />
                   Cargar Índice
+                </Button>
+                <Button onClick={() => setBulkImportOpen(true)} variant="secondary" size="lg">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Importar ICL
                 </Button>
               </div>
             )}
@@ -346,12 +352,19 @@ export default function Indices() {
         </Card>
 
         {isSuperAdmin && (
-          <IndicesForm
-            open={isFormOpen}
-            onOpenChange={setIsFormOpen}
-            onSuccess={fetchIndices}
-            indice={selectedIndex}
-          />
+          <>
+            <IndicesForm
+              open={isFormOpen}
+              onOpenChange={setIsFormOpen}
+              onSuccess={fetchIndices}
+              indice={selectedIndex}
+            />
+            <IndicesBulkImport
+              open={bulkImportOpen}
+              onOpenChange={setBulkImportOpen}
+              onSuccess={fetchIndices}
+            />
+          </>
         )}
       </div>
     </PMSLayout>
