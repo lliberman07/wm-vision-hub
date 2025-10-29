@@ -83,10 +83,34 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
             
             if (!dateCell || !valueCell) continue;
             
-            // Use .w (formatted text) to get exactly what's displayed in Excel
-            // This prevents XLSX from misinterpreting dd/mm/yyyy as mm/dd/yyyy
-            let dateStr = dateCell.w || String(dateCell.v);
-            dateStr = dateStr.trim();
+            let dateStr: string;
+            
+            // Detectar si es un número serial de Excel
+            if (typeof dateCell.v === 'number' && !dateCell.w) {
+              // Convertir serial de Excel a fecha manualmente
+              // Excel epoch: 30 de diciembre de 1899
+              const excelEpoch = new Date(1899, 11, 30);
+              const jsDate = new Date(excelEpoch.getTime() + dateCell.v * 86400000);
+              
+              // Extraer componentes de la fecha
+              const day = String(jsDate.getDate()).padStart(2, '0');
+              const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+              const year = jsDate.getFullYear();
+              
+              dateStr = `${day}/${month}/${year}`;
+              
+              // Debug logging (opcional - primeras 5 filas)
+              if (rowNum <= 6) {
+                console.log(`Row ${rowNum}:`, {
+                  'dateCell.v': dateCell.v,
+                  'dateCell.w': dateCell.w,
+                  'dateStr': dateStr
+                });
+              }
+            } else {
+              // Usar el texto formateado o el valor como string
+              dateStr = (dateCell.w || String(dateCell.v)).trim();
+            }
             
             const valueStr = String(valueCell.v).trim();
             
@@ -192,6 +216,18 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
         const uniqueDays = new Set(daysOfMonth);
         if (uniqueDays.size === 1 && toImport.length > 10) {
           warnings.push(`⚠️ Todas las fechas caen el día ${Array.from(uniqueDays)[0]} del mes - verifica el formato`);
+        }
+        
+        // Validar que la primera fecha sea lógica
+        const firstParsed = toImport[0].date;
+        const [year, month, day] = firstParsed.split('-').map(Number);
+        
+        if (day > 31 || day < 1) {
+          warnings.push(`⚠️ Primera fecha sospechosa: ${firstParsed}. Posible error de conversión.`);
+        }
+        
+        if (year < 2024 || year > 2026) {
+          warnings.push(`⚠️ Año sospechoso: ${year}. Verifica que las fechas estén correctas.`);
         }
       }
       
