@@ -5,13 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { IndicesForm } from "@/components/pms/IndicesForm";
-import { Plus, TrendingUp, RefreshCw } from "lucide-react";
+import { Plus, TrendingUp, RefreshCw, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { PMSLayout } from "@/components/pms/PMSLayout";
 import { FilterBar } from "@/components/pms/FilterBar";
 import { EmptyState } from "@/components/pms/EmptyState";
+import { cn } from "@/lib/utils";
 
 interface EconomicIndex {
   id: string;
@@ -31,6 +35,9 @@ export default function Indices() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<EconomicIndex | undefined>();
   const [recalculating, setRecalculating] = useState(false);
+  const [selectedIndexType, setSelectedIndexType] = useState<string | null>(null);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   useEffect(() => {
     fetchIndices();
@@ -64,11 +71,44 @@ export default function Indices() {
     }
   };
 
-  const filteredIndices = indices.filter(idx =>
-    idx.index_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    idx.period.includes(searchTerm) ||
-    idx.source?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredIndices = indices.filter(idx => {
+    // Filtro por tipo seleccionado
+    const matchesType = !selectedIndexType || idx.index_type === selectedIndexType;
+    
+    // Filtro por búsqueda de texto
+    const matchesSearch = 
+      idx.index_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      idx.period.includes(searchTerm) ||
+      idx.source?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filtro de rango de fechas (solo para ICL)
+    let matchesDateRange = true;
+    if (selectedIndexType === 'ICL' && (dateFrom || dateTo)) {
+      try {
+        const periodDate = new Date(idx.period); // YYYY-MM-DD para ICL
+        
+        if (dateFrom) {
+          const fromMidnight = new Date(dateFrom);
+          fromMidnight.setHours(0, 0, 0, 0);
+          if (periodDate < fromMidnight) {
+            matchesDateRange = false;
+          }
+        }
+        
+        if (dateTo) {
+          const toMidnight = new Date(dateTo);
+          toMidnight.setHours(23, 59, 59, 999);
+          if (periodDate > toMidnight) {
+            matchesDateRange = false;
+          }
+        }
+      } catch (e) {
+        matchesDateRange = false;
+      }
+    }
+    
+    return matchesType && matchesSearch && matchesDateRange;
+  });
 
   const getIndexBadgeVariant = (type: string) => {
     switch (type) {
@@ -87,7 +127,7 @@ export default function Indices() {
             <div>
               <h1 className="text-3xl font-bold">Índices Económicos</h1>
               <p className="text-muted-foreground mt-1">
-                Gestión de valores mensuales de IPC, ICL y UVA
+                Gestión de valores de IPC y UVA (mensuales) e ICL (diarios del BCRA)
               </p>
             </div>
             {isSuperAdmin && (
@@ -113,15 +153,28 @@ export default function Indices() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           {['IPC', 'ICL', 'UVA'].map(type => {
-            const latest = indices.find(i => i.index_type === type);
+            const latest = indices
+              .filter(i => i.index_type === type)
+              .sort((a, b) => b.period.localeCompare(a.period))[0];
+            
+            const isSelected = selectedIndexType === type;
+            
             return (
-              <Card key={type}>
+              <Card 
+                key={type}
+                className={cn(
+                  "cursor-pointer transition-all hover:shadow-lg hover:scale-105",
+                  isSelected && "ring-2 ring-primary border-primary bg-primary/5"
+                )}
+                onClick={() => setSelectedIndexType(isSelected ? null : type)}
+              >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <TrendingUp className="h-4 w-4" />
                     {type}
+                    {isSelected && <Badge variant="default" className="ml-auto">Activo</Badge>}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -129,13 +182,93 @@ export default function Indices() {
                     {latest ? latest.value.toFixed(4) : 'N/A'}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {latest ? latest.period.split('-').reverse().join('/') : 'Sin datos'}
+                    {latest 
+                      ? (latest.period.length === 10 
+                          ? format(new Date(latest.period), 'dd/MM/yyyy')
+                          : `${latest.period.split('-')[1]}/${latest.period.split('-')[0]}`)
+                      : 'Sin datos'}
                   </p>
                 </CardContent>
               </Card>
             );
           })}
         </div>
+
+        {selectedIndexType === 'ICL' && (
+          <Card className="mb-4 bg-muted/30">
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="text-sm font-semibold">Seleccioná las fechas</div>
+                
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm whitespace-nowrap">Desde</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className={cn(
+                          "w-[200px] justify-start text-left font-normal",
+                          !dateFrom && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "mm/dd/yyyy"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateFrom}
+                        onSelect={setDateFrom}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm whitespace-nowrap">Hasta</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className={cn(
+                          "w-[200px] justify-start text-left font-normal",
+                          !dateTo && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateTo ? format(dateTo, "dd/MM/yyyy") : "mm/dd/yyyy"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateTo}
+                        onSelect={setDateTo}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {(dateFrom || dateTo) && (
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => { 
+                      setDateFrom(undefined); 
+                      setDateTo(undefined); 
+                    }}
+                  >
+                    Limpiar
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="mb-6">
           <FilterBar
@@ -191,7 +324,10 @@ export default function Indices() {
                         </Badge>
                       </TableCell>
                       <TableCell className="font-mono">
-                        {idx.period.split('-').reverse().join('/')}
+                        {idx.period.length === 10 
+                          ? format(new Date(idx.period), 'dd/MM/yyyy')
+                          : `${idx.period.split('-')[1]}/${idx.period.split('-')[0]}`
+                        }
                       </TableCell>
                       <TableCell className="text-right font-mono font-bold">
                         {idx.value.toFixed(4)}

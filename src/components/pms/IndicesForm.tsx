@@ -14,6 +14,18 @@ const formSchema = z.object({
   period: z.string().min(1, "Período requerido"),
   value: z.coerce.number().positive("El valor debe ser positivo"),
   source: z.string().optional()
+}).refine(data => {
+  // Validar formato según tipo
+  if (data.index_type === 'ICL') {
+    // Debe ser formato YYYY-MM-DD (fecha completa)
+    return /^\d{4}-\d{2}-\d{2}$/.test(data.period);
+  } else {
+    // Debe ser formato YYYY-MM (mes)
+    return /^\d{4}-\d{2}$/.test(data.period);
+  }
+}, {
+  message: "Formato de período incorrecto para el tipo de índice seleccionado",
+  path: ["period"]
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -32,7 +44,7 @@ export function IndicesForm({ open, onOpenChange, onSuccess, indice }: IndicesFo
     resolver: zodResolver(formSchema),
     defaultValues: indice || {
       index_type: "IPC",
-      period: new Date().toISOString().slice(0, 7),
+      period: new Date().toISOString().slice(0, 7), // YYYY-MM por defecto
       value: 0,
       source: ""
     }
@@ -111,15 +123,28 @@ export function IndicesForm({ open, onOpenChange, onSuccess, indice }: IndicesFo
             <FormField
               control={form.control}
               name="period"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Período (YYYY-MM)</FormLabel>
-                  <FormControl>
-                    <Input type="month" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const indexType = form.watch('index_type');
+                const isICL = indexType === 'ICL';
+                
+                return (
+                  <FormItem>
+                    <FormLabel>
+                      {isICL ? 'Fecha (YYYY-MM-DD)' : 'Período (YYYY-MM)'}
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        type={isICL ? "date" : "month"} 
+                        {...field} 
+                        onChange={(e) => {
+                          field.onChange(e);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
