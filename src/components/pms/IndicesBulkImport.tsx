@@ -85,8 +85,8 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
             
             let dateStr: string;
             
-            // Detectar si es un número serial de Excel
-            if (typeof dateCell.v === 'number' && !dateCell.w) {
+            // Detectar si es un número serial de Excel (SIEMPRE convertir manualmente)
+            if (typeof dateCell.v === 'number') {
               // Convertir serial de Excel a fecha manualmente
               // Excel epoch: 30 de diciembre de 1899
               const excelEpoch = new Date(1899, 11, 30);
