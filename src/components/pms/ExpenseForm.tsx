@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   property_id: z.string().min(1, "Propiedad requerida"),
+  contract_id: z.string().optional(),
   category: z.string().min(1, "Categoría requerida"),
   amount: z.coerce.number().positive("El monto debe ser positivo"),
   currency: z.string().default("ARS"),
@@ -33,12 +34,14 @@ interface ExpenseFormProps {
 
 export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }: ExpenseFormProps) {
   const [properties, setProperties] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       property_id: "",
+      contract_id: "",
       category: "",
       amount: 0,
       currency: "ARS",
@@ -54,6 +57,7 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
       if (expense) {
         form.reset({
           property_id: expense.property_id || "",
+          contract_id: expense.contract_id || "",
           category: expense.category || "",
           amount: expense.amount || 0,
           currency: expense.currency || "ARS",
@@ -61,9 +65,13 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
           description: expense.description || "",
           receipt_url: expense.receipt_url || ""
         });
+        if (expense.property_id) {
+          fetchContracts(expense.property_id);
+        }
       } else {
         form.reset({
           property_id: "",
+          contract_id: "",
           category: "",
           amount: 0,
           currency: "ARS",
@@ -75,6 +83,16 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
     }
   }, [open, expense, form]);
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'property_id' && value.property_id) {
+        fetchContracts(value.property_id);
+        form.setValue('contract_id', '');
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const fetchProperties = async () => {
     const { data } = await supabase
       .from('pms_properties')
@@ -83,6 +101,22 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
       .order('code');
     
     if (data) setProperties(data);
+  };
+
+  const fetchContracts = async (propertyId: string) => {
+    if (!propertyId) {
+      setContracts([]);
+      return;
+    }
+    
+    const { data } = await supabase
+      .from('pms_contracts')
+      .select('id, contract_number, status')
+      .eq('property_id', propertyId)
+      .eq('status', 'active')
+      .order('contract_number');
+    
+    if (data) setContracts(data);
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -160,6 +194,36 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
                       {properties.map((prop) => (
                         <SelectItem key={prop.id} value={prop.id}>
                           {prop.code} - {prop.address}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="contract_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contrato (opcional)</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={!form.watch('property_id')}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sin contrato asociado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">Sin contrato</SelectItem>
+                      {contracts.map((contract) => (
+                        <SelectItem key={contract.id} value={contract.id}>
+                          {contract.contract_number}
                         </SelectItem>
                       ))}
                     </SelectContent>
