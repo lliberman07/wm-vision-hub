@@ -7,6 +7,7 @@ import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, AlertTriangle } from
 import * as XLSX from 'xlsx';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
+import { parseDateFromDB } from '@/utils/dateUtils';
 
 interface IndicesBulkImportProps {
   open: boolean;
@@ -363,12 +364,12 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
                 <AlertDescription>
                   <div className="space-y-1">
                     <p><strong>Total de registros en el archivo:</strong> {preview.total}</p>
-                    <p><strong>Última fecha en base de datos:</strong> {preview.lastDate ? format(new Date(preview.lastDate), 'dd/MM/yyyy') : 'Sin datos previos'}</p>
+                    <p><strong>Última fecha en base de datos:</strong> {preview.lastDate ? format(parseDateFromDB(preview.lastDate), 'dd/MM/yyyy') : 'Sin datos previos'}</p>
                     <p><strong>Registros nuevos a importar:</strong> {preview.toImport}</p>
                     {preview.firstDate && preview.lastParsedDate && (
                       <>
-                        <p><strong>Primera fecha a importar:</strong> {format(new Date(preview.firstDate), 'dd/MM/yyyy')}</p>
-                        <p><strong>Última fecha a importar:</strong> {format(new Date(preview.lastParsedDate), 'dd/MM/yyyy')}</p>
+                        <p><strong>Primera fecha a importar:</strong> {format(parseDateFromDB(preview.firstDate), 'dd/MM/yyyy')}</p>
+                        <p><strong>Última fecha a importar:</strong> {format(parseDateFromDB(preview.lastParsedDate), 'dd/MM/yyyy')}</p>
                         {preview.expectedDays && (
                           <p><strong>Días en el rango:</strong> {preview.expectedDays}</p>
                         )}
