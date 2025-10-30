@@ -14,6 +14,7 @@ import { Plus, TrendingUp, RefreshCw, CalendarIcon, Upload, Trash2 } from "lucid
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { parseDateFromDB } from '@/utils/dateUtils';
 import { PMSLayout } from "@/components/pms/PMSLayout";
 import { FilterBar } from "@/components/pms/FilterBar";
 import { EmptyState } from "@/components/pms/EmptyState";
@@ -378,7 +379,7 @@ export default function Indices() {
                       </TableCell>
                       <TableCell className="font-mono">
                         {idx.period.length === 10 
-                          ? format(new Date(idx.period), 'dd/MM/yyyy')
+                          ? format(parseDateFromDB(idx.period), 'dd/MM/yyyy')
                           : `${idx.period.split('-')[1]}/${idx.period.split('-')[0]}`
                         }
                       </TableCell>
