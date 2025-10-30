@@ -87,9 +87,13 @@ export function IndicesBulkImport({ open, onOpenChange, onSuccess, indexType }: 
             
             // Detectar si es un número serial de Excel (SIEMPRE convertir manualmente)
             if (typeof dateCell.v === 'number') {
-              // Fórmula estándar de Microsoft: 25569 = días entre Excel epoch y Unix epoch
-              // Esta fórmula ya maneja automáticamente el bug del 29/02/1900
-              const jsDate = new Date((dateCell.v - 25569) * 86400000);
+              // Excel tiene un bug: considera 1900 como bisiesto (no lo es)
+              // Para seriales > 59, debemos restar 1 para compensar el día fantasma 29/02/1900
+              const adjustedSerial = dateCell.v > 59 ? dateCell.v - 1 : dateCell.v;
+              
+              // Excel epoch: 30 de diciembre de 1899 00:00:00 UTC
+              const excelEpochUTC = Date.UTC(1899, 11, 30);
+              const jsDate = new Date(excelEpochUTC + adjustedSerial * 86400000);
               
               // Extraer componentes de la fecha usando UTC para evitar timezone issues
               const day = String(jsDate.getUTCDate()).padStart(2, '0');
