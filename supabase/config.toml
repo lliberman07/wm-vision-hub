@@ -47,3 +47,9 @@ verify_jwt = true
 
 [functions.send-contact-confirmation]
 verify_jwt = false
+
+[functions.apply-due-index-adjustments]
+verify_jwt = false
+
+[[functions.apply-due-index-adjustments.schedule]]
+cron = "0 3 1 * *"

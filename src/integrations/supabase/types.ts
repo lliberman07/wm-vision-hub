@@ -806,6 +806,75 @@ export type Database = {
       }
       pms_contract_adjustments: {
         Row: {
+          applied_at: string
+          contract_id: string
+          created_at: string | null
+          factor: number
+          id: string
+          item_a_new_amount: number | null
+          item_a_prev_amount: number | null
+          item_b_new_amount: number | null
+          item_b_prev_amount: number | null
+          new_amount: number
+          pct_cumulative: number
+          period_from: string
+          period_to: string
+          prev_amount: number
+          tenant_id: string
+        }
+        Insert: {
+          applied_at: string
+          contract_id: string
+          created_at?: string | null
+          factor: number
+          id?: string
+          item_a_new_amount?: number | null
+          item_a_prev_amount?: number | null
+          item_b_new_amount?: number | null
+          item_b_prev_amount?: number | null
+          new_amount: number
+          pct_cumulative: number
+          period_from: string
+          period_to: string
+          prev_amount: number
+          tenant_id: string
+        }
+        Update: {
+          applied_at?: string
+          contract_id?: string
+          created_at?: string | null
+          factor?: number
+          id?: string
+          item_a_new_amount?: number | null
+          item_a_prev_amount?: number | null
+          item_b_new_amount?: number | null
+          item_b_prev_amount?: number | null
+          new_amount?: number
+          pct_cumulative?: number
+          period_from?: string
+          period_to?: string
+          prev_amount?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_contract_adjustments_contract_id_fkey1"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_adjustments_tenant_id_fkey1"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_contract_adjustments_backup: {
+        Row: {
           application_date: string
           audit_json: Json | null
           contract_id: string
@@ -2714,6 +2783,10 @@ export type Database = {
       reverse_expense_deduction: {
         Args: { expense_id_param: string }
         Returns: undefined
+      }
+      rpc_apply_contract_adjustment: {
+        Args: { p_asof?: string; p_contract_id: string }
+        Returns: Json
       }
       update_contract_projections_with_indices: {
         Args: never
