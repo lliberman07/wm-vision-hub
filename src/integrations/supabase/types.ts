@@ -1017,6 +1017,7 @@ export type Database = {
           pdf_url: string | null
           property_id: string
           renewal_count: number | null
+          rounding_mode: string
           special_clauses: string | null
           start_date: string
           status: string | null
@@ -1064,6 +1065,7 @@ export type Database = {
           pdf_url?: string | null
           property_id: string
           renewal_count?: number | null
+          rounding_mode?: string
           special_clauses?: string | null
           start_date: string
           status?: string | null
@@ -1111,6 +1113,7 @@ export type Database = {
           pdf_url?: string | null
           property_id?: string
           renewal_count?: number | null
+          rounding_mode?: string
           special_clauses?: string | null
           start_date?: string
           status?: string | null
@@ -2397,7 +2400,28 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      pms_index_ipc_monthly: {
+        Row: {
+          id: string | null
+          loaded_at: string | null
+          pct: number | null
+          period_date: string | null
+          source: string | null
+          type: string | null
+        }
+        Relationships: []
+      }
+      pms_indices: {
+        Row: {
+          id: string | null
+          loaded_at: string | null
+          pct: number | null
+          period_date: string | null
+          source: string | null
+          type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_contract: {
@@ -2608,6 +2632,23 @@ export type Database = {
       link_existing_payments_to_schedule: {
         Args: { contract_id_param: string }
         Returns: undefined
+      }
+      pms_index_factor: {
+        Args: { indice_tipo: string; month_from: string; month_to: string }
+        Returns: number
+      }
+      pms_ipc_factor: {
+        Args: { month_from: string; month_to: string }
+        Returns: number
+      }
+      pms_last_adjustment_date: {
+        Args: { freq: string; ref_date: string; start_date: string }
+        Returns: string
+      }
+      pms_months_in_frequency: { Args: { freq: string }; Returns: number }
+      pms_next_adjustment_date: {
+        Args: { freq: string; ref_date: string; start_date: string }
+        Returns: string
       }
       property_has_contract_history: {
         Args: { p_property_id: string }
