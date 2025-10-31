@@ -56,6 +56,12 @@ interface Contract {
   property_bedrooms?: number;
   property_bathrooms?: number;
   property_photos?: string[];
+  forma_pago_item_a?: string;
+  forma_pago_item_b?: string;
+  monto_a?: number;
+  monto_b?: number;
+  monto_ajustado_actual_a?: number;
+  monto_ajustado_actual_b?: number;
 }
 const Contracts = () => {
   const navigate = useNavigate();
@@ -724,7 +730,7 @@ const Contracts = () => {
               </TabsContent>
 
               <TabsContent value="distribution" className="max-h-[60vh] overflow-y-auto">
-                {selectedContract && <ContractPaymentDistribution contractId={selectedContract.id} propertyId={(selectedContract as any).property_id} monto_a={(selectedContract as any).monto_a} monto_b={(selectedContract as any).monto_b} currency={selectedContract.currency} />}
+                {selectedContract && <ContractPaymentDistribution contractId={selectedContract.id} propertyId={(selectedContract as any).property_id} monto_a={selectedContract.monto_a} monto_b={selectedContract.monto_b} monto_ajustado_actual_a={selectedContract.monto_ajustado_actual_a} monto_ajustado_actual_b={selectedContract.monto_ajustado_actual_b} forma_pago_item_a={selectedContract.forma_pago_item_a} forma_pago_item_b={selectedContract.forma_pago_item_b} currency={selectedContract.currency} />}
               </TabsContent>
 
               <TabsContent value="adjustments" className="max-h-[60vh] overflow-y-auto">
