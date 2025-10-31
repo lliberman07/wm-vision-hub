@@ -861,6 +861,57 @@ export type Database = {
           },
         ]
       }
+      pms_contract_current: {
+        Row: {
+          contract_id: string
+          current_amount: number
+          current_from: string
+          current_item_a: number | null
+          current_item_b: number | null
+          last_adjustment_date: string | null
+          next_adjustment_date: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          contract_id: string
+          current_amount: number
+          current_from: string
+          current_item_a?: number | null
+          current_item_b?: number | null
+          last_adjustment_date?: string | null
+          next_adjustment_date: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          contract_id?: string
+          current_amount?: number
+          current_from?: string
+          current_item_a?: number | null
+          current_item_b?: number | null
+          last_adjustment_date?: string | null
+          next_adjustment_date?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_contract_current_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_current_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_contract_monthly_projections: {
         Row: {
           adjusted_amount: number
