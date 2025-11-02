@@ -2554,6 +2554,10 @@ export type Database = {
         Returns: undefined
       }
       approve_user: { Args: { user_id_param: string }; Returns: undefined }
+      can_edit_economic_index: {
+        Args: { current_date_param?: string; index_period: string }
+        Returns: boolean
+      }
       can_renew_contract: { Args: { contract_id_param: string }; Returns: Json }
       cancel_contract: {
         Args: {

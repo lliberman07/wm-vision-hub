@@ -37,6 +37,35 @@ interface IndicesFormProps {
   indice?: any;
 }
 
+const canEditIndex = (period: string): boolean => {
+  try {
+    let periodDate: Date;
+    
+    if (period.length === 10) {
+      // YYYY-MM-DD (ICL)
+      periodDate = new Date(period);
+    } else if (period.length === 7) {
+      // YYYY-MM (IPC/UVA)
+      periodDate = new Date(period + '-01');
+    } else {
+      return false;
+    }
+    
+    // Calcular cutoff: primer día del mes P+2
+    const cutoffDate = new Date(periodDate);
+    cutoffDate.setMonth(cutoffDate.getMonth() + 2);
+    cutoffDate.setDate(1);
+    cutoffDate.setHours(0, 0, 0, 0);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return today < cutoffDate;
+  } catch {
+    return false;
+  }
+};
+
 export function IndicesForm({ open, onOpenChange, onSuccess, indice }: IndicesFormProps) {
   const { toast } = useToast();
 
@@ -44,7 +73,7 @@ export function IndicesForm({ open, onOpenChange, onSuccess, indice }: IndicesFo
     resolver: zodResolver(formSchema),
     defaultValues: indice || {
       index_type: "IPC",
-      period: new Date().toISOString().slice(0, 7), // YYYY-MM por defecto
+      period: new Date().toISOString().slice(0, 7),
       value: 0,
       source: ""
     }
@@ -53,24 +82,42 @@ export function IndicesForm({ open, onOpenChange, onSuccess, indice }: IndicesFo
   const onSubmit = async (values: FormValues) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      const indiceData: any = {
-        ...values,
-        created_by: user?.id
-      };
+      if (!user) throw new Error("Usuario no autenticado");
 
-      if (indice?.id) {
+      if (indice) {
+        // MODO EDICIÓN: Validar ventana temporal
+        if (!canEditIndex(indice.period)) {
+          toast({
+            title: "Fuera de ventana de edición",
+            description: `El índice de ${indice.period} solo puede editarse durante ese mes y el siguiente. Para corregirlo, elimínelo y créelo nuevamente.`,
+            variant: "destructive",
+          });
+          return;
+        }
+
         const { error } = await supabase
           .from('pms_economic_indices')
-          .update(indiceData)
+          .update({
+            index_type: values.index_type,
+            period: values.period,
+            value: values.value,
+            source: values.source,
+          })
           .eq('id', indice.id);
 
         if (error) throw error;
         toast({ title: "Índice actualizado correctamente" });
       } else {
+        // MODO CREACIÓN
         const { error } = await supabase
           .from('pms_economic_indices')
-          .insert([indiceData]);
+          .insert([{
+            index_type: values.index_type,
+            period: values.period,
+            value: values.value,
+            source: values.source,
+            created_by: user.id
+          }]);
 
         if (error) throw error;
         toast({ title: "Índice registrado correctamente" });
