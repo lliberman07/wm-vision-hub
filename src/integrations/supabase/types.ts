@@ -2761,10 +2761,9 @@ export type Database = {
         Args: { indice_tipo: string; month_from: string; month_to: string }
         Returns: number
       }
-      pms_ipc_factor: {
-        Args: { month_from: string; month_to: string }
-        Returns: number
-      }
+      pms_ipc_factor:
+        | { Args: { month_from: string; month_to: string }; Returns: number }
+        | { Args: { month_from: string; month_to: string }; Returns: number }
       pms_last_adjustment_date: {
         Args: { freq: string; ref_date: string; start_date: string }
         Returns: string
