@@ -2602,7 +2602,7 @@ export type Database = {
         Returns: undefined
       }
       generate_contract_monthly_projections: {
-        Args: { contract_id_param: string }
+        Args: { contract_id_param: string; from_date?: string }
         Returns: undefined
       }
       generate_payment_schedule_items: {
@@ -2776,9 +2776,17 @@ export type Database = {
       }
       recalculate_all_active_contracts: { Args: never; Returns: undefined }
       recalculate_all_cashflow: { Args: never; Returns: undefined }
-      recalculate_projections_for_index_type: {
-        Args: { index_type_param: string }
-        Returns: undefined
+      recalculate_contracts_affected_by_period: {
+        Args: { index_period: string; index_type_param: string }
+        Returns: {
+          adjustment_date: string
+          contract_id: string
+          contract_number: string
+          message: string
+          status: string
+          window_end: string
+          window_start: string
+        }[]
       }
       reverse_expense_deduction: {
         Args: { expense_id_param: string }
