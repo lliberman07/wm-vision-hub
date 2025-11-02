@@ -80,7 +80,7 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
 
     const totals = scheduleItems.reduce((acc, item) => {
       const expectedAmount = Number(item.expected_amount) || 0;
-      const paidAmount = Number(item.payment?.paid_amount) || 0;
+      const paidAmount = Number(item.accumulated_paid_amount) || 0;
       const periodDate = new Date(item.period_date);
       periodDate.setHours(0, 0, 0, 0);
 
