@@ -126,7 +126,8 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
       const expenseData: any = {
         ...values,
         tenant_id: tenantId,
-        created_by: user?.id
+        created_by: user?.id,
+        contract_id: values.contract_id === 'none' ? null : values.contract_id
       };
 
       if (expense?.id) {
@@ -220,7 +221,7 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Sin contrato</SelectItem>
+                      <SelectItem value="none">Sin contrato</SelectItem>
                       {contracts.map((contract) => (
                         <SelectItem key={contract.id} value={contract.id}>
                           {contract.contract_number}
