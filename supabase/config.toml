@@ -53,3 +53,6 @@ verify_jwt = false
 
 [[functions.apply-due-index-adjustments.schedule]]
 cron = "0 3 1 * *"
+
+[functions.fix-prima4302-payment]
+verify_jwt = false
