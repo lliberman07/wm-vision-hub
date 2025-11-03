@@ -152,10 +152,11 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
 
       console.log('[PaymentCellModal] Payment created successfully:', payment);
 
-      // 2. Actualizar schedule item con montos acumulados
+      // 2. ✅ CORRECCIÓN CRÍTICA: Solo actualizar accumulated_paid_amount y status
+      // expected_amount NUNCA debe modificarse desde frontend, solo desde backend
+      // cuando se aplican ajustes automáticos de contrato via rpc_apply_contract_adjustment
       const updatePayload: any = {
         accumulated_paid_amount: newAccumulatedPaid,
-        expected_amount: Math.max(0, newPendingAmount),
         status: isFullyPaid ? 'paid' : 'partial',
         updated_at: new Date().toISOString(),
       };
