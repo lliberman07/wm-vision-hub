@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building, Edit, Check, X, User, Trash2 } from "lucide-react";
+import { Plus, Building, Edit, Check, X, User, Trash2, Users, Mail, Shield, Eye } from "lucide-react";
+import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +43,14 @@ interface TenantStats {
   label: string;
 }
 
+interface TenantUser {
+  id: string;
+  user_id: string;
+  user_email: string;
+  role: string;
+  created_at: string;
+}
+
 const TENANT_TYPES = [
   { value: 'sistema', label: 'Sistema' },
   { value: 'inmobiliaria', label: 'Inmobiliaria' },
@@ -58,6 +67,10 @@ export function PMSTenantsManagement() {
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
   const [deletingTenant, setDeletingTenant] = useState<Tenant | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [viewingTenantUsers, setViewingTenantUsers] = useState<Tenant | null>(null);
+  const [isViewUsersDialogOpen, setIsViewUsersDialogOpen] = useState(false);
+  const [tenantUsers, setTenantUsers] = useState<TenantUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -202,6 +215,51 @@ export function PMSTenantsManagement() {
   const handleDelete = async (tenant: Tenant) => {
     setDeletingTenant(tenant);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleViewUsers = async (tenant: Tenant) => {
+    setViewingTenantUsers(tenant);
+    setIsViewUsersDialogOpen(true);
+    setLoadingUsers(true);
+
+    try {
+      const { data: rolesData, error } = await supabase
+        .from('user_roles')
+        .select('id, user_id, role, created_at')
+        .eq('tenant_id', tenant.id)
+        .eq('module', 'PMS')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (rolesData && rolesData.length > 0) {
+        const userIds = [...new Set(rolesData.map(r => r.user_id))];
+        const { data: users } = await supabase
+          .from('users')
+          .select('id, email')
+          .in('id', userIds);
+
+        const userMap = new Map((users || []).map(u => [u.id, u.email]));
+
+        const enrichedData: TenantUser[] = rolesData.map(role => ({
+          ...role,
+          user_email: userMap.get(role.user_id) || 'Unknown'
+        }));
+
+        setTenantUsers(enrichedData);
+      } else {
+        setTenantUsers([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching tenant users:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los usuarios del tenant",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
   };
 
   const confirmDelete = async () => {
@@ -482,7 +540,16 @@ export function PMSTenantsManagement() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => handleViewUsers(tenant)}
+                        title="Ver usuarios"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleEdit(tenant)}
+                        title="Editar"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -491,6 +558,7 @@ export function PMSTenantsManagement() {
                         size="sm"
                         onClick={() => handleDelete(tenant)}
                         className="text-destructive hover:text-destructive"
+                        title="Eliminar"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -502,6 +570,74 @@ export function PMSTenantsManagement() {
           </Table>
         </div>
       )}
+
+      {/* View Users Dialog */}
+      <Dialog open={isViewUsersDialogOpen} onOpenChange={setIsViewUsersDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Usuarios de {viewingTenantUsers?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Listado de usuarios y roles asignados a este tenant
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingUsers ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : tenantUsers.length === 0 ? (
+            <div className="text-center py-12">
+              <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground">No hay usuarios asignados a este tenant</p>
+            </div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Rol</TableHead>
+                    <TableHead>Fecha de Asignación</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tenantUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{user.user_email}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="gap-1">
+                          <Shield className="h-3 w-3" />
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(user.created_at), 'dd MMM yyyy')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center pt-4 border-t">
+            <p className="text-sm text-muted-foreground">
+              Total: {tenantUsers.length} / {viewingTenantUsers?.max_users || 0} usuarios
+            </p>
+            <Button onClick={() => setIsViewUsersDialogOpen(false)}>
+              Cerrar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

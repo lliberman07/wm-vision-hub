@@ -48,20 +48,32 @@ interface SystemUser {
   email: string;
 }
 
+interface PMSTenant {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const PMSRolesManagement = () => {
   const [roles, setRoles] = useState<PMSUserRole[]>([]);
   const [systemUsers, setSystemUsers] = useState<SystemUser[]>([]);
+  const [tenants, setTenants] = useState<PMSTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState<PMSUserRole | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newRoleUserId, setNewRoleUserId] = useState('');
+  const [newRoleTenantId, setNewRoleTenantId] = useState('');
   const [newRoleType, setNewRoleType] = useState('');
+  const [filterTenant, setFilterTenant] = useState<string>('all');
+  const [filterRole, setFilterRole] = useState<string>('all');
+  const [filterEmail, setFilterEmail] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
     fetchRoles();
     fetchSystemUsers();
+    fetchTenants();
   }, []);
 
   const fetchRoles = async () => {
@@ -124,24 +136,33 @@ const PMSRolesManagement = () => {
     }
   };
 
+  const fetchTenants = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pms_tenants')
+        .select('id, name, slug')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setTenants(data || []);
+    } catch (error: any) {
+      console.error('Error fetching tenants:', error);
+    }
+  };
+
   const handleAddRole = async () => {
-    if (!newRoleUserId || !newRoleType) {
+    if (!newRoleUserId || !newRoleType || !newRoleTenantId) {
       toast({
         title: "Error",
-        description: "Debe seleccionar un usuario y un rol",
+        description: "Debe seleccionar un usuario, un tenant y un rol",
         variant: "destructive"
       });
       return;
     }
 
     try {
-      // Get default tenant
-      const { data: tenantId, error: tenantError } = await supabase
-        .rpc('get_default_tenant_id');
-
-      if (tenantError || !tenantId) {
-        throw new Error('No se pudo obtener el tenant predeterminado');
-      }
+      const tenantId = newRoleTenantId;
 
       // Obtener info del tenant y límite de usuarios
       const { data: tenantInfo } = await supabase
@@ -219,6 +240,7 @@ const PMSRolesManagement = () => {
       await fetchRoles();
       setShowAddDialog(false);
       setNewRoleUserId('');
+      setNewRoleTenantId('');
       setNewRoleType('');
     } catch (error: any) {
       console.error('Error adding role:', error);
@@ -283,6 +305,13 @@ const PMSRolesManagement = () => {
     return <Shield className="h-3 w-3" />;
   };
 
+  const filteredRoles = roles.filter((role) => {
+    if (filterTenant !== 'all' && role.tenant_id !== filterTenant) return false;
+    if (filterRole !== 'all' && role.role !== filterRole) return false;
+    if (filterEmail && !role.user_email?.toLowerCase().includes(filterEmail.toLowerCase())) return false;
+    return true;
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -297,7 +326,7 @@ const PMSRolesManagement = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">
-              Total de usuarios con acceso PMS: {roles.length}
+              Mostrando {filteredRoles.length} de {roles.length} usuarios
             </p>
           </div>
           <Button onClick={() => setShowAddDialog(true)}>
@@ -306,10 +335,61 @@ const PMSRolesManagement = () => {
           </Button>
         </div>
 
-        {roles.length === 0 ? (
+        <div className="flex gap-3 items-end">
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="filter-tenant">Filtrar por Tenant</Label>
+            <Select value={filterTenant} onValueChange={setFilterTenant}>
+              <SelectTrigger id="filter-tenant">
+                <SelectValue placeholder="Todos los tenants" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tenants</SelectItem>
+                {tenants.map((tenant) => (
+                  <SelectItem key={tenant.id} value={tenant.id}>
+                    {tenant.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="filter-role">Filtrar por Rol</Label>
+            <Select value={filterRole} onValueChange={setFilterRole}>
+              <SelectTrigger id="filter-role">
+                <SelectValue placeholder="Todos los roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los roles</SelectItem>
+                <SelectItem value="SUPERADMIN">SUPERADMIN</SelectItem>
+                <SelectItem value="INMOBILIARIA">INMOBILIARIA</SelectItem>
+                <SelectItem value="ADMINISTRADOR">ADMINISTRADOR</SelectItem>
+                <SelectItem value="PROPIETARIO">PROPIETARIO</SelectItem>
+                <SelectItem value="INQUILINO">INQUILINO</SelectItem>
+                <SelectItem value="PROVEEDOR">PROVEEDOR</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="filter-email">Buscar por Email</Label>
+            <input
+              id="filter-email"
+              type="text"
+              placeholder="email@ejemplo.com"
+              value={filterEmail}
+              onChange={(e) => setFilterEmail(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+        </div>
+
+        {filteredRoles.length === 0 ? (
           <div className="text-center py-12">
             <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">No hay roles PMS asignados</p>
+            <p className="text-muted-foreground">
+              {roles.length === 0 ? 'No hay roles PMS asignados' : 'No se encontraron roles con los filtros aplicados'}
+            </p>
           </div>
         ) : (
           <div className="border rounded-lg overflow-hidden">
@@ -325,7 +405,7 @@ const PMSRolesManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {roles.map((role) => (
+                {filteredRoles.map((role) => (
                   <TableRow key={role.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -421,18 +501,34 @@ const PMSRolesManagement = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="tenant">Tenant</Label>
+              <Select value={newRoleTenantId} onValueChange={setNewRoleTenantId}>
+                <SelectTrigger id="tenant">
+                  <SelectValue placeholder="Seleccionar tenant..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {tenants.map((tenant) => (
+                    <SelectItem key={tenant.id} value={tenant.id}>
+                      {tenant.name} ({tenant.slug})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="role">Rol PMS</Label>
               <Select value={newRoleType} onValueChange={setNewRoleType}>
                 <SelectTrigger id="role">
                   <SelectValue placeholder="Seleccionar rol..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="superadmin">SUPERADMIN</SelectItem>
-                  <SelectItem value="inmobiliaria">INMOBILIARIA</SelectItem>
-                  <SelectItem value="admin">ADMIN</SelectItem>
-                  <SelectItem value="propietario">PROPIETARIO</SelectItem>
-                  <SelectItem value="inquilino">INQUILINO</SelectItem>
-                  <SelectItem value="proveedor">PROVEEDOR</SelectItem>
+                  <SelectItem value="SUPERADMIN">SUPERADMIN</SelectItem>
+                  <SelectItem value="INMOBILIARIA">INMOBILIARIA</SelectItem>
+                  <SelectItem value="ADMINISTRADOR">ADMINISTRADOR</SelectItem>
+                  <SelectItem value="PROPIETARIO">PROPIETARIO</SelectItem>
+                  <SelectItem value="INQUILINO">INQUILINO</SelectItem>
+                  <SelectItem value="PROVEEDOR">PROVEEDOR</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -442,6 +538,7 @@ const PMSRolesManagement = () => {
             <Button variant="outline" onClick={() => {
               setShowAddDialog(false);
               setNewRoleUserId('');
+              setNewRoleTenantId('');
               setNewRoleType('');
             }}>
               Cancelar
