@@ -79,9 +79,11 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     try {
-      // Call RPC to get user roles in real-time (no localStorage)
+      // ✅ NEW: Use v_current_user_tenants view (more efficient than RPC)
       const { data: rolesData, error: rolesError } = await supabase
-        .rpc('get_user_pms_role', { _user_id: user.id });
+        .from('v_current_user_tenants')
+        .select('*')
+        .eq('user_id', user.id);
 
       if (rolesError) {
         console.error('[PMSContext] Error fetching roles:', rolesError);
@@ -99,13 +101,17 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return;
       }
 
-      // Build role contexts from RPC result
-      const contexts: PMSRoleContext[] = rolesData.map((r: any) => ({
-        role: r.role.toUpperCase() as PMSRole,
-        tenant_id: r.tenant_id,
-        tenant_name: r.tenant_name || 'Sin nombre',
-        tenant_slug: r.tenant_slug || ''
-      }));
+      // Build role contexts from view result
+      // Note: The view returns 1 row per tenant with roles[] array
+      // We flatMap to expand into individual role contexts
+      const contexts: PMSRoleContext[] = rolesData.flatMap((row: any) => 
+        (row.roles || []).map((role: string) => ({
+          role: role.toUpperCase() as PMSRole,
+          tenant_id: row.tenant_id,
+          tenant_name: row.name || 'Sin nombre',
+          tenant_slug: row.slug || ''
+        }))
+      );
 
       setAllRoleContexts(contexts);
       

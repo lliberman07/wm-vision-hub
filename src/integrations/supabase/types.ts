@@ -1047,6 +1047,48 @@ export type Database = {
           },
         ]
       }
+      pms_contract_parties: {
+        Row: {
+          contract_id: string
+          created_at: string | null
+          id: string
+          party_role: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string | null
+          id?: string
+          party_role: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string | null
+          id?: string
+          party_role?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_contract_parties_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_parties_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_contract_payment_methods: {
         Row: {
           contract_id: string
@@ -2542,6 +2584,61 @@ export type Database = {
         }
         Relationships: []
       }
+      v_current_user_tenants: {
+        Row: {
+          name: string | null
+          roles: string[] | null
+          slug: string | null
+          tenant_id: string | null
+          type: Database["public"]["Enums"]["pms_tenant_type"] | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_roles_extended: {
+        Row: {
+          assigned_at: string | null
+          email: string | null
+          id: string | null
+          role_type: string | null
+          slug: string | null
+          tenant_id: string | null
+          tenant_name: string | null
+          tenant_type: Database["public"]["Enums"]["pms_tenant_type"] | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       activate_contract: {
@@ -2753,6 +2850,7 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: boolean
       }
+      is_superadmin_pms: { Args: never; Returns: boolean }
       link_existing_payments_to_schedule: {
         Args: { contract_id_param: string }
         Returns: undefined
