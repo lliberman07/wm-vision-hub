@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 
-type PMSRole = 'SUPERADMIN' | 'INMOBILIARIA' | 'ADMINISTRADOR' | 'PROPIETARIO' | 'INQUILINO' | 'PROVEEDOR';
+type PMSRole = 'SUPERADMIN' | 'INMOBILIARIA' | 'GESTOR' | 'PROPIETARIO' | 'INQUILINO' | 'PROVEEDOR';
 
 interface PMSTenant {
   id: string;

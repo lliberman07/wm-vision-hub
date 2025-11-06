@@ -168,7 +168,7 @@ const PMSRolesManagement = () => {
     // Si el usuario tiene tenant tipo propietario, restringir roles
     if (selectedUserInfo?.has_propietario_tenant) {
       // Propietarios SOLO pueden tener roles operativos
-      let allowedRoles = ['PROPIETARIO', 'ADMINISTRADOR', 'INQUILINO'];
+      let allowedRoles = ['PROPIETARIO', 'GESTOR', 'INQUILINO'];
       
       // Filtrar roles que el usuario ya tiene en este tenant
       const existingRolesInTenant = selectedUserInfo.existing_roles
@@ -183,7 +183,7 @@ const PMSRolesManagement = () => {
 
     // SUPERADMIN puede asignar todos los roles
     if (isSuperAdmin) {
-      let allowedRoles = ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+      let allowedRoles = ['SUPERADMIN', 'INMOBILIARIA', 'GESTOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
       
       // Filtrar roles que el usuario ya tiene en este tenant
       if (selectedUserInfo) {
@@ -204,27 +204,27 @@ const PMSRolesManagement = () => {
     switch (tenantType) {
       case 'propietario':
         // Tenants tipo propietario solo roles operativos
-        allowedRoles = ['PROPIETARIO', 'ADMINISTRADOR', 'INQUILINO'];
+        allowedRoles = ['PROPIETARIO', 'GESTOR', 'INQUILINO'];
         break;
 
       case 'inmobiliaria':
         if (isBranch) {
           // Sucursales NO pueden tener INMOBILIARIA ni SUPERADMIN
-          allowedRoles = ['ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+          allowedRoles = ['GESTOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
         } else {
           // Casa Matriz de inmobiliaria
-          allowedRoles = ['INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+          allowedRoles = ['INMOBILIARIA', 'GESTOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
         }
         break;
 
       case 'sistema':
         // Tenants tipo sistema pueden tener todos (excepto SUPERADMIN si no eres SUPERADMIN)
-        allowedRoles = ['INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+        allowedRoles = ['INMOBILIARIA', 'GESTOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
         break;
 
       default:
         // Otros tipos
-        allowedRoles = ['ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+        allowedRoles = ['GESTOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
     }
 
     // Filtrar roles que el usuario ya tiene en este tenant
@@ -508,7 +508,7 @@ const PMSRolesManagement = () => {
       if (['SUPERADMIN', 'INMOBILIARIA'].includes(newRoleType)) {
         toast({
           title: "Rol No Permitido",
-          description: "Los propietarios independientes solo pueden tener roles operativos (PROPIETARIO, ADMINISTRADOR)",
+          description: "Los propietarios independientes solo pueden tener roles operativos (PROPIETARIO, GESTOR)",
           variant: "destructive"
         });
         return;
@@ -776,7 +776,7 @@ const PMSRolesManagement = () => {
                 <SelectItem value="all">Todos los roles</SelectItem>
                 <SelectItem value="SUPERADMIN">SUPERADMIN</SelectItem>
                 <SelectItem value="INMOBILIARIA">INMOBILIARIA</SelectItem>
-                <SelectItem value="ADMINISTRADOR">ADMINISTRADOR</SelectItem>
+                <SelectItem value="GESTOR">GESTOR - Property Manager</SelectItem>
                 <SelectItem value="PROPIETARIO">PROPIETARIO</SelectItem>
                 <SelectItem value="INQUILINO">INQUILINO</SelectItem>
                 <SelectItem value="PROVEEDOR">PROVEEDOR</SelectItem>
@@ -1041,7 +1041,7 @@ const PMSRolesManagement = () => {
                           <strong>Tenant Principal:</strong> {selectedUserInfo.primary_tenant_name} (tipo: {selectedUserInfo.primary_tenant_type})
                         </p>
                         <p className="text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200">
-                          ⚠️ Este usuario solo puede tener roles operativos (PROPIETARIO, ADMINISTRADOR) en su tenant principal.
+                          ⚠️ Este usuario solo puede tener roles operativos (PROPIETARIO, GESTOR) en su tenant principal.
                         </p>
                       </>
                     ) : selectedUserInfo.existing_roles.length > 0 ? (

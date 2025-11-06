@@ -528,7 +528,7 @@ const PMSAccessRequests = () => {
     const colors: Record<string, string> = {
       SUPERADMIN: 'bg-purple-500',
       INMOBILIARIA: 'bg-blue-500',
-      ADMINISTRADOR: 'bg-indigo-500',
+      GESTOR: 'bg-indigo-500',
       PROPIETARIO: 'bg-green-500',
       INQUILINO: 'bg-yellow-500',
       PROVEEDOR: 'bg-orange-500',

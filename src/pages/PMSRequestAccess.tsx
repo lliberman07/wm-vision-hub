@@ -521,7 +521,7 @@ const PMSRequestAccess = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="INMOBILIARIA">Inmobiliaria</SelectItem>
-                        <SelectItem value="ADMINISTRADOR">Administrador</SelectItem>
+                        <SelectItem value="GESTOR">Gestor (Property Manager)</SelectItem>
                         <SelectItem value="PROPIETARIO">Propietario</SelectItem>
                         <SelectItem value="INQUILINO">Inquilino</SelectItem>
                       </SelectContent>
