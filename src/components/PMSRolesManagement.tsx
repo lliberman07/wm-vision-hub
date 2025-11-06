@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePMS } from '@/contexts/PMSContext';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Mail, User, Trash2, Calendar, Plus } from 'lucide-react';
+import { Shield, Mail, User, Trash2, Calendar, Plus, Building2, ChevronRight, AlertCircle, Info, Network } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -52,12 +53,28 @@ interface PMSTenant {
   id: string;
   name: string;
   slug: string;
+  tenant_type: string;
+  settings?: any;
+  parent_tenant_id?: string;
+  is_headquarters?: boolean;
+  children?: PMSTenant[];
+}
+
+interface TenantUserLimit {
+  tenant_id: string;
+  tenant_name: string;
+  current_users: number;
+  max_users: number;
+  is_at_limit: boolean;
 }
 
 const PMSRolesManagement = () => {
+  const { userRole } = usePMS();
   const [roles, setRoles] = useState<PMSUserRole[]>([]);
   const [systemUsers, setSystemUsers] = useState<SystemUser[]>([]);
   const [tenants, setTenants] = useState<PMSTenant[]>([]);
+  const [hierarchicalTenants, setHierarchicalTenants] = useState<PMSTenant[]>([]);
+  const [userLimits, setUserLimits] = useState<Map<string, TenantUserLimit>>(new Map());
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState<PMSUserRole | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -68,13 +85,97 @@ const PMSRolesManagement = () => {
   const [filterTenant, setFilterTenant] = useState<string>('all');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterEmail, setFilterEmail] = useState<string>('');
+  const [availableRoles, setAvailableRoles] = useState<string[]>([]);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    checkPermissions();
     fetchRoles();
     fetchSystemUsers();
     fetchTenants();
   }, []);
+
+  useEffect(() => {
+    if (newRoleTenantId) {
+      updateAvailableRoles(newRoleTenantId);
+      fetchUserLimit(newRoleTenantId);
+    }
+  }, [newRoleTenantId]);
+
+  const checkPermissions = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('module', 'PMS')
+        .eq('status', 'approved');
+
+      const isSuperAdmin = roles?.some(r => r.role.toUpperCase() === 'SUPERADMIN');
+      setIsSuperAdmin(isSuperAdmin || false);
+    } catch (error) {
+      console.error('Error checking permissions:', error);
+    }
+  };
+
+  const updateAvailableRoles = (tenantId: string) => {
+    const tenant = tenants.find(t => t.id === tenantId);
+    if (!tenant) {
+      setAvailableRoles([]);
+      return;
+    }
+
+    // SUPERADMIN puede asignar todos los roles
+    if (isSuperAdmin) {
+      setAvailableRoles(['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR']);
+      return;
+    }
+
+    // Roles permitidos según tipo de tenant
+    const isBranch = tenant.parent_tenant_id !== null;
+    
+    if (isBranch) {
+      // Sucursales NO pueden tener rol INMOBILIARIA ni SUPERADMIN
+      setAvailableRoles(['ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR']);
+    } else {
+      // Casa Matriz puede tener todos excepto SUPERADMIN (si no eres SUPERADMIN)
+      setAvailableRoles(['INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR']);
+    }
+  };
+
+  const fetchUserLimit = async (tenantId: string) => {
+    try {
+      const { data: maxUsers } = await supabase
+        .rpc('get_tenant_user_limit', { tenant_id_param: tenantId });
+
+      const { count: currentCount } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .eq('module', 'PMS')
+        .eq('status', 'approved');
+
+      const tenant = tenants.find(t => t.id === tenantId);
+      
+      if (tenant) {
+        const limit: TenantUserLimit = {
+          tenant_id: tenantId,
+          tenant_name: tenant.name,
+          current_users: currentCount || 0,
+          max_users: maxUsers || 0,
+          is_at_limit: (currentCount || 0) >= (maxUsers || 0)
+        };
+        
+        setUserLimits(prev => new Map(prev).set(tenantId, limit));
+      }
+    } catch (error) {
+      console.error('Error fetching user limit:', error);
+    }
+  };
 
   const fetchRoles = async () => {
     try {
@@ -140,15 +241,36 @@ const PMSRolesManagement = () => {
     try {
       const { data, error } = await supabase
         .from('pms_tenants')
-        .select('id, name, slug')
+        .select('id, name, slug, tenant_type, settings')
         .eq('is_active', true)
         .order('name');
 
       if (error) throw error;
-      setTenants(data || []);
+      
+      const tenantsData = (data || []).map((t: any) => ({
+        ...t,
+        parent_tenant_id: t.settings?.parent_tenant_id || null,
+        is_headquarters: t.settings?.is_headquarters || false,
+      }));
+      
+      setTenants(tenantsData);
+      
+      // Construir jerarquía
+      const hierarchical = buildTenantHierarchy(tenantsData);
+      setHierarchicalTenants(hierarchical);
     } catch (error: any) {
       console.error('Error fetching tenants:', error);
     }
+  };
+
+  const buildTenantHierarchy = (allTenants: PMSTenant[]): PMSTenant[] => {
+    const headquarters = allTenants.filter(t => !t.parent_tenant_id);
+    const branches = allTenants.filter(t => t.parent_tenant_id);
+
+    return headquarters.map(hq => ({
+      ...hq,
+      children: branches.filter(b => b.parent_tenant_id === hq.id)
+    }));
   };
 
   const handleAddRole = async () => {
@@ -501,36 +623,90 @@ const PMSRolesManagement = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tenant">Tenant</Label>
+              <Label htmlFor="tenant" className="flex items-center gap-2">
+                <Network className="h-4 w-4" />
+                Organización / Tenant
+              </Label>
               <Select value={newRoleTenantId} onValueChange={setNewRoleTenantId}>
                 <SelectTrigger id="tenant">
                   <SelectValue placeholder="Seleccionar tenant..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {tenants.map((tenant) => (
-                    <SelectItem key={tenant.id} value={tenant.id}>
-                      {tenant.name} ({tenant.slug})
-                    </SelectItem>
+                  {hierarchicalTenants.map((hq) => (
+                    <>
+                      <SelectItem key={hq.id} value={hq.id}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4" />
+                          <span className="font-semibold">{hq.name}</span>
+                          <Badge variant="secondary" className="text-xs">Casa Matriz</Badge>
+                        </div>
+                      </SelectItem>
+                      {hq.children?.map((branch) => (
+                        <SelectItem key={branch.id} value={branch.id}>
+                          <div className="flex items-center gap-2 pl-4">
+                            <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                            <span>{branch.name}</span>
+                            <Badge variant="outline" className="text-xs">Sucursal</Badge>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </>
                   ))}
                 </SelectContent>
               </Select>
+              
+              {newRoleTenantId && userLimits.has(newRoleTenantId) && (
+                <div className={`flex items-center gap-2 text-sm p-2 rounded-md ${
+                  userLimits.get(newRoleTenantId)?.is_at_limit 
+                    ? 'bg-destructive/10 text-destructive' 
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {userLimits.get(newRoleTenantId)?.is_at_limit ? (
+                    <AlertCircle className="h-4 w-4" />
+                  ) : (
+                    <Info className="h-4 w-4" />
+                  )}
+                  <span>
+                    Usuarios: {userLimits.get(newRoleTenantId)?.current_users} / {userLimits.get(newRoleTenantId)?.max_users}
+                    {userLimits.get(newRoleTenantId)?.is_at_limit && ' (Límite alcanzado)'}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="role">Rol PMS</Label>
-              <Select value={newRoleType} onValueChange={setNewRoleType}>
+              <Select 
+                value={newRoleType} 
+                onValueChange={setNewRoleType}
+                disabled={!newRoleTenantId}
+              >
                 <SelectTrigger id="role">
-                  <SelectValue placeholder="Seleccionar rol..." />
+                  <SelectValue placeholder={newRoleTenantId ? "Seleccionar rol..." : "Primero selecciona un tenant"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SUPERADMIN">SUPERADMIN</SelectItem>
-                  <SelectItem value="INMOBILIARIA">INMOBILIARIA</SelectItem>
-                  <SelectItem value="ADMINISTRADOR">ADMINISTRADOR</SelectItem>
-                  <SelectItem value="PROPIETARIO">PROPIETARIO</SelectItem>
-                  <SelectItem value="INQUILINO">INQUILINO</SelectItem>
-                  <SelectItem value="PROVEEDOR">PROVEEDOR</SelectItem>
+                  {availableRoles.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              
+              {newRoleTenantId && availableRoles.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  No hay roles disponibles para asignar a este tenant
+                </p>
+              )}
+              
+              {newRoleTenantId && !isSuperAdmin && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="h-3 w-3" />
+                  {tenants.find(t => t.id === newRoleTenantId)?.parent_tenant_id 
+                    ? 'Las sucursales no pueden tener roles INMOBILIARIA ni SUPERADMIN'
+                    : 'Solo SUPERADMIN puede asignar el rol SUPERADMIN'}
+                </p>
+              )}
             </div>
           </div>
 
@@ -540,10 +716,14 @@ const PMSRolesManagement = () => {
               setNewRoleUserId('');
               setNewRoleTenantId('');
               setNewRoleType('');
+              setAvailableRoles([]);
             }}>
               Cancelar
             </Button>
-            <Button onClick={handleAddRole}>
+            <Button 
+              onClick={handleAddRole}
+              disabled={!newRoleUserId || !newRoleTenantId || !newRoleType || userLimits.get(newRoleTenantId)?.is_at_limit}
+            >
               Asignar Rol
             </Button>
           </DialogFooter>
