@@ -16,7 +16,7 @@ export const TenantCreationForm = ({ onSuccess, onCancel }: TenantCreationFormPr
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [tenantType, setTenantType] = useState<'inmobiliaria' | 'administrador' | 'propietario'>('inmobiliaria');
+  const [tenantType, setTenantType] = useState<'inmobiliaria' | 'gestor' | 'propietario'>('inmobiliaria');
 
   const generateSlug = (text: string) => {
     return text
@@ -116,14 +116,14 @@ export const TenantCreationForm = ({ onSuccess, onCancel }: TenantCreationFormPr
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="inmobiliaria">Inmobiliaria</SelectItem>
-            <SelectItem value="administrador">Administrador</SelectItem>
+            <SelectItem value="gestor">Property Manager</SelectItem>
             <SelectItem value="propietario">Propietario Individual</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
           {tenantType === 'propietario' && 'Un propietario que gestiona sus propias propiedades'}
           {tenantType === 'inmobiliaria' && 'Inmobiliaria que gestiona propiedades de terceros'}
-          {tenantType === 'administrador' && 'Administrador de consorcio o edificio'}
+          {tenantType === 'gestor' && 'Property manager independiente que gestiona propiedades'}
         </p>
       </div>
 

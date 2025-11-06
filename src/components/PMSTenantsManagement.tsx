@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
-type TenantType = 'sistema' | 'inmobiliaria' | 'administrador' | 'propietario' | 'inquilino' | 'proveedor_servicios';
+type TenantType = 'sistema' | 'inmobiliaria' | 'gestor' | 'propietario';
 
 interface Tenant {
   id: string;
@@ -62,10 +62,8 @@ interface TenantUser {
 const TENANT_TYPES = [
   { value: 'sistema', label: 'Sistema' },
   { value: 'inmobiliaria', label: 'Inmobiliaria' },
-  { value: 'administrador', label: 'Administrador' },
-  { value: 'propietario', label: 'Propietario' },
-  { value: 'inquilino', label: 'Inquilino' },
-  { value: 'proveedor_servicios', label: 'Proveedor de Servicios' },
+  { value: 'gestor', label: 'Property Manager' },
+  { value: 'propietario', label: 'Propietario Individual' },
 ];
 
 export function PMSTenantsManagement() {
@@ -135,8 +133,11 @@ export function PMSTenantsManagement() {
       // Combine data
       const enrichedTenants = (tenantsData || []).map(tenant => {
         const settings = tenant.settings as any;
+        // Mapear 'administrador' a 'gestor' durante la transición
+        const tenantType = tenant.tenant_type === 'administrador' ? 'gestor' : tenant.tenant_type;
         return {
           ...tenant,
+          tenant_type: tenantType as TenantType,
           user_count: userCountMap.get(tenant.id) || 0,
           max_users: settings?.limits?.max_users || 2,
         };
@@ -536,7 +537,7 @@ export function PMSTenantsManagement() {
                 </p>
               </div>
 
-              {(formData.tenant_type === 'inmobiliaria' || formData.tenant_type === 'administrador') && (
+              {(formData.tenant_type === 'inmobiliaria' || formData.tenant_type === 'gestor') && (
                 <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
                   <Label>Tipo de Organización</Label>
                   
