@@ -168,13 +168,33 @@ const PMSRolesManagement = () => {
     // Si el usuario tiene tenant tipo propietario, restringir roles
     if (selectedUserInfo?.has_propietario_tenant) {
       // Propietarios SOLO pueden tener roles operativos
-      setAvailableRoles(['PROPIETARIO', 'ADMINISTRADOR']);
+      let allowedRoles = ['PROPIETARIO', 'ADMINISTRADOR', 'INQUILINO'];
+      
+      // Filtrar roles que el usuario ya tiene en este tenant
+      const existingRolesInTenant = selectedUserInfo.existing_roles
+        .filter(r => r.tenant_id === tenantId)
+        .map(r => r.role);
+      
+      allowedRoles = allowedRoles.filter(role => !existingRolesInTenant.includes(role));
+      
+      setAvailableRoles(allowedRoles);
       return;
     }
 
     // SUPERADMIN puede asignar todos los roles
     if (isSuperAdmin) {
-      setAvailableRoles(['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR']);
+      let allowedRoles = ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+      
+      // Filtrar roles que el usuario ya tiene en este tenant
+      if (selectedUserInfo) {
+        const existingRolesInTenant = selectedUserInfo.existing_roles
+          .filter(r => r.tenant_id === tenantId)
+          .map(r => r.role);
+        
+        allowedRoles = allowedRoles.filter(role => !existingRolesInTenant.includes(role));
+      }
+      
+      setAvailableRoles(allowedRoles);
       return;
     }
 
@@ -184,7 +204,7 @@ const PMSRolesManagement = () => {
     switch (tenantType) {
       case 'propietario':
         // Tenants tipo propietario solo roles operativos
-        allowedRoles = ['PROPIETARIO', 'ADMINISTRADOR'];
+        allowedRoles = ['PROPIETARIO', 'ADMINISTRADOR', 'INQUILINO'];
         break;
 
       case 'inmobiliaria':
@@ -205,6 +225,15 @@ const PMSRolesManagement = () => {
       default:
         // Otros tipos
         allowedRoles = ['ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+    }
+
+    // Filtrar roles que el usuario ya tiene en este tenant
+    if (selectedUserInfo) {
+      const existingRolesInTenant = selectedUserInfo.existing_roles
+        .filter(r => r.tenant_id === tenantId)
+        .map(r => r.role);
+      
+      allowedRoles = allowedRoles.filter(role => !existingRolesInTenant.includes(role));
     }
 
     setAvailableRoles(allowedRoles);
