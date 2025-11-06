@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Mail, User, Trash2, Calendar, Plus, Building2, ChevronRight, AlertCircle, Info, Network, History, UserPlus, UserMinus } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Shield, Mail, User, Trash2, Calendar, Plus, Building2, ChevronRight, AlertCircle, Info, Network, History, UserPlus, UserMinus, Check, Lock } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -80,6 +81,21 @@ interface AuditLog {
   action_by_email?: string;
 }
 
+interface UserWithTenant {
+  id: string;
+  email: string;
+  primary_tenant_id: string | null;
+  primary_tenant_name: string | null;
+  primary_tenant_type: string | null;
+  existing_roles: Array<{
+    role: string;
+    tenant_id: string;
+    tenant_name: string;
+    tenant_type: string;
+  }>;
+  has_propietario_tenant: boolean;
+}
+
 const PMSRolesManagement = () => {
   const { userRole } = usePMS();
   const [roles, setRoles] = useState<PMSUserRole[]>([]);
@@ -101,6 +117,8 @@ const PMSRolesManagement = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loadingAudit, setLoadingAudit] = useState(false);
+  const [selectedUserInfo, setSelectedUserInfo] = useState<UserWithTenant | null>(null);
+  const [tenantLocked, setTenantLocked] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -116,7 +134,7 @@ const PMSRolesManagement = () => {
       updateAvailableRoles(newRoleTenantId);
       fetchUserLimit(newRoleTenantId);
     }
-  }, [newRoleTenantId]);
+  }, [newRoleTenantId, selectedUserInfo]);
 
   const checkPermissions = async () => {
     try {
@@ -144,22 +162,52 @@ const PMSRolesManagement = () => {
       return;
     }
 
+    const tenantType = tenant.tenant_type;
+    const isBranch = tenant.parent_tenant_id !== null;
+
+    // Si el usuario tiene tenant tipo propietario, restringir roles
+    if (selectedUserInfo?.has_propietario_tenant) {
+      // Propietarios SOLO pueden tener roles operativos
+      setAvailableRoles(['PROPIETARIO', 'ADMINISTRADOR']);
+      return;
+    }
+
     // SUPERADMIN puede asignar todos los roles
     if (isSuperAdmin) {
       setAvailableRoles(['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR']);
       return;
     }
 
-    // Roles permitidos según tipo de tenant
-    const isBranch = tenant.parent_tenant_id !== null;
-    
-    if (isBranch) {
-      // Sucursales NO pueden tener rol INMOBILIARIA ni SUPERADMIN
-      setAvailableRoles(['ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR']);
-    } else {
-      // Casa Matriz puede tener todos excepto SUPERADMIN (si no eres SUPERADMIN)
-      setAvailableRoles(['INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR']);
+    // Filtrado según tipo de tenant
+    let allowedRoles: string[] = [];
+
+    switch (tenantType) {
+      case 'propietario':
+        // Tenants tipo propietario solo roles operativos
+        allowedRoles = ['PROPIETARIO', 'ADMINISTRADOR'];
+        break;
+
+      case 'inmobiliaria':
+        if (isBranch) {
+          // Sucursales NO pueden tener INMOBILIARIA ni SUPERADMIN
+          allowedRoles = ['ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+        } else {
+          // Casa Matriz de inmobiliaria
+          allowedRoles = ['INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+        }
+        break;
+
+      case 'sistema':
+        // Tenants tipo sistema pueden tener todos (excepto SUPERADMIN si no eres SUPERADMIN)
+        allowedRoles = ['INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
+        break;
+
+      default:
+        // Otros tipos
+        allowedRoles = ['ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO', 'PROVEEDOR'];
     }
+
+    setAvailableRoles(allowedRoles);
   };
 
   const fetchUserLimit = async (tenantId: string) => {
@@ -331,6 +379,89 @@ const PMSRolesManagement = () => {
     }));
   };
 
+  const fetchUserTenantInfo = async (userId: string) => {
+    try {
+      // Consultar todos los roles PMS del usuario con info de tenants
+      const { data: userRoles, error } = await supabase
+        .from('user_roles')
+        .select(`
+          role,
+          tenant_id,
+          pms_tenants!inner (
+            id,
+            name,
+            tenant_type,
+            settings
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('module', 'PMS')
+        .eq('status', 'approved');
+
+      if (error) throw error;
+
+      if (!userRoles || userRoles.length === 0) {
+        // Usuario nuevo sin roles
+        return {
+          primary_tenant_id: null,
+          primary_tenant_name: null,
+          primary_tenant_type: null,
+          existing_roles: [],
+          has_propietario_tenant: false
+        };
+      }
+
+      // Formatear roles existentes
+      const formattedRoles = userRoles.map(r => ({
+        role: r.role.toUpperCase(),
+        tenant_id: r.pms_tenants.id,
+        tenant_name: r.pms_tenants.name,
+        tenant_type: r.pms_tenants.tenant_type
+      }));
+
+      // LÓGICA DE PRIORIDAD:
+      // 1. Si tiene un tenant tipo "propietario" → ese es su tenant principal (BLOQUEADO)
+      // 2. Si solo tiene roles en inmobiliarias → selector libre para elegir dónde agregar
+      // 3. Si no tiene roles → selector libre
+
+      const propietarioTenant = formattedRoles.find(r => r.tenant_type === 'propietario');
+      const hasPropietarioTenant = !!propietarioTenant;
+
+      let primaryTenant = null;
+
+      if (hasPropietarioTenant) {
+        // Usuario con tenant propio → BLOQUEADO en ese tenant
+        primaryTenant = propietarioTenant;
+      }
+
+      return {
+        primary_tenant_id: primaryTenant?.tenant_id || null,
+        primary_tenant_name: primaryTenant?.tenant_name || null,
+        primary_tenant_type: primaryTenant?.tenant_type || null,
+        existing_roles: formattedRoles,
+        has_propietario_tenant: hasPropietarioTenant
+      };
+    } catch (error) {
+      console.error('Error fetching user tenant info:', error);
+      return {
+        primary_tenant_id: null,
+        primary_tenant_name: null,
+        primary_tenant_type: null,
+        existing_roles: [],
+        has_propietario_tenant: false
+      };
+    }
+  };
+
+  const resetAddRoleForm = () => {
+    setNewRoleUserId('');
+    setNewRoleTenantId('');
+    setNewRoleType('');
+    setSelectedUserInfo(null);
+    setTenantLocked(false);
+    setAvailableRoles([]);
+  };
+
   const handleAddRole = async () => {
     if (!newRoleUserId || !newRoleType || !newRoleTenantId) {
       toast({
@@ -340,6 +471,45 @@ const PMSRolesManagement = () => {
       });
       return;
     }
+
+    // ============= VALIDACIONES NUEVAS =============
+    
+    // 1. Validar que usuarios con tenant tipo propietario NO tengan roles prohibidos
+    if (selectedUserInfo?.has_propietario_tenant) {
+      if (['SUPERADMIN', 'INMOBILIARIA'].includes(newRoleType)) {
+        toast({
+          title: "Rol No Permitido",
+          description: "Los propietarios independientes solo pueden tener roles operativos (PROPIETARIO, ADMINISTRADOR)",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // 2. Validar compatibilidad de rol con tipo de tenant
+    const selectedTenant = tenants.find(t => t.id === newRoleTenantId);
+    if (selectedTenant) {
+      if (selectedTenant.tenant_type === 'propietario' && ['SUPERADMIN', 'INMOBILIARIA'].includes(newRoleType)) {
+        toast({
+          title: "Rol No Compatible",
+          description: `Los tenants tipo 'propietario' no pueden tener roles de ${newRoleType}`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // 3. Validar que sucursales no tengan INMOBILIARIA o SUPERADMIN
+      if (selectedTenant.parent_tenant_id && ['INMOBILIARIA', 'SUPERADMIN'].includes(newRoleType)) {
+        toast({
+          title: "Rol No Permitido en Sucursal",
+          description: "Las sucursales no pueden tener roles de INMOBILIARIA o SUPERADMIN",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // ============= CONTINUAR CON LÓGICA EXISTENTE =============
 
     try {
       const tenantId = newRoleTenantId;
@@ -418,11 +588,9 @@ const PMSRolesManagement = () => {
       });
 
       await fetchRoles();
-      await fetchAuditLogs(); // Refrescar auditoría
+      await fetchAuditLogs();
       setShowAddDialog(false);
-      setNewRoleUserId('');
-      setNewRoleTenantId('');
-      setNewRoleType('');
+      resetAddRoleForm();
     } catch (error: any) {
       console.error('Error adding role:', error);
       toast({
@@ -765,8 +933,16 @@ const PMSRolesManagement = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
+      <Dialog 
+        open={showAddDialog} 
+        onOpenChange={(open) => {
+          setShowAddDialog(open);
+          if (!open) {
+            resetAddRoleForm();
+          }
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Asignar Nuevo Rol PMS</DialogTitle>
             <DialogDescription>
@@ -777,7 +953,31 @@ const PMSRolesManagement = () => {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="user">Usuario</Label>
-              <Select value={newRoleUserId} onValueChange={setNewRoleUserId}>
+              <Select 
+                value={newRoleUserId} 
+                onValueChange={async (userId) => {
+                  setNewRoleUserId(userId);
+                  
+                  // Auto-detectar tenant del usuario
+                  const userInfo = await fetchUserTenantInfo(userId);
+                  const user = systemUsers.find(u => u.id === userId);
+                  
+                  setSelectedUserInfo({
+                    id: userId,
+                    email: user?.email || '',
+                    ...userInfo
+                  });
+
+                  // Si tiene tenant tipo propietario, bloquearlo
+                  if (userInfo.has_propietario_tenant && userInfo.primary_tenant_id) {
+                    setNewRoleTenantId(userInfo.primary_tenant_id);
+                    setTenantLocked(true);
+                  } else {
+                    setNewRoleTenantId('');
+                    setTenantLocked(false);
+                  }
+                }}
+              >
                 <SelectTrigger id="user">
                   <SelectValue placeholder="Seleccionar usuario..." />
                 </SelectTrigger>
@@ -791,14 +991,75 @@ const PMSRolesManagement = () => {
               </Select>
             </div>
 
+            {selectedUserInfo && (
+              <div className={`rounded-lg border p-3 ${
+                selectedUserInfo.has_propietario_tenant 
+                  ? 'bg-blue-50 border-blue-200' 
+                  : 'bg-muted border-border'
+              }`}>
+                <div className="flex items-start gap-2">
+                  <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                  <div className="space-y-2 flex-1">
+                    <p className="font-semibold text-sm">
+                      {selectedUserInfo.has_propietario_tenant 
+                        ? "🏠 Propietario Independiente Detectado" 
+                        : "ℹ️ Información del Usuario"}
+                    </p>
+                    
+                    {selectedUserInfo.has_propietario_tenant ? (
+                      <>
+                        <p className="text-xs text-muted-foreground">
+                          <strong>Tenant Principal:</strong> {selectedUserInfo.primary_tenant_name} (tipo: {selectedUserInfo.primary_tenant_type})
+                        </p>
+                        <p className="text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200">
+                          ⚠️ Este usuario solo puede tener roles operativos (PROPIETARIO, ADMINISTRADOR) en su tenant principal.
+                        </p>
+                      </>
+                    ) : selectedUserInfo.existing_roles.length > 0 ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          <strong>Roles Actuales:</strong>
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedUserInfo.existing_roles.map((r, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {r.role} en {r.tenant_name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Este usuario no tiene roles PMS asignados. Puede asignarse a cualquier tenant.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="tenant" className="flex items-center gap-2">
                 <Network className="h-4 w-4" />
                 Organización / Tenant
+                {tenantLocked && (
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <Lock className="h-3 w-3" />
+                    Bloqueado
+                  </Badge>
+                )}
               </Label>
-              <Select value={newRoleTenantId} onValueChange={setNewRoleTenantId}>
+              <Select 
+                value={newRoleTenantId} 
+                onValueChange={setNewRoleTenantId}
+                disabled={!selectedUserInfo || tenantLocked}
+              >
                 <SelectTrigger id="tenant">
-                  <SelectValue placeholder="Seleccionar tenant..." />
+                  <SelectValue placeholder={
+                    tenantLocked && selectedUserInfo?.primary_tenant_name
+                      ? `${selectedUserInfo.primary_tenant_name} (Tenant Principal)`
+                      : "Seleccionar tenant..."
+                  } />
                 </SelectTrigger>
                 <SelectContent>
                   {hierarchicalTenants.map((hq) => (
@@ -807,7 +1068,15 @@ const PMSRolesManagement = () => {
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4" />
                           <span className="font-semibold">{hq.name}</span>
-                          <Badge variant="secondary" className="text-xs">Casa Matriz</Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {hq.tenant_type === 'propietario' ? 'Propietario' : 'Casa Matriz'}
+                          </Badge>
+                          {hq.id === selectedUserInfo?.primary_tenant_id && (
+                            <Badge variant="default" className="text-xs gap-1">
+                              <Check className="h-3 w-3" />
+                              Principal
+                            </Badge>
+                          )}
                         </div>
                       </SelectItem>
                       {hq.children?.map((branch) => (
@@ -882,10 +1151,7 @@ const PMSRolesManagement = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => {
               setShowAddDialog(false);
-              setNewRoleUserId('');
-              setNewRoleTenantId('');
-              setNewRoleType('');
-              setAvailableRoles([]);
+              resetAddRoleForm();
             }}>
               Cancelar
             </Button>
