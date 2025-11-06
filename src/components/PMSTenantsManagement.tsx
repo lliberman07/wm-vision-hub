@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building, Edit, Check, X, User, Trash2, Users, Mail, Shield, Eye } from "lucide-react";
+import { Plus, Building, Edit, Check, X, User, Trash2, Users, Mail, Shield, Eye, Network, Home } from "lucide-react";
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -35,6 +35,14 @@ interface Tenant {
   tenant_type: TenantType;
   user_count?: number;
   max_users?: number;
+  parent_tenant_id?: string | null;
+}
+
+interface BranchTenant extends Tenant {
+  level: number;
+  total_users: number;
+  total_properties: number;
+  total_active_contracts: number;
 }
 
 interface TenantStats {
@@ -71,12 +79,18 @@ export function PMSTenantsManagement() {
   const [isViewUsersDialogOpen, setIsViewUsersDialogOpen] = useState(false);
   const [tenantUsers, setTenantUsers] = useState<TenantUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [viewingBranches, setViewingBranches] = useState<Tenant | null>(null);
+  const [isViewBranchesDialogOpen, setIsViewBranchesDialogOpen] = useState(false);
+  const [branches, setBranches] = useState<BranchTenant[]>([]);
+  const [loadingBranches, setLoadingBranches] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
     is_active: true,
     tenant_type: "inmobiliaria" as TenantType,
     maxUsers: 2,
+    parent_tenant_id: null as string | null,
+    is_headquarters: false,
   });
   const { toast } = useToast();
 
@@ -112,6 +126,48 @@ export function PMSTenantsManagement() {
     }
   };
 
+  const handleViewBranches = async (tenant: Tenant) => {
+    setViewingBranches(tenant);
+    setIsViewBranchesDialogOpen(true);
+    setLoadingBranches(true);
+
+    try {
+      const { data, error } = await supabase
+        .rpc('get_tenant_hierarchy', { p_tenant_id: tenant.id });
+
+      if (error) throw error;
+
+      // Filtrar solo las sucursales (level > 1)
+      const branchData = (data || [])
+        .filter((item: any) => item.level > 1)
+        .map((item: any) => ({
+          id: item.tenant_id,
+          name: item.tenant_name,
+          slug: item.tenant_slug,
+          tenant_type: item.tenant_type,
+          parent_tenant_id: item.parent_tenant_id,
+          level: item.level,
+          total_users: item.total_users,
+          total_properties: item.total_properties,
+          total_active_contracts: item.total_active_contracts,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          settings: {},
+        }));
+
+      setBranches(branchData);
+    } catch (error: any) {
+      console.error('Error fetching branches:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las sucursales",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingBranches(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -122,7 +178,8 @@ export function PMSTenantsManagement() {
           limits: {
             ...editingTenant.settings?.limits,
             max_users: formData.maxUsers
-          }
+          },
+          is_headquarters: formData.is_headquarters
         };
 
         const { error } = await supabase
@@ -133,6 +190,7 @@ export function PMSTenantsManagement() {
             is_active: formData.is_active,
             tenant_type: formData.tenant_type,
             settings: settingsToSave,
+            parent_tenant_id: formData.parent_tenant_id,
           })
           .eq("id", editingTenant.id);
 
@@ -146,7 +204,8 @@ export function PMSTenantsManagement() {
         const settingsToSave = {
           limits: {
             max_users: formData.maxUsers
-          }
+          },
+          is_headquarters: formData.is_headquarters
         };
 
         const { error } = await supabase
@@ -157,6 +216,7 @@ export function PMSTenantsManagement() {
             is_active: formData.is_active,
             tenant_type: formData.tenant_type,
             settings: settingsToSave,
+            parent_tenant_id: formData.parent_tenant_id,
           }]);
 
         if (error) throw error;
@@ -187,12 +247,15 @@ export function PMSTenantsManagement() {
       is_active: true,
       tenant_type: "inmobiliaria",
       maxUsers: 2,
+      parent_tenant_id: null,
+      is_headquarters: false,
     });
     setEditingTenant(null);
   };
 
   const handleEdit = (tenant: Tenant) => {
     const maxUsers = tenant.settings?.limits?.max_users || tenant.max_users || 2;
+    const isHeadquarters = tenant.settings?.is_headquarters || false;
     
     setEditingTenant(tenant);
     setFormData({
@@ -201,6 +264,8 @@ export function PMSTenantsManagement() {
       is_active: tenant.is_active,
       tenant_type: tenant.tenant_type,
       maxUsers: maxUsers,
+      parent_tenant_id: tenant.parent_tenant_id || null,
+      is_headquarters: isHeadquarters,
     });
     setIsDialogOpen(true);
   };
@@ -442,6 +507,62 @@ export function PMSTenantsManagement() {
                 </p>
               </div>
 
+              {(formData.tenant_type === 'inmobiliaria' || formData.tenant_type === 'administrador') && (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_headquarters"
+                      checked={formData.is_headquarters}
+                      onCheckedChange={(checked) => {
+                        setFormData({ 
+                          ...formData, 
+                          is_headquarters: checked,
+                          parent_tenant_id: checked ? null : formData.parent_tenant_id
+                        });
+                      }}
+                    />
+                    <Label htmlFor="is_headquarters" className="flex items-center gap-2">
+                      <Home className="h-4 w-4" />
+                      Casa Matriz (puede tener sucursales)
+                    </Label>
+                  </div>
+
+                  {!formData.is_headquarters && (
+                    <div className="space-y-2">
+                      <Label htmlFor="parent_tenant_id">Sucursal de (opcional)</Label>
+                      <Select
+                        value={formData.parent_tenant_id || "none"}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, parent_tenant_id: value === "none" ? null : value })
+                        }
+                      >
+                        <SelectTrigger id="parent_tenant_id">
+                          <SelectValue placeholder="Independiente (sin casa matriz)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Independiente</SelectItem>
+                          {tenants
+                            .filter(t => 
+                              t.settings?.is_headquarters && 
+                              t.tenant_type === formData.tenant_type &&
+                              t.id !== editingTenant?.id
+                            )
+                            .map((tenant) => (
+                              <SelectItem key={tenant.id} value={tenant.id}>
+                                {tenant.name}
+                              </SelectItem>
+                            ))
+                          }
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Selecciona una Casa Matriz para crear una sucursal
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
               <div className="flex justify-end gap-2">
                 <Button
                   type="button"
@@ -470,9 +591,10 @@ export function PMSTenantsManagement() {
         <div className="border rounded-lg overflow-hidden">
           <Table>
               <TableHeader>
-                <TableRow>
+              <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Tipo</TableHead>
+                  <TableHead>Jerarquía</TableHead>
                   <TableHead>Slug</TableHead>
                   <TableHead>Usuarios</TableHead>
                   <TableHead>Estado</TableHead>
@@ -481,11 +603,24 @@ export function PMSTenantsManagement() {
                 </TableRow>
               </TableHeader>
             <TableBody>
-              {tenants.map((tenant) => (
+              {tenants.map((tenant) => {
+                const isHeadquarters = tenant.settings?.is_headquarters || false;
+                const hasBranches = tenants.some(t => t.parent_tenant_id === tenant.id);
+                const parentTenant = tenant.parent_tenant_id 
+                  ? tenants.find(t => t.id === tenant.parent_tenant_id)
+                  : null;
+
+                return (
                 <TableRow key={tenant.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-muted-foreground" />
+                      {isHeadquarters ? (
+                        <Home className="h-4 w-4 text-primary" />
+                      ) : tenant.parent_tenant_id ? (
+                        <Network className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Building className="h-4 w-4 text-muted-foreground" />
+                      )}
                       {tenant.name}
                     </div>
                   </TableCell>
@@ -493,6 +628,23 @@ export function PMSTenantsManagement() {
                     <Badge variant="outline">
                       {TENANT_TYPES.find(t => t.value === tenant.tenant_type)?.label}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {isHeadquarters && (
+                      <Badge variant="default" className="gap-1">
+                        <Home className="h-3 w-3" />
+                        Casa Matriz
+                      </Badge>
+                    )}
+                    {tenant.parent_tenant_id && parentTenant && (
+                      <Badge variant="secondary" className="gap-1">
+                        <Network className="h-3 w-3" />
+                        Sucursal de {parentTenant.name}
+                      </Badge>
+                    )}
+                    {!isHeadquarters && !tenant.parent_tenant_id && (
+                      <Badge variant="outline">Independiente</Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <code className="px-2 py-1 bg-muted rounded text-xs">
@@ -537,6 +689,16 @@ export function PMSTenantsManagement() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      {hasBranches && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewBranches(tenant)}
+                          title="Ver sucursales"
+                        >
+                          <Network className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -565,7 +727,8 @@ export function PMSTenantsManagement() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </div>
@@ -633,6 +796,86 @@ export function PMSTenantsManagement() {
               Total: {tenantUsers.length} / {viewingTenantUsers?.max_users || 0} usuarios
             </p>
             <Button onClick={() => setIsViewUsersDialogOpen(false)}>
+              Cerrar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Branches Dialog */}
+      <Dialog open={isViewBranchesDialogOpen} onOpenChange={setIsViewBranchesDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Network className="h-5 w-5" />
+              Sucursales de {viewingBranches?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Listado de sucursales y sus estadísticas
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingBranches ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : branches.length === 0 ? (
+            <div className="text-center py-12">
+              <Network className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground">No hay sucursales registradas</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Crea un nuevo tenant y selecciona "{viewingBranches?.name}" como Casa Matriz
+              </p>
+            </div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Usuarios</TableHead>
+                    <TableHead>Propiedades</TableHead>
+                    <TableHead>Contratos Activos</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {branches.map((branch) => (
+                    <TableRow key={branch.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Network className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{branch.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span>{branch.total_users}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Building className="h-4 w-4 text-muted-foreground" />
+                          <span>{branch.total_properties}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="default">
+                          {branch.total_active_contracts} activos
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center pt-4 border-t">
+            <p className="text-sm text-muted-foreground">
+              Total: {branches.length} {branches.length === 1 ? 'sucursal' : 'sucursales'}
+            </p>
+            <Button onClick={() => setIsViewBranchesDialogOpen(false)}>
               Cerrar
             </Button>
           </div>
