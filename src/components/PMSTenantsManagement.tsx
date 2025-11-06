@@ -537,59 +537,162 @@ export function PMSTenantsManagement() {
               </div>
 
               {(formData.tenant_type === 'inmobiliaria' || formData.tenant_type === 'administrador') && (
-                <>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="is_headquarters"
-                      checked={formData.is_headquarters}
-                      onCheckedChange={(checked) => {
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                  <Label>Tipo de Organización</Label>
+                  
+                  <div className="space-y-3">
+                    {/* Opción: Casa Matriz */}
+                    <div 
+                      className={`flex items-start space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                        formData.is_headquarters 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => {
                         setFormData({ 
                           ...formData, 
-                          is_headquarters: checked,
-                          parent_tenant_id: checked ? null : formData.parent_tenant_id
+                          is_headquarters: true,
+                          parent_tenant_id: null
                         });
                       }}
-                    />
-                    <Label htmlFor="is_headquarters" className="flex items-center gap-2">
-                      <Home className="h-4 w-4" />
-                      Casa Matriz (puede tener sucursales)
-                    </Label>
-                  </div>
+                    >
+                      <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-primary mt-0.5">
+                        {formData.is_headquarters && (
+                          <div className="w-3 h-3 rounded-full bg-primary" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 font-medium">
+                          <Home className="h-4 w-4 text-primary" />
+                          Casa Matriz
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Independiente, puede tener sucursales asociadas
+                        </p>
+                      </div>
+                    </div>
 
-                  {!formData.is_headquarters && (
-                    <div className="space-y-2">
-                      <Label htmlFor="parent_tenant_id">Sucursal de (opcional)</Label>
-                      <Select
-                        value={formData.parent_tenant_id || "none"}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, parent_tenant_id: value === "none" ? null : value })
-                        }
-                      >
-                        <SelectTrigger id="parent_tenant_id">
-                          <SelectValue placeholder="Independiente (sin casa matriz)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Independiente</SelectItem>
-                          {tenants
-                            .filter(t => 
+                    {/* Opción: Sucursal */}
+                    <div 
+                      className={`flex items-start space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                        !formData.is_headquarters && formData.parent_tenant_id 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => {
+                        setFormData({ 
+                          ...formData, 
+                          is_headquarters: false,
+                          parent_tenant_id: formData.parent_tenant_id || (
+                            tenants.find(t => 
                               t.settings?.is_headquarters && 
                               t.tenant_type === formData.tenant_type &&
                               t.id !== editingTenant?.id
-                            )
-                            .map((tenant) => (
-                              <SelectItem key={tenant.id} value={tenant.id}>
-                                {tenant.name}
-                              </SelectItem>
-                            ))
-                          }
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Selecciona una Casa Matriz para crear una sucursal
-                      </p>
+                            )?.id || null
+                          )
+                        });
+                      }}
+                    >
+                      <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-primary mt-0.5">
+                        {!formData.is_headquarters && formData.parent_tenant_id && (
+                          <div className="w-3 h-3 rounded-full bg-primary" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 font-medium">
+                          <Network className="h-4 w-4 text-primary" />
+                          Sucursal
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Depende de una Casa Matriz existente
+                        </p>
+                        
+                        {!formData.is_headquarters && (
+                          <div className="mt-3">
+                            <Label htmlFor="parent_tenant_id" className="text-xs">
+                              Seleccionar Casa Matriz
+                            </Label>
+                            <Select
+                              value={formData.parent_tenant_id || "none"}
+                              onValueChange={(value) => {
+                                const newParentId = value === "none" ? null : value;
+                                setFormData({ 
+                                  ...formData, 
+                                  parent_tenant_id: newParentId,
+                                  is_headquarters: false
+                                });
+                              }}
+                            >
+                              <SelectTrigger id="parent_tenant_id" className="mt-1">
+                                <SelectValue placeholder="Seleccionar Casa Matriz" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none" disabled>
+                                  Seleccionar Casa Matriz
+                                </SelectItem>
+                                {tenants
+                                  .filter(t => 
+                                    t.settings?.is_headquarters && 
+                                    t.tenant_type === formData.tenant_type &&
+                                    t.id !== editingTenant?.id
+                                  )
+                                  .map((tenant) => (
+                                    <SelectItem key={tenant.id} value={tenant.id}>
+                                      <div className="flex items-center gap-2">
+                                        <Home className="h-3 w-3" />
+                                        {tenant.name}
+                                      </div>
+                                    </SelectItem>
+                                  ))
+                                }
+                              </SelectContent>
+                            </Select>
+                            {tenants.filter(t => 
+                              t.settings?.is_headquarters && 
+                              t.tenant_type === formData.tenant_type &&
+                              t.id !== editingTenant?.id
+                            ).length === 0 && (
+                              <p className="text-xs text-destructive mt-1">
+                                No hay Casas Matriz disponibles. Crea una primero.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </>
+
+                    {/* Opción: Independiente */}
+                    <div 
+                      className={`flex items-start space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                        !formData.is_headquarters && !formData.parent_tenant_id 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => {
+                        setFormData({ 
+                          ...formData, 
+                          is_headquarters: false,
+                          parent_tenant_id: null
+                        });
+                      }}
+                    >
+                      <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-primary mt-0.5">
+                        {!formData.is_headquarters && !formData.parent_tenant_id && (
+                          <div className="w-3 h-3 rounded-full bg-primary" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 font-medium">
+                          <Building className="h-4 w-4 text-primary" />
+                          Independiente
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Sin relación jerárquica con otras inmobiliarias
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
               <div className="flex justify-end gap-2">
