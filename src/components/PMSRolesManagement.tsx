@@ -5,7 +5,8 @@ import { usePMS } from '@/contexts/PMSContext';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Mail, User, Trash2, Calendar, Plus, Building2, ChevronRight, AlertCircle, Info, Network } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Shield, Mail, User, Trash2, Calendar, Plus, Building2, ChevronRight, AlertCircle, Info, Network, History, UserPlus, UserMinus } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -68,6 +69,17 @@ interface TenantUserLimit {
   is_at_limit: boolean;
 }
 
+interface AuditLog {
+  id: string;
+  action_by: string | null;
+  action_type: 'assigned' | 'removed';
+  target_user_email: string;
+  tenant_name: string;
+  role: string;
+  created_at: string;
+  action_by_email?: string;
+}
+
 const PMSRolesManagement = () => {
   const { userRole } = usePMS();
   const [roles, setRoles] = useState<PMSUserRole[]>([]);
@@ -87,6 +99,8 @@ const PMSRolesManagement = () => {
   const [filterEmail, setFilterEmail] = useState<string>('');
   const [availableRoles, setAvailableRoles] = useState<string[]>([]);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [loadingAudit, setLoadingAudit] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -94,6 +108,7 @@ const PMSRolesManagement = () => {
     fetchRoles();
     fetchSystemUsers();
     fetchTenants();
+    fetchAuditLogs();
   }, []);
 
   useEffect(() => {
@@ -174,6 +189,49 @@ const PMSRolesManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching user limit:', error);
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+    setLoadingAudit(true);
+    try {
+      const { data: logsData, error } = await supabase
+        .from('pms_role_audit')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      // Enriquecer con email del action_by
+      if (logsData && logsData.length > 0) {
+        const actionByIds = [...new Set(logsData.map(l => l.action_by).filter(id => id !== null))];
+        
+        const { data: users } = actionByIds.length > 0
+          ? await supabase.from('users').select('id, email').in('id', actionByIds)
+          : { data: [] };
+
+        const userMap = new Map((users || []).map(u => [u.id, u.email]));
+        
+        const enrichedLogs: AuditLog[] = logsData.map(log => ({
+          ...log,
+          action_type: log.action_type as 'assigned' | 'removed',
+          action_by_email: log.action_by ? (userMap.get(log.action_by) || 'Sistema') : 'Sistema'
+        }));
+
+        setAuditLogs(enrichedLogs);
+      } else {
+        setAuditLogs([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching audit logs:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los registros de auditoría",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingAudit(false);
     }
   };
 
@@ -360,6 +418,7 @@ const PMSRolesManagement = () => {
       });
 
       await fetchRoles();
+      await fetchAuditLogs(); // Refrescar auditoría
       setShowAddDialog(false);
       setNewRoleUserId('');
       setNewRoleTenantId('');
@@ -391,6 +450,7 @@ const PMSRolesManagement = () => {
       });
 
       await fetchRoles();
+      await fetchAuditLogs(); // Refrescar auditoría
     } catch (error: any) {
       console.error('Error deleting role:', error);
       toast({
@@ -442,9 +502,43 @@ const PMSRolesManagement = () => {
     );
   }
 
+  const getActionIcon = (actionType: string) => {
+    return actionType === 'assigned' ? (
+      <UserPlus className="h-4 w-4 text-green-600" />
+    ) : (
+      <UserMinus className="h-4 w-4 text-destructive" />
+    );
+  };
+
+  const getActionBadge = (actionType: string) => {
+    return actionType === 'assigned' ? (
+      <Badge variant="secondary" className="gap-1">
+        <UserPlus className="h-3 w-3" />
+        Asignado
+      </Badge>
+    ) : (
+      <Badge variant="destructive" className="gap-1">
+        <UserMinus className="h-3 w-3" />
+        Eliminado
+      </Badge>
+    );
+  };
+
   return (
     <>
-      <div className="space-y-4">
+      <Tabs defaultValue="roles" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="roles" className="gap-2">
+            <Shield className="h-4 w-4" />
+            Gestión de Roles
+          </TabsTrigger>
+          <TabsTrigger value="audit" className="gap-2">
+            <History className="h-4 w-4" />
+            Historial de Cambios
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="roles" className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">
@@ -576,7 +670,82 @@ const PMSRolesManagement = () => {
             </Table>
           </div>
         )}
-      </div>
+        </TabsContent>
+
+        <TabsContent value="audit" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Últimas 50 acciones registradas en el sistema
+              </p>
+            </div>
+          </div>
+
+          {loadingAudit ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : auditLogs.length === 0 ? (
+            <div className="text-center py-12">
+              <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground">No hay registros de auditoría disponibles</p>
+            </div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Acción</TableHead>
+                    <TableHead>Usuario Afectado</TableHead>
+                    <TableHead>Tenant</TableHead>
+                    <TableHead>Rol</TableHead>
+                    <TableHead>Realizado Por</TableHead>
+                    <TableHead>Fecha</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {auditLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell>
+                        {getActionBadge(log.action_type)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{log.target_user_email}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{log.tenant_name}</span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getRoleBadgeVariant(log.role)} className="gap-1">
+                          {getRoleIcon(log.role)}
+                          {log.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{log.action_by_email || 'Sistema'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {format(new Date(log.created_at), 'dd MMM yyyy HH:mm')}
+                          </span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

@@ -2309,6 +2309,53 @@ export type Database = {
           },
         ]
       }
+      pms_role_audit: {
+        Row: {
+          action_by: string | null
+          action_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          role: string
+          target_user_email: string
+          target_user_id: string
+          tenant_id: string
+          tenant_name: string
+        }
+        Insert: {
+          action_by?: string | null
+          action_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role: string
+          target_user_email: string
+          target_user_id: string
+          tenant_id: string
+          tenant_name: string
+        }
+        Update: {
+          action_by?: string | null
+          action_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+          target_user_email?: string
+          target_user_id?: string
+          tenant_id?: string
+          tenant_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_role_audit_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_tenants: {
         Row: {
           admin_email: string | null
