@@ -109,11 +109,40 @@ export function PMSTenantsManagement() {
   const fetchTenants = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .rpc('get_tenants_with_user_count');
+      // Fetch tenants with all necessary fields
+      const { data: tenantsData, error: tenantsError } = await supabase
+        .from('pms_tenants')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setTenants(data || []);
+      if (tenantsError) throw tenantsError;
+
+      // Get user counts for each tenant
+      const { data: userCounts, error: userCountsError } = await supabase
+        .from('user_roles')
+        .select('tenant_id')
+        .eq('module', 'PMS')
+        .eq('status', 'approved');
+
+      if (userCountsError) throw userCountsError;
+
+      // Count users per tenant
+      const userCountMap = new Map<string, number>();
+      (userCounts || []).forEach(role => {
+        userCountMap.set(role.tenant_id, (userCountMap.get(role.tenant_id) || 0) + 1);
+      });
+
+      // Combine data
+      const enrichedTenants = (tenantsData || []).map(tenant => {
+        const settings = tenant.settings as any;
+        return {
+          ...tenant,
+          user_count: userCountMap.get(tenant.id) || 0,
+          max_users: settings?.limits?.max_users || 2,
+        };
+      });
+
+      setTenants(enrichedTenants);
     } catch (error: any) {
       console.error("Error fetching tenants:", error);
       toast({
