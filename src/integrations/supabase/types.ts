@@ -664,6 +664,8 @@ export type Database = {
           postal_code: string | null
           razon_social: string | null
           reason: string | null
+          recommended_at: string | null
+          recommended_by: string | null
           requested_role: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at: string | null
           reviewed_by: string | null
@@ -691,6 +693,8 @@ export type Database = {
           postal_code?: string | null
           razon_social?: string | null
           reason?: string | null
+          recommended_at?: string | null
+          recommended_by?: string | null
           requested_role: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -718,6 +722,8 @@ export type Database = {
           postal_code?: string | null
           razon_social?: string | null
           reason?: string | null
+          recommended_at?: string | null
+          recommended_by?: string | null
           requested_role?: Database["public"]["Enums"]["pms_app_role"]
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -2666,6 +2672,10 @@ export type Database = {
         Args: { current_date_param?: string; index_period: string }
         Returns: boolean
       }
+      can_manage_tenant_roles: {
+        Args: { p_target_tenant_id: string; p_user_id: string }
+        Returns: boolean
+      }
       can_renew_contract: { Args: { contract_id_param: string }; Returns: Json }
       cancel_contract: {
         Args: {
@@ -2750,6 +2760,14 @@ export type Database = {
         }[]
       }
       get_default_tenant_id: { Args: never; Returns: string }
+      get_manageable_tenants: {
+        Args: { p_user_id: string }
+        Returns: {
+          is_branch: boolean
+          tenant_id: string
+          tenant_name: string
+        }[]
+      }
       get_property_analysis_by_tenant: {
         Args: never
         Returns: {
@@ -2949,6 +2967,10 @@ export type Database = {
       validate_renewal_dates: {
         Args: { parent_contract_id_param: string; proposed_start_date: string }
         Returns: boolean
+      }
+      validate_role_assignment: {
+        Args: { p_role: string; p_target_tenant_id: string; p_user_id: string }
+        Returns: Json
       }
     }
     Enums: {

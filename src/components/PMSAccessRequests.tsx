@@ -4,8 +4,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock, Mail, User, Briefcase, Phone, MapPin, FileText, Building, Eye } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CheckCircle, XCircle, Clock, Mail, User, Briefcase, Phone, MapPin, FileText, Building, Eye, Network, ThumbsUp } from 'lucide-react';
 import { format } from 'date-fns';
+import { usePMS } from '@/contexts/PMSContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +31,10 @@ interface PMSAccessRequest {
   id: string;
   user_id?: string;
   tenant_id: string;
+  tenant_name?: string;
+  tenant_type?: string;
+  parent_tenant_id?: string;
+  is_headquarters?: boolean;
   email: string;
   entity_type?: 'fisica' | 'juridica';
   first_name?: string;
@@ -48,32 +54,86 @@ interface PMSAccessRequest {
   reason: string;
   contract_number?: string;
   status: 'pending' | 'approved' | 'denied';
+  recommended_by?: string;
+  recommended_at?: string;
   created_at: string;
 }
 
+interface ManageableTenant {
+  tenant_id: string;
+  tenant_name: string;
+  is_branch: boolean;
+}
+
 const PMSAccessRequests = () => {
+  const { activeRoleContext } = usePMS();
   const [requests, setRequests] = useState<PMSAccessRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<PMSAccessRequest | null>(null);
   const [viewingRequest, setViewingRequest] = useState<PMSAccessRequest | null>(null);
-  const [actionType, setActionType] = useState<'approve' | 'reject' | 'revert' | null>(null);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | 'revert' | 'recommend' | null>(null);
+  const [manageableTenants, setManageableTenants] = useState<ManageableTenant[]>([]);
+  const [filterTenant, setFilterTenant] = useState<string>('all');
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [canManageTenants, setCanManageTenants] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    checkPermissions();
+    fetchManageableTenants();
     fetchRequests();
-  }, []);
+  }, [activeRoleContext]);
+
+  const checkPermissions = async () => {
+    if (!activeRoleContext) return;
+    
+    // Check if user is SUPERADMIN
+    const isSuperAdmin = activeRoleContext.role === 'SUPERADMIN';
+    setIsSuperAdmin(isSuperAdmin);
+    
+    // Check if user can manage tenants (INMOBILIARIA with branches)
+    if (activeRoleContext.role === 'INMOBILIARIA' && !isSuperAdmin) {
+      const { data } = await supabase
+        .rpc('get_manageable_tenants', { p_user_id: (await supabase.auth.getUser()).data.user?.id });
+      setCanManageTenants(data && data.length > 1); // Has branches if more than 1 tenant
+    } else {
+      setCanManageTenants(isSuperAdmin);
+    }
+  };
+
+  const fetchManageableTenants = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const { data, error } = await supabase
+        .rpc('get_manageable_tenants', { p_user_id: user.user.id });
+
+      if (error) throw error;
+      setManageableTenants(data || []);
+    } catch (error: any) {
+      console.error('Error fetching manageable tenants:', error);
+    }
+  };
 
   const fetchRequests = async () => {
     setLoading(true);
     try {
+      // Fetch requests with tenant information
       const { data: requests, error: requestsError } = await supabase
         .from('pms_access_requests')
-        .select('*')
+        .select(`
+          *,
+          tenant:pms_tenants(
+            name,
+            tenant_type,
+            settings
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (requestsError) throw requestsError;
 
-      // pms_access_requests ya tiene todos los campos necesarios
       setRequests((requests || []).map(req => ({
         id: req.id,
         user_id: req.user_id || undefined,
@@ -96,8 +156,14 @@ const PMSAccessRequests = () => {
         reason: req.reason || '',
         contract_number: req.contract_number || undefined,
         status: req.status as 'pending' | 'approved' | 'denied',
+        recommended_by: req.recommended_by || undefined,
+        recommended_at: req.recommended_at || undefined,
         created_at: req.created_at,
         tenant_id: req.tenant_id,
+        tenant_name: req.tenant?.name || 'Sin nombre',
+        tenant_type: req.tenant?.tenant_type || undefined,
+        parent_tenant_id: (req.tenant?.settings as any)?.parent_tenant_id || undefined,
+        is_headquarters: (req.tenant?.settings as any)?.is_headquarters || false,
       })));
     } catch (error: any) {
       console.error('Error fetching requests:', error);
@@ -115,7 +181,39 @@ const PMSAccessRequests = () => {
     if (!selectedRequest || !actionType) return;
 
     try {
+      if (actionType === 'recommend') {
+        // Casa Matriz recomienda la solicitud
+        const { error: updateError } = await supabase
+          .from('pms_access_requests')
+          .update({
+            recommended_by: (await supabase.auth.getUser()).data.user?.id,
+            recommended_at: new Date().toISOString(),
+          })
+          .eq('id', selectedRequest.id);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Solicitud recomendada",
+          description: "La solicitud ha sido marcada como recomendada. Un SUPERADMIN debe aprobarla.",
+        });
+
+        fetchRequests();
+        setSelectedRequest(null);
+        setActionType(null);
+        return;
+      }
+      
       if (actionType === 'approve') {
+        // Validar que solo SUPERADMIN pueda aprobar
+        if (!isSuperAdmin) {
+          toast({
+            title: "Acceso denegado",
+            description: "Solo SUPERADMIN puede aprobar solicitudes",
+            variant: "destructive"
+          });
+          return;
+        }
         let userId = selectedRequest.user_id;
         let isNewUser = false;
         const isPropietario = selectedRequest.requested_role === 'PROPIETARIO';
@@ -399,7 +497,11 @@ const PMSAccessRequests = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, request?: PMSAccessRequest) => {
+    if (status === 'pending' && request?.recommended_by) {
+      return <Badge variant="default" className="flex items-center gap-1 bg-blue-500"><ThumbsUp className="h-3 w-3" />Recomendada</Badge>;
+    }
+    
     switch (status) {
       case 'pending':
         return <Badge variant="outline" className="flex items-center gap-1"><Clock className="h-3 w-3" />Pendiente</Badge>;
@@ -410,6 +512,16 @@ const PMSAccessRequests = () => {
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const getTenantHierarchyBadge = (request: PMSAccessRequest) => {
+    if (request.is_headquarters) {
+      return <Badge variant="default" className="flex items-center gap-1 bg-purple-500"><Building className="h-3 w-3" />Casa Matriz</Badge>;
+    }
+    if (request.parent_tenant_id) {
+      return <Badge variant="outline" className="flex items-center gap-1"><Network className="h-3 w-3" />Sucursal</Badge>;
+    }
+    return <Badge variant="secondary" className="flex items-center gap-1"><Building className="h-3 w-3" />Independiente</Badge>;
   };
 
   const getRoleBadge = (role: string) => {
@@ -437,21 +549,51 @@ const PMSAccessRequests = () => {
     );
   }
 
+  // Filter requests based on selected tenant
+  const filteredRequests = requests.filter(req => {
+    if (filterTenant === 'all') return true;
+    if (filterTenant === 'branches') {
+      // Show only branches of current user's tenant
+      return req.parent_tenant_id === activeRoleContext?.tenant_id;
+    }
+    return req.tenant_id === filterTenant;
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Solicitudes de Acceso al PMS</h3>
           <p className="text-sm text-muted-foreground">
-            Gestiona las solicitudes de acceso de los usuarios al sistema PMS
+            {isSuperAdmin ? 'Gestiona todas las solicitudes del sistema' : 'Visualiza y recomienda solicitudes de tus sucursales'}
           </p>
         </div>
-        <Badge variant="outline" className="text-lg px-4 py-2">
-          {requests.filter(r => r.status === 'pending').length} Pendientes
-        </Badge>
+        <div className="flex items-center gap-3">
+          {canManageTenants && manageableTenants.length > 0 && (
+            <Select value={filterTenant} onValueChange={setFilterTenant}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filtrar por tenant" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {!isSuperAdmin && (
+                  <SelectItem value="branches">Mis Sucursales</SelectItem>
+                )}
+                {manageableTenants.map(t => (
+                  <SelectItem key={t.tenant_id} value={t.tenant_id}>
+                    {t.tenant_name} {t.is_branch && '(Sucursal)'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Badge variant="outline" className="text-lg px-4 py-2">
+            {filteredRequests.filter(r => r.status === 'pending').length} Pendientes
+          </Badge>
+        </div>
       </div>
 
-      {requests.length === 0 ? (
+      {filteredRequests.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>No hay solicitudes de acceso</p>
@@ -463,6 +605,7 @@ const PMSAccessRequests = () => {
               <TableRow>
                 <TableHead>Usuario</TableHead>
                 <TableHead>Tipo</TableHead>
+                <TableHead>Tenant/Jerarquía</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Fecha</TableHead>
@@ -471,7 +614,7 @@ const PMSAccessRequests = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {requests.map((request) => (
+              {filteredRequests.map((request) => (
                 <TableRow key={request.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -490,6 +633,12 @@ const PMSAccessRequests = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
+                    <div className="space-y-1">
+                      <div className="text-sm font-medium">{request.tenant_name}</div>
+                      {getTenantHierarchyBadge(request)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{request.email}</span>
@@ -499,7 +648,16 @@ const PMSAccessRequests = () => {
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(request.created_at), 'dd/MM/yyyy')}
                   </TableCell>
-                  <TableCell>{getStatusBadge(request.status)}</TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {getStatusBadge(request.status, request)}
+                      {request.recommended_at && (
+                        <div className="text-xs text-muted-foreground">
+                          Recomendada el {format(new Date(request.recommended_at), 'dd/MM/yyyy')}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-2 justify-end">
                       <Sheet>
@@ -656,25 +814,42 @@ const PMSAccessRequests = () => {
 
                                 {viewingRequest.status === 'pending' && (
                                   <div className="flex gap-2 pt-4">
-                                    <Button
-                                      className="flex-1"
-                                      variant="destructive"
-                                      onClick={() => {
-                                        setSelectedRequest(viewingRequest);
-                                        setActionType('reject');
-                                      }}
-                                    >
-                                      Rechazar
-                                    </Button>
-                                    <Button
-                                      className="flex-1"
-                                      onClick={() => {
-                                        setSelectedRequest(viewingRequest);
-                                        setActionType('approve');
-                                      }}
-                                    >
-                                      Aprobar
-                                    </Button>
+                                    {!isSuperAdmin && canManageTenants && !viewingRequest.recommended_by && (
+                                      <Button
+                                        className="flex-1"
+                                        variant="secondary"
+                                        onClick={() => {
+                                          setSelectedRequest(viewingRequest);
+                                          setActionType('recommend');
+                                        }}
+                                      >
+                                        <ThumbsUp className="h-4 w-4 mr-2" />
+                                        Recomendar
+                                      </Button>
+                                    )}
+                                    {isSuperAdmin && (
+                                      <>
+                                        <Button
+                                          className="flex-1"
+                                          variant="destructive"
+                                          onClick={() => {
+                                            setSelectedRequest(viewingRequest);
+                                            setActionType('reject');
+                                          }}
+                                        >
+                                          Rechazar
+                                        </Button>
+                                        <Button
+                                          className="flex-1"
+                                          onClick={() => {
+                                            setSelectedRequest(viewingRequest);
+                                            setActionType('approve');
+                                          }}
+                                        >
+                                          Aprobar
+                                        </Button>
+                                      </>
+                                    )}
                                   </div>
                                 )}
                                 {viewingRequest.status === 'approved' && (
@@ -699,25 +874,42 @@ const PMSAccessRequests = () => {
 
                       {request.status === 'pending' && (
                         <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setActionType('reject');
-                            }}
-                          >
-                            Rechazar
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setActionType('approve');
-                            }}
-                          >
-                            Aprobar
-                          </Button>
+                          {!isSuperAdmin && canManageTenants && !request.recommended_by && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setActionType('recommend');
+                              }}
+                            >
+                              <ThumbsUp className="h-3 w-3 mr-1" />
+                              Recomendar
+                            </Button>
+                          )}
+                          {isSuperAdmin && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setActionType('reject');
+                                }}
+                              >
+                                Rechazar
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setActionType('approve');
+                                }}
+                              >
+                                Aprobar
+                              </Button>
+                            </>
+                          )}
                         </>
                       )}
                       {request.status === 'approved' && (
@@ -748,13 +940,18 @@ const PMSAccessRequests = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {actionType === 'approve' ? 'Aprobar Solicitud' : actionType === 'revert' ? 'Revertir Aprobación' : 'Rechazar Solicitud'}
+              {actionType === 'approve' ? 'Aprobar Solicitud' : 
+               actionType === 'revert' ? 'Revertir Aprobación' : 
+               actionType === 'recommend' ? 'Recomendar Solicitud' :
+               'Rechazar Solicitud'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {actionType === 'approve' 
                 ? `¿Confirmas que deseas aprobar la solicitud de ${selectedRequest?.entity_type === 'fisica' ? `${selectedRequest?.first_name} ${selectedRequest?.last_name}` : selectedRequest?.razon_social}? Se le otorgará acceso al sistema PMS.` 
                 : actionType === 'revert'
                 ? `¿Confirmas que deseas revertir la aprobación de ${selectedRequest?.entity_type === 'fisica' ? `${selectedRequest?.first_name} ${selectedRequest?.last_name}` : selectedRequest?.razon_social}? La solicitud volverá a estado pendiente y podrás aprobarla nuevamente para re-enviar el email de bienvenida.`
+                : actionType === 'recommend'
+                ? `¿Confirmas que deseas recomendar la solicitud de ${selectedRequest?.entity_type === 'fisica' ? `${selectedRequest?.first_name} ${selectedRequest?.last_name}` : selectedRequest?.razon_social}? Un SUPERADMIN deberá aprobarla.`
                 : `¿Confirmas que deseas rechazar la solicitud de ${selectedRequest?.entity_type === 'fisica' ? `${selectedRequest?.first_name} ${selectedRequest?.last_name}` : selectedRequest?.razon_social}?`
               }
             </AlertDialogDescription>
@@ -765,7 +962,10 @@ const PMSAccessRequests = () => {
               onClick={handleAction}
               className={actionType === 'reject' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
             >
-              {actionType === 'approve' ? 'Aprobar' : actionType === 'revert' ? 'Revertir' : 'Rechazar'}
+              {actionType === 'approve' ? 'Aprobar' : 
+               actionType === 'revert' ? 'Revertir' : 
+               actionType === 'recommend' ? 'Recomendar' :
+               'Rechazar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
