@@ -3049,6 +3049,7 @@ export type Database = {
         | "inquilino"
         | "proveedor_servicios"
         | "sistema"
+        | "gestor"
       request_status: "pending" | "approved" | "denied"
       user_role: "superadmin" | "admin"
       user_role_type:
@@ -3216,6 +3217,7 @@ export const Constants = {
         "inquilino",
         "proveedor_servicios",
         "sistema",
+        "gestor",
       ],
       request_status: ["pending", "approved", "denied"],
       user_role: ["superadmin", "admin"],
