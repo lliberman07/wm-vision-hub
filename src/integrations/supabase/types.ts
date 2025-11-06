@@ -2310,6 +2310,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           name: string
+          parent_tenant_id: string | null
           settings: Json | null
           slug: string
           tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
@@ -2321,6 +2322,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name: string
+          parent_tenant_id?: string | null
           settings?: Json | null
           slug: string
           tenant_type?: Database["public"]["Enums"]["pms_tenant_type"]
@@ -2332,12 +2334,21 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name?: string
+          parent_tenant_id?: string | null
           settings?: Json | null
           slug?: string
           tenant_type?: Database["public"]["Enums"]["pms_tenant_type"]
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pms_tenants_parent_tenant_id_fkey"
+            columns: ["parent_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pms_tenants_renters: {
         Row: {
@@ -2778,6 +2789,23 @@ export type Database = {
           tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
         }[]
       }
+      get_tenant_hierarchy: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          is_headquarters: boolean
+          level: number
+          parent_tenant_id: string
+          tenant_id: string
+          tenant_name: string
+          tenant_slug: string
+          tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
+          total_active_contracts: number
+          total_expired_contracts: number
+          total_properties: number
+          total_revenue_current_month: number
+          total_users: number
+        }[]
+      }
       get_tenant_user_limit: {
         Args: { tenant_id_param: string }
         Returns: number
@@ -2824,6 +2852,10 @@ export type Database = {
           tenant_name: string
           tenant_slug: string
         }[]
+      }
+      has_hierarchical_access: {
+        Args: { p_target_tenant_id: string; p_user_id: string }
+        Returns: boolean
       }
       has_pms_role:
         | {
