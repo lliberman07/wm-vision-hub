@@ -3041,6 +3041,7 @@ export type Database = {
         | "PROPIETARIO"
         | "INQUILINO"
         | "PROVEEDOR"
+        | "GESTOR"
       pms_tenant_type:
         | "inmobiliaria"
         | "administrador"
@@ -3057,6 +3058,7 @@ export type Database = {
         | "inquilino"
         | "inmobiliaria"
         | "proveedor"
+        | "GESTOR"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3205,6 +3207,7 @@ export const Constants = {
         "PROPIETARIO",
         "INQUILINO",
         "PROVEEDOR",
+        "GESTOR",
       ],
       pms_tenant_type: [
         "inmobiliaria",
@@ -3223,6 +3226,7 @@ export const Constants = {
         "inquilino",
         "inmobiliaria",
         "proveedor",
+        "GESTOR",
       ],
     },
   },
