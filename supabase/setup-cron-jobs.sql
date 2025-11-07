@@ -20,9 +20,9 @@ SELECT cron.schedule(
   $$
   SELECT
     net.http_post(
-        url:='YOUR_PROJECT_URL/functions/v1/send-payment-reminders',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer YOUR_ANON_KEY"}'::jsonb,
-        body:=concat('{"triggered_at": "', now(), '"}')::jsonb,
+    url:='https://jrzeabjpxkhccopxfwqa.supabase.co/functions/v1/send-payment-reminders',
+    headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyemVhYmpweGtoY2NvcHhmd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDI0NjksImV4cCI6MjA3MzI3ODQ2OX0.UUIntagLOquAdC6iURCVgqIyKcaHqvtABmh_NBtFD7Y"}'::jsonb,
+    body:=concat('{"triggered_at": "', now(), '"}')::jsonb,
         timeout_milliseconds:=30000
     ) as request_id;
   $$
@@ -36,9 +36,9 @@ SELECT cron.schedule(
   $$
   SELECT
     net.http_post(
-        url:='YOUR_PROJECT_URL/functions/v1/send-overdue-alerts',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer YOUR_ANON_KEY"}'::jsonb,
-        body:=concat('{"triggered_at": "', now(), '"}')::jsonb,
+    url:='https://jrzeabjpxkhccopxfwqa.supabase.co/functions/v1/send-payment-reminders',
+    headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyemVhYmpweGtoY2NvcHhmd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDI0NjksImV4cCI6MjA3MzI3ODQ2OX0.UUIntagLOquAdC6iURCVgqIyKcaHqvtABmh_NBtFD7Y"}'::jsonb,
+    body:=concat('{"triggered_at": "', now(), '"}')::jsonb,
         timeout_milliseconds:=30000
     ) as request_id;
   $$
@@ -52,9 +52,9 @@ SELECT cron.schedule(
   $$
   SELECT
     net.http_post(
-        url:='YOUR_PROJECT_URL/functions/v1/send-staff-overdue-alerts',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer YOUR_ANON_KEY"}'::jsonb,
-        body:=concat('{"triggered_at": "', now(), '"}')::jsonb,
+    url:='https://jrzeabjpxkhccopxfwqa.supabase.co/functions/v1/send-payment-reminders',
+    headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyemVhYmpweGtoY2NvcHhmd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDI0NjksImV4cCI6MjA3MzI3ODQ2OX0.UUIntagLOquAdC6iURCVgqIyKcaHqvtABmh_NBtFD7Y"}'::jsonb,
+    body:=concat('{"triggered_at": "', now(), '"}')::jsonb,
         timeout_milliseconds:=30000
     ) as request_id;
   $$
