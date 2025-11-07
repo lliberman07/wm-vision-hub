@@ -2108,6 +2108,73 @@ export type Database = {
           },
         ]
       }
+      pms_payment_receipts: {
+        Row: {
+          contract_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          payment_id: string
+          pdf_generated_at: string | null
+          pdf_url: string | null
+          receipt_date: string
+          receipt_number: string
+          status: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_id: string
+          pdf_generated_at?: string | null
+          pdf_url?: string | null
+          receipt_date?: string
+          receipt_number: string
+          status?: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_id?: string
+          pdf_generated_at?: string | null
+          pdf_url?: string | null
+          receipt_date?: string
+          receipt_number?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_payment_receipts_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_receipts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_receipts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_payment_schedule_items: {
         Row: {
           accumulated_paid_amount: number | null
@@ -2531,6 +2598,57 @@ export type Database = {
           },
         ]
       }
+      pms_receipt_email_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          receipt_id: string
+          recipient_email: string
+          recipient_type: string
+          sent_at: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          receipt_id: string
+          recipient_email: string
+          recipient_type: string
+          sent_at?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          receipt_id?: string
+          recipient_email?: string
+          recipient_type?: string
+          sent_at?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_receipt_email_logs_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payment_receipts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_receipt_email_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_role_audit: {
         Row: {
           action_by: string | null
@@ -2585,6 +2703,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           name: string
+          notification_settings: Json | null
           parent_tenant_id: string | null
           settings: Json | null
           slug: string
@@ -2597,6 +2716,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name: string
+          notification_settings?: Json | null
           parent_tenant_id?: string | null
           settings?: Json | null
           slug: string
@@ -2609,6 +2729,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name?: string
+          notification_settings?: Json | null
           parent_tenant_id?: string | null
           settings?: Json | null
           slug?: string
@@ -3002,6 +3123,10 @@ export type Database = {
       }
       generate_property_clone_code: {
         Args: { p_parent_code: string }
+        Returns: string
+      }
+      generate_receipt_number: {
+        Args: { p_tenant_id: string }
         Returns: string
       }
       generate_reference_number: { Args: never; Returns: string }

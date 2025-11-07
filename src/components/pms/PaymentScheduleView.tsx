@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, DollarSign, Eye, FileText } from "lucide-react";
 import { PaymentCellModal } from "./PaymentCellModal";
+import { PaymentReceiptViewer } from "./PaymentReceiptViewer";
 import { toast } from "sonner";
 import { formatDateDisplay } from "@/utils/dateUtils";
 
@@ -63,6 +64,8 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
 
   useEffect(() => {
     if (contractId) {
@@ -292,14 +295,29 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
                               </TableCell>
                               <TableCell className="text-center">
                                 {item.status === 'paid' ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleCellClick(item)}
-                                  >
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    Ver Detalle
-                                  </Button>
+                                  <div className="flex items-center justify-center gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleCellClick(item)}
+                                    >
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      Ver Detalle
+                                    </Button>
+                                    {item.payment_id && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          setSelectedPaymentId(item.payment_id);
+                                          setReceiptViewerOpen(true);
+                                        }}
+                                      >
+                                        <FileText className="h-4 w-4 mr-1" />
+                                        Recibo
+                                      </Button>
+                                    )}
+                                  </div>
                                 ) : (
                                   <Button
                                     variant="default"
@@ -335,6 +353,14 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
             setIsModalOpen(false);
           }}
           readOnly={false}
+        />
+      )}
+
+      {selectedPaymentId && (
+        <PaymentReceiptViewer
+          open={receiptViewerOpen}
+          onOpenChange={setReceiptViewerOpen}
+          paymentId={selectedPaymentId}
         />
       )}
     </>

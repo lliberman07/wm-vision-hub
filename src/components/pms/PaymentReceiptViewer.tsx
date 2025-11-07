@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Download, Mail, FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDateDisplay } from '@/utils/dateUtils';
-import { formatCurrency } from '@/utils/numberFormat';
 
 interface PaymentReceiptViewerProps {
   open: boolean;
@@ -14,28 +13,9 @@ interface PaymentReceiptViewerProps {
   paymentId: string;
 }
 
-interface Receipt {
-  id: string;
-  receipt_number: string;
-  receipt_date: string;
-  pdf_url: string;
-  status: string;
-  pdf_generated_at: string;
-  metadata: any;
-}
-
-interface EmailLog {
-  id: string;
-  recipient_email: string;
-  recipient_type: string;
-  sent_at: string;
-  status: string;
-  error_message?: string;
-}
-
 export function PaymentReceiptViewer({ open, onOpenChange, paymentId }: PaymentReceiptViewerProps) {
-  const [receipt, setReceipt] = useState<Receipt | null>(null);
-  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+  const [receipt, setReceipt] = useState<any>(null);
+  const [emailLogs, setEmailLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -51,7 +31,7 @@ export function PaymentReceiptViewer({ open, onOpenChange, paymentId }: PaymentR
     try {
       // Obtener recibo
       const { data: receiptData, error: receiptError } = await supabase
-        .from('pms_payment_receipts')
+        .from('pms_payment_receipts' as any)
         .select('*')
         .eq('payment_id', paymentId)
         .maybeSingle();
@@ -62,14 +42,18 @@ export function PaymentReceiptViewer({ open, onOpenChange, paymentId }: PaymentR
         setReceipt(receiptData);
 
         // Obtener logs de emails
+        const receiptId = (receiptData as any).id;
         const { data: logsData, error: logsError } = await supabase
-          .from('pms_receipt_email_logs')
+          .from('pms_receipt_email_logs' as any)
           .select('*')
-          .eq('receipt_id', receiptData.id)
+          .eq('receipt_id', receiptId)
           .order('sent_at', { ascending: false });
 
         if (logsError) throw logsError;
         setEmailLogs(logsData || []);
+      } else {
+        setReceipt(null);
+        setEmailLogs([]);
       }
     } catch (error: any) {
       console.error('Error fetching receipt data:', error);
@@ -236,7 +220,7 @@ export function PaymentReceiptViewer({ open, onOpenChange, paymentId }: PaymentR
               <div className="border rounded-lg p-4">
                 <h4 className="font-semibold mb-3">Historial de Envíos</h4>
                 <div className="space-y-2">
-                  {emailLogs.map((log) => (
+                  {emailLogs.map((log: any) => (
                     <div key={log.id} className="flex items-start justify-between p-3 bg-muted/50 rounded">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">

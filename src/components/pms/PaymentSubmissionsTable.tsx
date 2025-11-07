@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { CheckCircle, XCircle, Eye, FileText } from "lucide-react";
 import { ReviewPaymentSubmissionDialog } from "./ReviewPaymentSubmissionDialog";
+import { PaymentReceiptViewer } from "./PaymentReceiptViewer";
 import { formatDateToDisplay, formatDateDisplay } from "@/utils/dateUtils";
 
 interface PaymentSubmission {
@@ -43,6 +44,7 @@ interface PaymentSubmission {
   schedule_item: {
     period_date: string;
     expected_amount: number;
+    payment_id: string | null;
     owner: {
       full_name: string;
     };
@@ -55,6 +57,8 @@ export function PaymentSubmissionsTable() {
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<PaymentSubmission | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
 
   useEffect(() => {
     if (currentTenant) {
@@ -151,6 +155,7 @@ export function PaymentSubmissionsTable() {
                   <TableHead className="text-right">Monto</TableHead>
                   <TableHead>Método</TableHead>
                   <TableHead className="text-center">Estado</TableHead>
+                  <TableHead className="text-center">Recibo</TableHead>
                   <TableHead className="text-center">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -171,6 +176,21 @@ export function PaymentSubmissionsTable() {
                     </TableCell>
                     <TableCell>{submission.payment_method}</TableCell>
                     <TableCell className="text-center">{getStatusBadge(submission.status)}</TableCell>
+                    <TableCell className="text-center">
+                      {submission.status === 'approved' && submission.schedule_item?.payment_id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPaymentId(submission.schedule_item.payment_id);
+                            setReceiptViewerOpen(true);
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1" />
+                          Ver
+                        </Button>
+                      )}
+                    </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Button
@@ -220,6 +240,14 @@ export function PaymentSubmissionsTable() {
             fetchSubmissions();
             setIsReviewOpen(false);
           }}
+        />
+      )}
+
+      {selectedPaymentId && (
+        <PaymentReceiptViewer
+          open={receiptViewerOpen}
+          onOpenChange={setReceiptViewerOpen}
+          paymentId={selectedPaymentId}
         />
       )}
     </>
