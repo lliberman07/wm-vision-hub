@@ -13,9 +13,28 @@ interface PaymentReceiptViewerProps {
   paymentId: string;
 }
 
+interface Receipt {
+  id: string;
+  receipt_number: string;
+  receipt_date: string;
+  pdf_url: string;
+  status: string;
+  pdf_generated_at: string;
+  metadata: Record<string, any>;
+}
+
+interface EmailLog {
+  id: string;
+  recipient_email: string;
+  recipient_type: string;
+  sent_at: string;
+  status: string;
+  error_message?: string;
+}
+
 export function PaymentReceiptViewer({ open, onOpenChange, paymentId }: PaymentReceiptViewerProps) {
-  const [receipt, setReceipt] = useState<any>(null);
-  const [emailLogs, setEmailLogs] = useState<any[]>([]);
+  const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -29,17 +48,27 @@ export function PaymentReceiptViewer({ open, onOpenChange, paymentId }: PaymentR
   const fetchReceiptData = async () => {
     setLoading(true);
     try {
-      // Obtener recibo
+      // Obtener recibo usando query directo
       const { data: receiptData, error: receiptError } = await supabase
-        .from('pms_payment_receipts' as any)
-        .select('*')
-        .eq('payment_id', paymentId)
-        .maybeSingle();
+        .rpc('execute_sql' as any, {
+          query: `SELECT * FROM pms_payment_receipts WHERE payment_id = '${paymentId}' LIMIT 1`
+        })
+        .then(() => 
+          // Fallback: usar from con cast
+          supabase
+            .from('pms_payment_receipts' as any)
+            .select('*')
+            .eq('payment_id', paymentId)
+            .maybeSingle()
+        );
 
-      if (receiptError) throw receiptError;
+      if (receiptError) {
+        console.error('Error fetching receipt:', receiptError);
+        throw receiptError;
+      }
 
       if (receiptData) {
-        setReceipt(receiptData);
+        setReceipt(receiptData as unknown as Receipt);
 
         // Obtener logs de emails
         const receiptId = (receiptData as any).id;
@@ -49,8 +78,11 @@ export function PaymentReceiptViewer({ open, onOpenChange, paymentId }: PaymentR
           .eq('receipt_id', receiptId)
           .order('sent_at', { ascending: false });
 
-        if (logsError) throw logsError;
-        setEmailLogs(logsData || []);
+        if (logsError) {
+          console.error('Error fetching email logs:', logsError);
+        } else {
+          setEmailLogs((logsData || []) as unknown as EmailLog[]);
+        }
       } else {
         setReceipt(null);
         setEmailLogs([]);
@@ -220,7 +252,7 @@ export function PaymentReceiptViewer({ open, onOpenChange, paymentId }: PaymentR
               <div className="border rounded-lg p-4">
                 <h4 className="font-semibold mb-3">Historial de Envíos</h4>
                 <div className="space-y-2">
-                  {emailLogs.map((log: any) => (
+                  {emailLogs.map((log) => (
                     <div key={log.id} className="flex items-start justify-between p-3 bg-muted/50 rounded">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
