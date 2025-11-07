@@ -1402,6 +1402,59 @@ export type Database = {
         }
         Relationships: []
       }
+      pms_email_templates: {
+        Row: {
+          available_variables: Json | null
+          created_at: string | null
+          created_by: string | null
+          html_body: string
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          subject: string
+          template_type: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          available_variables?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          html_body: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          subject: string
+          template_type: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          available_variables?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          html_body?: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          subject?: string
+          template_type?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_email_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_expenses: {
         Row: {
           amount: number
@@ -1590,6 +1643,175 @@ export type Database = {
           },
           {
             foreignKeyName: "pms_maintenance_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_notification_logs: {
+        Row: {
+          contract_id: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          notification_type: string
+          recipient_email: string
+          recipient_user_id: string | null
+          schedule_item_id: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string
+          template_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type: string
+          recipient_email: string
+          recipient_user_id?: string | null
+          schedule_item_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          template_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type?: string
+          recipient_email?: string
+          recipient_user_id?: string | null
+          schedule_item_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          template_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_notification_logs_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_notification_logs_schedule_item_id_fkey"
+            columns: ["schedule_item_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payment_schedule_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_notification_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "pms_email_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_notification_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_notification_settings: {
+        Row: {
+          created_at: string | null
+          custom_template_overdue: string | null
+          custom_template_reminder: string | null
+          custom_template_staff_alert: string | null
+          enable_overdue_alerts: boolean | null
+          enable_payment_reminders: boolean | null
+          enable_staff_alerts: boolean | null
+          id: string
+          notify_email: string | null
+          notify_inquilino: boolean | null
+          notify_propietario: boolean | null
+          notify_staff: boolean | null
+          reminder_days_before: number | null
+          reminder_time: string | null
+          tenant_id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          custom_template_overdue?: string | null
+          custom_template_reminder?: string | null
+          custom_template_staff_alert?: string | null
+          enable_overdue_alerts?: boolean | null
+          enable_payment_reminders?: boolean | null
+          enable_staff_alerts?: boolean | null
+          id?: string
+          notify_email?: string | null
+          notify_inquilino?: boolean | null
+          notify_propietario?: boolean | null
+          notify_staff?: boolean | null
+          reminder_days_before?: number | null
+          reminder_time?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          custom_template_overdue?: string | null
+          custom_template_reminder?: string | null
+          custom_template_staff_alert?: string | null
+          enable_overdue_alerts?: boolean | null
+          enable_payment_reminders?: boolean | null
+          enable_staff_alerts?: boolean | null
+          id?: string
+          notify_email?: string | null
+          notify_inquilino?: boolean | null
+          notify_propietario?: boolean | null
+          notify_staff?: boolean | null
+          reminder_days_before?: number | null
+          reminder_time?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_notification_settings_custom_template_overdue_fkey"
+            columns: ["custom_template_overdue"]
+            isOneToOne: false
+            referencedRelation: "pms_email_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_notification_settings_custom_template_reminder_fkey"
+            columns: ["custom_template_reminder"]
+            isOneToOne: false
+            referencedRelation: "pms_email_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_notification_settings_custom_template_staff_alert_fkey"
+            columns: ["custom_template_staff_alert"]
+            isOneToOne: false
+            referencedRelation: "pms_email_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_notification_settings_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "pms_tenants"
