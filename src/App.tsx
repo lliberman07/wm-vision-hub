@@ -41,6 +41,7 @@ import Reports from "./pages/pms/Reports";
 import Expenses from "./pages/pms/Expenses";
 import Indices from "./pages/pms/Indices";
 import MyContract from "./pages/pms/MyContract";
+import Receipts from "./pages/pms/Receipts";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const App = () => (
               <Route path="/pms/tenants" element={<Tenants />} />
               <Route path="/pms/contracts" element={<Contracts />} />
               <Route path="/pms/payments" element={<Payments />} />
+              <Route path="/pms/receipts" element={<Receipts />} />
               <Route path="/pms/maintenance" element={<Maintenance />} />
               <Route path="/pms/reports" element={<Reports />} />
               <Route path="/pms/expenses" element={<Expenses />} />

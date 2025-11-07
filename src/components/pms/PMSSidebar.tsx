@@ -33,6 +33,7 @@ const menuItems = [
       { title: 'Contratos', url: '/pms/contracts', icon: FileText },
       { title: 'Pagos', url: '/pms/payments', icon: DollarSign },
       { title: 'Gastos', url: '/pms/expenses', icon: Receipt },
+      { title: 'Recibos', url: '/pms/receipts', icon: FileText },
     ]
   },
   {
@@ -63,9 +64,9 @@ export function PMSSidebar() {
   // Define which modules each role can see
   const modulesByRole: Record<string, string[]> = {
     SUPERADMIN: ['all'],
-    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'maintenance', 'reports', 'indices'],
-    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'maintenance', 'reports'],
-    PROPIETARIO: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'reports'],
+    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices'],
+    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports'],
+    PROPIETARIO: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'reports'],
     INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance'],
     PROVEEDOR: ['maintenance']
   };
