@@ -1,4 +1,4 @@
-import { Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt, TrendingUp } from 'lucide-react';
+import { Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt, TrendingUp, BookOpen } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -48,6 +48,12 @@ const menuItems = [
       { title: 'Reportes', url: '/pms/reports', icon: BarChart3 },
       { title: 'Índices', url: '/pms/indices', icon: TrendingUp },
     ]
+  },
+  {
+    group: 'Soporte',
+    items: [
+      { title: 'Ayuda', url: '/pms/help', icon: BookOpen },
+    ]
   }
 ];
 
@@ -64,11 +70,12 @@ export function PMSSidebar() {
   // Define which modules each role can see
   const modulesByRole: Record<string, string[]> = {
     SUPERADMIN: ['all'],
-    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices'],
-    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports'],
-    PROPIETARIO: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'reports'],
-    INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance'],
-    PROVEEDOR: ['maintenance']
+    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'help'],
+    ADMINISTRADOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'help'],
+    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'help'],
+    PROPIETARIO: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'help'],
+    INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance', 'help'],
+    PROVEEDOR: ['maintenance', 'help']
   };
 
   const visibleModules = activeRole ? (modulesByRole[activeRole] || []) : [];

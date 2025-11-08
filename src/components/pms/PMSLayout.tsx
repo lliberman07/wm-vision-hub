@@ -141,7 +141,10 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                     <button className="hover:text-foreground transition-colors">
                       Soporte
                     </button>
-                    <button className="hover:text-foreground transition-colors">
+                    <button 
+                      onClick={() => navigate('/pms/help')}
+                      className="hover:text-foreground transition-colors"
+                    >
                       Documentación
                     </button>
                   </div>
