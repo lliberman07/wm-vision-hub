@@ -2847,30 +2847,45 @@ export type Database = {
       profiles: {
         Row: {
           approved_at: string | null
+          company_name: string | null
           created_at: string
           denied_at: string | null
           email: string
+          email_verified: boolean | null
+          entity_type: string | null
+          first_name: string | null
           id: string
+          last_name: string | null
           role: Database["public"]["Enums"]["user_role"]
           status: Database["public"]["Enums"]["approval_status"]
           updated_at: string
         }
         Insert: {
           approved_at?: string | null
+          company_name?: string | null
           created_at?: string
           denied_at?: string | null
           email: string
+          email_verified?: boolean | null
+          entity_type?: string | null
+          first_name?: string | null
           id: string
+          last_name?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           status?: Database["public"]["Enums"]["approval_status"]
           updated_at?: string
         }
         Update: {
           approved_at?: string | null
+          company_name?: string | null
           created_at?: string
           denied_at?: string | null
           email?: string
+          email_verified?: boolean | null
+          entity_type?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           status?: Database["public"]["Enums"]["approval_status"]
           updated_at?: string

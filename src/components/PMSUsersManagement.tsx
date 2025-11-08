@@ -109,6 +109,11 @@ const PMSUsersManagement = () => {
           pms_tenants!inner (
             name,
             slug
+          ),
+          users!inner (
+            email,
+            first_name,
+            last_name
           )
         `)
         .eq('module', 'PMS')
@@ -116,48 +121,20 @@ const PMSUsersManagement = () => {
 
       if (error) throw error;
 
-      // Obtener información de usuarios de auth.users mediante consulta manual
-      const userIds = [...new Set(data?.map(r => r.user_id) || [])];
-      
-      let authUsersMap = new Map<string, any>();
-      
-      if (userIds.length > 0) {
-        // Obtener usuarios de auth.users usando metadata
-        const { data: { users: authUsersData }, error: authError } = await supabase.auth.admin.listUsers();
-        
-        if (!authError && authUsersData) {
-          authUsersMap = new Map(
-            authUsersData
-              .filter((u: any) => userIds.includes(u.id))
-              .map((u: any) => [
-                u.id,
-                {
-                  email: u.email,
-                  first_name: u.user_metadata?.first_name,
-                  last_name: u.user_metadata?.last_name,
-                }
-              ])
-          );
-        }
-      }
-
-      const formattedUsers: PMSUser[] = (data || []).map(role => {
-        const authUser = authUsersMap.get(role.user_id);
-        return {
-          role_id: role.id,
-          user_id: role.user_id,
-          email: authUser?.email || 'Sin email',
-          first_name: authUser?.first_name,
-          last_name: authUser?.last_name,
-          role: role.role.toUpperCase(),
-          tenant_id: role.tenant_id,
-          tenant_name: (role.pms_tenants as any)?.name || 'Sin nombre',
-          tenant_slug: (role.pms_tenants as any)?.slug || '',
-          status: role.status as 'approved' | 'denied',
-          created_at: role.created_at,
-          approved_at: role.approved_at,
-        };
-      });
+      const formattedUsers: PMSUser[] = (data || []).map(role => ({
+        role_id: role.id,
+        user_id: role.user_id,
+        email: (role.users as any)?.email || 'Sin email',
+        first_name: (role.users as any)?.first_name,
+        last_name: (role.users as any)?.last_name,
+        role: role.role.toUpperCase(),
+        tenant_id: role.tenant_id,
+        tenant_name: (role.pms_tenants as any)?.name || 'Sin nombre',
+        tenant_slug: (role.pms_tenants as any)?.slug || '',
+        status: role.status as 'approved' | 'denied',
+        created_at: role.created_at,
+        approved_at: role.approved_at,
+      }));
 
       setUsers(formattedUsers);
     } catch (error: any) {
