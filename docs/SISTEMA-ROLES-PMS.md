@@ -82,35 +82,43 @@ El rol INMOBILIARIA representa a una agencia inmobiliaria que gestiona propiedad
 
 ### 3. ADMINISTRADOR
 
-**Nivel:** Tenant (Delegado de Inmobiliaria)  
-**Tenant Type:** `inmobiliaria` (asignado)
+**Nivel:** Tenant (Administrador Independiente)  
+**Tenant Type:** `administrador`
 
 #### Descripción
-El ADMINISTRADOR es un usuario delegado por la INMOBILIARIA para gestionar operaciones específicas. Tiene permisos similares a INMOBILIARIA pero dentro del contexto de su tenant asignado.
+El ADMINISTRADOR es un tenant independiente que administra propiedades de terceros. No está vinculado a ninguna INMOBILIARIA y opera de forma autónoma, con capacidades similares a una INMOBILIARIA pero en su propio contexto.
 
 #### Permisos y Capacidades
-- ✅ Gestionar propiedades del tenant
-- ✅ Crear y modificar contratos
+- ✅ Acceso completo a su tenant
+- ✅ Gestionar usuarios de su tenant
+- ✅ Crear y gestionar propiedades
+- ✅ Crear y gestionar contratos de alquiler
+- ✅ Registrar y gestionar propietarios (de terceros)
+- ✅ Registrar y gestionar inquilinos
 - ✅ Registrar pagos y gastos
-- ✅ Gestionar propietarios e inquilinos
-- ✅ Generar reportes mensuales
-- ✅ Aplicar ajustes por índices a contratos
-- ✅ Gestionar mantenimientos
-- ✅ Ver calendario de pagos
-- ✅ Exportar recibos
+- ✅ Generar reportes mensuales para propietarios
+- ✅ Configurar métodos de pago por contrato
+- ✅ Aplicar ajustes por índices económicos a contratos
+- ✅ Gestionar mantenimientos de propiedades
+- ✅ Ver calendario de pagos y vencimientos
+- ✅ Exportar recibos y comprobantes
+- ✅ Recomendar solicitudes de acceso de usuarios para su tenant
 
 #### Casos de Uso
-- Asistente administrativo de la inmobiliaria
-- Gestión operativa diaria
-- Soporte en generación de reportes
-- Control de pagos y vencimientos
+- Gestor profesional de propiedades de terceros
+- Administración de carteras inmobiliarias
+- Gestión integral de alquileres
+- Relación directa con propietarios e inquilinos
+- Generación de reportes mensuales independientes
 
 #### Limitaciones
-- ❌ No puede crear usuarios nuevos
-- ❌ No puede modificar roles de usuarios
-- ❌ No puede crear sucursales
-- ❌ No puede eliminar propiedades con historial de contratos
-- ❌ No puede acceder a configuración del tenant
+- ❌ No puede acceder a otros tenants tipo `administrador` o `inmobiliaria`
+- ❌ No puede modificar índices económicos globales (solo SUPERADMIN)
+- ❌ No puede aprobar solicitudes de acceso PMS (solo recomendar)
+- ❌ Límite de usuarios según configuración del tenant (por defecto 2, configurable)
+
+**Nota Importante:** 
+A diferencia de un empleado de una inmobiliaria, el ADMINISTRADOR opera como un tenant completamente independiente. Esto permite a profesionales del sector inmobiliario administrar propiedades de terceros sin necesidad de crear una estructura empresarial como inmobiliaria, manteniendo plena autonomía operativa.
 
 ---
 
@@ -196,9 +204,13 @@ SUPERADMIN (Sistema completo)
     │
     ├── INMOBILIARIA (Tenant: inmobiliaria)
     │   │
-    │   ├── ADMINISTRADOR (Delegado operativo)
-    │   │
     │   ├── PROPIETARIO (Dueño de propiedades)
+    │   │
+    │   └── INQUILINO (Arrendatario)
+    │
+    ├── ADMINISTRADOR (Tenant: administrador) ← INDEPENDIENTE
+    │   │
+    │   ├── PROPIETARIO (Propiedades gestionadas)
     │   │
     │   └── INQUILINO (Arrendatario)
     │
@@ -395,9 +407,12 @@ Solicitudes de acceso al PMS:
 5. Verificar pagos antes de distribuir a propietarios
 
 ### Para ADMINISTRADOR
-1. No modificar contratos sin autorización de INMOBILIARIA
-2. Documentar todos los gastos con comprobantes
-3. Verificar métodos de pago antes de registrar pagos
+1. Gestionar de forma autónoma su cartera de propiedades
+2. Mantener comunicación directa con propietarios e inquilinos
+3. Registrar pagos puntualmente para evitar inconsistencias
+4. Revisar y enviar reportes mensuales a propietarios
+5. Aplicar ajustes por índices según corresponda
+6. Recomendar solicitudes de acceso para su tenant
 
 ### Para PROPIETARIO
 1. Revisar reportes mensuales
