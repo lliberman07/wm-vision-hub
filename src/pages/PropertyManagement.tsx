@@ -1,13 +1,17 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import { SubscriptionPlansComparator } from "@/components/SubscriptionPlansComparator";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatCurrency, formatNumber } from "@/utils/numberFormat";
 import propertyManagementHero from "@/assets/property-management-hero-background.jpg";
 import { 
   Building2, 
@@ -22,11 +26,94 @@ import {
   Shield,
   BarChart3,
   ExternalLink,
-  Eye
+  Eye,
+  Briefcase,
+  Zap
 } from "lucide-react";
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  max_users: number;
+  max_properties: number | null;
+  max_contracts: number | null;
+  max_branches: number;
+  additional_limits: any;
+  features: any;
+  price_monthly: number;
+  price_yearly: number;
+  is_active: boolean;
+  sort_order: number;
+}
 
 const PropertyManagement = () => {
   const { t } = useLanguage();
+
+  // Fetch subscription plans
+  const { data: plans = [], isLoading: plansLoading } = useQuery({
+    queryKey: ['subscription-plans-public'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('is_active', true)
+        .neq('slug', 'legacy')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      return data as SubscriptionPlan[];
+    },
+    staleTime: 3 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+  });
+
+  // Generate dynamic description based on plan features and limits
+  const generatePlanDescription = (plan: SubscriptionPlan): string => {
+    const features: string[] = [];
+    const limits = [];
+
+    // Add user limit
+    limits.push(`${plan.max_users} usuarios`);
+
+    // Add property limit
+    if (plan.max_properties === null || plan.max_properties >= 999999) {
+      limits.push('propiedades ilimitadas');
+    } else {
+      limits.push(`${plan.max_properties} propiedades`);
+    }
+
+    // Add contract limit
+    if (plan.max_contracts === null || plan.max_contracts >= 999999) {
+      limits.push('contratos ilimitados');
+    } else {
+      limits.push(`${plan.max_contracts} contratos`);
+    }
+
+    // Add featured features
+    if (plan.features?.advanced_reports) features.push('reportes avanzados');
+    if (plan.features?.multi_currency) features.push('multi-moneda');
+    if (plan.features?.bulk_operations) features.push('operaciones masivas');
+    if (plan.features?.api_access) features.push('acceso API');
+    if (plan.features?.white_label) features.push('white label');
+    if (plan.features?.priority_support) features.push('soporte prioritario');
+
+    // Build description
+    let description = `Plan diseñado para gestionar hasta ${limits.join(', ')}.`;
+    
+    if (features.length > 0) {
+      description += ` Incluye ${features.join(', ')}.`;
+    }
+
+    return description;
+  };
+
+  const formatLimit = (limit: number | null) => {
+    if (limit === null || limit >= 999999) return '∞';
+    return formatNumber(limit, 'es');
+  };
 
   const features = [
     {
@@ -222,28 +309,155 @@ const PropertyManagement = () => {
         </div>
       </section>
 
-      {/* Service Modalities */}
+      {/* Subscription Plans */}
       <section className="py-20 px-4 bg-muted">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">{t('propertyManagement.modalities.title')}</h2>
+            <h2 className="text-3xl font-bold mb-4">Planes de Suscripción</h2>
             <p className="text-lg text-muted-foreground">
-              {t('propertyManagement.modalities.subtitle')}
+              Elige el plan que mejor se adapte a las necesidades de tu negocio
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
-            {serviceModalities.map((modality, index) => (
-              <Card key={index} className="shadow-medium text-center">
-                <CardHeader>
-                  <CardTitle className="text-xl">{modality.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{modality.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {plansLoading ? (
+            <div className="grid md:grid-cols-3 gap-8">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="shadow-medium">
+                  <CardHeader>
+                    <Skeleton className="h-6 w-24 mb-2" />
+                    <Skeleton className="h-8 w-32" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-8">
+              {plans.map((plan, index) => (
+                <Card 
+                  key={plan.id} 
+                  className={`shadow-medium hover:shadow-strong transition-shadow ${
+                    index === 1 ? 'border-2 border-primary' : ''
+                  }`}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant={index === 1 ? 'default' : 'secondary'}>
+                        {plan.name}
+                      </Badge>
+                      {index === 1 && (
+                        <Badge variant="outline" className="text-xs">
+                          <Zap className="h-3 w-3 mr-1" />
+                          Popular
+                        </Badge>
+                      )}
+                    </div>
+                    <CardTitle className="text-3xl">
+                      {formatCurrency(plan.price_monthly, 'es', 'ARS')}
+                      <span className="text-base font-normal text-muted-foreground">/mes</span>
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      {plan.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Dynamic Description */}
+                    <p className="text-sm text-muted-foreground">
+                      {generatePlanDescription(plan)}
+                    </p>
+
+                    {/* Key Limits */}
+                    <div className="space-y-3 py-4 border-t">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-primary" />
+                          <span className="text-muted-foreground">Usuarios</span>
+                        </div>
+                        <span className="font-semibold">{formatLimit(plan.max_users)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-primary" />
+                          <span className="text-muted-foreground">Propiedades</span>
+                        </div>
+                        <span className="font-semibold">{formatLimit(plan.max_properties)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-primary" />
+                          <span className="text-muted-foreground">Contratos</span>
+                        </div>
+                        <span className="font-semibold">{formatLimit(plan.max_contracts)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="h-4 w-4 text-primary" />
+                          <span className="text-muted-foreground">Sucursales</span>
+                        </div>
+                        <span className="font-semibold">{formatLimit(plan.max_branches)}</span>
+                      </div>
+                    </div>
+
+                    {/* Featured Features */}
+                    <div className="space-y-2 border-t pt-4">
+                      {plan.features?.advanced_reports && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>Reportes Avanzados</span>
+                        </div>
+                      )}
+                      {plan.features?.multi_currency && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>Multi-Moneda</span>
+                        </div>
+                      )}
+                      {plan.features?.bulk_operations && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>Operaciones Masivas</span>
+                        </div>
+                      )}
+                      {plan.features?.api_access && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>Acceso API</span>
+                        </div>
+                      )}
+                      {plan.features?.white_label && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>White Label</span>
+                        </div>
+                      )}
+                      {plan.features?.priority_support && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>Soporte Prioritario</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CTA Button */}
+                    <Button 
+                      asChild 
+                      className="w-full" 
+                      variant={index === 1 ? 'default' : 'outline'}
+                    >
+                      <Link to="/pms">
+                        Comenzar
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
           {/* Ver Planes Detallados Button */}
           <div className="flex justify-center mt-12">
@@ -251,7 +465,7 @@ const PropertyManagement = () => {
               <DialogTrigger asChild>
                 <Button size="lg" variant="outline" className="gap-2">
                   <Eye className="h-5 w-5" />
-                  Ver Planes Detallados
+                  Ver Comparación Completa de Planes
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
