@@ -484,6 +484,11 @@ const PropertyManagement = () => {
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
+
+                    {/* IVA Disclaimer */}
+                    <p className="text-xs text-center text-muted-foreground mt-4 pt-4 border-t">
+                      Los valores expresados no incluyen IVA
+                    </p>
                   </CardContent>
                 </Card>
               ))}
