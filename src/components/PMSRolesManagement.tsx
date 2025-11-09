@@ -479,6 +479,41 @@ const PMSRolesManagement = () => {
     }
   };
 
+  const checkIfUserConsumesLicense = async (userId: string, tenantId: string): Promise<boolean> => {
+    try {
+      // Obtener todos los roles del usuario en este tenant
+      const { data: userRoles, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('tenant_id', tenantId)
+        .eq('module', 'PMS')
+        .eq('status', 'approved');
+
+      if (error || !userRoles || userRoles.length === 0) {
+        return false;
+      }
+
+      // Verificar si alguno de sus roles consume licencia
+      for (const userRole of userRoles) {
+        const { data: consumesLicense } = await supabase
+          .rpc('does_role_consume_license', {
+            p_role: userRole.role.toLowerCase(),
+            p_tenant_id: tenantId
+          });
+
+        if (consumesLicense) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error checking user license consumption:', error);
+      return false;
+    }
+  };
+
   const resetAddRoleForm = () => {
     setNewRoleUserId('');
     setNewRoleTenantId('');
@@ -547,31 +582,49 @@ const PMSRolesManagement = () => {
         .eq('id', tenantId)
         .single();
 
-      // Obtener límite de usuarios usando la función RPC
-      const { data: maxUsersAllowed, error: limitError } = await supabase
-        .rpc('get_tenant_user_limit', { tenant_id_param: tenantId });
+      // NUEVA VALIDACIÓN: Verificar si el rol consume licencia
+      const { data: roleConsumesLicense, error: roleCheckError } = await supabase
+        .rpc('does_role_consume_license', {
+          p_role: newRoleType.toLowerCase(),
+          p_tenant_id: tenantId
+        });
 
-      if (limitError || !maxUsersAllowed) {
-        throw new Error('No se pudo obtener el límite de usuarios del tenant');
+      if (roleCheckError) {
+        console.error('Error checking role license consumption:', roleCheckError);
       }
 
-      // VALIDACIÓN DE LÍMITE: Contar usuarios actuales en ese tenant
-      const { count: currentUserCount, error: countError } = await supabase
-        .from('user_roles')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', tenantId)
-        .eq('module', 'PMS')
-        .eq('status', 'approved');
+      // Si el rol consume licencia, validar límites
+      if (roleConsumesLicense) {
+        // Obtener límite de usuarios usando la función RPC
+        const { data: maxUsersAllowed, error: limitError } = await supabase
+          .rpc('get_tenant_user_limit', { tenant_id_param: tenantId });
 
-      if (countError) throw countError;
+        if (limitError || !maxUsersAllowed) {
+          throw new Error('No se pudo obtener el límite de usuarios del tenant');
+        }
 
-      if (currentUserCount !== null && currentUserCount >= maxUsersAllowed) {
-        toast({
-          title: "Límite Alcanzado",
-          description: `El tenant "${tenantInfo?.name}" ya tiene el máximo de ${maxUsersAllowed} usuarios permitidos`,
-          variant: "destructive"
-        });
-        return;
+        // Contar usuarios que CONSUMEN licencia (excluye INQUILINO y PROPIETARIO según tenant_type)
+        const { data: currentConsumingUsers, error: countError } = await supabase
+          .rpc('get_tenant_consuming_users_count', { p_tenant_id: tenantId });
+
+        if (countError) {
+          console.error('Error counting consuming users:', countError);
+        }
+
+        const currentCount = currentConsumingUsers || 0;
+
+        // Verificar si el usuario ya tiene un rol que consume licencia en este tenant
+        const userAlreadyConsumes = await checkIfUserConsumesLicense(newRoleUserId, tenantId);
+
+        // Si el usuario NO consume licencia y agregaríamos uno nuevo, verificar límite
+        if (!userAlreadyConsumes && currentCount >= maxUsersAllowed) {
+          toast({
+            title: "Límite Alcanzado",
+            description: `El tenant "${tenantInfo?.name}" ya tiene el máximo de ${maxUsersAllowed} usuarios permitidos (${currentCount}/${maxUsersAllowed})`,
+            variant: "destructive"
+          });
+          return;
+        }
       }
 
       // Check if role already exists
@@ -608,9 +661,25 @@ const PMSRolesManagement = () => {
       if (error) throw error;
 
       const selectedUser = systemUsers.find(u => u.id === newRoleUserId);
+      
+      // Mensaje de éxito
+      let successMessage = `Rol ${newRoleType} asignado a ${selectedUser?.email}`;
+      
+      // Si el rol consume licencia, mostrar contador actualizado
+      if (roleConsumesLicense) {
+        const userAlreadyConsumes = await checkIfUserConsumesLicense(newRoleUserId, tenantId);
+        const { data: updatedCount } = await supabase
+          .rpc('get_tenant_consuming_users_count', { p_tenant_id: tenantId });
+        
+        const { data: maxUsers } = await supabase
+          .rpc('get_tenant_user_limit', { tenant_id_param: tenantId });
+        
+        successMessage += ` (${updatedCount || 0}/${maxUsers || 0} usuarios)`;
+      }
+      
       toast({
         title: "Rol Asignado",
-        description: `Rol ${newRoleType} asignado a ${selectedUser?.email}. ${(currentUserCount || 0) + 1}/${maxUsersAllowed} usuarios en el tenant.`,
+        description: successMessage,
       });
 
       await fetchRoles();
