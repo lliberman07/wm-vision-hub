@@ -186,12 +186,14 @@ export function PMSTenantsManagement() {
       // Combine data
       const enrichedTenants = (tenantsData || []).map(tenant => {
         const settings = tenant.settings as any;
+        const userCount = finalUserCounts.get(tenant.id) || 0;
+        console.log(`🔍 Enriching tenant "${tenant.name}" (${tenant.id}): ${userCount} users`);
         // Mapear 'administrador' a 'gestor' durante la transición
         const tenantType = tenant.tenant_type === 'administrador' ? 'gestor' : tenant.tenant_type;
         return {
           ...tenant,
           tenant_type: tenantType as TenantType,
-          user_count: finalUserCounts.get(tenant.id) || 0,
+          user_count: userCount,
           max_users: settings?.limits?.max_users || 2,
         };
       });
