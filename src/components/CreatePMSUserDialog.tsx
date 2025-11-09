@@ -73,18 +73,10 @@ export function CreatePMSUserDialog({
     setLoading(true);
 
     try {
-      // 1. Validar límite de usuarios administrativos según tenant_type
-      const { data: maxUsersAllowed, error: limitError } = await supabase
-        .rpc('get_tenant_user_limit', { tenant_id_param: formData.tenant_id });
-
-      if (limitError) {
-        throw new Error('No se pudo obtener el límite de usuarios del tenant');
-      }
-
-      // Obtener tenant info para saber el tipo
+      // 1. Obtener información del tenant
       const { data: tenantInfo, error: tenantError } = await supabase
         .from('pms_tenants')
-        .select('name, tenant_type')
+        .select('name, tenant_type, settings')
         .eq('id', formData.tenant_id)
         .single();
 
@@ -92,35 +84,44 @@ export function CreatePMSUserDialog({
         throw new Error('No se pudo obtener información del tenant');
       }
 
-      // Determinar si el rol cuenta para el límite según tenant_type
-      const roleCountsForLimit = (role: string, tenantType: string) => {
-        if (role === 'inquilino') return false; // Inquilinos nunca cuentan
-        
-        if (tenantType === 'propietario') {
-          return role === 'propietario' || role === 'admin';
-        } else if (['inmobiliaria', 'administrador', 'sistema'].includes(tenantType)) {
-          return role === 'inmobiliaria' || role === 'admin';
-        }
-        return role !== 'inquilino'; // Otros tipos: todos menos inquilino
-      };
+      // 2. Validar si el rol consume licencia usando la nueva función helper
+      const { data: roleConsumesLicense, error: consumeError } = await supabase
+        .rpc('does_role_consume_license', {
+          p_role: formData.role.toLowerCase(),
+          p_tenant_id: formData.tenant_id
+        });
 
-      // Solo validar límite si el rol cuenta para el límite
-      if (roleCountsForLimit(formData.role.toLowerCase(), tenantInfo.tenant_type)) {
-        const { data: currentAdminCount, error: countError } = await supabase
-          .rpc('get_tenant_admin_user_count', { tenant_id_param: formData.tenant_id });
+      if (consumeError) {
+        throw new Error('Error al validar tipo de rol');
+      }
+
+      // 3. Solo validar límite si el rol consume licencia
+      if (roleConsumesLicense) {
+        // Obtener conteo actual de usuarios que consumen licencia
+        const { data: currentCount, error: countError } = await supabase
+          .rpc('get_tenant_consuming_users_count', {
+            p_tenant_id: formData.tenant_id
+          });
 
         if (countError) {
-          throw new Error('Error al verificar límite de usuarios administrativos');
+          throw new Error('Error al verificar usuarios del tenant');
         }
 
-        if (currentAdminCount !== null && currentAdminCount >= maxUsersAllowed) {
-          const roleLabel = tenantInfo.tenant_type === 'propietario' 
-            ? 'PROPIETARIO/ADMINISTRADOR' 
-            : 'INMOBILIARIA/ADMINISTRADOR';
+        // Obtener límite máximo permitido
+        const { data: maxUsersAllowed, error: limitError } = await supabase
+          .rpc('get_tenant_user_limit', {
+            tenant_id_param: formData.tenant_id
+          });
 
+        if (limitError) {
+          throw new Error('No se pudo obtener el límite de usuarios del tenant');
+        }
+
+        // Validar que no se exceda el límite
+        if (currentCount !== null && currentCount >= maxUsersAllowed) {
           toast({
             title: 'Límite Alcanzado',
-            description: `El tenant "${tenantInfo.name}" ya alcanzó su límite de ${maxUsersAllowed} usuarios administrativos (${roleLabel}). Los usuarios INQUILINO no afectan este límite.`,
+            description: `El tenant "${tenantInfo.name}" ya alcanzó su límite de ${maxUsersAllowed} usuarios que consumen licencia. Usuarios INQUILINO y PROPIETARIO (en tenants no-propietario) no afectan este límite.`,
             variant: 'destructive',
           });
           return;

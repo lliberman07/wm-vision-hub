@@ -3120,6 +3120,10 @@ export type Database = {
         Returns: undefined
       }
       deny_user: { Args: { user_id_param: string }; Returns: undefined }
+      does_role_consume_license: {
+        Args: { p_role: string; p_tenant_id: string }
+        Returns: boolean
+      }
       extend_contract: {
         Args: {
           contract_id_param: string
@@ -3210,6 +3214,10 @@ export type Database = {
       }
       get_tenant_admin_user_count: {
         Args: { tenant_id_param: string }
+        Returns: number
+      }
+      get_tenant_consuming_users_count: {
+        Args: { p_tenant_id: string }
         Returns: number
       }
       get_tenant_growth_over_time: {
