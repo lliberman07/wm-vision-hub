@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit, Trash2, DollarSign, Users, Building, FileText, Briefcase, Check, X, Eye } from "lucide-react";
+import { SubscriptionPlansComparator } from "./SubscriptionPlansComparator";
 
 interface SubscriptionPlan {
   id: string;
@@ -306,13 +307,15 @@ export function SubscriptionPlansManagement() {
             Gestiona los planes disponibles para los tenants
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingPlan(null)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Plan
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <SubscriptionPlansComparator />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditingPlan(null)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Plan
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -759,7 +762,8 @@ export function SubscriptionPlansManagement() {
               </form>
             </Form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-6">
