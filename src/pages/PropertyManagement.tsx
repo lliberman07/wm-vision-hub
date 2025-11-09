@@ -340,7 +340,7 @@ const PropertyManagement = () => {
               {plans.map((plan, index) => (
                 <Card 
                   key={plan.id} 
-                  className="shadow-medium transition-all duration-300 hover:shadow-strong hover:scale-105 hover:-translate-y-2 hover:border-primary/50"
+                  className="border-2 border-primary shadow-medium transition-all duration-300 hover:shadow-strong hover:scale-105 hover:-translate-y-2 hover:border-primary"
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
