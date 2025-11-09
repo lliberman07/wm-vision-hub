@@ -112,7 +112,7 @@ export const rolesData: Record<PMSRole, RoleData> = {
       'Registrar pagos y gastos',
       'Generar reportes mensuales para propietarios',
       'Configurar métodos de pago por contrato',
-      'Aplicar ajustes por índices económicos a contratos',
+      'Ver índices económicos (IPC/ICL) para entender ajustes de contratos',
       'Gestionar mantenimientos de propiedades',
       'Ver calendario de pagos y vencimientos',
       'Exportar recibos y comprobantes',
@@ -128,7 +128,7 @@ export const rolesData: Record<PMSRole, RoleData> = {
     ],
     limitations: [
       'No puede acceder a otros tenants tipo inmobiliaria',
-      'No puede modificar índices económicos globales',
+      'No puede modificar índices económicos globales (solo SUPERADMIN puede editarlos)',
       'No puede aprobar solicitudes de acceso PMS (solo recomendar)',
       'Límite de usuarios según configuración del tenant'
     ],
@@ -189,7 +189,7 @@ export const rolesData: Record<PMSRole, RoleData> = {
       'Registrar pagos y gastos',
       'Generar reportes mensuales para propietarios',
       'Configurar métodos de pago por contrato',
-      'Aplicar ajustes por índices económicos a contratos',
+      'Ver índices económicos (IPC/ICL) para entender ajustes de contratos',
       'Gestionar mantenimientos de propiedades',
       'Ver calendario de pagos y vencimientos',
       'Exportar recibos y comprobantes',
@@ -248,6 +248,7 @@ export const rolesData: Record<PMSRole, RoleData> = {
       'Ver contratos de sus propiedades',
       'Ver pagos recibidos y distribuciones',
       'Ver gastos asociados a sus propiedades',
+      'Ver índices económicos (IPC/ICL) para entender ajustes de alquiler',
       'Descargar reportes mensuales',
       'Ver calendario de vencimientos',
       'Acceder a recibos y comprobantes',
@@ -313,6 +314,7 @@ export const rolesData: Record<PMSRole, RoleData> = {
     description: 'Arrendatario de una propiedad. Puede ver información de su contrato, subir comprobantes de pago y solicitar mantenimientos.',
     permissions: [
       'Ver su contrato activo',
+      'Ver índices económicos (IPC/ICL) para entender ajustes de alquiler',
       'Ver calendario de pagos y vencimientos',
       'Subir comprobantes de pago',
       'Ver pagos registrados',
