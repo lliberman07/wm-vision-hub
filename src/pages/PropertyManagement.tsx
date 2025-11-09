@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
+import { SubscriptionPlansComparator } from "@/components/SubscriptionPlansComparator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import propertyManagementHero from "@/assets/property-management-hero-background.jpg";
 import { 
@@ -19,7 +21,8 @@ import {
   ArrowRight,
   Shield,
   BarChart3,
-  ExternalLink
+  ExternalLink,
+  Eye
 } from "lucide-react";
 
 const PropertyManagement = () => {
@@ -240,6 +243,24 @@ const PropertyManagement = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* Ver Planes Detallados Button */}
+          <div className="flex justify-center mt-12">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="lg" variant="outline" className="gap-2">
+                  <Eye className="h-5 w-5" />
+                  Ver Planes Detallados
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl">Comparación Detallada de Planes</DialogTitle>
+                </DialogHeader>
+                <SubscriptionPlansComparator />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </section>
