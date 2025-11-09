@@ -340,13 +340,11 @@ const PropertyManagement = () => {
               {plans.map((plan, index) => (
                 <Card 
                   key={plan.id} 
-                  className={`shadow-medium transition-all duration-300 hover:shadow-strong hover:scale-105 hover:-translate-y-2 ${
-                    index === 1 ? 'border-2 border-primary' : 'hover:border-primary/50'
-                  }`}
+                  className="shadow-medium transition-all duration-300 hover:shadow-strong hover:scale-105 hover:-translate-y-2 hover:border-primary/50"
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
-                      <Badge variant={index === 1 ? 'default' : 'secondary'}>
+                      <Badge variant="secondary">
                         {plan.name}
                       </Badge>
                       {index === 1 && (
@@ -446,7 +444,7 @@ const PropertyManagement = () => {
                     <Button 
                       asChild 
                       className="w-full" 
-                      variant={index === 1 ? 'default' : 'outline'}
+                      variant="outline"
                     >
                       <Link to="/pms">
                         Comenzar
