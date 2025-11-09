@@ -364,7 +364,7 @@ const PropertyManagement = () => {
               {plans.map((plan, index) => (
                 <Card 
                   key={plan.id} 
-                  className="border-2 border-primary shadow-medium transition-all duration-300 hover:shadow-strong hover:scale-105 hover:-translate-y-2 hover:border-primary"
+                  className="border-2 border-primary shadow-medium transition-all duration-300 hover:shadow-strong hover:scale-105 hover:-translate-y-2 hover:border-primary flex flex-col"
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
@@ -395,8 +395,9 @@ const PropertyManagement = () => {
                       {plan.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 flex-1 flex flex-col">
                     {/* Dynamic Description */}
+                    <div className="flex-1">
                     <p className="text-sm text-muted-foreground">
                       {generatePlanDescription(plan)}
                     </p>
@@ -472,7 +473,10 @@ const PropertyManagement = () => {
                         </div>
                       )}
                     </div>
+                    </div>
 
+                    {/* CTA Button and IVA Disclaimer - Always at bottom */}
+                    <div className="space-y-4 mt-auto">
                     {/* CTA Button */}
                     <Button 
                       asChild 
@@ -486,9 +490,10 @@ const PropertyManagement = () => {
                     </Button>
 
                     {/* IVA Disclaimer */}
-                    <p className="text-xs text-center text-muted-foreground mt-4 pt-4 border-t">
+                    <p className="text-xs text-center text-muted-foreground pt-4 border-t">
                       Los valores expresados no incluyen IVA
                     </p>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
