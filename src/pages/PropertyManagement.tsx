@@ -340,8 +340,8 @@ const PropertyManagement = () => {
               {plans.map((plan, index) => (
                 <Card 
                   key={plan.id} 
-                  className={`shadow-medium hover:shadow-strong transition-shadow ${
-                    index === 1 ? 'border-2 border-primary' : ''
+                  className={`shadow-medium transition-all duration-300 hover:shadow-strong hover:scale-105 hover:-translate-y-2 ${
+                    index === 1 ? 'border-2 border-primary' : 'hover:border-primary/50'
                   }`}
                 >
                   <CardHeader>
