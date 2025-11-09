@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
@@ -50,6 +52,7 @@ interface SubscriptionPlan {
 
 const PropertyManagement = () => {
   const { t } = useLanguage();
+  const [isYearly, setIsYearly] = useState(false);
 
   // Fetch subscription plans
   const { data: plans = [], isLoading: plansLoading } = useQuery({
@@ -113,6 +116,12 @@ const PropertyManagement = () => {
   const formatLimit = (limit: number | null) => {
     if (limit === null || limit >= 999999) return '∞';
     return formatNumber(limit, 'es');
+  };
+
+  const calculateYearlyDiscount = (monthly: number, yearly: number) => {
+    if (monthly === 0) return 0;
+    const monthlyTotal = monthly * 12;
+    return Math.round(((monthlyTotal - yearly) / monthlyTotal) * 100);
   };
 
   const features = [
@@ -314,9 +323,29 @@ const PropertyManagement = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Planes de Suscripción</h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground mb-6">
               Elige el plan que mejor se adapte a las necesidades de tu negocio
             </p>
+            
+            {/* Pricing Toggle */}
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <span className={`text-sm font-medium transition-colors ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Mensual
+              </span>
+              <Switch
+                checked={isYearly}
+                onCheckedChange={setIsYearly}
+                className="data-[state=checked]:bg-primary"
+              />
+              <span className={`text-sm font-medium transition-colors ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Anual
+              </span>
+              {isYearly && (
+                <Badge variant="secondary" className="ml-2 animate-fade-in">
+                  Ahorra hasta 15%
+                </Badge>
+              )}
+            </div>
           </div>
           
           {plansLoading ? (
@@ -354,10 +383,19 @@ const PropertyManagement = () => {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-3xl">
-                      {formatCurrency(plan.price_monthly, 'es', 'ARS')}
-                      <span className="text-base font-normal text-muted-foreground">/mes</span>
+                    <CardTitle className="text-3xl transition-all duration-300">
+                      <span className="animate-fade-in">
+                        {formatCurrency(isYearly ? plan.price_yearly : plan.price_monthly, 'es', 'ARS')}
+                      </span>
+                      <span className="text-base font-normal text-muted-foreground">
+                        {isYearly ? '/año' : '/mes'}
+                      </span>
                     </CardTitle>
+                    {isYearly && calculateYearlyDiscount(plan.price_monthly, plan.price_yearly) > 0 && (
+                      <Badge variant="outline" className="mt-2 animate-fade-in">
+                        {calculateYearlyDiscount(plan.price_monthly, plan.price_yearly)}% descuento
+                      </Badge>
+                    )}
                     <CardDescription className="text-sm">
                       {plan.description}
                     </CardDescription>
