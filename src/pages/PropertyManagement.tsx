@@ -340,11 +340,6 @@ const PropertyManagement = () => {
               <span className={`text-sm font-medium transition-colors ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
                 Anual
               </span>
-              {isYearly && (
-                <Badge variant="secondary" className="ml-2 animate-fade-in">
-                  Ahorra hasta 15%
-                </Badge>
-              )}
             </div>
           </div>
           
@@ -383,19 +378,19 @@ const PropertyManagement = () => {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-3xl transition-all duration-300">
+                    <CardTitle className="text-3xl transition-all duration-300 flex items-center gap-3">
                       <span className="animate-fade-in">
                         {formatCurrency(isYearly ? plan.price_yearly : plan.price_monthly, 'es', 'ARS')}
                       </span>
                       <span className="text-base font-normal text-muted-foreground">
                         {isYearly ? '/año' : '/mes'}
                       </span>
+                      {isYearly && calculateYearlyDiscount(plan.price_monthly, plan.price_yearly) > 0 && (
+                        <Badge className="bg-blue-600 hover:bg-blue-700 text-white text-base px-3 py-1 animate-fade-in">
+                          {calculateYearlyDiscount(plan.price_monthly, plan.price_yearly)}% OFF
+                        </Badge>
+                      )}
                     </CardTitle>
-                    {isYearly && calculateYearlyDiscount(plan.price_monthly, plan.price_yearly) > 0 && (
-                      <Badge variant="outline" className="mt-2 animate-fade-in">
-                        {calculateYearlyDiscount(plan.price_monthly, plan.price_yearly)}% descuento
-                      </Badge>
-                    )}
                     <CardDescription className="text-sm">
                       {plan.description}
                     </CardDescription>
