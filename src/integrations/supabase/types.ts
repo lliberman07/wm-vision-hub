@@ -2700,6 +2700,7 @@ export type Database = {
         Row: {
           admin_email: string | null
           created_at: string | null
+          current_subscription_id: string | null
           id: string
           is_active: boolean | null
           name: string
@@ -2713,6 +2714,7 @@ export type Database = {
         Insert: {
           admin_email?: string | null
           created_at?: string | null
+          current_subscription_id?: string | null
           id?: string
           is_active?: boolean | null
           name: string
@@ -2726,6 +2728,7 @@ export type Database = {
         Update: {
           admin_email?: string | null
           created_at?: string | null
+          current_subscription_id?: string | null
           id?: string
           is_active?: boolean | null
           name?: string
@@ -2737,6 +2740,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pms_tenants_current_subscription_id_fkey"
+            columns: ["current_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pms_tenants_parent_tenant_id_fkey"
             columns: ["parent_tenant_id"]
@@ -2891,6 +2901,249 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      subscription_invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          pdf_url: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          subscription_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          issue_date: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          pdf_url?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subscription_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          pdf_url?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subscription_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_invoices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          additional_limits: Json | null
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean
+          max_branches: number
+          max_contracts: number | null
+          max_properties: number | null
+          max_users: number
+          name: string
+          price_monthly: number
+          price_yearly: number
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          additional_limits?: Json | null
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          max_branches?: number
+          max_contracts?: number | null
+          max_properties?: number | null
+          max_users?: number
+          name: string
+          price_monthly?: number
+          price_yearly?: number
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          additional_limits?: Json | null
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          max_branches?: number
+          max_contracts?: number | null
+          max_properties?: number | null
+          max_users?: number
+          name?: string
+          price_monthly?: number
+          price_yearly?: number
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscription_usage_logs: {
+        Row: {
+          branch_count: number
+          contract_count: number
+          created_at: string
+          id: string
+          log_date: string
+          property_count: number
+          subscription_id: string | null
+          tenant_id: string
+          user_count: number
+        }
+        Insert: {
+          branch_count?: number
+          contract_count?: number
+          created_at?: string
+          id?: string
+          log_date: string
+          property_count?: number
+          subscription_id?: string | null
+          tenant_id: string
+          user_count?: number
+        }
+        Update: {
+          branch_count?: number
+          contract_count?: number
+          created_at?: string
+          id?: string
+          log_date?: string
+          property_count?: number
+          subscription_id?: string | null
+          tenant_id?: string
+          user_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_usage_logs_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_usage_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_subscriptions: {
+        Row: {
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
+          cancel_at_period_end: boolean
+          cancelled_at: string | null
+          cancelled_reason: string | null
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+          trial_end_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
+          cancel_at_period_end?: boolean
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          created_at?: string
+          current_period_end: string
+          current_period_start: string
+          id?: string
+          plan_id: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+          trial_end_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
+          cancel_at_period_end?: boolean
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan_id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tenant_id?: string
+          trial_end_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -3104,6 +3357,10 @@ export type Database = {
           total_records: number
         }[]
       }
+      check_tenant_limits: {
+        Args: { p_resource_type: string; p_tenant_id: string }
+        Returns: Json
+      }
       cleanup_orphan_payments: {
         Args: never
         Returns: {
@@ -3245,6 +3502,10 @@ export type Database = {
           total_users: number
         }[]
       }
+      get_tenant_subscription_status: {
+        Args: { p_tenant_id: string }
+        Returns: Json
+      }
       get_tenant_user_limit: {
         Args: { tenant_id_param: string }
         Returns: number
@@ -3329,6 +3590,7 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: undefined
       }
+      log_daily_usage: { Args: never; Returns: undefined }
       pms_index_factor: {
         Args: { indice_tipo: string; month_from: string; month_to: string }
         Returns: number
@@ -3376,6 +3638,7 @@ export type Database = {
         Returns: undefined
       }
       update_overdue_payment_items: { Args: never; Returns: undefined }
+      update_subscription_status: { Args: never; Returns: undefined }
       validate_contract_number: {
         Args: {
           p_contract_id?: string
@@ -3408,8 +3671,10 @@ export type Database = {
         | "under_analysis_wm"
       application_type: "individual" | "company"
       approval_status: "pending" | "approved" | "denied"
+      billing_cycle: "monthly" | "yearly"
       employment_status: "employed" | "self-employed" | "other"
       entity_type: "persona" | "empresa"
+      invoice_status: "pending" | "paid" | "overdue" | "cancelled" | "refunded"
       module_type: "WM" | "PMS"
       pms_app_role:
         | "SUPERADMIN"
@@ -3428,6 +3693,12 @@ export type Database = {
         | "sistema"
         | "gestor"
       request_status: "pending" | "approved" | "denied"
+      subscription_status:
+        | "trial"
+        | "active"
+        | "past_due"
+        | "suspended"
+        | "cancelled"
       user_role: "superadmin" | "admin"
       user_role_type:
         | "superadmin"
@@ -3575,8 +3846,10 @@ export const Constants = {
       ],
       application_type: ["individual", "company"],
       approval_status: ["pending", "approved", "denied"],
+      billing_cycle: ["monthly", "yearly"],
       employment_status: ["employed", "self-employed", "other"],
       entity_type: ["persona", "empresa"],
+      invoice_status: ["pending", "paid", "overdue", "cancelled", "refunded"],
       module_type: ["WM", "PMS"],
       pms_app_role: [
         "SUPERADMIN",
@@ -3597,6 +3870,13 @@ export const Constants = {
         "gestor",
       ],
       request_status: ["pending", "approved", "denied"],
+      subscription_status: [
+        "trial",
+        "active",
+        "past_due",
+        "suspended",
+        "cancelled",
+      ],
       user_role: ["superadmin", "admin"],
       user_role_type: [
         "superadmin",
