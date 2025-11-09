@@ -244,12 +244,9 @@ const PMSRolesManagement = () => {
       const { data: maxUsers } = await supabase
         .rpc('get_tenant_user_limit', { tenant_id_param: tenantId });
 
-      const { count: currentCount } = await supabase
-        .from('user_roles')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', tenantId)
-        .eq('module', 'PMS')
-        .eq('status', 'approved');
+      // Usar nueva función para contar solo usuarios administrativos
+      const { data: currentAdminCount } = await supabase
+        .rpc('get_tenant_admin_user_count', { tenant_id_param: tenantId });
 
       const tenant = tenants.find(t => t.id === tenantId);
       
@@ -257,9 +254,9 @@ const PMSRolesManagement = () => {
         const limit: TenantUserLimit = {
           tenant_id: tenantId,
           tenant_name: tenant.name,
-          current_users: currentCount || 0,
+          current_users: currentAdminCount || 0,
           max_users: maxUsers || 0,
-          is_at_limit: (currentCount || 0) >= (maxUsers || 0)
+          is_at_limit: (currentAdminCount || 0) >= (maxUsers || 0)
         };
         
         setUserLimits(prev => new Map(prev).set(tenantId, limit));

@@ -48,8 +48,8 @@ export function EditPMSUserDialog({
     setLoading(true);
 
     try {
-      // Si cambia el tenant, validar límite de usuarios
-      if (formData.tenant_id !== user.tenant_id && formData.status === 'approved') {
+      // Si cambia el tenant o rol, validar límite de usuarios administrativos
+      if ((formData.tenant_id !== user.tenant_id || formData.role !== user.role) && formData.status === 'approved') {
         const { data: maxUsersAllowed, error: limitError } = await supabase
           .rpc('get_tenant_user_limit', { tenant_id_param: formData.tenant_id });
 
@@ -57,30 +57,48 @@ export function EditPMSUserDialog({
           throw new Error('No se pudo obtener el límite de usuarios del tenant');
         }
 
-        const { count: currentUserCount, error: countError } = await supabase
-          .from('user_roles')
-          .select('*', { count: 'exact', head: true })
-          .eq('tenant_id', formData.tenant_id)
-          .eq('module', 'PMS')
-          .eq('status', 'approved');
+        const { data: tenantInfo, error: tenantError } = await supabase
+          .from('pms_tenants')
+          .select('name, tenant_type')
+          .eq('id', formData.tenant_id)
+          .single();
 
-        if (countError) {
-          throw new Error('Error al verificar límite de usuarios');
+        if (tenantError || !tenantInfo) {
+          throw new Error('No se pudo obtener información del tenant');
         }
 
-        if (currentUserCount !== null && currentUserCount >= maxUsersAllowed) {
-          const { data: tenantInfo } = await supabase
-            .from('pms_tenants')
-            .select('name')
-            .eq('id', formData.tenant_id)
-            .single();
+        // Determinar si el rol cuenta para el límite según tenant_type
+        const roleCountsForLimit = (role: string, tenantType: string) => {
+          if (role === 'inquilino') return false;
+          
+          if (tenantType === 'propietario') {
+            return role === 'propietario' || role === 'admin';
+          } else if (['inmobiliaria', 'administrador', 'sistema'].includes(tenantType)) {
+            return role === 'inmobiliaria' || role === 'admin';
+          }
+          return role !== 'inquilino';
+        };
 
-          toast({
-            title: 'Límite Alcanzado',
-            description: `El tenant "${tenantInfo?.name}" ya alcanzó su límite de ${maxUsersAllowed} usuarios`,
-            variant: 'destructive',
-          });
-          return;
+        if (roleCountsForLimit(formData.role.toLowerCase(), tenantInfo.tenant_type)) {
+          const { data: currentAdminCount, error: countError } = await supabase
+            .rpc('get_tenant_admin_user_count', { tenant_id_param: formData.tenant_id });
+
+          if (countError) {
+            throw new Error('Error al verificar límite de usuarios administrativos');
+          }
+
+          if (currentAdminCount !== null && currentAdminCount >= maxUsersAllowed) {
+            const roleLabel = tenantInfo.tenant_type === 'propietario' 
+              ? 'PROPIETARIO/ADMINISTRADOR' 
+              : 'INMOBILIARIA/ADMINISTRADOR';
+
+            toast({
+              title: 'Límite Alcanzado',
+              description: `El tenant "${tenantInfo.name}" ya alcanzó su límite de ${maxUsersAllowed} usuarios administrativos (${roleLabel})`,
+              variant: 'destructive',
+            });
+            return;
+          }
         }
       }
 

@@ -3208,6 +3208,10 @@ export type Database = {
           total_users: number
         }[]
       }
+      get_tenant_admin_user_count: {
+        Args: { tenant_id_param: string }
+        Returns: number
+      }
       get_tenant_growth_over_time: {
         Args: never
         Returns: {
@@ -3253,14 +3257,17 @@ export type Database = {
       get_tenants_with_user_count: {
         Args: never
         Returns: {
+          admin_user_count: number
           created_at: string
           id: string
           is_active: boolean
           max_users: number
           name: string
+          owner_user_count: number
           settings: Json
           slug: string
           tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
+          tenant_user_count: number
           user_count: number
         }[]
       }

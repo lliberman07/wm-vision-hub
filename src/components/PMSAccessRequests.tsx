@@ -349,7 +349,7 @@ const PMSAccessRequests = () => {
         // VALIDAR LÍMITE DE USUARIOS PARA EL TENANT
         const { data: tenantInfo } = await supabase
           .from('pms_tenants')
-          .select('slug, name')
+          .select('slug, name, tenant_type')
           .eq('id', finalTenantId)
           .single();
 
@@ -361,24 +361,39 @@ const PMSAccessRequests = () => {
           throw new Error('No se pudo obtener el límite de usuarios del tenant');
         }
 
-        const { count: currentUserCount, error: countError } = await supabase
-          .from('user_roles')
-          .select('*', { count: 'exact', head: true })
-          .eq('tenant_id', finalTenantId)
-          .eq('module', 'PMS')
-          .eq('status', 'approved');
+        // Determinar si el rol cuenta para el límite según tenant_type
+        const roleCountsForLimit = (role: string, tenantType: string) => {
+          if (role === 'inquilino') return false;
+          
+          if (tenantType === 'propietario') {
+            return role === 'propietario' || role === 'admin';
+          } else if (['inmobiliaria', 'administrador', 'sistema'].includes(tenantType)) {
+            return role === 'inmobiliaria' || role === 'admin';
+          }
+          return role !== 'inquilino';
+        };
 
-        if (countError) {
-          throw new Error('Error al verificar límite de usuarios');
-        }
+        // Solo validar límite si el rol cuenta para el límite
+        if (roleCountsForLimit(selectedRequest.requested_role.toLowerCase(), tenantInfo?.tenant_type || '')) {
+          const { data: currentAdminCount, error: countError } = await supabase
+            .rpc('get_tenant_admin_user_count', { tenant_id_param: finalTenantId });
 
-        if (currentUserCount !== null && currentUserCount >= maxUsersAllowed) {
-          toast({
-            title: "Límite Alcanzado",
-            description: `El tenant "${tenantInfo?.name}" ya alcanzó su límite de ${maxUsersAllowed} usuarios`,
-            variant: "destructive"
-          });
-          return;
+          if (countError) {
+            throw new Error('Error al verificar límite de usuarios administrativos');
+          }
+
+          if (currentAdminCount !== null && currentAdminCount >= maxUsersAllowed) {
+            const roleLabel = tenantInfo?.tenant_type === 'propietario' 
+              ? 'PROPIETARIO/ADMINISTRADOR' 
+              : 'INMOBILIARIA/ADMINISTRADOR';
+
+            toast({
+              title: "Límite Alcanzado",
+              description: `El tenant "${tenantInfo?.name}" ya alcanzó su límite de ${maxUsersAllowed} usuarios administrativos (${roleLabel})`,
+              variant: "destructive"
+            });
+            return;
+          }
         }
 
         // Verificar si ya existe un rol para este usuario
@@ -434,10 +449,10 @@ const PMSAccessRequests = () => {
         toast({
           title: "Solicitud aprobada",
           description: needsOwnTenant
-            ? `Tenant de ${isPropietario ? 'propietario' : 'inquilino'} creado automáticamente. Usuario ${(currentUserCount || 0) + 1}/${maxUsersAllowed} en el tenant.` 
+            ? `Tenant de ${isPropietario ? 'propietario' : 'inquilino'} creado automáticamente.` 
             : isNewUser 
-              ? `Cuenta creada y credenciales enviadas. Usuario ${(currentUserCount || 0) + 1}/${maxUsersAllowed} en el tenant.` 
-              : `Usuario aprobado. ${(currentUserCount || 0) + 1}/${maxUsersAllowed} en el tenant.`,
+              ? `Cuenta creada y credenciales enviadas.` 
+              : `Usuario aprobado correctamente.`,
         });
       } else if (actionType === 'revert') {
         // Revertir aprobación: cambiar estado a pending
