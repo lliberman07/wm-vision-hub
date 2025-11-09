@@ -30,7 +30,10 @@ import {
   ExternalLink,
   Eye,
   Briefcase,
-  Zap
+  Zap,
+  Package,
+  Award,
+  Rocket
 } from "lucide-react";
 
 interface SubscriptionPlan {
@@ -122,6 +125,12 @@ const PropertyManagement = () => {
     if (monthly === 0) return 0;
     const monthlyTotal = monthly * 12;
     return Math.round(((monthlyTotal - yearly) / monthlyTotal) * 100);
+  };
+
+  // Icon mapping for plan types
+  const getPlanIcon = (index: number) => {
+    const icons = [Package, Award, Rocket]; // Básico, Profesional, Enterprise
+    return icons[index] || Package;
   };
 
   const features = [
@@ -367,10 +376,20 @@ const PropertyManagement = () => {
                   className="border-2 border-primary shadow-medium transition-all duration-300 hover:shadow-strong hover:scale-105 hover:-translate-y-2 hover:border-primary flex flex-col"
                 >
                   <CardHeader>
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary">
-                        {plan.name}
-                      </Badge>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        {(() => {
+                          const IconComponent = getPlanIcon(index);
+                          return (
+                            <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center">
+                              <IconComponent className="h-6 w-6 text-primary-foreground" />
+                            </div>
+                          );
+                        })()}
+                        <Badge variant="secondary">
+                          {plan.name}
+                        </Badge>
+                      </div>
                       {index === 1 && (
                         <Badge variant="outline" className="text-xs">
                           <Zap className="h-3 w-3 mr-1" />
