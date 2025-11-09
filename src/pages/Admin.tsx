@@ -18,6 +18,7 @@ import { PMSAccessView } from "@/components/admin/PMSAccessView";
 import { PMSUsersAndRolesView } from "@/components/admin/PMSUsersAndRolesView";
 import { UserApprovalsView } from "@/components/admin/UserApprovalsView";
 import { AdminUsersView } from "@/components/admin/AdminUsersView";
+import { LicenseDashboardView } from "@/components/admin/LicenseDashboardView";
 
 // Admin Dashboard with Sidebar Layout
 const Admin = () => {
@@ -105,6 +106,7 @@ const Admin = () => {
               <Route path="chatbot" element={<ChatbotView />} />
               {userProfile?.role === 'superadmin' && (
                 <>
+                  <Route path="pms-licenses" element={<LicenseDashboardView />} />
                   <Route path="pms-tenants" element={<PMSTenantsView />} />
                   <Route path="pms-access" element={<PMSAccessView />} />
                   <Route path="pms-users-roles" element={<PMSUsersAndRolesView />} />

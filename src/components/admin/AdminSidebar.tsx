@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { MessageSquare, TrendingUp, FileText, Building, Users, Shield } from "lucide-react";
+import { MessageSquare, TrendingUp, FileText, Building, Users, Shield, BarChart3 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +29,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
   ];
 
   const wmPMSItems = [
+    { title: "Dashboard Licencias", path: "/admin/pms-licenses", icon: BarChart3 },
     { title: "Tenants PMS", path: "/admin/pms-tenants", icon: Building },
     { title: "Usuarios y Roles", path: "/admin/pms-users-roles", icon: Shield },
     { title: "Solicitudes PMS", path: "/admin/pms-access", icon: Users },
