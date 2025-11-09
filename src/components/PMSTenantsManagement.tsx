@@ -138,32 +138,23 @@ export function PMSTenantsManagement() {
         console.error('Error fetching user counts:', userCountsError);
       }
 
-      console.log('🔍 Raw userCounts data:', userCounts);
-      console.log('🔍 Sample role structure:', userCounts?.[0]);
-
       // Filter roles that consume tenant licenses
       const validUserRoles = (userCounts || []).filter((role: any) => {
         // INQUILINO never consumes a license
         if (role.role === 'inquilino') {
-          console.log(`❌ Excluding INQUILINO: ${role.user_id}`);
           return false;
         }
         
         // PROPIETARIO only consumes license if tenant type is 'propietario'
         if (role.role === 'propietario') {
-          // Try both possible structures
           const tenantType = role.pms_tenants?.tenant_type || role.pms_tenants?.[0]?.tenant_type;
           const isOwnerTenant = tenantType === 'propietario';
-          console.log(`${isOwnerTenant ? '✅' : '❌'} PROPIETARIO ${role.user_id} - Tenant type: ${tenantType}`);
           return isOwnerTenant;
         }
         
         // All other roles (administrador, inmobiliaria, superadmin) consume licenses
-        console.log(`✅ Including role ${role.role}: ${role.user_id}`);
         return true;
       });
-
-      console.log('🔍 Valid user roles after filtering:', validUserRoles);
 
       // Count unique users per tenant (a user can have multiple roles)
       const userCountMap = new Map<string, Set<string>>();
@@ -178,16 +169,12 @@ export function PMSTenantsManagement() {
       const finalUserCounts = new Map<string, number>();
       userCountMap.forEach((userSet, tenantId) => {
         finalUserCounts.set(tenantId, userSet.size);
-        console.log(`🔍 Tenant ${tenantId}: ${userSet.size} users`);
       });
-
-      console.log('🔍 Final user counts:', Object.fromEntries(finalUserCounts));
 
       // Combine data
       const enrichedTenants = (tenantsData || []).map(tenant => {
         const settings = tenant.settings as any;
         const userCount = finalUserCounts.get(tenant.id) || 0;
-        console.log(`🔍 Enriching tenant "${tenant.name}" (${tenant.id}): ${userCount} users`);
         // Mapear 'administrador' a 'gestor' durante la transición
         const tenantType = tenant.tenant_type === 'administrador' ? 'gestor' : tenant.tenant_type;
         return {
