@@ -405,15 +405,50 @@ export const rolesData: Record<PMSRole, RoleData> = {
   }
 };
 
-export const modulePermissions: Record<string, PMSRole[]> = {
-  properties: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
-  owners: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
-  tenants: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
-  contracts: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO'],
-  payments: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO'],
-  expenses: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO'],
-  receipts: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
-  maintenance: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'INQUILINO', 'PROVEEDOR'],
-  reports: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
-  indices: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+export interface ModulePermission {
+  read: PMSRole[];
+  write: PMSRole[];
+}
+
+export const modulePermissions: Record<string, ModulePermission> = {
+  properties: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+  },
+  owners: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+  },
+  tenants: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+  },
+  contracts: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+  },
+  payments: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+  },
+  expenses: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+  },
+  receipts: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+  },
+  maintenance: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'INQUILINO', 'PROVEEDOR'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'INQUILINO', 'PROVEEDOR']
+  },
+  reports: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO'],
+    write: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR']
+  },
+  indices: {
+    read: ['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR', 'PROPIETARIO', 'INQUILINO'],
+    write: ['SUPERADMIN']
+  }
 };
