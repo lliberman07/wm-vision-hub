@@ -19,9 +19,8 @@ interface SubscriptionPlan {
   name: string;
   slug: string;
   description: string;
-  monthly_price: number;
-  yearly_price: number;
-  currency: string;
+  price_monthly: number;
+  price_yearly: number;
   max_users: number;
   max_properties: number | null;
   max_contracts: number | null;
@@ -175,9 +174,11 @@ export default function Subscribe() {
   if (!selectedPlan) return null;
 
   const IconComponent = getPlanIcon(selectedPlan.slug);
-  const price = billingCycle === 'yearly' ? selectedPlan.yearly_price : selectedPlan.monthly_price;
-  const savingsPercent = selectedPlan.yearly_price > 0 
-    ? Math.round(((selectedPlan.monthly_price * 12 - selectedPlan.yearly_price) / (selectedPlan.monthly_price * 12)) * 100)
+  const price = billingCycle === 'yearly' 
+    ? (selectedPlan.price_yearly || 0) 
+    : (selectedPlan.price_monthly || 0);
+  const savingsPercent = selectedPlan.price_yearly > 0 && selectedPlan.price_monthly > 0
+    ? Math.round(((selectedPlan.price_monthly * 12 - selectedPlan.price_yearly) / (selectedPlan.price_monthly * 12)) * 100)
     : 0;
 
   return (
@@ -204,7 +205,7 @@ export default function Subscribe() {
                   <Label htmlFor="monthly" className="flex-1 cursor-pointer">
                     <div className="font-semibold">Mensual</div>
                     <div className="text-sm text-muted-foreground">
-                      {selectedPlan.currency} ${selectedPlan.monthly_price.toLocaleString()} /mes
+                      ARS ${(selectedPlan.price_monthly || 0).toLocaleString()} /mes
                     </div>
                   </Label>
                 </div>
@@ -221,7 +222,7 @@ export default function Subscribe() {
                       )}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {selectedPlan.currency} ${selectedPlan.yearly_price.toLocaleString()} /año
+                      ARS ${(selectedPlan.price_yearly || 0).toLocaleString()} /año
                     </div>
                   </Label>
                 </div>
@@ -231,7 +232,7 @@ export default function Subscribe() {
             <div className="pt-4 border-t">
               <div className="flex justify-between items-center text-lg font-bold">
                 <span>Total:</span>
-                <span>{selectedPlan.currency} ${price.toLocaleString()}</span>
+                <span>ARS ${price.toLocaleString()}</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {billingCycle === 'yearly' ? 'Facturación anual' : 'Facturación mensual'}
