@@ -21,6 +21,7 @@ import { AdminUsersView } from "@/components/admin/AdminUsersView";
 import { TenantSubscriptionsView } from "@/components/admin/TenantSubscriptionsView";
 import { SubscriptionPlansManagement } from "@/components/admin/SubscriptionPlansManagement";
 import SubscriptionRequestsView from "@/components/admin/SubscriptionRequestsView";
+import InvoiceManagementView from "@/components/admin/InvoiceManagementView";
 
 // Admin Dashboard with Sidebar Layout
 const Admin = () => {
@@ -109,6 +110,7 @@ const Admin = () => {
               {userProfile?.role === 'superadmin' && (
                 <>
                   <Route path="subscription-requests" element={<SubscriptionRequestsView />} />
+                  <Route path="invoices" element={<InvoiceManagementView />} />
                   <Route path="pms-licenses" element={<TenantSubscriptionsView />} />
                   <Route path="pms-plans" element={<SubscriptionPlansManagement />} />
                   <Route path="pms-tenants" element={<PMSTenantsView />} />

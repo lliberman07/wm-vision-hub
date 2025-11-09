@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { MessageSquare, TrendingUp, FileText, Building, Users, Shield, BarChart3, CreditCard, FileCheck } from "lucide-react";
+import { MessageSquare, TrendingUp, FileText, Building, Users, Shield, BarChart3, CreditCard, FileCheck, Receipt } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -30,6 +30,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
 
   const wmPMSItems = [
     { title: "Solicitudes Suscripción", path: "/admin/subscription-requests", icon: FileCheck },
+    { title: "Facturas", path: "/admin/invoices", icon: Receipt },
     { title: "Suscripciones", path: "/admin/pms-licenses", icon: BarChart3 },
     { title: "Planes", path: "/admin/pms-plans", icon: CreditCard },
     { title: "Tenants PMS", path: "/admin/pms-tenants", icon: Building },
