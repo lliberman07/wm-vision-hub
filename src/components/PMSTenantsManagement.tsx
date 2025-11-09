@@ -118,19 +118,56 @@ export function PMSTenantsManagement() {
 
       if (tenantsError) throw tenantsError;
 
-      // Get user counts for each tenant
+      // Get user counts for each tenant with tenant type information
       const { data: userCounts, error: userCountsError } = await supabase
         .from('user_roles')
-        .select('tenant_id')
+        .select(`
+          id,
+          tenant_id,
+          role,
+          user_id,
+          pms_tenants!inner(
+            tenant_type
+          )
+        `)
         .eq('module', 'PMS')
-        .eq('status', 'approved');
+        .eq('status', 'approved')
+        .not('tenant_id', 'is', null);
 
-      if (userCountsError) throw userCountsError;
+      if (userCountsError) {
+        console.error('Error fetching user counts:', userCountsError);
+      }
 
-      // Count users per tenant
-      const userCountMap = new Map<string, number>();
-      (userCounts || []).forEach(role => {
-        userCountMap.set(role.tenant_id, (userCountMap.get(role.tenant_id) || 0) + 1);
+      // Filter roles that consume tenant licenses
+      const validUserRoles = (userCounts || []).filter((role: any) => {
+        // INQUILINO never consumes a license
+        if (role.role === 'inquilino') {
+          return false;
+        }
+        
+        // PROPIETARIO only consumes license if tenant type is 'propietario'
+        if (role.role === 'propietario') {
+          const isOwnerTenant = role.pms_tenants?.tenant_type === 'propietario';
+          return isOwnerTenant;
+        }
+        
+        // All other roles (administrador, inmobiliaria, superadmin) consume licenses
+        return true;
+      });
+
+      // Count unique users per tenant (a user can have multiple roles)
+      const userCountMap = new Map<string, Set<string>>();
+      validUserRoles.forEach((role: any) => {
+        if (!userCountMap.has(role.tenant_id)) {
+          userCountMap.set(role.tenant_id, new Set());
+        }
+        userCountMap.get(role.tenant_id)!.add(role.user_id);
+      });
+
+      // Convert Sets to numbers
+      const finalUserCounts = new Map<string, number>();
+      userCountMap.forEach((userSet, tenantId) => {
+        finalUserCounts.set(tenantId, userSet.size);
       });
 
       // Combine data
@@ -141,7 +178,7 @@ export function PMSTenantsManagement() {
         return {
           ...tenant,
           tenant_type: tenantType as TenantType,
-          user_count: userCountMap.get(tenant.id) || 0,
+          user_count: finalUserCounts.get(tenant.id) || 0,
           max_users: settings?.limits?.max_users || 2,
         };
       });
