@@ -827,28 +827,16 @@ export function PMSTenantsManagement() {
                     </code>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-primary" />
-                        <span className="font-medium">{tenant.admin_user_count || 0}</span>
-                        <span className="text-xs text-muted-foreground">
-                          / {tenant.max_users || 2}
-                        </span>
-                        {(tenant.admin_user_count || 0) >= (tenant.max_users || 2) && (
-                          <Badge variant="destructive" className="text-xs">
-                            Límite
-                          </Badge>
-                        )}
-                      </div>
-                      {((tenant.owner_user_count || 0) > 0 || (tenant.tenant_user_count || 0) > 0) && (
-                        <div className="text-xs text-muted-foreground flex gap-2">
-                          {(tenant.owner_user_count || 0) > 0 && (
-                            <span title="Usuarios Propietario">👤 {tenant.owner_user_count}</span>
-                          )}
-                          {(tenant.tenant_user_count || 0) > 0 && (
-                            <span title="Usuarios Inquilino">🏠 {tenant.tenant_user_count}</span>
-                          )}
-                        </div>
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{tenant.user_count || 0}</span>
+                      <span className="text-xs text-muted-foreground">
+                        / {tenant.max_users || 2}
+                      </span>
+                      {(tenant.user_count || 0) >= (tenant.max_users || 2) && (
+                        <Badge variant="destructive" className="text-xs">
+                          Límite
+                        </Badge>
                       )}
                     </div>
                   </TableCell>
