@@ -15,8 +15,7 @@ import { ApplicationsView } from "@/components/admin/ApplicationsView";
 import { ChatbotView } from "@/components/admin/ChatbotView";
 import { PMSTenantsView } from "@/components/admin/PMSTenantsView";
 import { PMSAccessView } from "@/components/admin/PMSAccessView";
-import { PMSRolesView } from "@/components/admin/PMSRolesView";
-import { PMSUsersView } from "@/components/admin/PMSUsersView";
+import { PMSUsersAndRolesView } from "@/components/admin/PMSUsersAndRolesView";
 import { UserApprovalsView } from "@/components/admin/UserApprovalsView";
 import { AdminUsersView } from "@/components/admin/AdminUsersView";
 
@@ -108,8 +107,7 @@ const Admin = () => {
                 <>
                   <Route path="pms-tenants" element={<PMSTenantsView />} />
                   <Route path="pms-access" element={<PMSAccessView />} />
-                  <Route path="pms-roles" element={<PMSRolesView />} />
-                  <Route path="pms-users" element={<PMSUsersView />} />
+                  <Route path="pms-users-roles" element={<PMSUsersAndRolesView />} />
                   <Route path="approvals" element={<UserApprovalsView />} />
                   <Route path="admin-users" element={<AdminUsersView />} />
                 </>
