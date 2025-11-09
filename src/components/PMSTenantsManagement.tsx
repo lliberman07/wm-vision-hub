@@ -33,11 +33,8 @@ interface Tenant {
   created_at: string;
   settings: any;
   tenant_type: TenantType;
-  user_count?: number;
-  max_users?: number;
-  admin_user_count?: number;
-  owner_user_count?: number;
-  tenant_user_count?: number;
+  user_count: number; // Usuarios que consumen licencia (excluye INQUILINO, PROPIETARIO según tipo)
+  max_users: number; // Límite de usuarios permitidos
   parent_tenant_id?: string | null;
 }
 
@@ -225,6 +222,8 @@ export function PMSTenantsManagement() {
           is_active: true,
           created_at: new Date().toISOString(),
           settings: {},
+          user_count: item.total_users || 0,
+          max_users: 2, // Default, se puede obtener del settings si está disponible
         }));
 
       setBranches(branchData);
