@@ -31,6 +31,7 @@ import PMS from "./pages/PMS";
 import PMSRequestAccess from "./pages/PMSRequestAccess";
 import PMSLogin from "./pages/PMSLogin";
 import PMSResetPassword from "./pages/PMSResetPassword";
+import Subscribe from "./pages/pms/Subscribe";
 import Properties from "./pages/pms/Properties";
 import Owners from "./pages/pms/Owners";
 import Tenants from "./pages/pms/Tenants";
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/pms/login" element={<PMSLogin />} />
               <Route path="/pms/reset-password" element={<PMSResetPassword />} />
               <Route path="/pms/request-access" element={<PMSRequestAccess />} />
+              <Route path="/pms/subscribe" element={<Subscribe />} />
               <Route path="/pms/properties" element={<Properties />} />
               <Route path="/pms/owners" element={<Owners />} />
               <Route path="/pms/tenants" element={<Tenants />} />

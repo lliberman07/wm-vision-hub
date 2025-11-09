@@ -648,18 +648,23 @@ export type Database = {
       pms_access_requests: {
         Row: {
           address: string | null
+          approved_subscription_id: string | null
+          billing_cycle: string | null
           city: string | null
           company_name: string | null
           contact_name: string | null
           contract_number: string | null
           created_at: string | null
           cuit_cuil: string | null
+          desired_plan_id: string | null
           document_id: string | null
           email: string
           entity_type: string | null
           first_name: string | null
           id: string
           last_name: string | null
+          payment_method: string | null
+          payment_proof_url: string | null
           phone: string | null
           postal_code: string | null
           razon_social: string | null
@@ -677,18 +682,23 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          approved_subscription_id?: string | null
+          billing_cycle?: string | null
           city?: string | null
           company_name?: string | null
           contact_name?: string | null
           contract_number?: string | null
           created_at?: string | null
           cuit_cuil?: string | null
+          desired_plan_id?: string | null
           document_id?: string | null
           email: string
           entity_type?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          payment_method?: string | null
+          payment_proof_url?: string | null
           phone?: string | null
           postal_code?: string | null
           razon_social?: string | null
@@ -706,18 +716,23 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          approved_subscription_id?: string | null
+          billing_cycle?: string | null
           city?: string | null
           company_name?: string | null
           contact_name?: string | null
           contract_number?: string | null
           created_at?: string | null
           cuit_cuil?: string | null
+          desired_plan_id?: string | null
           document_id?: string | null
           email?: string
           entity_type?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          payment_method?: string | null
+          payment_proof_url?: string | null
           phone?: string | null
           postal_code?: string | null
           razon_social?: string | null
@@ -734,6 +749,20 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pms_access_requests_approved_subscription_id_fkey"
+            columns: ["approved_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_access_requests_desired_plan_id_fkey"
+            columns: ["desired_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pms_access_requests_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -3324,6 +3353,10 @@ export type Database = {
       approve_payment_submission: {
         Args: { submission_id_param: string }
         Returns: undefined
+      }
+      approve_subscription_request: {
+        Args: { p_request_id: string; p_trial_days?: number }
+        Returns: Json
       }
       approve_user: { Args: { user_id_param: string }; Returns: undefined }
       can_edit_economic_index: {

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedChatbot } from "@/components/EnhancedChatbot";
+import { useAuth } from "@/contexts/AuthContext";
 import { SubscriptionPlansComparator } from "@/components/SubscriptionPlansComparator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency, formatNumber } from "@/utils/numberFormat";
@@ -55,6 +56,8 @@ interface SubscriptionPlan {
 
 const PropertyManagement = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [isYearly, setIsYearly] = useState(false);
 
   // Fetch subscription plans
@@ -498,14 +501,17 @@ const PropertyManagement = () => {
                     <div className="space-y-4 mt-auto">
                     {/* CTA Button */}
                     <Button 
-                      asChild 
                       className="w-full" 
-                      variant="outline"
+                      onClick={() => {
+                        if (user) {
+                          navigate(`/pms/subscribe?plan=${plan.slug}`);
+                        } else {
+                          navigate(`/auth?returnTo=/pms/subscribe?plan=${plan.slug}`);
+                        }
+                      }}
                     >
-                      <Link to="/pms">
-                        Comenzar
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
+                      Suscribir
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
 
                     {/* IVA Disclaimer */}
