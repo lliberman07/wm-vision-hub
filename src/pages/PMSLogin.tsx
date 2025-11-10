@@ -73,14 +73,14 @@ const PMSLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md space-y-4">
         {/* Logo and Header */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-2">
           <div className="flex justify-center">
             <img 
               src={granadaLogo} 
               alt="Granada Property Management" 
-              className="h-56 w-auto object-contain mx-auto transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in"
+              className="h-64 w-auto object-contain mx-auto transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in"
             />
           </div>
           <div>
