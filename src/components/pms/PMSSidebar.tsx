@@ -16,7 +16,7 @@ import {
 import { usePMS } from '@/contexts/PMSContext';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import wmLogo from '@/assets/wm-logo.svg';
+import granadaLogo from '@/assets/granada-logo.jpg';
 
 const menuItems = [
   {
@@ -92,8 +92,12 @@ export function PMSSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="p-4 border-b">
-        {/* Header sin logo */}
+      <SidebarHeader className="p-4 border-b flex items-center justify-center">
+        <img 
+          src={granadaLogo} 
+          alt="Granada Property Management" 
+          className={`${isCollapsed ? 'h-8 w-8' : 'h-16 w-auto'} object-contain transition-all duration-300`}
+        />
       </SidebarHeader>
 
       <SidebarContent>
