@@ -56,3 +56,6 @@ cron = "0 3 1 * *"
 
 [functions.fix-prima4302-payment]
 verify_jwt = false
+
+[functions.recalculate-contract-cashflow]
+verify_jwt = true
