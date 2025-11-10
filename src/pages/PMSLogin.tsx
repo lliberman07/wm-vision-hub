@@ -80,7 +80,7 @@ const PMSLogin = () => {
             <img 
               src={granadaLogo} 
               alt="Granada Property Management" 
-              className="h-36 w-auto object-contain mx-auto"
+              className="h-48 w-auto object-contain mx-auto"
             />
           </div>
           <div>
