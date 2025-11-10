@@ -8,13 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight, BarChart3 } from 'lucide-react';
+import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight, BarChart3, Receipt } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
 import { PropertyExpensesReport } from '@/components/pms/PropertyExpensesReport';
 import { TenantsAnalytics } from '@/components/pms/TenantsAnalytics';
+import { ReimbursementDashboard } from '@/components/pms/ReimbursementDashboard';
 import { OwnerReportExportDialog } from '@/components/pms/OwnerReportExportDialog';
 import { OwnerReportDirectDownload } from '@/components/pms/OwnerReportDirectDownload';
 import { toast } from 'sonner';
@@ -38,7 +39,7 @@ const Reports = () => {
     activeTenants: 0,
     monthlyIncome: 0,
   });
-  const [activeTab, setActiveTab] = useState<'properties' | 'tenants'>('properties');
+  const [activeTab, setActiveTab] = useState<'properties' | 'tenants' | 'reimbursements'>('properties');
   const [hasWMAccess, setHasWMAccess] = useState(false);
   const [loadingWMAccess, setLoadingWMAccess] = useState(true);
 
@@ -299,6 +300,10 @@ const Reports = () => {
             <TabsTrigger value="properties" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               Propiedades y Contratos
+            </TabsTrigger>
+            <TabsTrigger value="reimbursements" className="flex items-center gap-2">
+              <Receipt className="h-4 w-4" />
+              Reembolsos
             </TabsTrigger>
             {hasWMAccess && (
               <TabsTrigger value="tenants" className="flex items-center gap-2">
@@ -713,6 +718,20 @@ const Reports = () => {
             )}
           </div>
         )}
+        </TabsContent>
+
+        <TabsContent value="reimbursements">
+          {currentTenant?.id ? (
+            <ReimbursementDashboard tenantId={currentTenant.id} />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground">
+                  No hay tenant seleccionado
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="tenants">
