@@ -96,7 +96,7 @@ export function PMSSidebar() {
         <img 
           src={granadaLogo} 
           alt="Granada Property Management" 
-          className={`${isCollapsed ? 'h-10 w-10' : 'h-24 w-auto'} object-contain transition-all duration-300`}
+          className={`${isCollapsed ? 'h-12 w-12' : 'h-32 w-auto'} object-contain transition-all duration-300`}
         />
       </SidebarHeader>
 
