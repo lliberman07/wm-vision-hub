@@ -93,8 +93,7 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
     const subscription = form.watch((value, { name }) => {
       if (name === 'property_id' && value.property_id) {
         fetchContracts(value.property_id);
-        form.setValue('contract_id', '');
-        form.setValue('is_reimbursable', false);
+        // No resetear contract_id aquí - fetchContracts lo maneja automáticamente
       }
       if (name === 'contract_id') {
         const hasContract = value.contract_id && value.contract_id !== 'none';
@@ -121,6 +120,8 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
     if (!propertyId) {
       setContracts([]);
       setHasActiveContract(false);
+      form.setValue('contract_id', '');
+      form.setValue('is_reimbursable', false);
       return;
     }
     
@@ -131,12 +132,23 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
       .eq('status', 'active')
       .order('contract_number');
     
-    if (data) {
+    if (data && data.length > 0) {
       setContracts(data);
-      setHasActiveContract(data.length > 0);
+      setHasActiveContract(true);
+      
+      // AUTO-SELECCIÓN: Si hay exactamente 1 contrato activo
+      if (data.length === 1) {
+        form.setValue('contract_id', data[0].id);
+      } else {
+        // Si hay múltiples contratos, resetear la selección para que el usuario elija
+        form.setValue('contract_id', '');
+        form.setValue('is_reimbursable', false);
+      }
     } else {
       setContracts([]);
       setHasActiveContract(false);
+      form.setValue('contract_id', '');
+      form.setValue('is_reimbursable', false);
     }
   };
 
@@ -261,7 +273,13 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
               name="contract_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contrato (opcional)</FormLabel>
+                  <FormLabel>
+                    {contracts.length === 0 
+                      ? "Sin contrato activo" 
+                      : contracts.length === 1 
+                      ? "Contrato Activo" 
+                      : "Contratos Activos (seleccionar)"}
+                  </FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     value={field.value}
@@ -269,7 +287,13 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sin contrato asociado" />
+                        <SelectValue 
+                          placeholder={
+                            contracts.length === 0 
+                              ? "Esta propiedad no tiene contratos activos" 
+                              : "Seleccionar contrato"
+                          } 
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
