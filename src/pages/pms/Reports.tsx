@@ -18,7 +18,6 @@ import { TenantsAnalytics } from '@/components/pms/TenantsAnalytics';
 import { ReimbursementDashboard } from '@/components/pms/ReimbursementDashboard';
 import { OwnerReportExportDialog } from '@/components/pms/OwnerReportExportDialog';
 import { OwnerReportDirectDownload } from '@/components/pms/OwnerReportDirectDownload';
-import { toast } from 'sonner';
 import { Download, Mail } from 'lucide-react';
 
 const Reports = () => {
@@ -626,45 +625,11 @@ const Reports = () => {
 
                 <Card>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <DollarSign className="h-5 w-5" />
-                          Flujo de Caja del Contrato
-                        </CardTitle>
-                        <CardDescription>Últimos 12 meses</CardDescription>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          if (!selectedProperty?.contracts) return;
-                          const contract = selectedProperty.contracts.find((c: any) => c.id === selectedContract);
-                          if (!contract) return;
-                          
-                          try {
-                            toast.loading('Recalculando flujo de caja...', { id: 'recalculating' });
-                            
-                            const { data, error } = await supabase.functions.invoke('recalculate-contract-cashflow', {
-                              body: { contract_number: contract.contract_number }
-                            });
-
-                            if (error) throw error;
-
-                            toast.success('Flujo de caja recalculado correctamente', { id: 'recalculating' });
-                            
-                            // Refetch cashflow data
-                            await fetchCashflow();
-                          } catch (error: any) {
-                            console.error('Error recalculating cashflow:', error);
-                            toast.error(error.message || 'Error al recalcular flujo de caja', { id: 'recalculating' });
-                          }
-                        }}
-                      >
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        Recalcular
-                      </Button>
-                    </div>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="h-5 w-5" />
+                      Flujo de Caja del Contrato
+                    </CardTitle>
+                    <CardDescription>Últimos 12 meses</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {cashflowData.length === 0 ? (
