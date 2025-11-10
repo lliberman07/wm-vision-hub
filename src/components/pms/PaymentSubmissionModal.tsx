@@ -302,6 +302,9 @@ export function PaymentSubmissionModal({
                   placeholder="Ej: 1200.00"
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  Valor tipo de Cambio Vendedor Banco Nación Argentina, del día de pago
+                </p>
                 {exchangeRate && paidAmount && (
                   <CurrencyExchangeIndicator
                     contractCurrency={contractCurrency}

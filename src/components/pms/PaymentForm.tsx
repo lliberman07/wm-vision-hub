@@ -392,7 +392,7 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
                       />
                     </FormControl>
                     <p className="text-xs text-muted-foreground">
-                      Ingresa la cotización: 1 {contractCurrency} = X {form.watch('currency')}
+                      Valor tipo de Cambio Vendedor Banco Nación Argentina, del día de pago
                     </p>
                     <FormMessage />
                   </FormItem>
