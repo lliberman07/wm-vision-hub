@@ -68,22 +68,22 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${ownerProperties.length} owners for property`);
 
-    // Obtener métodos de pago del contrato
+    // Obtener métodos de pago del contrato con sus IDs
     const { data: paymentMethods, error: pmError } = await supabase
       .from('pms_contract_payment_methods')
-      .select('*')
+      .select('id, payment_method, percentage, item')
       .eq('contract_id', expense.contract_id);
 
     if (pmError) {
       throw new Error(`Error fetching payment methods: ${pmError.message}`);
     }
 
-    // Si no hay métodos de pago definidos, crear uno por defecto
-    const methods = paymentMethods && paymentMethods.length > 0 
-      ? paymentMethods 
-      : [{ payment_method: 'Efectivo', percentage: 100, item: 'UNICO' }];
+    // Validar que existan métodos de pago configurados
+    if (!paymentMethods || paymentMethods.length === 0) {
+      throw new Error('No payment methods configured for contract. Please configure payment methods first.');
+    }
 
-    console.log(`Using ${methods.length} payment methods`);
+    console.log(`Using ${paymentMethods.length} payment methods`);
 
     // Determinar el período (año-mes) del gasto
     const expenseDate = new Date(expense.expense_date);
@@ -92,6 +92,39 @@ Deno.serve(async (req) => {
 
     console.log(`Creating schedule items for period: ${periodDateStr}`);
 
+    // Buscar una proyección existente para este contrato y período
+    const { data: existingProjection } = await supabase
+      .from('pms_contract_monthly_projections')
+      .select('id')
+      .eq('contract_id', expense.contract_id)
+      .eq('period_date', periodDateStr)
+      .limit(1)
+      .single();
+
+    let projectionId = existingProjection?.id;
+
+    // Si no existe proyección, crear una para reembolsos
+    if (!projectionId) {
+      const { data: newProjection, error: projError } = await supabase
+        .from('pms_contract_monthly_projections')
+        .insert({
+          contract_id: expense.contract_id,
+          tenant_id: expense.tenant_id,
+          period_date: periodDateStr,
+          item: `REEMBOLSO_${expense.category.toUpperCase()}`,
+          projected_amount: expense.amount,
+          currency: expense.currency
+        })
+        .select('id')
+        .single();
+
+      if (projError) {
+        throw new Error(`Error creating projection: ${projError.message}`);
+      }
+      
+      projectionId = newProjection.id;
+    }
+
     // Crear items de calendario para cada combinación de owner + payment method
     const scheduleItems = [];
     
@@ -99,22 +132,23 @@ Deno.serve(async (req) => {
       const owner = ownerProp.pms_owners as any;
       const ownerAmount = expense.amount * (ownerProp.share_percent / 100);
 
-      for (const method of methods) {
+      for (const method of paymentMethods) {
         const methodPercentage = method.percentage || 100;
         const finalAmount = ownerAmount * (methodPercentage / 100);
 
         const scheduleItem = {
           contract_id: expense.contract_id,
           tenant_id: expense.tenant_id,
+          projection_id: projectionId,
           period_date: periodDateStr,
           item: `REEMBOLSO_${expense.category.toUpperCase()}`,
           expected_amount: finalAmount,
+          original_amount: finalAmount,
           status: 'pending',
           owner_id: owner.id,
           owner_percentage: ownerProp.share_percent,
-          payment_method: method.payment_method,
-          expense_id: expense.id, // Vincular con el gasto
-          notes: `Reembolso: ${expense.category} - ${expense.expense_date}`
+          payment_method_id: method.id,
+          expense_id: expense.id
         };
 
         scheduleItems.push(scheduleItem);
