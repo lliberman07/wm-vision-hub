@@ -39,7 +39,8 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
           projection:pms_contract_monthly_projections(*),
           payment:pms_payments!payment_id(*),
           payment_method:pms_contract_payment_methods(*),
-          owner:pms_owners(id, full_name, email)
+          owner:pms_owners(id, full_name, email),
+          expense_id
         `)
         .eq('contract_id', contractId)
         .order('period_date', { ascending: true });
@@ -215,15 +216,19 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
                     </TableHeader>
                     <TableBody>
                       {monthItems.map((item) => (
-                        <TableRow key={item.id} className="cursor-pointer" onClick={() => handleCellClick(item)}>
+                        <TableRow 
+                          key={item.id} 
+                          className={item.expense_id ? "cursor-pointer bg-purple-50/50" : "cursor-pointer"}
+                          onClick={() => handleCellClick(item)}
+                        >
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-medium">{item.item}</span>
-                              {item.expense?.is_reimbursable && (
-                                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                              {item.expense_id && (
+                                <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-300 text-xs">
                                   Reembolso
                                 </Badge>
                               )}
+                              <span className="font-mono font-medium">{item.item}</span>
                             </div>
                           </TableCell>
                           <TableCell>{item.owner?.full_name || 'N/A'}</TableCell>
@@ -239,7 +244,7 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
                                 paidAmount={item.payment?.paid_amount}
                                 periodDate={item.period_date}
                                 onClick={() => handleCellClick(item)}
-                                isReimbursement={item.expense?.is_reimbursable}
+                                isReimbursement={!!item.expense_id}
                               />
                             </div>
                           </TableCell>

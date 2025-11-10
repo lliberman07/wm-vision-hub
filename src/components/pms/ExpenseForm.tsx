@@ -186,12 +186,29 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
         
         // Si es reembolsable y hay contrato, llamar al edge function
         if (values.is_reimbursable && values.contract_id && values.contract_id !== 'none') {
-          await supabase.functions.invoke('create-reimbursement-schedule-item', {
-            body: { expense: { ...updatedExpense, contract_id: values.contract_id } }
-          });
+          const { data: scheduleResult, error: scheduleError } = await supabase.functions.invoke(
+            'create-reimbursement-schedule-item', 
+            { body: { expense: { ...updatedExpense, contract_id: values.contract_id } } }
+          );
+          
+          if (scheduleError) {
+            toast({
+              title: "Advertencia: Gasto guardado pero hubo un error",
+              description: `El gasto se guardó correctamente pero no se pudo crear el ítem de calendario: ${scheduleError.message}`,
+              variant: "destructive"
+            });
+            console.error('Error creating schedule items:', scheduleError);
+          } else if (scheduleResult?.success) {
+            toast({ 
+              title: "Gasto actualizado correctamente",
+              description: `Se crearon ${scheduleResult.itemsCreated || 0} ítems de calendario para el reembolso`
+            });
+          } else {
+            toast({ title: "Gasto actualizado correctamente" });
+          }
+        } else {
+          toast({ title: "Gasto actualizado correctamente" });
         }
-        
-        toast({ title: "Gasto actualizado correctamente" });
       } else {
         const { data: newExpense, error } = await supabase
           .from('pms_expenses')
@@ -203,12 +220,29 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
         
         // Si es reembolsable y hay contrato, llamar al edge function
         if (values.is_reimbursable && values.contract_id && values.contract_id !== 'none') {
-          await supabase.functions.invoke('create-reimbursement-schedule-item', {
-            body: { expense: { ...newExpense, contract_id: values.contract_id } }
-          });
+          const { data: scheduleResult, error: scheduleError } = await supabase.functions.invoke(
+            'create-reimbursement-schedule-item',
+            { body: { expense: { ...newExpense, contract_id: values.contract_id } } }
+          );
+          
+          if (scheduleError) {
+            toast({
+              title: "Advertencia: Gasto guardado pero hubo un error",
+              description: `El gasto se guardó correctamente pero no se pudo crear el ítem de calendario: ${scheduleError.message}`,
+              variant: "destructive"
+            });
+            console.error('Error creating schedule items:', scheduleError);
+          } else if (scheduleResult?.success) {
+            toast({ 
+              title: "Gasto registrado correctamente",
+              description: `Se crearon ${scheduleResult.itemsCreated || 0} ítems de calendario para el reembolso`
+            });
+          } else {
+            toast({ title: "Gasto registrado correctamente" });
+          }
+        } else {
+          toast({ title: "Gasto registrado correctamente" });
         }
-        
-        toast({ title: "Gasto registrado correctamente" });
       }
 
       form.reset();

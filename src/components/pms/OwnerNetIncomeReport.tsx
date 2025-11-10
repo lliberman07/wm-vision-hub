@@ -100,9 +100,23 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
             const expPeriod = exp.expense_date.substring(0, 7); // YYYY-MM
             return expPeriod === cf.period;
           }).map(exp => {
-            // Verificar si el reembolso está pagado
+            // Verificar si existe schedule item y su estado
             const scheduleItem = scheduleItems?.find((si: any) => si.expense_id === exp.id);
-            const isPaid = scheduleItem?.status === 'paid';
+            
+            // Determinar estado real del reembolso
+            let isPaid = false;
+            let displayStatus = exp.reimbursement_status;
+            
+            if (!scheduleItem) {
+              // No hay schedule item = error en creación o no procesado
+              displayStatus = 'error';
+            } else if (scheduleItem.status === 'paid') {
+              isPaid = true;
+              displayStatus = 'paid';
+            } else {
+              // Existe schedule item pero no está pagado
+              displayStatus = 'pending';
+            }
             
             return {
               id: exp.id,
@@ -110,7 +124,7 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
               description: exp.description || '',
               amount: (exp.amount * owner.share_percent) / 100, // Distribuir según %
               expense_date: exp.expense_date,
-              status: exp.reimbursement_status,
+              status: displayStatus,
               is_paid: isPaid
             };
           }) || [];
@@ -248,11 +262,17 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
                                           <div className="font-semibold text-purple-700">
                                             ${formatCurrency(reimb.amount)}
                                           </div>
-                                          <Badge 
-                                            variant={reimb.is_paid ? 'default' : 'secondary'}
+                                           <Badge 
+                                            variant={
+                                              reimb.status === 'paid' ? 'default' : 
+                                              reimb.status === 'error' ? 'destructive' : 
+                                              'secondary'
+                                            }
                                             className="text-xs"
                                           >
-                                            {reimb.is_paid ? 'Pagado' : 'Pendiente'}
+                                            {reimb.status === 'paid' ? 'Pagado' : 
+                                             reimb.status === 'error' ? 'Error' : 
+                                             'Pendiente'}
                                           </Badge>
                                         </div>
                                       </div>
