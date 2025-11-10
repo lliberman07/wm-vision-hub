@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Building2, Home } from "lucide-react";
+import { AlertCircle, Home } from "lucide-react";
+import granadaLogo from "@/assets/granada-logo-full.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -76,13 +77,14 @@ const PMSLogin = () => {
         {/* Logo and Header */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="bg-primary/10 p-4 rounded-full">
-              <Building2 className="h-12 w-12 text-primary" />
-            </div>
+            <img 
+              src={granadaLogo} 
+              alt="Granada Property Management" 
+              className="h-36 w-auto object-contain mx-auto"
+            />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">WM Admin Prop</h1>
-            <p className="text-muted-foreground mt-2">Sistema de Gestión de Propiedades</p>
+            <p className="text-muted-foreground">Sistema de Gestión de Propiedades</p>
           </div>
         </div>
 
