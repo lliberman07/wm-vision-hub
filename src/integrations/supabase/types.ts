@@ -2226,6 +2226,7 @@ export type Database = {
           contract_id: string
           created_at: string | null
           expected_amount: number
+          expense_id: string | null
           id: string
           item: string
           original_amount: number | null
@@ -2244,6 +2245,7 @@ export type Database = {
           contract_id: string
           created_at?: string | null
           expected_amount: number
+          expense_id?: string | null
           id?: string
           item: string
           original_amount?: number | null
@@ -2262,6 +2264,7 @@ export type Database = {
           contract_id?: string
           created_at?: string | null
           expected_amount?: number
+          expense_id?: string | null
           id?: string
           item?: string
           original_amount?: number | null
@@ -2281,6 +2284,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_schedule_items_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "pms_expenses"
             referencedColumns: ["id"]
           },
           {
