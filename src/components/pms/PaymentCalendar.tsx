@@ -39,8 +39,7 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
           projection:pms_contract_monthly_projections(*),
           payment:pms_payments!payment_id(*),
           payment_method:pms_contract_payment_methods(*),
-          owner:pms_owners(id, full_name, email),
-          expense:pms_expenses(id, category, description, is_reimbursable)
+          owner:pms_owners(id, full_name, email)
         `)
         .eq('contract_id', contractId)
         .order('period_date', { ascending: true });
