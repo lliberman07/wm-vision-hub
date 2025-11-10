@@ -87,6 +87,11 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   const [isClonedProperty, setIsClonedProperty] = useState(false);
   const [parentContractInfo, setParentContractInfo] = useState<any>(null);
   
+  // Estados para flujo "Guardar y Continuar"
+  const [continueEditing, setContinueEditing] = useState(false);
+  const [savedContractId, setSavedContractId] = useState<string | null>(null);
+  const [showDocuments, setShowDocuments] = useState(false);
+  
   // Helper para determinar si un campo está deshabilitado
   const isFieldDisabled = (fieldName: string) => {
     if (!contract || contract.status !== 'active') return false;
@@ -413,11 +418,33 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           toast.success('Contrato creado y activado');
         } else {
           // Crear como borrador
-          const { error } = await supabase
+          const { data: newContract, error: insertError } = await supabase
             .from('pms_contracts')
-            .insert([payload]);
+            .insert([payload])
+            .select()
+            .single();
           
-          if (error) throw error;
+          if (insertError) throw insertError;
+          
+          // Si se seleccionó "Guardar y Cargar Documentos"
+          if (continueEditing) {
+            setSavedContractId(newContract.id);
+            setShowDocuments(true);
+            toast.success('Borrador guardado exitosamente', {
+              description: 'Ahora puedes cargar los documentos del contrato'
+            });
+            
+            // Scroll automático a la sección de documentos
+            setTimeout(() => {
+              document.getElementById('documents-section')?.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+              });
+            }, 300);
+            
+            return; // No cerrar el diálogo
+          }
+          
           toast.success('Borrador de contrato creado');
         }
       }
@@ -425,6 +452,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       onSuccess();
       onOpenChange(false);
       form.reset();
+      setSavedContractId(null);
+      setShowDocuments(false);
+      setContinueEditing(false);
     } catch (error: any) {
       toast.error('Error', { description: error.message });
     }
@@ -1187,23 +1217,65 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     montoB={form.watch('monto_b')}
                   />
                 </div>
-
-                <Separator className="my-6" />
-                <ContractDocumentsUpload
-                  contractId={contract.id}
-                  tenantId={currentTenant?.id || null}
-                  disabled={contract.status === 'active'}
-                />
               </>
             )}
 
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            {/* Sección de documentos - visible después de guardar */}
+            {!contract?.id && !savedContractId && (
+              <Alert className="my-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Documentos disponibles después de guardar</AlertTitle>
+                <AlertDescription>
+                  Para cargar documentos, primero debes guardar el contrato como borrador usando el botón "Guardar y Cargar Documentos"
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {(contract?.id || savedContractId) && (
+              <>
+                <Separator className="my-6" />
+                <div id="documents-section" className="space-y-4">
+                  <h3 className="text-lg font-semibold">📄 Documentos del Contrato</h3>
+                  <ContractDocumentsUpload
+                    contractId={contract?.id || savedContractId!}
+                    tenantId={currentTenant?.id || null}
+                    disabled={false}
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="flex justify-end gap-2 mt-6">
+              <Button type="button" variant="outline" onClick={() => {
+                onOpenChange(false);
+                setSavedContractId(null);
+                setShowDocuments(false);
+                setContinueEditing(false);
+              }}>
                 Cancelar
               </Button>
-              <Button type="submit">
-                {contract ? 'Actualizar' : 'Crear'}
-              </Button>
+              
+              {!contract?.id && !savedContractId ? (
+                <>
+                  <Button 
+                    type="submit" 
+                    variant="secondary"
+                    onClick={() => setContinueEditing(false)}
+                  >
+                    Guardar Borrador
+                  </Button>
+                  <Button 
+                    type="submit"
+                    onClick={() => setContinueEditing(true)}
+                  >
+                    Guardar y Cargar Documentos
+                  </Button>
+                </>
+              ) : (
+                <Button type="submit">
+                  {contract ? 'Actualizar' : 'Guardar Cambios'}
+                </Button>
+              )}
             </div>
           </form>
         </Form>

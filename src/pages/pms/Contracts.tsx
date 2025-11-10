@@ -8,13 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Eye, FileText, CheckCircle2, FileEdit, AlertCircle, Clock, X, RefreshCw, Wrench, DollarSign, MapPin, Home, BedDouble, Bath, Calendar, Building2, User, Mail, CreditCard, Users } from 'lucide-react';
+import { Plus, Eye, FileText, CheckCircle2, FileEdit, AlertCircle, Clock, X, RefreshCw, Wrench, DollarSign, MapPin, Home, BedDouble, Bath, Calendar, Building2, User, Mail, CreditCard, Users, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContractForm } from '@/components/pms/ContractForm';
 import { ContractPaymentDistribution } from '@/components/pms/ContractPaymentDistribution';
 import { ContractAdjustments } from '@/components/pms/ContractAdjustments';
 import { ContractDocumentsViewer } from '@/components/pms/ContractDocumentsViewer';
+import { ContractDocumentsUpload } from '@/components/pms/ContractDocumentsUpload';
 import { ContractMonthlyProjections } from '@/components/pms/ContractMonthlyProjections';
 import { CancelContractDialog } from '@/components/pms/CancelContractDialog';
 import { ActivateContractDialog } from '@/components/pms/ActivateContractDialog';
@@ -45,6 +46,7 @@ interface Contract {
   parent_contract_id?: string | null;
   is_renewal?: boolean;
   tenant_renter_id?: string;
+  tenant_id?: string;
   tenant_name?: string;
   tenant_email?: string;
   tenant_document?: string;
@@ -71,7 +73,8 @@ const Contracts = () => {
   } = useAuth();
   const {
     currentTenant,
-    hasPMSAccess
+    hasPMSAccess,
+    userRole
   } = usePMS();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +87,7 @@ const Contracts = () => {
   const [isExtendOpen, setIsExtendOpen] = useState(false);
   const [isRenewOpen, setIsRenewOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
+  const [isEditingDocuments, setIsEditingDocuments] = useState(false);
   useEffect(() => {
     if (!user || !hasPMSAccess) {
       navigate('/pms');
@@ -91,6 +95,12 @@ const Contracts = () => {
     }
     fetchContracts();
   }, [user, hasPMSAccess, navigate]);
+
+  useEffect(() => {
+    if (!isViewOpen) {
+      setIsEditingDocuments(false);
+    }
+  }, [isViewOpen]);
   const fetchContracts = async () => {
     try {
       // Verificar contratos vencidos primero
@@ -736,7 +746,51 @@ const Contracts = () => {
               </TabsContent>
 
               <TabsContent value="documents" className="max-h-[60vh] overflow-y-auto">
-                {selectedContract && <ContractDocumentsViewer contractId={selectedContract.id} />}
+                {selectedContract && (
+                  <div className="space-y-4">
+                    {/* Header con botón toggle solo para Staff */}
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        {isEditingDocuments ? 'Gestionar Documentos' : 'Ver Documentos'}
+                      </h3>
+                      
+                      {/* Solo mostrar botón para roles Staff */}
+                      {(userRole === 'SUPERADMIN' || userRole === 'INMOBILIARIA' || userRole === 'GESTOR') && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsEditingDocuments(!isEditingDocuments)}
+                        >
+                          {isEditingDocuments ? (
+                            <>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Solo Ver
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 mr-2" />
+                              Subir Documentos
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Componente condicional */}
+                    {isEditingDocuments ? (
+                      <ContractDocumentsUpload
+                        contractId={selectedContract.id}
+                        tenantId={currentTenant?.id || null}
+                        disabled={false}
+                        onDocumentsChange={() => {
+                          // Opcional: refrescar si es necesario
+                        }}
+                      />
+                    ) : (
+                      <ContractDocumentsViewer contractId={selectedContract.id} />
+                    )}
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="adjustments" className="max-h-[60vh] overflow-y-auto">
