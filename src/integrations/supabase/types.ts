@@ -2091,9 +2091,12 @@ export type Database = {
       pms_payment_distributions: {
         Row: {
           amount: number
+          amount_in_contract_currency: number | null
+          contract_currency: string | null
           contract_id: string | null
           created_at: string | null
           currency: string | null
+          exchange_rate: number | null
           id: string
           owner_id: string
           payment_id: string
@@ -2102,9 +2105,12 @@ export type Database = {
         }
         Insert: {
           amount: number
+          amount_in_contract_currency?: number | null
+          contract_currency?: string | null
           contract_id?: string | null
           created_at?: string | null
           currency?: string | null
+          exchange_rate?: number | null
           id?: string
           owner_id: string
           payment_id: string
@@ -2113,9 +2119,12 @@ export type Database = {
         }
         Update: {
           amount?: number
+          amount_in_contract_currency?: number | null
+          contract_currency?: string | null
           contract_id?: string | null
           created_at?: string | null
           currency?: string | null
+          exchange_rate?: number | null
           id?: string
           owner_id?: string
           payment_id?: string
@@ -2225,6 +2234,7 @@ export type Database = {
           accumulated_paid_amount: number | null
           contract_id: string
           created_at: string | null
+          currency: string | null
           expected_amount: number
           expense_id: string | null
           id: string
@@ -2244,6 +2254,7 @@ export type Database = {
           accumulated_paid_amount?: number | null
           contract_id: string
           created_at?: string | null
+          currency?: string | null
           expected_amount: number
           expense_id?: string | null
           id?: string
@@ -2263,6 +2274,7 @@ export type Database = {
           accumulated_paid_amount?: number | null
           contract_id?: string
           created_at?: string | null
+          currency?: string | null
           expected_amount?: number
           expense_id?: string | null
           id?: string
@@ -2415,10 +2427,13 @@ export type Database = {
       pms_payments: {
         Row: {
           amount: number
+          amount_in_contract_currency: number | null
+          contract_currency: string | null
           contract_id: string
           created_at: string | null
           currency: string | null
           due_date: string
+          exchange_rate: number | null
           id: string
           item: string | null
           notes: string | null
@@ -2436,10 +2451,13 @@ export type Database = {
         }
         Insert: {
           amount: number
+          amount_in_contract_currency?: number | null
+          contract_currency?: string | null
           contract_id: string
           created_at?: string | null
           currency?: string | null
           due_date: string
+          exchange_rate?: number | null
           id?: string
           item?: string | null
           notes?: string | null
@@ -2457,10 +2475,13 @@ export type Database = {
         }
         Update: {
           amount?: number
+          amount_in_contract_currency?: number | null
+          contract_currency?: string | null
           contract_id?: string
           created_at?: string | null
           currency?: string | null
           due_date?: string
+          exchange_rate?: number | null
           id?: string
           item?: string | null
           notes?: string | null

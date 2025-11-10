@@ -10,6 +10,10 @@ interface PaymentCellProps {
   periodDate: string;
   onClick: () => void;
   isReimbursement?: boolean;
+  currency?: string;
+  contractCurrency?: string;
+  exchangeRate?: number;
+  amountInContractCurrency?: number;
 }
 
 export function PaymentCell({ 
@@ -18,7 +22,11 @@ export function PaymentCell({
   paidAmount, 
   periodDate,
   onClick,
-  isReimbursement 
+  isReimbursement,
+  currency = 'ARS',
+  contractCurrency,
+  exchangeRate,
+  amountInContractCurrency
 }: PaymentCellProps) {
   const isOverdue = new Date(periodDate) < new Date() && status !== 'paid';
 
@@ -86,12 +94,24 @@ export function PaymentCell({
             )}
           </div>
           <p className={cn('text-sm font-semibold', config.textColor)}>
-            {formatCurrency(expectedAmount, 'es', 'ARS')}
+            {formatCurrency(expectedAmount, 'es', (contractCurrency || currency) as 'ARS' | 'USD')}
+            {contractCurrency && currency && contractCurrency !== currency && amountInContractCurrency && (
+              <span className="text-xs block text-muted-foreground font-normal">
+                ({formatCurrency(amountInContractCurrency, 'es', contractCurrency as 'ARS' | 'USD')})
+              </span>
+            )}
           </p>
           {paidAmount && paidAmount > 0 && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Pagado: {formatCurrency(paidAmount, 'es', 'ARS')}
-            </p>
+            <>
+              <p className="text-xs text-muted-foreground mt-1">
+                Pagado: {formatCurrency(paidAmount, 'es', currency as 'ARS' | 'USD')}
+              </p>
+              {exchangeRate && contractCurrency && currency !== contractCurrency && (
+                <p className="text-xs text-muted-foreground">
+                  TC: 1 {contractCurrency} = {exchangeRate.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

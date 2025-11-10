@@ -23,9 +23,12 @@ import { toast } from "sonner";
 import { ReceiptUpload } from "./ReceiptUpload";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDateForDB, formatDateToDisplay, formatDateDisplay } from "@/utils/dateUtils";
+import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { CurrencyExchangeIndicator } from './CurrencyExchangeIndicator';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface PaymentSubmissionModalProps {
   open: boolean;
@@ -51,21 +54,43 @@ export function PaymentSubmissionModal({
   onSuccess,
 }: PaymentSubmissionModalProps) {
   const { user } = useAuth();
+  const { convertPayment } = useCurrencyConverter();
   const [loading, setLoading] = useState(false);
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [selectedItemId, setSelectedItemId] = useState("");
   const [paidDate, setPaidDate] = useState<Date>();
   const [paidAmount, setPaidAmount] = useState("");
+  const [paymentCurrency, setPaymentCurrency] = useState("ARS");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
   const [receiptUrl, setReceiptUrl] = useState("");
   const [notes, setNotes] = useState("");
+  const [contractCurrency, setContractCurrency] = useState<string>('ARS');
+  const [exchangeRate, setExchangeRate] = useState("");
 
   useEffect(() => {
     if (open) {
+      fetchContractCurrency();
       fetchPendingItems();
     }
   }, [open, contractId]);
+
+  const fetchContractCurrency = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pms_contracts')
+        .select('currency')
+        .eq('id', contractId)
+        .single();
+      
+      if (error) throw error;
+      if (data) {
+        setContractCurrency(data.currency || 'ARS');
+      }
+    } catch (error) {
+      console.error('Error fetching contract currency:', error);
+    }
+  };
 
   const fetchPendingItems = async () => {
     try {
@@ -93,8 +118,31 @@ export function PaymentSubmissionModal({
       return;
     }
 
+    // Validar tipo de cambio si las monedas son diferentes
+    if (paymentCurrency !== contractCurrency && !exchangeRate) {
+      toast.error("Debes ingresar el tipo de cambio");
+      return;
+    }
+
     try {
       setLoading(true);
+
+      // Calcular conversión si es necesario
+      let conversion = null;
+      if (paymentCurrency !== contractCurrency) {
+        try {
+          conversion = convertPayment(
+            parseFloat(paidAmount),
+            paymentCurrency,
+            contractCurrency,
+            parseFloat(exchangeRate)
+          );
+        } catch (error: any) {
+          toast.error('Error en conversión', { description: error.message });
+          setLoading(false);
+          return;
+        }
+      }
 
       const { error } = await supabase.from("pms_payment_submissions").insert({
         contract_id: contractId,
@@ -103,11 +151,16 @@ export function PaymentSubmissionModal({
         submitted_by: user?.id,
         paid_date: formatDateForDB(paidDate),
         paid_amount: parseFloat(paidAmount),
+        payment_currency: paymentCurrency,
         payment_method: paymentMethod,
         reference_number: referenceNumber || null,
         receipt_url: receiptUrl || null,
         notes: notes || null,
         status: "pending",
+        // Agregar información de conversión
+        exchange_rate: conversion?.exchangeRate || null,
+        contract_currency: contractCurrency,
+        amount_in_contract_currency: conversion?.convertedAmount || parseFloat(paidAmount),
       });
 
       if (error) throw error;
@@ -128,10 +181,12 @@ export function PaymentSubmissionModal({
     setSelectedItemId("");
     setPaidDate(undefined);
     setPaidAmount("");
+    setPaymentCurrency("ARS");
     setPaymentMethod("");
     setReferenceNumber("");
     setReceiptUrl("");
     setNotes("");
+    setExchangeRate("");
   };
 
   const handleItemChange = (itemId: string) => {
@@ -198,6 +253,19 @@ export function PaymentSubmissionModal({
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="payment-currency">Moneda de Pago *</Label>
+            <Select value={paymentCurrency} onValueChange={setPaymentCurrency}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ARS">Pesos (ARS)</SelectItem>
+                <SelectItem value="USD">Dólares (USD)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="amount">Monto Pagado *</Label>
             <Input
               id="amount"
@@ -209,6 +277,47 @@ export function PaymentSubmissionModal({
               required
             />
           </div>
+
+          {/* Alert y tipo de cambio si las monedas son diferentes */}
+          {paymentCurrency !== contractCurrency && (
+            <>
+              <Alert className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                  El contrato está en <strong>{contractCurrency}</strong> pero estás pagando en <strong>{paymentCurrency}</strong>.
+                  Ingresa el tipo de cambio aplicado.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="space-y-2">
+                <Label htmlFor="exchange-rate">
+                  Tipo de Cambio * (1 {contractCurrency} = ? {paymentCurrency})
+                </Label>
+                <Input
+                  id="exchange-rate"
+                  type="number"
+                  step="0.01"
+                  value={exchangeRate}
+                  onChange={(e) => setExchangeRate(e.target.value)}
+                  placeholder="Ej: 1200.00"
+                  required
+                />
+                {exchangeRate && paidAmount && (
+                  <CurrencyExchangeIndicator
+                    contractCurrency={contractCurrency}
+                    paymentCurrency={paymentCurrency}
+                    exchangeRate={parseFloat(exchangeRate)}
+                    originalAmount={parseFloat(paidAmount)}
+                    convertedAmount={
+                      paymentCurrency === 'ARS' && contractCurrency === 'USD'
+                        ? parseFloat(paidAmount) / parseFloat(exchangeRate)
+                        : parseFloat(paidAmount) * parseFloat(exchangeRate)
+                    }
+                  />
+                )}
+              </div>
+            </>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="payment-method">Método de Pago *</Label>

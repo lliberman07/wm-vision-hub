@@ -13,6 +13,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePMS } from '@/contexts/PMSContext';
 import { useState, useEffect } from 'react';
+import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { CurrencyExchangeIndicator } from './CurrencyExchangeIndicator';
+import { DollarSign } from 'lucide-react';
 
 const formSchema = z.object({
   contract_id: z.string().min(1, 'Contrato requerido'),
@@ -28,6 +31,17 @@ const formSchema = z.object({
   notes: z.string().optional(),
   item: z.string().optional(),
   porcentaje: z.number().min(0).max(100).optional(),
+  exchange_rate: z.number().optional(),
+}).refine((data) => {
+  // Validar que si las monedas son diferentes, se requiere exchange_rate
+  const contractCurrency = data.currency; // Esto se actualizará dinámicamente
+  if (data.currency && contractCurrency && data.currency !== contractCurrency && data.status === 'paid' && !data.exchange_rate) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Se requiere tipo de cambio cuando la moneda de pago es diferente a la del contrato",
+  path: ["exchange_rate"]
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,8 +55,10 @@ interface PaymentFormProps {
 
 export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentFormProps) {
   const { currentTenant } = usePMS();
+  const { convertPayment } = useCurrencyConverter();
   const [contracts, setContracts] = useState<any[]>([]);
   const [selectedContractData, setSelectedContractData] = useState<any>(null);
+  const [contractCurrency, setContractCurrency] = useState<string>('ARS');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -113,11 +129,14 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
   const fetchContractDetails = async (contractId: string) => {
     const { data } = await supabase
       .from('pms_contracts')
-      .select('*')
+      .select('*, currency')
       .eq('id', contractId)
       .single();
     
-    if (data) setSelectedContractData(data);
+    if (data) {
+      setSelectedContractData(data);
+      setContractCurrency(data.currency || 'ARS');
+    }
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -129,6 +148,22 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
         
         if (paymentDueDate >= cancellationDate) {
           toast.error('No se puede registrar un pago para una cuota posterior a la fecha de cancelación');
+          return;
+        }
+      }
+
+      // Calcular conversión si hay tipo de cambio
+      let conversion = null;
+      if (data.status === 'paid' && data.paid_amount && data.paid_amount > 0) {
+        try {
+          conversion = convertPayment(
+            data.paid_amount,
+            data.currency,
+            contractCurrency,
+            data.exchange_rate
+          );
+        } catch (error: any) {
+          toast.error('Error en conversión', { description: error.message });
           return;
         }
       }
@@ -148,6 +183,10 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
         item: data.item,
         porcentaje: data.porcentaje,
         tenant_id: currentTenant?.id,
+        // Nuevos campos de conversión
+        exchange_rate: conversion?.exchangeRate || null,
+        contract_currency: contractCurrency,
+        amount_in_contract_currency: conversion?.convertedAmount || null,
       };
 
       let paymentId = payment?.id;
@@ -306,7 +345,7 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
                 name="currency"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Moneda</FormLabel>
+                    <FormLabel>Moneda de Pago</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -316,7 +355,6 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
                       <SelectContent>
                         <SelectItem value="ARS">ARS</SelectItem>
                         <SelectItem value="USD">USD</SelectItem>
-                        <SelectItem value="EUR">EUR</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -324,6 +362,61 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
                 )}
               />
             </div>
+
+            {/* Alert si las monedas son diferentes */}
+            {form.watch('currency') !== contractCurrency && form.watch('status') === 'paid' && (
+              <Alert className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                  El contrato está en <strong>{contractCurrency}</strong> pero el pago es en <strong>{form.watch('currency')}</strong>.
+                  Debes ingresar el tipo de cambio.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Campo de tipo de cambio condicional */}
+            {form.watch('currency') !== contractCurrency && form.watch('status') === 'paid' && (
+              <FormField
+                control={form.control}
+                name="exchange_rate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Cambio *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={`1 ${contractCurrency} = ? ${form.watch('currency')}`}
+                        {...field}
+                        onChange={e => field.onChange(parseFloat(e.target.value))}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Ingresa la cotización: 1 {contractCurrency} = X {form.watch('currency')}
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Mostrar cálculo de conversión en tiempo real */}
+            {form.watch('currency') !== contractCurrency && 
+             form.watch('exchange_rate') && 
+             form.watch('paid_amount') && 
+             form.watch('status') === 'paid' && (
+              <CurrencyExchangeIndicator
+                contractCurrency={contractCurrency}
+                paymentCurrency={form.watch('currency')}
+                exchangeRate={form.watch('exchange_rate')}
+                originalAmount={form.watch('paid_amount') || 0}
+                convertedAmount={
+                  form.watch('currency') === 'ARS' && contractCurrency === 'USD'
+                    ? (form.watch('paid_amount') || 0) / (form.watch('exchange_rate') || 1)
+                    : (form.watch('paid_amount') || 0) * (form.watch('exchange_rate') || 1)
+                }
+              />
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <FormField

@@ -7,6 +7,7 @@ import { Users, DollarSign, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface OwnerNetIncomeReportProps {
   tenantId: string;
@@ -47,12 +48,13 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
   const [ownerTotals, setOwnerTotals] = useState<MonthlyOwnerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewByPaymentDate, setViewByPaymentDate] = useState(true);
+  const [displayCurrency, setDisplayCurrency] = useState<'contract' | 'payment'>('contract');
 
   useEffect(() => {
     if (tenantId && selectedContract) {
       fetchOwnerTotals();
     }
-  }, [tenantId, selectedContract, viewByPaymentDate]);
+  }, [tenantId, selectedContract, viewByPaymentDate, displayCurrency]);
 
   const fetchOwnerTotals = async () => {
     setLoading(true);
@@ -96,12 +98,12 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
 
         if (itemsError) throw itemsError;
 
-        // 4. Obtener todos los pagos de esos schedule items
+        // 4. Obtener todos los pagos de esos schedule items con información de conversión
         const scheduleItemIds = scheduleItems?.map(item => item.id) || [];
         
         const { data: payments, error: paymentsError } = await supabase
           .from('pms_payments')
-          .select('id, schedule_item_id, paid_date, paid_amount')
+          .select('id, schedule_item_id, paid_date, paid_amount, currency, exchange_rate, contract_currency, amount_in_contract_currency')
           .in('schedule_item_id', scheduleItemIds)
           .order('paid_date', { ascending: false });
 
@@ -160,7 +162,14 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
             items.forEach((item: any) => {
               // Solo sumar items de ingreso regular (no reembolsos)
               if (!item.expense_id && item.current_payment) {
-                const ownerShare = (item.current_payment.paid_amount * owner.share_percent) / 100;
+                // Determinar qué monto usar según la vista seleccionada
+                let amountToUse = item.current_payment.paid_amount;
+                
+                if (displayCurrency === 'contract' && item.current_payment.amount_in_contract_currency) {
+                  amountToUse = item.current_payment.amount_in_contract_currency;
+                }
+                
+                const ownerShare = (amountToUse * owner.share_percent) / 100;
                 totalIncome += ownerShare;
 
                 incomeDetails.push({
@@ -385,16 +394,32 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
             <Users className="h-5 w-5" />
             Totales por Propietario
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="view-mode" className="text-sm text-muted-foreground">
-              {viewByPaymentDate ? 'Mes de Cobro' : 'Mes de Devengamiento'}
-            </Label>
-            <Switch
-              id="view-mode"
-              checked={viewByPaymentDate}
-              onCheckedChange={setViewByPaymentDate}
-            />
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="currency-display" className="text-sm text-muted-foreground">
+                Ver montos en:
+              </Label>
+              <Select value={displayCurrency} onValueChange={(val: 'contract' | 'payment') => setDisplayCurrency(val)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contract">Moneda del Contrato</SelectItem>
+                  <SelectItem value="payment">Moneda de Pago</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="view-mode" className="text-sm text-muted-foreground">
+                {viewByPaymentDate ? 'Mes de Cobro' : 'Mes de Devengamiento'}
+              </Label>
+              <Switch
+                id="view-mode"
+                checked={viewByPaymentDate}
+                onCheckedChange={setViewByPaymentDate}
+              />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </div>
           </div>
         </div>
       </CardHeader>
