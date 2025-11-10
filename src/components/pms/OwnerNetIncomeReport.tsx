@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Users } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Users, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface OwnerNetIncomeReportProps {
@@ -18,6 +19,17 @@ interface MonthlyOwnerData {
   income: number;
   expenses: number;
   net_result: number;
+  reimbursements?: ReimbursementData[];
+}
+
+interface ReimbursementData {
+  id: string;
+  category: string;
+  description: string;
+  amount: number;
+  expense_date: string;
+  status: string;
+  is_paid: boolean;
 }
 
 export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetIncomeReportProps) => {
@@ -58,15 +70,50 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
       // 3. Obtener propietarios del contrato
       const { data: owners } = await supabase
         .from('pms_owner_properties')
-        .select('owner_id, share_percent, pms_owners!inner(full_name)')
+        .select('owner_id, share_percent, pms_owners!inner(id, full_name)')
         .eq('property_id', contract.property_id)
         .or(`end_date.is.null,end_date.gte.${new Date().toISOString().split('T')[0]}`);
 
-      // 4. Para cada período, distribuir según propietarios
+      // 4. Obtener gastos reembolsables del contrato
+      const { data: reimbursableExpenses } = await supabase
+        .from('pms_expenses')
+        .select('id, category, description, amount, expense_date, reimbursement_status')
+        .eq('contract_id', selectedContract)
+        .eq('is_reimbursable', true)
+        .order('expense_date', { ascending: false });
+
+      // 5. Obtener schedule items para saber cuáles reembolsos están pagados
+      const { data: scheduleItems } = await supabase
+        .from('pms_payment_schedule_items')
+        .select('id, period_date, status, expense_id')
+        .eq('contract_id', selectedContract)
+        .not('expense_id', 'is', null);
+
+      // 6. Para cada período, distribuir según propietarios
       const monthlyData: MonthlyOwnerData[] = [];
       
       cashflow?.forEach(cf => {
         owners?.forEach((owner: any) => {
+          // Filtrar reembolsos de este período y este propietario
+          const periodReimbursements = reimbursableExpenses?.filter(exp => {
+            const expPeriod = exp.expense_date.substring(0, 7); // YYYY-MM
+            return expPeriod === cf.period;
+          }).map(exp => {
+            // Verificar si el reembolso está pagado
+            const scheduleItem = scheduleItems?.find(si => si.expense_id === exp.id);
+            const isPaid = scheduleItem?.status === 'paid';
+            
+            return {
+              id: exp.id,
+              category: exp.category,
+              description: exp.description || '',
+              amount: (exp.amount * owner.share_percent) / 100, // Distribuir según %
+              expense_date: exp.expense_date,
+              status: exp.reimbursement_status,
+              is_paid: isPaid
+            };
+          }) || [];
+
           monthlyData.push({
             period: cf.period,
             owner_id: owner.owner_id,
@@ -74,7 +121,8 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
             share_percent: owner.share_percent,
             income: (cf.total_income * owner.share_percent) / 100,
             expenses: (cf.total_expenses * owner.share_percent) / 100,
-            net_result: ((cf.total_income - cf.total_expenses) * owner.share_percent) / 100
+            net_result: ((cf.total_income - cf.total_expenses) * owner.share_percent) / 100,
+            reimbursements: periodReimbursements
           });
         });
       });
@@ -169,7 +217,59 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
                         {period}
                       </TableCell>
                     )}
-                    <TableCell className="bg-muted/30">{data.full_name}</TableCell>
+                    <TableCell className="bg-muted/30">
+                      <div className="flex flex-col gap-1">
+                        <span>{data.full_name}</span>
+                        {data.reimbursements && data.reimbursements.length > 0 && (
+                          <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="reimbursements" className="border-0">
+                              <AccordionTrigger className="py-1 hover:no-underline">
+                                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                                  <DollarSign className="h-3 w-3 mr-1" />
+                                  {data.reimbursements.length} Reembolso{data.reimbursements.length > 1 ? 's' : ''}
+                                </Badge>
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                <div className="pl-4 space-y-2 mt-2">
+                                  {data.reimbursements.map((reimb) => (
+                                    <div key={reimb.id} className="text-xs border-l-2 border-purple-300 pl-2 py-1">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex-1">
+                                          <div className="font-medium text-purple-700">{reimb.category}</div>
+                                          {reimb.description && (
+                                            <div className="text-muted-foreground">{reimb.description}</div>
+                                          )}
+                                          <div className="text-muted-foreground">
+                                            {new Date(reimb.expense_date).toLocaleDateString('es-AR')}
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="font-semibold text-purple-700">
+                                            ${formatCurrency(reimb.amount)}
+                                          </div>
+                                          <Badge 
+                                            variant={reimb.is_paid ? 'default' : 'secondary'}
+                                            className="text-xs"
+                                          >
+                                            {reimb.is_paid ? 'Pagado' : 'Pendiente'}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  <div className="border-t pt-2 mt-2 flex justify-between text-xs font-semibold">
+                                    <span>Total Reembolsos:</span>
+                                    <span className="text-purple-700">
+                                      ${formatCurrency(data.reimbursements.reduce((sum, r) => sum + r.amount, 0))}
+                                    </span>
+                                  </div>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-center bg-muted/30">
                       <Badge variant="outline">{data.share_percent}%</Badge>
                     </TableCell>
