@@ -58,7 +58,7 @@ export default function Expenses() {
       .order('expense_date', { ascending: false });
 
     if (!error && data) {
-      setExpenses(data);
+      setExpenses(data as any);
     }
     setLoading(false);
   };
@@ -117,6 +117,7 @@ export default function Expenses() {
                     <TableHead>Categoría</TableHead>
                     <TableHead>Descripción</TableHead>
                     <TableHead className="text-right">Monto</TableHead>
+                    <TableHead>Estado</TableHead>
                     <TableHead>Comprobante</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -143,6 +144,17 @@ export default function Expenses() {
                       <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
                       <TableCell className="text-right font-mono">
                         {expense.currency} {expense.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell>
+                        {(expense as any).is_reimbursable ? (
+                          <Badge variant="secondary">
+                            {(expense as any).reimbursement_status === 'paid' ? 'Reembolsado' :
+                             (expense as any).reimbursement_status === 'included_in_schedule' ? 'En calendario' :
+                             'Pendiente'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">Gasto</Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         {expense.receipt_url && (

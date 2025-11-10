@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   property_id: z.string().min(1, "Propiedad requerida"),
@@ -19,7 +20,8 @@ const formSchema = z.object({
   currency: z.string().default("ARS"),
   expense_date: z.string().min(1, "Fecha requerida"),
   description: z.string().optional(),
-  receipt_url: z.string().optional()
+  receipt_url: z.string().optional(),
+  is_reimbursable: z.boolean().default(false)
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,6 +37,7 @@ interface ExpenseFormProps {
 export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }: ExpenseFormProps) {
   const [properties, setProperties] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
+  const [hasActiveContract, setHasActiveContract] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
@@ -47,7 +50,8 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
       currency: "ARS",
       expense_date: new Date().toISOString().split('T')[0],
       description: "",
-      receipt_url: ""
+      receipt_url: "",
+      is_reimbursable: false
     }
   });
 
@@ -63,7 +67,8 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
           currency: expense.currency || "ARS",
           expense_date: expense.expense_date || new Date().toISOString().split('T')[0],
           description: expense.description || "",
-          receipt_url: expense.receipt_url || ""
+          receipt_url: expense.receipt_url || "",
+          is_reimbursable: expense.is_reimbursable || false
         });
         if (expense.property_id) {
           fetchContracts(expense.property_id);
@@ -77,7 +82,8 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
           currency: "ARS",
           expense_date: new Date().toISOString().split('T')[0],
           description: "",
-          receipt_url: ""
+          receipt_url: "",
+          is_reimbursable: false
         });
       }
     }
@@ -88,6 +94,14 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
       if (name === 'property_id' && value.property_id) {
         fetchContracts(value.property_id);
         form.setValue('contract_id', '');
+        form.setValue('is_reimbursable', false);
+      }
+      if (name === 'contract_id') {
+        const hasContract = value.contract_id && value.contract_id !== 'none';
+        setHasActiveContract(hasContract);
+        if (!hasContract) {
+          form.setValue('is_reimbursable', false);
+        }
       }
     });
     return () => subscription.unsubscribe();
@@ -106,6 +120,7 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
   const fetchContracts = async (propertyId: string) => {
     if (!propertyId) {
       setContracts([]);
+      setHasActiveContract(false);
       return;
     }
     
@@ -116,34 +131,71 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
       .eq('status', 'active')
       .order('contract_number');
     
-    if (data) setContracts(data);
+    if (data) {
+      setContracts(data);
+      setHasActiveContract(data.length > 0);
+    } else {
+      setContracts([]);
+      setHasActiveContract(false);
+    }
   };
 
   const onSubmit = async (values: FormValues) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Validar que si es reembolsable, debe tener contrato
+      if (values.is_reimbursable && (!values.contract_id || values.contract_id === 'none')) {
+        toast({
+          title: "Error",
+          description: "Los gastos reembolsables deben estar asociados a un contrato activo",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       const expenseData: any = {
         ...values,
         tenant_id: tenantId,
         created_by: user?.id,
-        contract_id: values.contract_id === 'none' ? null : values.contract_id
+        contract_id: values.contract_id === 'none' ? null : values.contract_id,
+        reimbursement_status: values.is_reimbursable ? 'pending' : null
       };
 
       if (expense?.id) {
-        const { error } = await supabase
+        const { data: updatedExpense, error } = await supabase
           .from('pms_expenses')
           .update(expenseData)
-          .eq('id', expense.id);
+          .eq('id', expense.id)
+          .select()
+          .single();
 
         if (error) throw error;
+        
+        // Si es reembolsable y hay contrato, llamar al edge function
+        if (values.is_reimbursable && values.contract_id && values.contract_id !== 'none') {
+          await supabase.functions.invoke('create-reimbursement-schedule-item', {
+            body: { expense: { ...updatedExpense, contract_id: values.contract_id } }
+          });
+        }
+        
         toast({ title: "Gasto actualizado correctamente" });
       } else {
-        const { error } = await supabase
+        const { data: newExpense, error } = await supabase
           .from('pms_expenses')
-          .insert([expenseData]);
+          .insert([expenseData])
+          .select()
+          .single();
 
         if (error) throw error;
+        
+        // Si es reembolsable y hay contrato, llamar al edge function
+        if (values.is_reimbursable && values.contract_id && values.contract_id !== 'none') {
+          await supabase.functions.invoke('create-reimbursement-schedule-item', {
+            body: { expense: { ...newExpense, contract_id: values.contract_id } }
+          });
+        }
+        
         toast({ title: "Gasto registrado correctamente" });
       }
 
@@ -341,6 +393,34 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
                 </FormItem>
               )}
             />
+
+            {hasActiveContract && (
+              <FormField
+                control={form.control}
+                name="is_reimbursable"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-muted/50">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4 mt-1"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        Reembolso a Propietarios
+                      </FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        Este gasto será agregado al calendario de pagos del inquilino como un item adicional a pagar en el mes correspondiente.
+                        El monto será distribuido entre los propietarios según sus porcentajes de participación.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

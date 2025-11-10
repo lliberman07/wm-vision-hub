@@ -1500,9 +1500,12 @@ export type Database = {
           description: string | null
           expense_date: string
           id: string
+          is_reimbursable: boolean | null
           paid_by: string | null
           property_id: string
           receipt_url: string | null
+          reimbursement_status: string | null
+          schedule_item_id: string | null
           status: string | null
           tenant_id: string
           updated_at: string | null
@@ -1522,9 +1525,12 @@ export type Database = {
           description?: string | null
           expense_date: string
           id?: string
+          is_reimbursable?: boolean | null
           paid_by?: string | null
           property_id: string
           receipt_url?: string | null
+          reimbursement_status?: string | null
+          schedule_item_id?: string | null
           status?: string | null
           tenant_id: string
           updated_at?: string | null
@@ -1544,9 +1550,12 @@ export type Database = {
           description?: string | null
           expense_date?: string
           id?: string
+          is_reimbursable?: boolean | null
           paid_by?: string | null
           property_id?: string
           receipt_url?: string | null
+          reimbursement_status?: string | null
+          schedule_item_id?: string | null
           status?: string | null
           tenant_id?: string
           updated_at?: string | null
@@ -1571,6 +1580,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "pms_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_expenses_schedule_item_id_fkey"
+            columns: ["schedule_item_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payment_schedule_items"
             referencedColumns: ["id"]
           },
           {
