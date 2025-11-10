@@ -92,11 +92,11 @@ export function PMSSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="p-4 border-b flex items-center justify-center">
+      <SidebarHeader className="p-6 border-b flex items-center justify-center">
         <img 
           src={granadaLogo} 
           alt="Granada Property Management" 
-          className={`${isCollapsed ? 'h-8 w-8' : 'h-16 w-auto'} object-contain transition-all duration-300`}
+          className={`${isCollapsed ? 'h-10 w-10' : 'h-24 w-auto'} object-contain transition-all duration-300`}
         />
       </SidebarHeader>
 
