@@ -83,11 +83,12 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
         .order('expense_date', { ascending: false });
 
       // 5. Obtener schedule items para saber cuáles reembolsos están pagados
+      // Usar query raw para evitar error de tipos mientras se regeneran
       const { data: scheduleItems } = await supabase
         .from('pms_payment_schedule_items')
         .select('id, period_date, status, expense_id')
         .eq('contract_id', selectedContract)
-        .not('expense_id', 'is', null);
+        .not('expense_id', 'is', null) as any; // Temporal: evitar error de tipos
 
       // 6. Para cada período, distribuir según propietarios
       const monthlyData: MonthlyOwnerData[] = [];
@@ -100,7 +101,7 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
             return expPeriod === cf.period;
           }).map(exp => {
             // Verificar si el reembolso está pagado
-            const scheduleItem = scheduleItems?.find(si => si.expense_id === exp.id);
+            const scheduleItem = scheduleItems?.find((si: any) => si.expense_id === exp.id);
             const isPaid = scheduleItem?.status === 'paid';
             
             return {
