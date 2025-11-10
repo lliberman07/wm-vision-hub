@@ -92,6 +92,28 @@ Deno.serve(async (req) => {
 
     console.log(`Creating schedule items for period: ${periodDateStr}`);
 
+    // Verificar si ya existen schedule items para este gasto (prevenir duplicados)
+    const { data: existingItems, error: checkError } = await supabase
+      .from('pms_payment_schedule_items')
+      .select('id')
+      .eq('expense_id', expense.id)
+      .limit(1);
+
+    if (checkError) {
+      console.error('Error checking existing items:', checkError);
+    }
+
+    if (existingItems && existingItems.length > 0) {
+      console.log('Schedule items already exist for this expense, skipping creation');
+      return new Response(
+        JSON.stringify({ 
+          message: 'Schedule items already exist for this expense',
+          existingItemsCount: existingItems.length
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
     // Buscar una proyección existente para este contrato y período
     const { data: existingProjection } = await supabase
       .from('pms_contract_monthly_projections')
@@ -125,34 +147,34 @@ Deno.serve(async (req) => {
       projectionId = newProjection.id;
     }
 
-    // Crear items de calendario para cada combinación de owner + payment method
+    // Usar solo el PRIMER método de pago para reembolsos
+    // Los reembolsos no se dividen por método de pago, se aplican como un único monto
+    const primaryMethod = paymentMethods[0];
+    console.log(`Using primary payment method: ${primaryMethod.payment_method} (ID: ${primaryMethod.id})`);
+
+    // Crear items de calendario para cada owner (sin iterar por métodos de pago)
     const scheduleItems = [];
     
     for (const ownerProp of ownerProperties) {
       const owner = ownerProp.pms_owners as any;
       const ownerAmount = expense.amount * (ownerProp.share_percent / 100);
 
-      for (const method of paymentMethods) {
-        const methodPercentage = method.percentage || 100;
-        const finalAmount = ownerAmount * (methodPercentage / 100);
+      const scheduleItem = {
+        contract_id: expense.contract_id,
+        tenant_id: expense.tenant_id,
+        projection_id: projectionId,
+        period_date: periodDateStr,
+        item: `REEMBOLSO_${expense.category.toUpperCase()}`,
+        expected_amount: ownerAmount,
+        original_amount: ownerAmount,
+        status: 'pending',
+        owner_id: owner.id,
+        owner_percentage: ownerProp.share_percent,
+        payment_method_id: primaryMethod.id,
+        expense_id: expense.id
+      };
 
-        const scheduleItem = {
-          contract_id: expense.contract_id,
-          tenant_id: expense.tenant_id,
-          projection_id: projectionId,
-          period_date: periodDateStr,
-          item: `REEMBOLSO_${expense.category.toUpperCase()}`,
-          expected_amount: finalAmount,
-          original_amount: finalAmount,
-          status: 'pending',
-          owner_id: owner.id,
-          owner_percentage: ownerProp.share_percent,
-          payment_method_id: method.id,
-          expense_id: expense.id
-        };
-
-        scheduleItems.push(scheduleItem);
-      }
+      scheduleItems.push(scheduleItem);
     }
 
     console.log(`Inserting ${scheduleItems.length} schedule items`);
