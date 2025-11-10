@@ -9,7 +9,8 @@ interface DashboardMetrics {
   collectedThisMonth: number;
   pendingThisMonth: number;
   collectionRate: number;
-  pendingSubmissions: number;
+  pendingSubmissionsCount: number;
+  pendingSubmissionsAmount: number;
   upcomingPayments: number;
 }
 
@@ -20,7 +21,8 @@ export function PaymentsDashboard() {
     collectedThisMonth: 0,
     pendingThisMonth: 0,
     collectionRate: 0,
-    pendingSubmissions: 0,
+    pendingSubmissionsCount: 0,
+    pendingSubmissionsAmount: 0,
     upcomingPayments: 0,
   });
 
@@ -31,79 +33,116 @@ export function PaymentsDashboard() {
   }, [currentTenant]);
 
   const fetchMetrics = async () => {
-    if (!currentTenant) return;
+    if (!currentTenant) {
+      console.warn('PaymentsDashboard: No currentTenant available');
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log('PaymentsDashboard: Fetching metrics for tenant:', currentTenant.id, currentTenant.name);
+      
       const now = new Date();
       const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM
       const today = now.toISOString().split('T')[0];
       const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      // Total cobrado este mes
-      const { data: paidData } = await supabase
-        .from('pms_payments')
-        .select('paid_amount')
+      // Total cobrado este mes - usando schedule items como fuente única
+      const { data: paidData, error: paidError } = await supabase
+        .from('pms_payment_schedule_items')
+        .select('expected_amount')
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'paid')
-        .gte('paid_date', `${currentMonth}-01`)
-        .lte('paid_date', `${currentMonth}-31`);
+        .gte('period_date', `${currentMonth}-01`)
+        .lte('period_date', `${currentMonth}-31`);
 
-      const collectedThisMonth = paidData?.reduce((sum, p) => sum + (p.paid_amount || 0), 0) || 0;
+      if (paidError) {
+        console.error('Error fetching paid data:', paidError);
+      }
 
-      // Pendiente este mes (vencidos sin pagar)
-      const { data: overdueData } = await supabase
+      const collectedThisMonth = paidData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
+      console.log('Total cobrado este mes:', collectedThisMonth, 'Records:', paidData?.length);
+
+      // Pendiente de cobro (vencidos sin pagar)
+      const { data: overdueData, error: overdueError } = await supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount')
         .eq('tenant_id', currentTenant.id)
-        .lte('period_date', today)
-        .neq('status', 'paid');
+        .in('status', ['pending', 'partial'])
+        .lte('period_date', today);
+
+      if (overdueError) {
+        console.error('Error fetching overdue data:', overdueError);
+      }
 
       const pendingThisMonth = overdueData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
+      console.log('Pendiente de cobro:', pendingThisMonth, 'Records:', overdueData?.length);
 
-      // Tasa de Cobranza: Cuotas devengadas hasta hoy / Cuotas pagadas hasta hoy
-      const { data: devengadoData } = await supabase
+      // Tasa de Cobranza: Total pagado / Total devengado hasta hoy
+      const { data: devengadoData, error: devengadoError } = await supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount')
         .eq('tenant_id', currentTenant.id)
-        .lte('period_date', today); // Todo lo que ya venció o está vigente
+        .lte('period_date', today);
+
+      if (devengadoError) {
+        console.error('Error fetching devengado data:', devengadoError);
+      }
 
       const totalDevengado = devengadoData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
 
-      // Total pagado hasta hoy (de lo devengado)
-      const { data: pagadoData } = await supabase
+      const { data: pagadoData, error: pagadoError } = await supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount')
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'paid')
         .lte('period_date', today);
 
+      if (pagadoError) {
+        console.error('Error fetching pagado data:', pagadoError);
+      }
+
       const totalPagado = pagadoData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
       const collectionRate = totalDevengado > 0 ? (totalPagado / totalDevengado) * 100 : 0;
+      console.log('Tasa de cobranza:', collectionRate.toFixed(1), '%', `(${totalPagado}/${totalDevengado})`);
 
-      // Pagos informados pendientes
-      const { data: submissionsData, count: submissionsCount } = await supabase
+      // Pagos informados pendientes - COUNT y MONTO
+      const { data: submissionsData, error: submissionsError } = await supabase
         .from('pms_payment_submissions')
-        .select('*', { count: 'exact', head: true })
+        .select('paid_amount')
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending');
 
-      // Próximos vencimientos (30 días) - monto total
-      const { data: upcomingData } = await supabase
+      if (submissionsError) {
+        console.error('Error fetching submissions data:', submissionsError);
+      }
+
+      const pendingSubmissionsCount = submissionsData?.length || 0;
+      const pendingSubmissionsAmount = submissionsData?.reduce((sum, s) => sum + (s.paid_amount || 0), 0) || 0;
+      console.log('Pagos informados pendientes:', pendingSubmissionsCount, 'Total:', pendingSubmissionsAmount);
+
+      // Próximos vencimientos (30 días)
+      const { data: upcomingData, error: upcomingError } = await supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount')
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending')
-        .gte('period_date', today)
+        .gt('period_date', today)
         .lte('period_date', thirtyDaysFromNow);
+
+      if (upcomingError) {
+        console.error('Error fetching upcoming data:', upcomingError);
+      }
       
       const upcomingTotal = upcomingData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
+      console.log('Próximos vencimientos:', upcomingTotal, 'Records:', upcomingData?.length);
 
       setMetrics({
         collectedThisMonth,
         pendingThisMonth,
         collectionRate,
-        pendingSubmissions: submissionsCount || 0,
+        pendingSubmissionsCount,
+        pendingSubmissionsAmount,
         upcomingPayments: upcomingTotal,
       });
     } catch (error) {
@@ -137,7 +176,9 @@ export function PaymentsDashboard() {
     },
     {
       title: "Pagos Informados",
-      value: `$${metrics.pendingSubmissions.toLocaleString('es-AR')}`,
+      value: metrics.pendingSubmissionsCount > 0 
+        ? `${metrics.pendingSubmissionsCount} ($${metrics.pendingSubmissionsAmount.toLocaleString('es-AR')})`
+        : '0',
       icon: Bell,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
