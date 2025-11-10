@@ -39,7 +39,8 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
           projection:pms_contract_monthly_projections(*),
           payment:pms_payments!payment_id(*),
           payment_method:pms_contract_payment_methods(*),
-          owner:pms_owners(id, full_name, email)
+          owner:pms_owners(id, full_name, email),
+          expense:pms_expenses(id, category, description, is_reimbursable)
         `)
         .eq('contract_id', contractId)
         .order('period_date', { ascending: true });
@@ -216,7 +217,16 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
                     <TableBody>
                       {monthItems.map((item) => (
                         <TableRow key={item.id} className="cursor-pointer" onClick={() => handleCellClick(item)}>
-                          <TableCell className="font-mono font-medium">{item.item}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-medium">{item.item}</span>
+                              {item.expense?.is_reimbursable && (
+                                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                                  Reembolso
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell>{item.owner?.full_name || 'N/A'}</TableCell>
                           <TableCell>{item.owner_percentage}%</TableCell>
                           <TableCell className="font-semibold">
@@ -230,6 +240,7 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
                                 paidAmount={item.payment?.paid_amount}
                                 periodDate={item.period_date}
                                 onClick={() => handleCellClick(item)}
+                                isReimbursement={item.expense?.is_reimbursable}
                               />
                             </div>
                           </TableCell>
