@@ -69,23 +69,39 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
 
   useEffect(() => {
     if (open && owner) {
+      // Parsear full_name para obtener first_name y last_name
+      let firstName = '';
+      let lastName = '';
+      let companyName = '';
+      
+      if (owner.owner_type === 'empresa') {
+        companyName = owner.full_name || '';
+      } else {
+        // Dividir full_name en primera y última parte
+        const nameParts = (owner.full_name || '').split(' ');
+        if (nameParts.length > 0) {
+          firstName = nameParts[0];
+          lastName = nameParts.slice(1).join(' ');
+        }
+      }
+
       form.reset({
         owner_type: owner.owner_type || 'persona',
-        first_name: owner.first_name || '',
-        last_name: owner.last_name || '',
-        company_name: owner.company_name || '',
-        contact_name: owner.contact_name || '',
+        first_name: firstName,
+        last_name: lastName,
+        company_name: companyName,
+        contact_name: '',
         email: owner.email || '',
         phone: owner.phone || '',
-        mobile_phone: owner.mobile_phone || '',
+        mobile_phone: '',
         document_type: owner.document_type || 'DNI',
         document_number: owner.document_number || '',
-        tax_id: owner.tax_id || '',
-        address: owner.address || '',
-        state: owner.state || '',
-        city: owner.city || '',
-        postal_code: owner.postal_code || '',
-        notes: owner.notes || '',
+        tax_id: '',
+        address: '',
+        state: '',
+        city: '',
+        postal_code: '',
+        notes: '',
       });
     } else if (open && !owner) {
       form.reset({
@@ -119,29 +135,21 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
     }
 
     try {
+      // Construir full_name basado en el tipo
+      const fullName = data.owner_type === 'empresa' 
+        ? data.company_name 
+        : `${data.first_name || ''} ${data.last_name || ''}`.trim();
+
+      // Solo enviar campos que existen en la tabla pms_owners
       const payload: any = {
         owner_type: data.owner_type,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        company_name: data.company_name,
-        contact_name: data.contact_name,
+        full_name: fullName,
         email: data.email,
-        phone: data.phone,
-        mobile_phone: data.mobile_phone,
+        phone: data.phone || data.mobile_phone, // Usar el que tenga valor
         document_type: data.document_type,
         document_number: data.document_number,
-        tax_id: data.tax_id,
-        address: data.address,
-        state: data.state,
-        city: data.city,
-        postal_code: data.postal_code,
-        notes: data.notes,
         tenant_id: currentTenant.id,
         is_active: true,
-        // Mantener full_name por compatibilidad
-        full_name: data.owner_type === 'empresa' 
-          ? data.company_name 
-          : `${data.first_name || ''} ${data.last_name || ''}`.trim(),
       };
 
       if (owner?.id) {
