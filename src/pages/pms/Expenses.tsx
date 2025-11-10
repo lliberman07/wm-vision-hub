@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ExpenseForm } from "@/components/pms/ExpenseForm";
+import { ReprocessReimbursementButton } from "@/components/pms/ReprocessReimbursementButton";
 import { Plus, Search, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { PMSLayout } from "@/components/pms/PMSLayout";
@@ -21,6 +22,12 @@ interface Expense {
   expense_date: string;
   description: string;
   receipt_url: string;
+  contract_id?: string;
+  property_id: string;
+  tenant_id: string;
+  is_reimbursable?: boolean;
+  reimbursement_status?: string;
+  schedule_item_id?: string;
   pms_properties?: { code: string; address: string };
 }
 
@@ -119,6 +126,7 @@ export default function Expenses() {
                     <TableHead className="text-right">Monto</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Comprobante</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -146,10 +154,17 @@ export default function Expenses() {
                         {expense.currency} {expense.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell>
-                        {(expense as any).is_reimbursable ? (
-                          <Badge variant="secondary">
-                            {(expense as any).reimbursement_status === 'paid' ? 'Reembolsado' :
-                             (expense as any).reimbursement_status === 'included_in_schedule' ? 'En calendario' :
+                        {expense.is_reimbursable ? (
+                          <Badge 
+                            variant={
+                              !expense.schedule_item_id ? 'destructive' :
+                              expense.reimbursement_status === 'paid' ? 'default' : 
+                              'secondary'
+                            }
+                          >
+                            {!expense.schedule_item_id ? 'Error' :
+                             expense.reimbursement_status === 'paid' ? 'Reembolsado' :
+                             expense.reimbursement_status === 'included_in_schedule' ? 'En calendario' :
                              'Pendiente'}
                           </Badge>
                         ) : (
@@ -167,6 +182,24 @@ export default function Expenses() {
                           >
                             <FileText className="h-4 w-4" />
                           </a>
+                        )}
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        {expense.is_reimbursable && !expense.schedule_item_id && expense.contract_id && (
+                          <ReprocessReimbursementButton
+                            expense={{
+                              id: expense.id,
+                              category: expense.category,
+                              amount: expense.amount,
+                              contract_id: expense.contract_id,
+                              property_id: expense.property_id,
+                              tenant_id: expense.tenant_id,
+                              currency: expense.currency,
+                              expense_date: expense.expense_date,
+                              is_reimbursable: expense.is_reimbursable
+                            }}
+                            onSuccess={fetchExpenses}
+                          />
                         )}
                       </TableCell>
                     </TableRow>
