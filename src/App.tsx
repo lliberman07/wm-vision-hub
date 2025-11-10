@@ -44,6 +44,7 @@ import Indices from "./pages/pms/Indices";
 import MyContract from "./pages/pms/MyContract";
 import Receipts from "./pages/pms/Receipts";
 import Help from "./pages/pms/Help";
+import MySubscription from "./pages/pms/MySubscription";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,7 @@ const App = () => (
               <Route path="/pms/indices" element={<Indices />} />
               <Route path="/pms/mi-contrato" element={<MyContract />} />
               <Route path="/pms/help" element={<Help />} />
+              <Route path="/pms/my-subscription" element={<MySubscription />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

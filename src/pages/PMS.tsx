@@ -106,6 +106,13 @@ const PMS = () => {
       route: '/pms/reports',
       gradient: 'from-accent/10 to-success/20',
     },
+    {
+      title: 'Mi Suscripción',
+      description: 'Gestiona tu plan y facturación',
+      icon: CreditCard,
+      route: '/pms/my-subscription',
+      gradient: 'from-purple-500/10 to-purple-600/20',
+    },
   ];
 
   return (

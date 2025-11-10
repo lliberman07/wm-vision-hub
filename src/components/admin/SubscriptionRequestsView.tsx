@@ -93,6 +93,27 @@ export default function SubscriptionRequestsView() {
       });
 
       if (error) throw error;
+
+      // Send approval email
+      const request = requests?.find(r => r.id === requestId);
+      if (request) {
+        const result: any = data;
+        await supabase.functions.invoke('send-subscription-approval', {
+          body: {
+            email: request.email,
+            name: `${request.first_name} ${request.last_name}`,
+            company_name: request.company_name || request.email,
+            plan_name: request.subscription_plans.name,
+            trial_days: days,
+            amount: request.billing_cycle === 'yearly' 
+              ? request.subscription_plans.price_yearly 
+              : request.subscription_plans.price_monthly,
+            billing_cycle: request.billing_cycle,
+            due_date: result.trial_end
+          }
+        });
+      }
+
       return data;
     },
     onSuccess: () => {

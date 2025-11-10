@@ -58,6 +58,7 @@ export default function InvoiceManagementView() {
 
   const markAsPaidMutation = useMutation({
     mutationFn: async ({ invoiceId, paidDate }: { invoiceId: string; paidDate: string }) => {
+      // Mark invoice as paid
       const { error } = await supabase
         .from('subscription_invoices')
         .update({
@@ -67,6 +68,81 @@ export default function InvoiceManagementView() {
         .eq('id', invoiceId);
 
       if (error) throw error;
+
+      // Get subscription details
+      const { data: invoice } = await supabase
+        .from('subscription_invoices')
+        .select(`
+          *,
+          tenant_subscriptions!inner(
+            id,
+            status,
+            billing_cycle,
+            current_period_end,
+            pms_tenants!inner(name),
+            tenant_id
+          )
+        `)
+        .eq('id', invoiceId)
+        .single();
+
+      if (!invoice) throw new Error('Invoice not found');
+
+      const subscription = (invoice as any).tenant_subscriptions;
+      
+      // Activate subscription if it was trial or suspended
+      if (subscription.status === 'trial' || subscription.status === 'suspended') {
+        const nextBillingDate = new Date(paidDate);
+        if (subscription.billing_cycle === 'yearly') {
+          nextBillingDate.setFullYear(nextBillingDate.getFullYear() + 1);
+        } else {
+          nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+        }
+
+        const { error: subError } = await supabase
+          .from('tenant_subscriptions')
+          .update({
+            status: 'active',
+            current_period_start: paidDate,
+            current_period_end: nextBillingDate.toISOString(),
+            trial_end: null
+          })
+          .eq('id', subscription.id);
+
+        if (subError) throw subError;
+
+        // Get user email
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('tenant_id', subscription.tenant_id)
+          .eq('module', 'PMS')
+          .eq('role', 'inmobiliaria' as any)
+          .limit(1)
+          .single();
+
+        if (userRoles) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('email, first_name')
+            .eq('id', userRoles.user_id)
+            .single();
+
+          // Send payment confirmation email
+          if (userData) {
+            await supabase.functions.invoke('send-payment-confirmation', {
+              body: {
+                email: userData.email,
+                name: userData.first_name || 'Usuario',
+                company_name: subscription.pms_tenants.name,
+                amount: invoice.amount,
+                paid_date: paidDate,
+                next_billing_date: nextBillingDate.toISOString()
+              }
+            });
+          }
+        }
+      }
     },
     onSuccess: () => {
       toast({ title: "Factura marcada como pagada" });
