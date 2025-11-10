@@ -4,7 +4,7 @@ import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt } from 'lucide-react';
+import { Loader2, Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt, CreditCard } from 'lucide-react';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { DashboardKPIs } from '@/components/pms/DashboardKPIs';
 import { ModuleCard } from '@/components/pms/ModuleCard';
