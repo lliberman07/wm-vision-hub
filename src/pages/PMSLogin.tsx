@@ -80,7 +80,7 @@ const PMSLogin = () => {
             <img 
               src={granadaLogo} 
               alt="Granada Property Management" 
-              className="h-48 w-auto object-contain mx-auto transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in"
+              className="h-56 w-auto object-contain mx-auto transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in"
             />
           </div>
           <div>
