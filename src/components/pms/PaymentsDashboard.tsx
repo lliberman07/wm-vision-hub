@@ -44,6 +44,7 @@ export function PaymentsDashboard() {
       
       const now = new Date();
       const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().slice(0, 7); // YYYY-MM
       const today = now.toISOString().split('T')[0];
       const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
@@ -54,7 +55,7 @@ export function PaymentsDashboard() {
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'paid')
         .gte('period_date', `${currentMonth}-01`)
-        .lte('period_date', `${currentMonth}-31`);
+        .lt('period_date', `${nextMonth}-01`);
 
       if (paidError) {
         console.error('Error fetching paid data:', paidError);

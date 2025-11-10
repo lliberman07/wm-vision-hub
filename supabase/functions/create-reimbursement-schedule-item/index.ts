@@ -113,7 +113,6 @@ Deno.serve(async (req) => {
           owner_id: owner.id,
           owner_percentage: ownerProp.share_percent,
           payment_method: method.payment_method,
-          currency: expense.currency,
           expense_id: expense.id, // Vincular con el gasto
           notes: `Reembolso: ${expense.category} - ${expense.expense_date}`
         };
