@@ -87,25 +87,33 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
 
       if (viewByPaymentDate) {
         // NUEVA LÓGICA: Agrupar por fecha de pago
-        // 3. Obtener todos los schedule items pagados con su información de pago
-        const { data: paidItems, error: itemsError } = await supabase
+        // 3. Obtener todos los schedule items pagados
+        const { data: scheduleItems, error: itemsError } = await supabase
           .from('pms_payment_schedule_items')
-          .select(`
-            id,
-            period_date,
-            item,
-            expected_amount,
-            status,
-            expense_id,
-            pms_payments!inner(id, paid_date, paid_amount)
-          `)
+          .select('id, period_date, item, expected_amount, status, expense_id')
           .eq('contract_id', selectedContract)
-          .eq('status', 'paid')
-          .order('pms_payments(paid_date)', { ascending: false });
+          .eq('status', 'paid');
 
         if (itemsError) throw itemsError;
 
-        // 4. Obtener gastos del mes (basado en expense_date, no en paid_date)
+        // 4. Obtener todos los pagos de esos schedule items
+        const scheduleItemIds = scheduleItems?.map(item => item.id) || [];
+        
+        const { data: payments, error: paymentsError } = await supabase
+          .from('pms_payments')
+          .select('id, schedule_item_id, paid_date, paid_amount')
+          .in('schedule_item_id', scheduleItemIds)
+          .order('paid_date', { ascending: false });
+
+        if (paymentsError) throw paymentsError;
+
+        // 5. Combinar manualmente en JavaScript
+        const paidItems = scheduleItems?.map(item => ({
+          ...item,
+          pms_payments: payments?.filter(p => p.schedule_item_id === item.id) || []
+        })) || [];
+
+        // 6. Obtener gastos del mes (basado en expense_date, no en paid_date)
         const { data: expenses, error: expensesError } = await supabase
           .from('pms_expenses')
           .select('id, category, description, amount, expense_date, is_reimbursable, reimbursement_status, schedule_item_id')
@@ -117,23 +125,30 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
         console.log('💰 Paid items:', paidItems);
         console.log('💸 Expenses:', expenses);
 
-        // 5. Agrupar por mes de pago
+        // 7. Agrupar por mes de pago - considerando múltiples pagos por item
         const paymentsByMonth: Record<string, any[]> = {};
         
         paidItems?.forEach((item: any) => {
-          const paidDate = item.pms_payments.paid_date;
-          const period = paidDate.substring(0, 7); // YYYY-MM
-          
-          if (!paymentsByMonth[period]) {
-            paymentsByMonth[period] = [];
+          if (item.pms_payments?.length > 0) {
+            item.pms_payments.forEach((payment: any) => {
+              const period = payment.paid_date.substring(0, 7); // YYYY-MM
+              
+              if (!paymentsByMonth[period]) {
+                paymentsByMonth[period] = [];
+              }
+              
+              // Agregar una entrada por cada pago
+              paymentsByMonth[period].push({
+                ...item,
+                current_payment: payment // El pago actual que estamos procesando
+              });
+            });
           }
-          
-          paymentsByMonth[period].push(item);
         });
 
         console.log('📅 Payments grouped by month:', paymentsByMonth);
 
-        // 6. Para cada período y propietario, calcular totales
+        // 8. Para cada período y propietario, calcular totales
         const monthlyData: MonthlyOwnerData[] = [];
 
         Object.entries(paymentsByMonth).forEach(([period, items]) => {
@@ -144,15 +159,15 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
 
             items.forEach((item: any) => {
               // Solo sumar items de ingreso regular (no reembolsos)
-              if (!item.expense_id) {
-                const ownerShare = (item.pms_payments.paid_amount * owner.share_percent) / 100;
+              if (!item.expense_id && item.current_payment) {
+                const ownerShare = (item.current_payment.paid_amount * owner.share_percent) / 100;
                 totalIncome += ownerShare;
 
                 incomeDetails.push({
                   item: item.item || 'UNICO',
                   period_date: item.period_date,
                   amount: ownerShare,
-                  paid_date: item.pms_payments.paid_date
+                  paid_date: item.current_payment.paid_date
                 });
               }
             });
