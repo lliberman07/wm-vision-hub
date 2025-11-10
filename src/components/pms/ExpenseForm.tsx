@@ -451,7 +451,7 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
                 Cancelar
               </Button>
               <Button type="submit">
-                {expense ? "Actualizar" : "Registrar"}
+                {expense ? "Actualizar" : "Cargar"}
               </Button>
             </div>
           </form>
