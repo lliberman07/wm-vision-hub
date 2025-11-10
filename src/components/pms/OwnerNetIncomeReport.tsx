@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Users, DollarSign } from 'lucide-react';
+import { Users, DollarSign, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface OwnerNetIncomeReportProps {
   tenantId: string;
@@ -20,6 +22,14 @@ interface MonthlyOwnerData {
   expenses: number;
   net_result: number;
   reimbursements?: ReimbursementData[];
+  income_details?: IncomeDetail[];
+}
+
+interface IncomeDetail {
+  item: string;
+  period_date: string;
+  amount: number;
+  paid_date: string;
 }
 
 interface ReimbursementData {
@@ -30,121 +40,271 @@ interface ReimbursementData {
   expense_date: string;
   status: string;
   is_paid: boolean;
+  schedule_item_id?: string;
 }
 
 export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetIncomeReportProps) => {
   const [ownerTotals, setOwnerTotals] = useState<MonthlyOwnerData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewByPaymentDate, setViewByPaymentDate] = useState(true);
 
   useEffect(() => {
     if (tenantId && selectedContract) {
       fetchOwnerTotals();
     }
-  }, [tenantId, selectedContract]);
+  }, [tenantId, selectedContract, viewByPaymentDate]);
 
   const fetchOwnerTotals = async () => {
     setLoading(true);
     try {
-      // 1. Obtener cashflow del contrato (ya tiene datos mes a mes)
-      const { data: cashflow, error: cashflowError } = await supabase
-        .from('pms_cashflow_property')
-        .select('*')
-        .eq('contract_id', selectedContract)
-        .order('period', { ascending: false })
-        .limit(12);
+      console.log('🔍 Fetching owner totals - viewByPaymentDate:', viewByPaymentDate);
 
-      if (cashflowError) throw cashflowError;
-
-      // 2. Obtener información del contrato
-      const { data: contract } = await supabase
+      // 1. Obtener información del contrato
+      const { data: contract, error: contractError } = await supabase
         .from('pms_contracts')
         .select('property_id')
         .eq('id', selectedContract)
         .single();
 
+      if (contractError) throw contractError;
       if (!contract) {
         setOwnerTotals([]);
         return;
       }
 
-      // 3. Obtener propietarios del contrato
-      const { data: owners } = await supabase
+      // 2. Obtener propietarios del contrato
+      const { data: owners, error: ownersError } = await supabase
         .from('pms_owner_properties')
         .select('owner_id, share_percent, pms_owners!inner(id, full_name)')
         .eq('property_id', contract.property_id)
         .or(`end_date.is.null,end_date.gte.${new Date().toISOString().split('T')[0]}`);
 
-      // 4. Obtener gastos reembolsables del contrato
-      const { data: reimbursableExpenses } = await supabase
-        .from('pms_expenses')
-        .select('id, category, description, amount, expense_date, reimbursement_status')
-        .eq('contract_id', selectedContract)
-        .eq('is_reimbursable', true)
-        .order('expense_date', { ascending: false });
+      if (ownersError) throw ownersError;
+      if (!owners || owners.length === 0) {
+        setOwnerTotals([]);
+        return;
+      }
 
-      // 5. Obtener schedule items para saber cuáles reembolsos están pagados
-      // Usar query raw para evitar error de tipos mientras se regeneran
-      const { data: scheduleItems } = await supabase
-        .from('pms_payment_schedule_items')
-        .select('id, period_date, status, expense_id')
-        .eq('contract_id', selectedContract)
-        .not('expense_id', 'is', null) as any; // Temporal: evitar error de tipos
+      if (viewByPaymentDate) {
+        // NUEVA LÓGICA: Agrupar por fecha de pago
+        // 3. Obtener todos los schedule items pagados con su información de pago
+        const { data: paidItems, error: itemsError } = await supabase
+          .from('pms_payment_schedule_items')
+          .select(`
+            id,
+            period_date,
+            item,
+            expected_amount,
+            status,
+            expense_id,
+            pms_payments!inner(id, paid_date, paid_amount)
+          `)
+          .eq('contract_id', selectedContract)
+          .eq('status', 'paid')
+          .order('pms_payments(paid_date)', { ascending: false });
 
-      // 6. Para cada período, distribuir según propietarios
-      const monthlyData: MonthlyOwnerData[] = [];
-      
-      cashflow?.forEach(cf => {
-        owners?.forEach((owner: any) => {
-          // Filtrar reembolsos de este período y este propietario
-          const periodReimbursements = reimbursableExpenses?.filter(exp => {
-            const expPeriod = exp.expense_date.substring(0, 7); // YYYY-MM
-            return expPeriod === cf.period;
-          }).map(exp => {
-            // Verificar si existe schedule item y su estado
-            const scheduleItem = scheduleItems?.find((si: any) => si.expense_id === exp.id);
-            
-            // Determinar estado real del reembolso
-            let isPaid = false;
-            let displayStatus = exp.reimbursement_status;
-            
-            if (!scheduleItem) {
-              // No hay schedule item = error en creación o no procesado
-              displayStatus = 'error';
-            } else if (scheduleItem.status === 'paid') {
-              isPaid = true;
-              displayStatus = 'paid';
-            } else {
-              // Existe schedule item pero no está pagado
-              displayStatus = 'pending';
-            }
-            
-            return {
+        if (itemsError) throw itemsError;
+
+        // 4. Obtener gastos del mes (basado en expense_date, no en paid_date)
+        const { data: expenses, error: expensesError } = await supabase
+          .from('pms_expenses')
+          .select('id, category, description, amount, expense_date, is_reimbursable, reimbursement_status, schedule_item_id')
+          .eq('contract_id', selectedContract)
+          .order('expense_date', { ascending: false });
+
+        if (expensesError) throw expensesError;
+
+        console.log('💰 Paid items:', paidItems);
+        console.log('💸 Expenses:', expenses);
+
+        // 5. Agrupar por mes de pago
+        const paymentsByMonth: Record<string, any[]> = {};
+        
+        paidItems?.forEach((item: any) => {
+          const paidDate = item.pms_payments.paid_date;
+          const period = paidDate.substring(0, 7); // YYYY-MM
+          
+          if (!paymentsByMonth[period]) {
+            paymentsByMonth[period] = [];
+          }
+          
+          paymentsByMonth[period].push(item);
+        });
+
+        console.log('📅 Payments grouped by month:', paymentsByMonth);
+
+        // 6. Para cada período y propietario, calcular totales
+        const monthlyData: MonthlyOwnerData[] = [];
+
+        Object.entries(paymentsByMonth).forEach(([period, items]) => {
+          owners.forEach((owner: any) => {
+            // Calcular ingresos cobrados en este mes
+            const incomeDetails: IncomeDetail[] = [];
+            let totalIncome = 0;
+
+            items.forEach((item: any) => {
+              // Solo sumar items de ingreso regular (no reembolsos)
+              if (!item.expense_id) {
+                const ownerShare = (item.pms_payments.paid_amount * owner.share_percent) / 100;
+                totalIncome += ownerShare;
+
+                incomeDetails.push({
+                  item: item.item || 'UNICO',
+                  period_date: item.period_date,
+                  amount: ownerShare,
+                  paid_date: item.pms_payments.paid_date
+                });
+              }
+            });
+
+            // Calcular gastos del mes (no reembolsables)
+            const monthExpenses = expenses?.filter(exp => {
+              const expPeriod = exp.expense_date.substring(0, 7);
+              return expPeriod === period && !exp.is_reimbursable;
+            }) || [];
+
+            const totalExpenses = monthExpenses.reduce((sum, exp) => 
+              sum + ((exp.amount * owner.share_percent) / 100), 0
+            );
+
+            // Obtener reembolsos pagados en este mes
+            const paidReimbursements = items
+              .filter((item: any) => item.expense_id)
+              .map((item: any) => {
+                const expense = expenses?.find(exp => exp.id === item.expense_id);
+                if (!expense) return null;
+
+                return {
+                  id: expense.id,
+                  category: expense.category,
+                  description: expense.description || '',
+                  amount: (expense.amount * owner.share_percent) / 100,
+                  expense_date: expense.expense_date,
+                  status: 'paid',
+                  is_paid: true,
+                  schedule_item_id: item.id
+                };
+              })
+              .filter(Boolean) as ReimbursementData[];
+
+            // Agregar reembolsos con error (sin schedule_item_id)
+            const errorReimbursements = expenses?.filter(exp => {
+              const expPeriod = exp.expense_date.substring(0, 7);
+              return expPeriod === period && 
+                     exp.is_reimbursable && 
+                     !exp.schedule_item_id;
+            }).map(exp => ({
               id: exp.id,
               category: exp.category,
               description: exp.description || '',
-              amount: (exp.amount * owner.share_percent) / 100, // Distribuir según %
+              amount: (exp.amount * owner.share_percent) / 100,
               expense_date: exp.expense_date,
-              status: displayStatus,
-              is_paid: isPaid
-            };
-          }) || [];
+              status: 'error',
+              is_paid: false
+            })) || [];
 
-          monthlyData.push({
-            period: cf.period,
-            owner_id: owner.owner_id,
-            full_name: owner.pms_owners.full_name,
-            share_percent: owner.share_percent,
-            income: (cf.total_income * owner.share_percent) / 100,
-            expenses: (cf.total_expenses * owner.share_percent) / 100,
-            net_result: ((cf.total_income - cf.total_expenses) * owner.share_percent) / 100,
-            reimbursements: periodReimbursements
+            const allReimbursements = [...paidReimbursements, ...errorReimbursements];
+
+            // IMPORTANTE: Solo sumar reembolsos pagados al total de ingresos
+            const paidReimbursementsTotal = paidReimbursements.reduce((sum, r) => sum + r.amount, 0);
+
+            monthlyData.push({
+              period,
+              owner_id: owner.owner_id,
+              full_name: owner.pms_owners.full_name,
+              share_percent: owner.share_percent,
+              income: totalIncome + paidReimbursementsTotal,
+              expenses: totalExpenses,
+              net_result: totalIncome + paidReimbursementsTotal - totalExpenses,
+              reimbursements: allReimbursements.length > 0 ? allReimbursements : undefined,
+              income_details: incomeDetails
+            });
           });
         });
-      });
 
-      setOwnerTotals(monthlyData);
+        console.log('📊 Monthly data (by payment date):', monthlyData);
+        setOwnerTotals(monthlyData);
+
+      } else {
+        // LÓGICA ANTERIOR: Agrupar por período de devengamiento (cashflow)
+        const { data: cashflow, error: cashflowError } = await supabase
+          .from('pms_cashflow_property')
+          .select('*')
+          .eq('contract_id', selectedContract)
+          .order('period', { ascending: false })
+          .limit(12);
+
+        if (cashflowError) throw cashflowError;
+
+        const { data: reimbursableExpenses } = await supabase
+          .from('pms_expenses')
+          .select('id, category, description, amount, expense_date, reimbursement_status, schedule_item_id')
+          .eq('contract_id', selectedContract)
+          .eq('is_reimbursable', true)
+          .order('expense_date', { ascending: false });
+
+        const { data: scheduleItems } = await supabase
+          .from('pms_payment_schedule_items')
+          .select('id, period_date, status, expense_id')
+          .eq('contract_id', selectedContract)
+          .not('expense_id', 'is', null) as any;
+
+        const monthlyData: MonthlyOwnerData[] = [];
+        
+        cashflow?.forEach(cf => {
+          owners.forEach((owner: any) => {
+            const periodReimbursements = reimbursableExpenses?.filter(exp => {
+              const expPeriod = exp.expense_date.substring(0, 7);
+              return expPeriod === cf.period;
+            }).map(exp => {
+              const scheduleItem = scheduleItems?.find((si: any) => si.expense_id === exp.id);
+              
+              let isPaid = false;
+              let displayStatus = exp.reimbursement_status;
+              
+              if (!exp.schedule_item_id) {
+                displayStatus = 'error';
+              } else if (scheduleItem?.status === 'paid') {
+                isPaid = true;
+                displayStatus = 'paid';
+              } else {
+                displayStatus = 'pending';
+              }
+              
+              return {
+                id: exp.id,
+                category: exp.category,
+                description: exp.description || '',
+                amount: (exp.amount * owner.share_percent) / 100,
+                expense_date: exp.expense_date,
+                status: displayStatus,
+                is_paid: isPaid,
+                schedule_item_id: exp.schedule_item_id
+              };
+            }) || [];
+
+            // Solo sumar reembolsos pagados
+            const paidReimbursementsTotal = periodReimbursements
+              .filter(r => r.is_paid)
+              .reduce((sum, r) => sum + r.amount, 0);
+
+            monthlyData.push({
+              period: cf.period,
+              owner_id: owner.owner_id,
+              full_name: owner.pms_owners.full_name,
+              share_percent: owner.share_percent,
+              income: (cf.total_income * owner.share_percent) / 100 + paidReimbursementsTotal,
+              expenses: (cf.total_expenses * owner.share_percent) / 100,
+              net_result: ((cf.total_income - cf.total_expenses) * owner.share_percent) / 100 + paidReimbursementsTotal,
+              reimbursements: periodReimbursements.length > 0 ? periodReimbursements : undefined
+            });
+          });
+        });
+
+        setOwnerTotals(monthlyData);
+      }
     } catch (error) {
-      console.error('Error fetching monthly data:', error);
+      console.error('❌ Error fetching monthly data:', error);
       setOwnerTotals([]);
     } finally {
       setLoading(false);
@@ -205,10 +365,23 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          Totales por Propietario
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Totales por Propietario
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="view-mode" className="text-sm text-muted-foreground">
+              {viewByPaymentDate ? 'Mes de Cobro' : 'Mes de Devengamiento'}
+            </Label>
+            <Switch
+              id="view-mode"
+              checked={viewByPaymentDate}
+              onCheckedChange={setViewByPaymentDate}
+            />
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -235,6 +408,39 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
                     <TableCell className="bg-muted/30">
                       <div className="flex flex-col gap-1">
                         <span>{data.full_name}</span>
+                        {viewByPaymentDate && data.income_details && data.income_details.length > 0 && (
+                          <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="income-details" className="border-0">
+                              <AccordionTrigger className="py-1 hover:no-underline">
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                                  <DollarSign className="h-3 w-3 mr-1" />
+                                  {data.income_details.length} Pago{data.income_details.length > 1 ? 's' : ''}
+                                </Badge>
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                <div className="pl-4 space-y-2 mt-2">
+                                  {data.income_details.map((detail, idx) => (
+                                    <div key={idx} className="text-xs border-l-2 border-blue-300 pl-2 py-1">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex-1">
+                                          <div className="font-medium text-blue-700">
+                                            Item {detail.item} - {detail.period_date}
+                                          </div>
+                                          <div className="text-muted-foreground">
+                                            Cobrado: {new Date(detail.paid_date).toLocaleDateString('es-AR')}
+                                          </div>
+                                        </div>
+                                        <div className="text-right font-semibold text-blue-700">
+                                          ${formatCurrency(detail.amount)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        )}
                         {data.reimbursements && data.reimbursements.length > 0 && (
                           <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="reimbursements" className="border-0">
@@ -279,11 +485,16 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
                                     </div>
                                   ))}
                                   <div className="border-t pt-2 mt-2 flex justify-between text-xs font-semibold">
-                                    <span>Total Reembolsos:</span>
+                                    <span>Total Reembolsos Pagados:</span>
                                     <span className="text-purple-700">
-                                      ${formatCurrency(data.reimbursements.reduce((sum, r) => sum + r.amount, 0))}
+                                      ${formatCurrency(data.reimbursements.filter(r => r.is_paid).reduce((sum, r) => sum + r.amount, 0))}
                                     </span>
                                   </div>
+                                  {data.reimbursements.some(r => !r.is_paid) && (
+                                    <div className="text-xs text-muted-foreground italic">
+                                      * Los reembolsos con error no se incluyen en el total de ingresos
+                                    </div>
+                                  )}
                                 </div>
                               </AccordionContent>
                             </AccordionItem>
