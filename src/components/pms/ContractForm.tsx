@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { usePMS } from '@/contexts/PMSContext';
 import { useState, useEffect } from 'react';
 import { ContractPaymentMethods } from './ContractPaymentMethods';
+import { ContractDocumentsUpload } from './ContractDocumentsUpload';
 import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
@@ -1186,6 +1187,13 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     montoB={form.watch('monto_b')}
                   />
                 </div>
+
+                <Separator className="my-6" />
+                <ContractDocumentsUpload
+                  contractId={contract.id}
+                  tenantId={currentTenant?.id || null}
+                  disabled={contract.status === 'active'}
+                />
               </>
             )}
 
