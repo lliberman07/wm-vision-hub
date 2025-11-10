@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { ContractForm } from '@/components/pms/ContractForm';
 import { ContractPaymentDistribution } from '@/components/pms/ContractPaymentDistribution';
 import { ContractAdjustments } from '@/components/pms/ContractAdjustments';
+import { ContractDocumentsViewer } from '@/components/pms/ContractDocumentsViewer';
 import { ContractMonthlyProjections } from '@/components/pms/ContractMonthlyProjections';
 import { CancelContractDialog } from '@/components/pms/CancelContractDialog';
 import { ActivateContractDialog } from '@/components/pms/ActivateContractDialog';
@@ -533,9 +534,10 @@ const Contracts = () => {
             </DialogHeader>
 
             <Tabs defaultValue="details" className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="details">Detalles</TabsTrigger>
-                <TabsTrigger value="calendar">Calendario Pagos</TabsTrigger>
+                <TabsTrigger value="documents">Documentos</TabsTrigger>
+                <TabsTrigger value="calendar">Calendario</TabsTrigger>
                 <TabsTrigger value="projections">Proyecciones</TabsTrigger>
                 <TabsTrigger value="distribution">Distribución</TabsTrigger>
                 <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
@@ -731,6 +733,10 @@ const Contracts = () => {
 
               <TabsContent value="distribution" className="max-h-[60vh] overflow-y-auto">
                 {selectedContract && <ContractPaymentDistribution contractId={selectedContract.id} propertyId={(selectedContract as any).property_id} monto_a={selectedContract.monto_a} monto_b={selectedContract.monto_b} monto_ajustado_actual_a={selectedContract.monto_ajustado_actual_a} monto_ajustado_actual_b={selectedContract.monto_ajustado_actual_b} forma_pago_item_a={selectedContract.forma_pago_item_a} forma_pago_item_b={selectedContract.forma_pago_item_b} currency={selectedContract.currency} />}
+              </TabsContent>
+
+              <TabsContent value="documents" className="max-h-[60vh] overflow-y-auto">
+                {selectedContract && <ContractDocumentsViewer contractId={selectedContract.id} />}
               </TabsContent>
 
               <TabsContent value="adjustments" className="max-h-[60vh] overflow-y-auto">
