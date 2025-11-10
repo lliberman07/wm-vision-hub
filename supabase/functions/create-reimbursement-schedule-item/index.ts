@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       .from('pms_owner_properties')
       .select(`
         owner_id,
-        share_percentage,
+        share_percent,
         pms_owners!inner(id, user_id, first_name, last_name)
       `)
       .eq('property_id', contract.property_id)
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     
     for (const ownerProp of ownerProperties) {
       const owner = ownerProp.pms_owners as any;
-      const ownerAmount = expense.amount * (ownerProp.share_percentage / 100);
+      const ownerAmount = expense.amount * (ownerProp.share_percent / 100);
 
       for (const method of methods) {
         const methodPercentage = method.percentage || 100;
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
           expected_amount: finalAmount,
           status: 'pending',
           owner_id: owner.id,
-          owner_percentage: ownerProp.share_percentage,
+          owner_percentage: ownerProp.share_percent,
           payment_method: method.payment_method,
           currency: expense.currency,
           expense_id: expense.id, // Vincular con el gasto
