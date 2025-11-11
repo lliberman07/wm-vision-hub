@@ -13,7 +13,7 @@ interface CurrencyAmount {
 interface DashboardMetrics {
   collectedThisMonth: CurrencyAmount;
   pendingThisMonth: CurrencyAmount;
-  collectionRate: number;
+  totalToAccrue: CurrencyAmount;
   pendingSubmissionsCount: number;
   pendingSubmissionsAmount: CurrencyAmount;
   upcomingPayments: CurrencyAmount;
@@ -25,7 +25,7 @@ export function PaymentsDashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     collectedThisMonth: { ARS: 0, USD: 0 },
     pendingThisMonth: { ARS: 0, USD: 0 },
-    collectionRate: 0,
+    totalToAccrue: { ARS: 0, USD: 0 },
     pendingSubmissionsCount: 0,
     pendingSubmissionsAmount: { ARS: 0, USD: 0 },
     upcomingPayments: { ARS: 0, USD: 0 },
@@ -78,7 +78,7 @@ export function PaymentsDashboard() {
         .from('pms_payment_schedule_items')
         .select('expected_amount, currency')
         .eq('tenant_id', currentTenant.id)
-        .in('status', ['pending', 'partial'])
+        .in('status', ['pending', 'partial', 'overdue'])
         .lte('period_date', today);
 
       if (overdueError) {
@@ -92,33 +92,25 @@ export function PaymentsDashboard() {
       }, { ARS: 0, USD: 0 } as CurrencyAmount) || { ARS: 0, USD: 0 };
       console.log('Pendiente de cobro:', pendingThisMonth, 'Records:', overdueData?.length);
 
-      // Tasa de Cobranza: Total pagado / Total devengado hasta hoy
-      const { data: devengadoData, error: devengadoError } = await supabase
-        .from('pms_payment_schedule_items')
-        .select('expected_amount')
-        .eq('tenant_id', currentTenant.id)
-        .lte('period_date', today);
+      // Total por Devengar: Suma de cuotas futuras (desde próximo mes)
+      const firstDayNextMonth = `${nextMonth}-01`;
 
-      if (devengadoError) {
-        console.error('Error fetching devengado data:', devengadoError);
+      const { data: toAccrueData, error: toAccrueError } = await supabase
+        .from('pms_payment_schedule_items')
+        .select('expected_amount, currency')
+        .eq('tenant_id', currentTenant.id)
+        .gte('period_date', firstDayNextMonth);
+
+      if (toAccrueError) {
+        console.error('Error fetching to accrue data:', toAccrueError);
       }
 
-      const totalDevengado = devengadoData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
-
-      const { data: pagadoData, error: pagadoError } = await supabase
-        .from('pms_payment_schedule_items')
-        .select('expected_amount')
-        .eq('tenant_id', currentTenant.id)
-        .eq('status', 'paid')
-        .lte('period_date', today);
-
-      if (pagadoError) {
-        console.error('Error fetching pagado data:', pagadoError);
-      }
-
-      const totalPagado = pagadoData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
-      const collectionRate = totalDevengado > 0 ? (totalPagado / totalDevengado) * 100 : 0;
-      console.log('Tasa de cobranza:', collectionRate.toFixed(1), '%', `(${totalPagado}/${totalDevengado})`);
+      const totalToAccrue = toAccrueData?.reduce((acc, p) => {
+        const currency = p.currency || 'ARS';
+        acc[currency] = (acc[currency] || 0) + (p.expected_amount || 0);
+        return acc;
+      }, { ARS: 0, USD: 0 } as CurrencyAmount) || { ARS: 0, USD: 0 };
+      console.log('Total por devengar:', totalToAccrue, 'Records:', toAccrueData?.length);
 
       // Pagos informados pendientes - COUNT y MONTO
       const { data: submissionsData, error: submissionsError } = await supabase
@@ -165,7 +157,7 @@ export function PaymentsDashboard() {
       setMetrics({
         collectedThisMonth,
         pendingThisMonth,
-        collectionRate,
+        totalToAccrue,
         pendingSubmissionsCount,
         pendingSubmissionsAmount,
         upcomingPayments,
@@ -202,8 +194,8 @@ export function PaymentsDashboard() {
       bgColor: "bg-amber-50",
     },
     {
-      title: "Tasa de Cobranza",
-      value: <div>{metrics.collectionRate.toFixed(1)}%</div>,
+      title: "Total por Devengar",
+      value: formatCurrencyValue(metrics.totalToAccrue),
       icon: TrendingUp,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
@@ -220,7 +212,7 @@ export function PaymentsDashboard() {
             </div>
           </div>
         )
-        : <div>0</div>,
+        : formatCurrencyValue(metrics.pendingSubmissionsAmount),
       icon: Bell,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
