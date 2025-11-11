@@ -139,29 +139,33 @@ export const OwnerReportDirectDownload = ({
       doc.text(`Inquilino: ${firstReport.contract.tenant}`, 14, yPos);
       yPos += 10;
 
-      // Resumen Financiero General
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text('Resumen Financiero del Período', 14, yPos);
-      yPos += 7;
+      // Resumen Financiero por Moneda
+      if (firstReport.summary.byCurrency) {
+        firstReport.summary.byCurrency.forEach((currencyData: any) => {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.text(`Resumen Financiero en ${currencyData.currency}`, 14, yPos);
+          yPos += 7;
 
-      const summaryData = [
-        ['Concepto', 'Monto Total'],
-        ['Ingresos Totales', formatAmount(firstReport.summary.totalIncome, firstReport.contract.currency)],
-        ['Gastos Totales', formatAmount(firstReport.summary.totalExpenses, firstReport.contract.currency)],
-        ['Resultado Neto', formatAmount(firstReport.summary.totalIncome - firstReport.summary.totalExpenses, firstReport.contract.currency)],
-      ];
+          const summaryData = [
+            ['Concepto', 'Monto Total'],
+            ['Ingresos Totales', formatAmount(currencyData.totalIncome, currencyData.currency)],
+            ['Gastos Totales', formatAmount(currencyData.totalExpenses, currencyData.currency)],
+            ['Resultado Neto', formatAmount(currencyData.totalIncome - currencyData.totalExpenses, currencyData.currency)],
+          ];
 
-      autoTable(doc, {
-        startY: yPos,
-        head: [summaryData[0]],
-        body: summaryData.slice(1),
-        theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246], textColor: 255 },
-        margin: { left: 14, right: 14 },
-      });
+          autoTable(doc, {
+            startY: yPos,
+            head: [summaryData[0]],
+            body: summaryData.slice(1),
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246], textColor: 255 },
+            margin: { left: 14, right: 14 },
+          });
 
-      yPos = (doc as any).lastAutoTable.finalY + 10;
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+        });
+      }
 
       // Detalle de Ingresos
       if (firstReport.details?.payments && firstReport.details.payments.length > 0) {
@@ -171,12 +175,13 @@ export const OwnerReportDirectDownload = ({
         yPos += 7;
 
         const paymentsData = [
-          ['Fecha', 'Concepto', 'Referencia', 'Monto'],
+          ['Fecha', 'Concepto', 'Moneda', 'Monto', 'Referencia'],
           ...firstReport.details.payments.map((p: any) => [
             new Date(p.date).toLocaleDateString('es-AR'),
             p.description,
+            p.currency || 'ARS',
+            formatAmount(p.amount, p.currency || 'ARS'),
             p.reference || '-',
-            formatAmount(p.amount, firstReport.contract.currency),
           ]),
         ];
 
@@ -205,13 +210,14 @@ export const OwnerReportDirectDownload = ({
         yPos += 7;
 
         const expensesData = [
-          ['Fecha', 'Descripción', 'Categoría', 'Atribuible a', 'Monto'],
+          ['Fecha', 'Descripción', 'Categoría', 'Moneda', 'Monto', 'Atribuible a'],
           ...firstReport.details.expenses.map((e: any) => [
             new Date(e.date).toLocaleDateString('es-AR'),
             e.description,
             e.category || '-',
+            e.currency || 'ARS',
+            formatAmount(e.amount, e.currency || 'ARS'),
             e.attributable_to === 'propietario' ? 'Propietario' : 'Inquilino',
-            formatAmount(e.amount, firstReport.contract.currency),
           ]),
         ];
 
@@ -239,27 +245,46 @@ export const OwnerReportDirectDownload = ({
         doc.text('Distribución por Propietario', 14, yPos);
         yPos += 7;
 
-        const ownersDistribution = [
-          ['Propietario', 'Participación', 'Ingresos', 'Gastos', 'Neto'],
-          ...validReports.map((report: any) => [
-            report.owner,
-            `${report.summary.sharePercent}%`,
-            formatAmount(report.summary.income, firstReport.contract.currency),
-            formatAmount(report.summary.expenses, firstReport.contract.currency),
-            formatAmount(report.summary.net, firstReport.contract.currency),
-          ]),
-        ];
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [ownersDistribution[0]],
-          body: ownersDistribution.slice(1),
-          theme: 'grid',
-          headStyles: { fillColor: [59, 130, 246], textColor: 255 },
-          margin: { left: 14, right: 14 },
+        // Agrupar reportes por moneda para distribución
+        const currenciesInReports = new Set<string>();
+        validReports.forEach((report: any) => {
+          report.summary.byCurrency?.forEach((curr: any) => {
+            currenciesInReports.add(curr.currency);
+          });
         });
 
-        yPos = (doc as any).lastAutoTable.finalY + 10;
+        Array.from(currenciesInReports).forEach(currency => {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.text(`Distribución por Propietario - ${currency}`, 14, yPos);
+          yPos += 7;
+
+          const ownersDistribution = [
+            ['Propietario', 'Participación', 'Ingresos', 'Gastos', 'Neto'],
+            ...validReports.map((report: any) => {
+              const currencyData = report.summary.byCurrency?.find((c: any) => c.currency === currency);
+              return [
+                report.owner,
+                `${report.summary.sharePercent}%`,
+                formatAmount(currencyData?.income || 0, currency),
+                formatAmount(currencyData?.expenses || 0, currency),
+                formatAmount(currencyData?.net || 0, currency),
+              ];
+            }),
+          ];
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [ownersDistribution[0]],
+            body: ownersDistribution.slice(1),
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246], textColor: 255 },
+            margin: { left: 14, right: 14 },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+        });
+
       }
 
       // Footer con disclaimer

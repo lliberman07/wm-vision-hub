@@ -83,21 +83,22 @@ serve(async (req: Request) => {
       adminEmail = propertyTenant?.admin_email || "administracion@wmpms.com.ar";
     }
 
-    // 4. Obtener cashflow del período
-    const { data: cashflow } = await supabase
+    // 4. Obtener cashflow del período para TODAS las monedas
+    const { data: cashflows } = await supabase
       .from("pms_cashflow_property")
       .select("*")
       .eq("property_id", contract.pms_properties.id)
-      .eq("period", period)
-      .single();
+      .eq("period", period);
 
-    const totalIncome = cashflow?.total_income || 0;
-    const totalExpenses = cashflow?.total_expenses || 0;
-    const netResult = totalIncome - totalExpenses;
-
-    const ownerIncome = totalIncome * (sharePercent / 100);
-    const ownerExpenses = totalExpenses * (sharePercent / 100);
-    const ownerNet = netResult * (sharePercent / 100);
+    // Agrupar por moneda
+    const cashflowByCurrency = (cashflows || []).reduce((acc, cf) => {
+      acc[cf.currency] = {
+        totalIncome: cf.total_income || 0,
+        totalExpenses: cf.total_expenses || 0,
+        netResult: (cf.total_income || 0) - (cf.total_expenses || 0),
+      };
+      return acc;
+    }, {} as Record<string, { totalIncome: number; totalExpenses: number; netResult: number }>);
 
     // 4b. Si no se envía email, obtener detalles de pagos y gastos para generar PDF
     let payments = [];
@@ -109,7 +110,7 @@ serve(async (req: Request) => {
       
       const { data: paymentsData } = await supabase
         .from("pms_payments")
-        .select("*")
+        .select("id, paid_date, due_date, paid_amount, currency, payment_type, reference_number, exchange_rate, contract_currency, amount_in_contract_currency")
         .eq("contract_id", contract_id)
         .eq("status", "paid")
         .gte("paid_date", startOfMonth)
@@ -118,7 +119,7 @@ serve(async (req: Request) => {
       
       const { data: expensesData } = await supabase
         .from("pms_expenses")
-        .select("*")
+        .select("id, expense_date, description, category, amount, currency, attributable_to")
         .eq("property_id", contract.pms_properties.id)
         .in("status", ["approved", "paid", "deducted"])
         .gte("expense_date", startOfMonth)
@@ -135,10 +136,10 @@ serve(async (req: Request) => {
                         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     const periodText = `${monthNames[parseInt(month) - 1]} ${year}`;
 
-    const formatCurrency = (amount: number) => {
+    const formatCurrency = (amount: number, currency: string) => {
       return new Intl.NumberFormat('es-AR', {
         style: 'currency',
-        currency: contract.currency || 'ARS',
+        currency: currency,
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
       }).format(amount);
@@ -186,27 +187,36 @@ serve(async (req: Request) => {
         <strong>${contract.pms_properties.code}</strong> - ${contract.pms_properties.address}, ${contract.pms_properties.city}
       </div>
       
-      <div class="summary-box">
-        <h3 style="margin-top: 0; color: #111827;">Resumen del Período</h3>
-        <div class="summary-item">
-          <span class="summary-label">Ingresos Totales:</span>
-          <span class="summary-value">${formatCurrency(ownerIncome)}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Gastos Totales:</span>
-          <span class="summary-value">${formatCurrency(ownerExpenses)}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Resultado Neto:</span>
-          <span class="summary-value" style="color: ${ownerNet >= 0 ? '#10b981' : '#ef4444'};">
-            ${formatCurrency(ownerNet)}
-          </span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Su participación:</span>
-          <span class="summary-value">${sharePercent}%</span>
-        </div>
-      </div>
+      ${Object.keys(cashflowByCurrency).map(currency => {
+        const data = cashflowByCurrency[currency];
+        const ownerIncome = data.totalIncome * (sharePercent / 100);
+        const ownerExpenses = data.totalExpenses * (sharePercent / 100);
+        const ownerNet = data.netResult * (sharePercent / 100);
+        
+        return `
+          <div class="summary-box">
+            <h3 style="margin-top: 0; color: #111827;">Resumen en ${currency}</h3>
+            <div class="summary-item">
+              <span class="summary-label">Ingresos:</span>
+              <span class="summary-value">${formatCurrency(ownerIncome, currency)}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Gastos:</span>
+              <span class="summary-value">${formatCurrency(ownerExpenses, currency)}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Neto:</span>
+              <span class="summary-value" style="color: ${ownerNet >= 0 ? '#10b981' : '#ef4444'};">
+                ${formatCurrency(ownerNet, currency)}
+              </span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Su participación:</span>
+              <span class="summary-value">${sharePercent}%</span>
+            </div>
+          </div>
+        `;
+      }).join('')}
       
       <p style="line-height: 1.6; color: #374151;">
         Para más información sobre los detalles de cada movimiento, puede ingresar a nuestro sistema de gestión o consultar con su administrador.
@@ -293,18 +303,25 @@ serve(async (req: Request) => {
             currency: contract.currency || 'ARS',
           },
           summary: {
-            income: ownerIncome,
-            expenses: ownerExpenses,
-            net: ownerNet,
+            byCurrency: Object.keys(cashflowByCurrency).map(currency => ({
+              currency,
+              income: cashflowByCurrency[currency].totalIncome * (sharePercent / 100),
+              expenses: cashflowByCurrency[currency].totalExpenses * (sharePercent / 100),
+              net: cashflowByCurrency[currency].netResult * (sharePercent / 100),
+              totalIncome: cashflowByCurrency[currency].totalIncome,
+              totalExpenses: cashflowByCurrency[currency].totalExpenses,
+            })),
             sharePercent,
-            totalIncome,
-            totalExpenses,
           },
           details: !send_email ? {
             payments: payments.map((p: any) => ({
               date: p.paid_date || p.due_date,
               description: p.payment_type || 'Pago de Alquiler',
               amount: p.paid_amount,
+              currency: p.currency,
+              exchange_rate: p.exchange_rate,
+              contract_currency: p.contract_currency,
+              amount_in_contract_currency: p.amount_in_contract_currency,
               reference: p.reference_number,
             })),
             expenses: expenses.map((e: any) => ({
@@ -312,6 +329,7 @@ serve(async (req: Request) => {
               description: e.description,
               category: e.category,
               amount: e.amount,
+              currency: e.currency,
               attributable_to: e.attributable_to,
             })),
           } : undefined,
