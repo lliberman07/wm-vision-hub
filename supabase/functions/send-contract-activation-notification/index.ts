@@ -252,16 +252,14 @@ const handler = async (req: Request): Promise<Response> => {
               <p>Saludos,<br>Equipo WM Real Estate</p>
             `;
 
-          // TODO: Reemplazar onboarding@resend.dev con tu dominio verificado
-          // Ejemplo: "WM Real Estate <noreply@tudominio.com>"
           await resend.emails.send({
-            from: "WM Real Estate <onboarding@resend.dev>",
+            from: "WM Real Estate <noreply@wmglobal.co>",
             to: [owner.email],
             subject: emailSubject,
             html: emailHtml,
           });
           
-          console.log(`✅ Resend API called for owner: ${owner.email}`);
+          console.log(`✅ Email sent to owner: ${owner.email}`);
 
           ownersNotified++;
           ownerEmails.push(owner.email);
@@ -423,13 +421,13 @@ const handler = async (req: Request): Promise<Response> => {
           `;
 
         await resend.emails.send({
-          from: "WM Real Estate <onboarding@resend.dev>",
+          from: "WM Real Estate <noreply@wmglobal.co>",
           to: [tenant.email],
           subject: emailSubject,
           html: emailHtml,
         });
         
-        console.log(`✅ Resend API called for tenant: ${tenant.email}`);
+        console.log(`✅ Email sent to tenant: ${tenant.email}`);
 
         tenantNotified = true;
         console.log(`Email sent to tenant: ${tenant.email}`);
@@ -446,7 +444,7 @@ const handler = async (req: Request): Promise<Response> => {
         const ownersList = owners?.map(op => op.owner?.full_name).filter(Boolean).join(", ") || "N/A";
 
         await resend.emails.send({
-          from: "WM Real Estate <onboarding@resend.dev>",
+          from: "WM Real Estate <noreply@wmglobal.co>",
           to: [tenantUser.users.email],
           subject: `📊 Registro: Contrato ${contractData.contract_number} Activado`,
           html: `
@@ -504,7 +502,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         await resend.emails.send({
-          from: "WM Real Estate <onboarding@resend.dev>",
+          from: "WM Real Estate <noreply@wmglobal.co>",
           to: [superadmin.users.email],
           subject: `🔔 Sistema: Contrato ${contractData.contract_number} Activado`,
           html: `
