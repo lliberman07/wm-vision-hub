@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight, BarChart3, Receipt } from 'lucide-react';
+import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight, BarChart3, Receipt, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
@@ -19,6 +19,9 @@ import { ReimbursementDashboard } from '@/components/pms/ReimbursementDashboard'
 import { OwnerReportExportDialog } from '@/components/pms/OwnerReportExportDialog';
 import { OwnerReportDirectDownload } from '@/components/pms/OwnerReportDirectDownload';
 import { Download, Mail } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Reports = () => {
   const navigate = useNavigate();
@@ -41,6 +44,7 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState<'properties' | 'tenants' | 'reimbursements'>('properties');
   const [hasWMAccess, setHasWMAccess] = useState(false);
   const [loadingWMAccess, setLoadingWMAccess] = useState(true);
+  const [cashflowViewMode, setCashflowViewMode] = useState<'accrual' | 'cash'>('cash');
 
   useEffect(() => {
     if (!user || !hasPMSAccess) {
@@ -60,7 +64,7 @@ const Reports = () => {
     if (currentTenant?.id && selectedContract) {
       fetchCashflow();
     }
-  }, [selectedContract, currentTenant]);
+  }, [selectedContract, currentTenant, cashflowViewMode]);
 
   const checkWMAccess = async () => {
     if (userRole === 'SUPERADMIN') {
@@ -225,16 +229,106 @@ const Reports = () => {
     if (!currentTenant?.id || !selectedContract) return;
     
     try {
-      const { data, error } = await supabase
-        .from('pms_cashflow_property')
-        .select('*')
-        .eq('tenant_id', currentTenant.id)
-        .eq('contract_id', selectedContract)
-        .order('period', { ascending: false })
-        .limit(12);
+      if (cashflowViewMode === 'accrual') {
+        // Modo devengamiento: Usar pms_cashflow_property
+        const { data, error } = await supabase
+          .from('pms_cashflow_property')
+          .select('*')
+          .eq('tenant_id', currentTenant.id)
+          .eq('contract_id', selectedContract)
+          .order('period', { ascending: false })
+          .limit(12);
 
-      if (error) throw error;
-      setCashflowData(data || []);
+        if (error) throw error;
+        setCashflowData(data || []);
+      } else {
+        // Modo cobro: Construir cashflow desde pagos y gastos
+        // 1. Obtener todos los schedule items pagados
+        const { data: scheduleItems, error: itemsError } = await supabase
+          .from('pms_payment_schedule_items')
+          .select('id, period_date, item, expected_amount, status, expense_id')
+          .eq('contract_id', selectedContract)
+          .eq('status', 'paid');
+
+        if (itemsError) throw itemsError;
+
+        // 2. Obtener pagos
+        const scheduleItemIds = scheduleItems?.map(item => item.id) || [];
+        const { data: payments, error: paymentsError } = await supabase
+          .from('pms_payments')
+          .select('id, schedule_item_id, paid_date, amount_in_contract_currency')
+          .in('schedule_item_id', scheduleItemIds)
+          .order('paid_date', { ascending: false });
+
+        if (paymentsError) throw paymentsError;
+
+        // 3. Obtener gastos
+        const { data: expenses, error: expensesError } = await supabase
+          .from('pms_expenses')
+          .select('id, amount, expense_date, is_reimbursable')
+          .eq('contract_id', selectedContract)
+          .order('expense_date', { ascending: false });
+
+        if (expensesError) throw expensesError;
+
+        // 4. Obtener info del contrato para currency
+        const { data: contractInfo } = await supabase
+          .from('pms_contracts')
+          .select('currency')
+          .eq('id', selectedContract)
+          .single();
+
+        // 5. Agrupar por mes de cobro
+        const cashflowByMonth: Record<string, { income: number; expenses: number; currency: string }> = {};
+
+        // Procesar pagos
+        scheduleItems?.forEach((item: any) => {
+          const itemPayments = payments?.filter(p => p.schedule_item_id === item.id) || [];
+          
+          itemPayments.forEach((payment: any) => {
+            const period = payment.paid_date.substring(0, 7); // YYYY-MM
+            
+            if (!cashflowByMonth[period]) {
+              cashflowByMonth[period] = { income: 0, expenses: 0, currency: contractInfo?.currency || 'ARS' };
+            }
+            
+            // Solo sumar ingresos regulares (no reembolsos)
+            if (!item.expense_id) {
+              cashflowByMonth[period].income += Number(payment.amount_in_contract_currency || 0);
+            }
+          });
+        });
+
+        // Procesar gastos (por expense_date, no reembolsables)
+        expenses?.forEach((expense: any) => {
+          if (!expense.is_reimbursable) {
+            const period = expense.expense_date.substring(0, 7);
+            
+            if (!cashflowByMonth[period]) {
+              cashflowByMonth[period] = { income: 0, expenses: 0, currency: contractInfo?.currency || 'ARS' };
+            }
+            
+            cashflowByMonth[period].expenses += Number(expense.amount || 0);
+          }
+        });
+
+        // 6. Convertir a formato esperado
+        const formattedData = Object.entries(cashflowByMonth)
+          .map(([period, data]) => ({
+            id: `${period}-cash`,
+            period,
+            currency: data.currency,
+            total_income: data.income,
+            total_expenses: data.expenses,
+            net_result: data.income - data.expenses,
+            contract_id: selectedContract,
+            tenant_id: currentTenant.id
+          }))
+          .sort((a, b) => b.period.localeCompare(a.period))
+          .slice(0, 12);
+
+        setCashflowData(formattedData);
+      }
     } catch (error) {
       console.error('Error fetching cashflow:', error);
       setCashflowData([]);
@@ -586,6 +680,30 @@ const Reports = () => {
 
             {selectedContract && (
               <>
+                {/* Switch Global de Modo de Visualización */}
+                <Alert className="mb-6">
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Modo de Visualización</AlertTitle>
+                  <AlertDescription className="flex items-center justify-between">
+                    <span>
+                      {cashflowViewMode === 'cash' 
+                        ? 'Mostrando datos por fecha de cobro (cuando se recibió el pago)'
+                        : 'Mostrando datos por período de devengamiento (cuando corresponde el pago)'
+                      }
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="cashflow-mode" className="text-sm">
+                        {cashflowViewMode === 'cash' ? 'Mes de Cobro' : 'Mes de Devengamiento'}
+                      </Label>
+                      <Switch
+                        id="cashflow-mode"
+                        checked={cashflowViewMode === 'cash'}
+                        onCheckedChange={(checked) => setCashflowViewMode(checked ? 'cash' : 'accrual')}
+                      />
+                    </div>
+                  </AlertDescription>
+                </Alert>
+
                 <Card>
                   <CardContent className="pt-6">
                     {selectedProperty?.contracts
@@ -685,6 +803,7 @@ const Reports = () => {
                 <OwnerNetIncomeReport 
                   tenantId={currentTenant?.id || ''} 
                   selectedContract={selectedContract}
+                  viewMode={cashflowViewMode}
                 />
 
                 {/* Botones de Exportación de Reportes */}

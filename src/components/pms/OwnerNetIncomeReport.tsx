@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface OwnerNetIncomeReportProps {
   tenantId: string;
   selectedContract: string;
+  viewMode?: 'accrual' | 'cash';
 }
 
 interface MonthlyOwnerData {
@@ -44,17 +45,19 @@ interface ReimbursementData {
   schedule_item_id?: string;
 }
 
-export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetIncomeReportProps) => {
+export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'cash' }: OwnerNetIncomeReportProps) => {
   const [ownerTotals, setOwnerTotals] = useState<MonthlyOwnerData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewByPaymentDate, setViewByPaymentDate] = useState(true);
   const [displayCurrency, setDisplayCurrency] = useState<'contract' | 'payment'>('contract');
+  
+  // Sincronizar con el modo externo
+  const viewByPaymentDate = viewMode === 'cash';
 
   useEffect(() => {
     if (tenantId && selectedContract) {
       fetchOwnerTotals();
     }
-  }, [tenantId, selectedContract, viewByPaymentDate, displayCurrency]);
+  }, [tenantId, selectedContract, viewMode, displayCurrency]);
 
   const fetchOwnerTotals = async () => {
     setLoading(true);
@@ -408,17 +411,6 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract }: OwnerNetInc
                   <SelectItem value="payment">Moneda de Pago</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="view-mode" className="text-sm text-muted-foreground">
-                {viewByPaymentDate ? 'Mes de Cobro' : 'Mes de Devengamiento'}
-              </Label>
-              <Switch
-                id="view-mode"
-                checked={viewByPaymentDate}
-                onCheckedChange={setViewByPaymentDate}
-              />
-              <Calendar className="h-4 w-4 text-muted-foreground" />
             </div>
           </div>
         </div>
