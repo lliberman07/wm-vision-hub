@@ -8,14 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, DollarSign, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePMS } from '@/contexts/PMSContext';
 import { useState, useEffect } from 'react';
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { CurrencyExchangeIndicator } from './CurrencyExchangeIndicator';
-import { DollarSign } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   contract_id: z.string().min(1, 'Contrato requerido'),
@@ -78,6 +79,23 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
       porcentaje: 100,
     },
   });
+  
+  // Hook para obtener tipo de cambio automático
+  const { rate: suggestedRate, loading: rateLoading, source: rateSource } = useExchangeRate({
+    date: form.watch('paid_date') || undefined,
+    sourceType: 'oficial',
+    preferredType: 'sell'
+  });
+
+  // Auto-completar tipo de cambio cuando hay una sugerencia y las monedas son diferentes
+  useEffect(() => {
+    if (suggestedRate && 
+        form.watch('currency') !== contractCurrency && 
+        form.watch('status') === 'paid' &&
+        !form.getValues('exchange_rate')) {
+      form.setValue('exchange_rate', suggestedRate);
+    }
+  }, [suggestedRate, form.watch('paid_date'), form.watch('currency'), contractCurrency, form.watch('status')]);
 
   useEffect(() => {
     if (open) {
@@ -381,18 +399,33 @@ export function PaymentForm({ open, onOpenChange, onSuccess, payment }: PaymentF
                 name="exchange_rate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Cambio *</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      Tipo de Cambio *
+                      {suggestedRate && !rateLoading && (
+                        <Badge variant="outline" className="text-xs gap-1">
+                          <TrendingUp className="h-3 w-3" />
+                          Sugerido: {suggestedRate.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </Badge>
+                      )}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder={`1 ${contractCurrency} = ? ${form.watch('currency')}`}
+                        placeholder={suggestedRate ? suggestedRate.toString() : `1 ${contractCurrency} = ? ${form.watch('currency')}`}
                         {...field}
                         onChange={e => field.onChange(parseFloat(e.target.value))}
                       />
                     </FormControl>
                     <p className="text-xs text-muted-foreground">
-                      Valor tipo de Cambio Vendedor Banco Nación Argentina, del día de pago
+                      {rateSource !== 'default' ? (
+                        <span className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          Dólar {rateSource} (DolarAPI.com)
+                        </span>
+                      ) : (
+                        'Ingrese el tipo de cambio del día de pago'
+                      )}
                     </p>
                     <FormMessage />
                   </FormItem>

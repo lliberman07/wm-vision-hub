@@ -1544,6 +1544,53 @@ export type Database = {
           },
         ]
       }
+      pms_exchange_rates: {
+        Row: {
+          api_response: Json | null
+          buy_rate: number | null
+          created_at: string | null
+          date: string
+          id: string
+          is_manual: boolean | null
+          sell_rate: number
+          source_type: string
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_response?: Json | null
+          buy_rate?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          is_manual?: boolean | null
+          sell_rate: number
+          source_type: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_response?: Json | null
+          buy_rate?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          is_manual?: boolean | null
+          sell_rate?: number
+          source_type?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_exchange_rates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_expenses: {
         Row: {
           amount: number
@@ -2837,6 +2884,7 @@ export type Database = {
           admin_email: string | null
           created_at: string | null
           current_subscription_id: string | null
+          exchange_rate_source: string | null
           id: string
           is_active: boolean | null
           name: string
@@ -2846,11 +2894,13 @@ export type Database = {
           slug: string
           tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
           updated_at: string | null
+          use_automatic_rates: boolean | null
         }
         Insert: {
           admin_email?: string | null
           created_at?: string | null
           current_subscription_id?: string | null
+          exchange_rate_source?: string | null
           id?: string
           is_active?: boolean | null
           name: string
@@ -2860,11 +2910,13 @@ export type Database = {
           slug: string
           tenant_type?: Database["public"]["Enums"]["pms_tenant_type"]
           updated_at?: string | null
+          use_automatic_rates?: boolean | null
         }
         Update: {
           admin_email?: string | null
           created_at?: string | null
           current_subscription_id?: string | null
+          exchange_rate_source?: string | null
           id?: string
           is_active?: boolean | null
           name?: string
@@ -2874,6 +2926,7 @@ export type Database = {
           slug?: string
           tenant_type?: Database["public"]["Enums"]["pms_tenant_type"]
           updated_at?: string | null
+          use_automatic_rates?: boolean | null
         }
         Relationships: [
           {

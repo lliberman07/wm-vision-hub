@@ -53,13 +53,14 @@ export const convertCurrency = (
  * Consolidate multi-currency flows into a single functional currency
  * @param flows Flows by currency
  * @param functionalCurrency Target currency for consolidation (default: USD)
- * @param exchangeRate Current exchange rate (1 USD = X ARS)
+ * @param exchangeRate Current exchange rate (1 USD = X ARS) - optional, defaults to 1450
  */
 export const consolidateFlows = (
   flows: CurrencyFlows,
   functionalCurrency: string = 'USD',
-  exchangeRate: number = 1450
+  exchangeRate?: number
 ): ConsolidatedResult => {
+  const effectiveRate = exchangeRate || 1450;
   let totalIncome = 0;
   let totalExpenses = 0;
   const breakdown: ConsolidatedResult['breakdown'] = [];
@@ -69,13 +70,13 @@ export const consolidateFlows = (
       data.income,
       currency,
       functionalCurrency,
-      exchangeRate
+      effectiveRate
     );
     const convertedExpenses = convertCurrency(
       data.expenses,
       currency,
       functionalCurrency,
-      exchangeRate
+      effectiveRate
     );
 
     totalIncome += convertedIncome;
@@ -94,7 +95,7 @@ export const consolidateFlows = (
     totalExpenses,
     netResult: totalIncome - totalExpenses,
     functionalCurrency,
-    exchangeRate,
+    exchangeRate: effectiveRate,
     breakdown
   };
 };
