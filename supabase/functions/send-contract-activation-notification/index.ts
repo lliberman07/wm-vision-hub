@@ -252,12 +252,16 @@ const handler = async (req: Request): Promise<Response> => {
               <p>Saludos,<br>Equipo WM Real Estate</p>
             `;
 
+          // TODO: Reemplazar onboarding@resend.dev con tu dominio verificado
+          // Ejemplo: "WM Real Estate <noreply@tudominio.com>"
           await resend.emails.send({
             from: "WM Real Estate <onboarding@resend.dev>",
             to: [owner.email],
             subject: emailSubject,
             html: emailHtml,
           });
+          
+          console.log(`✅ Resend API called for owner: ${owner.email}`);
 
           ownersNotified++;
           ownerEmails.push(owner.email);
@@ -424,6 +428,8 @@ const handler = async (req: Request): Promise<Response> => {
           subject: emailSubject,
           html: emailHtml,
         });
+        
+        console.log(`✅ Resend API called for tenant: ${tenant.email}`);
 
         tenantNotified = true;
         console.log(`Email sent to tenant: ${tenant.email}`);
@@ -473,7 +479,7 @@ const handler = async (req: Request): Promise<Response> => {
         });
 
         adminNotified = true;
-        console.log(`Email sent to tenant admin: ${tenantUser.users.email}`);
+        console.log(`✅ Resend API called for tenant admin: ${tenantUser.users.email}`);
       } catch (error: any) {
         console.error(`Error sending email to tenant admin:`, error);
         errors.push({ admin: "tenant", error: error.message });
@@ -529,7 +535,7 @@ const handler = async (req: Request): Promise<Response> => {
         });
 
         superadminNotified = true;
-        console.log(`Email sent to superadmin: ${superadmin.users.email}`);
+        console.log(`✅ Resend API called for superadmin: ${superadmin.users.email}`);
       } catch (error: any) {
         console.error(`Error sending email to superadmin:`, error);
         errors.push({ superadmin: true, error: error.message });
