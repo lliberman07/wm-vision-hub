@@ -839,6 +839,66 @@ export type Database = {
           },
         ]
       }
+      pms_contract_activation_logs: {
+        Row: {
+          admin_notified: boolean | null
+          contract_id: string
+          created_at: string | null
+          errors: Json | null
+          id: string
+          owner_emails: Json | null
+          owners_created: number | null
+          owners_notified: number | null
+          superadmin_notified: boolean | null
+          tenant_created: boolean | null
+          tenant_id: string
+          tenant_notified: boolean | null
+        }
+        Insert: {
+          admin_notified?: boolean | null
+          contract_id: string
+          created_at?: string | null
+          errors?: Json | null
+          id?: string
+          owner_emails?: Json | null
+          owners_created?: number | null
+          owners_notified?: number | null
+          superadmin_notified?: boolean | null
+          tenant_created?: boolean | null
+          tenant_id: string
+          tenant_notified?: boolean | null
+        }
+        Update: {
+          admin_notified?: boolean | null
+          contract_id?: string
+          created_at?: string | null
+          errors?: Json | null
+          id?: string
+          owner_emails?: Json | null
+          owners_created?: number | null
+          owners_notified?: number | null
+          superadmin_notified?: boolean | null
+          tenant_created?: boolean | null
+          tenant_id?: string
+          tenant_notified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_contract_activation_logs_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_activation_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pms_contract_adjustments: {
         Row: {
           applied_at: string

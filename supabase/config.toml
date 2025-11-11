@@ -1,5 +1,8 @@
 project_id = "jrzeabjpxkhccopxfwqa"
 
+[functions.send-contract-activation-notification]
+verify_jwt = false
+
 [functions.export-pdf-report]
 verify_jwt = false
 
