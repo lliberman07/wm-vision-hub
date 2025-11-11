@@ -89,10 +89,8 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   const [isClonedProperty, setIsClonedProperty] = useState(false);
   const [parentContractInfo, setParentContractInfo] = useState<any>(null);
   
-  // Estados para flujo "Guardar y Continuar"
-  const [continueEditing, setContinueEditing] = useState(false);
+  // Estado para mostrar documentos después de guardar
   const [savedContractId, setSavedContractId] = useState<string | null>(null);
-  const [showDocuments, setShowDocuments] = useState(false);
   
   // Validación de contratos superpuestos
   const [propertyConflict, setPropertyConflict] = useState<any>(null);
@@ -447,7 +445,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         detalle_otro_item_a: data.detalle_otro_item_a,
         forma_pago_item_b: data.forma_pago_item_b,
         indice_ajuste: data.indice_ajuste,
-        frecuencia_ajuste: data.frecuencia_ajuste,
+        frecuencia_ajuste: data.indice_ajuste === 'none' || !data.indice_ajuste 
+          ? null 
+          : data.frecuencia_ajuste || null,
         frecuencia_factura: data.frecuencia_factura,
         fecha_primer_ajuste: data.fecha_primer_ajuste ? formatDateForDB(data.fecha_primer_ajuste) : null,
         tenant_id: currentTenant?.id,
@@ -521,26 +521,21 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           
           if (insertError) throw insertError;
           
-          // Si se seleccionó "Guardar y Cargar Documentos"
-          if (continueEditing) {
-            setSavedContractId(newContract.id);
-            setShowDocuments(true);
-            toast.success('Borrador guardado exitosamente', {
-              description: 'Ahora puedes cargar los documentos del contrato'
-            });
-            
-            // Scroll automático a la sección de documentos
-            setTimeout(() => {
-              document.getElementById('documents-section')?.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
-              });
-            }, 300);
-            
-            return; // No cerrar el diálogo
-          }
+          // Mostrar documentos automáticamente después de guardar
+          setSavedContractId(newContract.id);
+          toast.success('Contrato guardado exitosamente', {
+            description: 'Ahora puedes cargar los documentos del contrato'
+          });
           
-          toast.success('Borrador de contrato creado');
+          // Scroll automático a la sección de documentos
+          setTimeout(() => {
+            document.getElementById('documents-section')?.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start' 
+            });
+          }, 300);
+          
+          return; // No cerrar el diálogo
         }
       }
 
@@ -548,8 +543,6 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
       onOpenChange(false);
       form.reset();
       setSavedContractId(null);
-      setShowDocuments(false);
-      setContinueEditing(false);
     } catch (error: any) {
       toast.error('Error', { description: error.message });
     }
@@ -605,7 +598,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                   <FormItem>
                     <FormLabel>Código de Contrato</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="CONT-001" />
+                      <Input {...field} placeholder="CONT-001" disabled={isFieldDisabled('contract_number')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -617,7 +610,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estado</FormLabel>
+                    <FormLabel>Estado del Contrato</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
@@ -633,16 +626,34 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         <SelectItem value="active">Activo</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormDescription className="text-sm text-muted-foreground">
+                      <strong>Borrador:</strong> Permite ediciones completas. No genera items de pago.<br />
+                      <strong>Activo:</strong> Contrato en vigencia. Genera items de pago automáticos.
+                    </FormDescription>
                     <FormMessage />
-                    {contract?.status === 'active' && (
-                      <FormDescription className="text-orange-600">
-                        ⚠️ Contrato activo. Solo se pueden editar campos seguros.
-                      </FormDescription>
-                    )}
                   </FormItem>
                 )}
               />
             </div>
+            
+            {/* Alerta si se selecciona Activo */}
+            {form.watch('status') === 'active' && !contract?.id && (
+              <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertTitle className="text-blue-800 dark:text-blue-200">
+                  Activación de Contrato
+                </AlertTitle>
+                <AlertDescription className="text-blue-700 dark:text-blue-300">
+                  Al guardar este contrato como <strong>Activo</strong>, se ejecutarán las siguientes validaciones:
+                  <ul className="list-disc ml-5 mt-2 space-y-1">
+                    <li>Debe tener al menos un propietario activo</li>
+                    <li>Debe configurar métodos de pago (después de guardar)</li>
+                    <li>Si tiene ajustes, debe existir índices económicos cargados</li>
+                    <li>Generará automáticamente proyecciones y calendario de pagos</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <FormField
               control={form.control}
@@ -1375,11 +1386,13 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
             {/* Sección de documentos - visible después de guardar */}
             {!contract?.id && !savedContractId && (
-              <Alert className="my-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Documentos disponibles después de guardar</AlertTitle>
-                <AlertDescription>
-                  Para cargar documentos, primero debes guardar el contrato como borrador usando el botón "Guardar y Cargar Documentos"
+              <Alert className="my-6 border-blue-500 bg-blue-50 dark:bg-blue-950">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertTitle className="text-blue-800 dark:text-blue-200">
+                  📄 Documentos disponibles después de guardar
+                </AlertTitle>
+                <AlertDescription className="text-blue-700 dark:text-blue-300">
+                  Para cargar documentos, primero guarda el contrato. La sección de documentos aparecerá automáticamente después de guardarlo.
                 </AlertDescription>
               </Alert>
             )}
@@ -1402,38 +1415,20 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
               <Button type="button" variant="outline" onClick={() => {
                 onOpenChange(false);
                 setSavedContractId(null);
-                setShowDocuments(false);
-                setContinueEditing(false);
               }}>
                 Cancelar
               </Button>
               
-              {!contract?.id && !savedContractId ? (
-                <>
-                  <Button 
-                    type="submit" 
-                    variant="secondary"
-                    onClick={() => setContinueEditing(false)}
-                    disabled={dateConflict?.hasConflict || isValidating}
-                  >
-                    {isValidating ? 'Validando...' : 'Guardar Borrador'}
-                  </Button>
-                  <Button 
-                    type="submit"
-                    onClick={() => setContinueEditing(true)}
-                    disabled={dateConflict?.hasConflict || isValidating}
-                  >
-                    {isValidating ? 'Validando...' : 'Guardar y Cargar Documentos'}
-                  </Button>
-                </>
-              ) : (
-                <Button 
-                  type="submit"
-                  disabled={dateConflict?.hasConflict || isValidating}
-                >
-                  {isValidating ? 'Validando...' : (contract ? 'Actualizar' : 'Guardar Cambios')}
-                </Button>
-              )}
+              <Button 
+                type="submit"
+                disabled={dateConflict?.hasConflict || isValidating}
+              >
+                {isValidating 
+                  ? 'Validando...' 
+                  : contract?.id 
+                    ? 'Actualizar Contrato' 
+                    : 'Guardar Contrato'}
+              </Button>
             </div>
             
             {/* Mensaje de ayuda si hay conflicto */}
