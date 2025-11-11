@@ -5,25 +5,30 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, Clock, TrendingUp, Bell, Calendar } from "lucide-react";
 import { usePMS } from "@/contexts/PMSContext";
 
+interface CurrencyAmount {
+  ARS: number;
+  USD: number;
+}
+
 interface DashboardMetrics {
-  collectedThisMonth: number;
-  pendingThisMonth: number;
+  collectedThisMonth: CurrencyAmount;
+  pendingThisMonth: CurrencyAmount;
   collectionRate: number;
   pendingSubmissionsCount: number;
-  pendingSubmissionsAmount: number;
-  upcomingPayments: number;
+  pendingSubmissionsAmount: CurrencyAmount;
+  upcomingPayments: CurrencyAmount;
 }
 
 export function PaymentsDashboard() {
   const { currentTenant } = usePMS();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
-    collectedThisMonth: 0,
-    pendingThisMonth: 0,
+    collectedThisMonth: { ARS: 0, USD: 0 },
+    pendingThisMonth: { ARS: 0, USD: 0 },
     collectionRate: 0,
     pendingSubmissionsCount: 0,
-    pendingSubmissionsAmount: 0,
-    upcomingPayments: 0,
+    pendingSubmissionsAmount: { ARS: 0, USD: 0 },
+    upcomingPayments: { ARS: 0, USD: 0 },
   });
 
   useEffect(() => {
@@ -51,7 +56,7 @@ export function PaymentsDashboard() {
       // Total cobrado este mes - usando schedule items como fuente única
       const { data: paidData, error: paidError } = await supabase
         .from('pms_payment_schedule_items')
-        .select('expected_amount')
+        .select('expected_amount, currency')
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'paid')
         .gte('period_date', `${currentMonth}-01`)
@@ -61,13 +66,17 @@ export function PaymentsDashboard() {
         console.error('Error fetching paid data:', paidError);
       }
 
-      const collectedThisMonth = paidData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
+      const collectedThisMonth = paidData?.reduce((acc, p) => {
+        const currency = p.currency || 'ARS';
+        acc[currency] = (acc[currency] || 0) + (p.expected_amount || 0);
+        return acc;
+      }, { ARS: 0, USD: 0 } as CurrencyAmount) || { ARS: 0, USD: 0 };
       console.log('Total cobrado este mes:', collectedThisMonth, 'Records:', paidData?.length);
 
       // Pendiente de cobro (vencidos sin pagar)
       const { data: overdueData, error: overdueError } = await supabase
         .from('pms_payment_schedule_items')
-        .select('expected_amount')
+        .select('expected_amount, currency')
         .eq('tenant_id', currentTenant.id)
         .in('status', ['pending', 'partial'])
         .lte('period_date', today);
@@ -76,7 +85,11 @@ export function PaymentsDashboard() {
         console.error('Error fetching overdue data:', overdueError);
       }
 
-      const pendingThisMonth = overdueData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
+      const pendingThisMonth = overdueData?.reduce((acc, p) => {
+        const currency = p.currency || 'ARS';
+        acc[currency] = (acc[currency] || 0) + (p.expected_amount || 0);
+        return acc;
+      }, { ARS: 0, USD: 0 } as CurrencyAmount) || { ARS: 0, USD: 0 };
       console.log('Pendiente de cobro:', pendingThisMonth, 'Records:', overdueData?.length);
 
       // Tasa de Cobranza: Total pagado / Total devengado hasta hoy
@@ -110,7 +123,10 @@ export function PaymentsDashboard() {
       // Pagos informados pendientes - COUNT y MONTO
       const { data: submissionsData, error: submissionsError } = await supabase
         .from('pms_payment_submissions')
-        .select('paid_amount')
+        .select(`
+          paid_amount,
+          pms_payment_schedule_items!inner(currency)
+        `)
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending');
 
@@ -119,13 +135,17 @@ export function PaymentsDashboard() {
       }
 
       const pendingSubmissionsCount = submissionsData?.length || 0;
-      const pendingSubmissionsAmount = submissionsData?.reduce((sum, s) => sum + (s.paid_amount || 0), 0) || 0;
+      const pendingSubmissionsAmount = submissionsData?.reduce((acc, s: any) => {
+        const currency = s.pms_payment_schedule_items?.currency || 'ARS';
+        acc[currency] = (acc[currency] || 0) + (s.paid_amount || 0);
+        return acc;
+      }, { ARS: 0, USD: 0 } as CurrencyAmount) || { ARS: 0, USD: 0 };
       console.log('Pagos informados pendientes:', pendingSubmissionsCount, 'Total:', pendingSubmissionsAmount);
 
       // Próximos vencimientos (30 días)
       const { data: upcomingData, error: upcomingError } = await supabase
         .from('pms_payment_schedule_items')
-        .select('expected_amount')
+        .select('expected_amount, currency')
         .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending')
         .gt('period_date', today)
@@ -135,8 +155,12 @@ export function PaymentsDashboard() {
         console.error('Error fetching upcoming data:', upcomingError);
       }
       
-      const upcomingTotal = upcomingData?.reduce((sum, p) => sum + (p.expected_amount || 0), 0) || 0;
-      console.log('Próximos vencimientos:', upcomingTotal, 'Records:', upcomingData?.length);
+      const upcomingPayments = upcomingData?.reduce((acc, p) => {
+        const currency = p.currency || 'ARS';
+        acc[currency] = (acc[currency] || 0) + (p.expected_amount || 0);
+        return acc;
+      }, { ARS: 0, USD: 0 } as CurrencyAmount) || { ARS: 0, USD: 0 };
+      console.log('Próximos vencimientos:', upcomingPayments, 'Records:', upcomingData?.length);
 
       setMetrics({
         collectedThisMonth,
@@ -144,7 +168,7 @@ export function PaymentsDashboard() {
         collectionRate,
         pendingSubmissionsCount,
         pendingSubmissionsAmount,
-        upcomingPayments: upcomingTotal,
+        upcomingPayments,
       });
     } catch (error) {
       console.error('Error fetching dashboard metrics:', error);
@@ -153,24 +177,33 @@ export function PaymentsDashboard() {
     }
   };
 
+  const formatCurrencyValue = (amounts: CurrencyAmount): JSX.Element => {
+    return (
+      <div className="space-y-1">
+        <div>${amounts.ARS.toLocaleString('es-AR')}</div>
+        <div>USD {amounts.USD.toLocaleString('es-AR')}</div>
+      </div>
+    );
+  };
+
   const cards = [
     {
       title: "Total Cobrado (Mes Actual)",
-      value: `$${metrics.collectedThisMonth.toLocaleString('es-AR')}`,
+      value: formatCurrencyValue(metrics.collectedThisMonth),
       icon: DollarSign,
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
     {
       title: "Pendiente de Cobro",
-      value: `$${metrics.pendingThisMonth.toLocaleString('es-AR')}`,
+      value: formatCurrencyValue(metrics.pendingThisMonth),
       icon: Clock,
       color: "text-amber-600",
       bgColor: "bg-amber-50",
     },
     {
       title: "Tasa de Cobranza",
-      value: `${metrics.collectionRate.toFixed(1)}%`,
+      value: <div>{metrics.collectionRate.toFixed(1)}%</div>,
       icon: TrendingUp,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
@@ -178,15 +211,23 @@ export function PaymentsDashboard() {
     {
       title: "Pagos Informados",
       value: metrics.pendingSubmissionsCount > 0 
-        ? `${metrics.pendingSubmissionsCount} ($${metrics.pendingSubmissionsAmount.toLocaleString('es-AR')})`
-        : '0',
+        ? (
+          <div className="space-y-1">
+            <div>{metrics.pendingSubmissionsCount} pagos</div>
+            <div className="text-xs">
+              <div>${metrics.pendingSubmissionsAmount.ARS.toLocaleString('es-AR')}</div>
+              <div>USD {metrics.pendingSubmissionsAmount.USD.toLocaleString('es-AR')}</div>
+            </div>
+          </div>
+        )
+        : <div>0</div>,
       icon: Bell,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
     {
       title: "Próximos Vencimientos (30 días)",
-      value: `$${metrics.upcomingPayments.toLocaleString('es-AR')}`,
+      value: formatCurrencyValue(metrics.upcomingPayments),
       icon: Calendar,
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
@@ -223,7 +264,7 @@ export function PaymentsDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-base font-bold ${card.color} break-words`}>
+            <div className={`text-base font-bold ${card.color}`}>
               {card.value}
             </div>
           </CardContent>
