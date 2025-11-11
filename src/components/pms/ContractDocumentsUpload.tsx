@@ -147,8 +147,8 @@ export function ContractDocumentsUpload({
         <AccordionTrigger className="hover:no-underline">
           <div className="flex items-center gap-3 flex-1">
             <IconComponent className="h-5 w-5 text-primary" />
-            <span className="font-medium">{categoryInfo.label}</span>
-            <Badge variant={currentCount > 0 ? 'default' : 'secondary'}>
+            <span className="text-base font-medium">{categoryInfo.label}</span>
+            <Badge variant={currentCount > 0 ? 'default' : 'secondary'} className="text-xs">
               {currentCount}/{maxFiles}
             </Badge>
           </div>
@@ -251,15 +251,6 @@ export function ContractDocumentsUpload({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">Documentos del Contrato</h3>
-          <p className="text-sm text-muted-foreground">
-            Organice los documentos relacionados al contrato (opcional)
-          </p>
-        </div>
-      </div>
-
       <Accordion type="multiple" className="w-full">
         {(Object.keys(DOCUMENT_CATEGORIES) as DocumentCategory[]).map(renderCategorySection)}
       </Accordion>
