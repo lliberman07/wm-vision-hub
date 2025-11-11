@@ -17,10 +17,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDateForDB, formatDateToDisplay, formatDateDisplay } from '@/utils/dateUtils';
 import { formatCurrency } from '@/utils/numberFormat';
+import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { CurrencyExchangeIndicator } from './CurrencyExchangeIndicator';
 
 const formSchema = z.object({
   paid_date: z.date({ required_error: 'Fecha de pago requerida' }),
   paid_amount: z.number().min(0.01, 'Monto debe ser mayor a 0'),
+  payment_currency: z.enum(['ARS', 'USD']),
+  exchange_rate: z.number().optional(),
   payment_method: z.string().min(1, 'Método de pago requerido'),
   reference_number: z.string().optional(),
   notes: z.string().optional(),
@@ -42,6 +46,7 @@ interface PaymentCellModalProps {
 export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, readOnly = false }: PaymentCellModalProps) {
   const [loading, setLoading] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
+  const [contractCurrency, setContractCurrency] = useState<string>('ARS');
 
   const pendingAmount = scheduleItem?.expected_amount || 0;
   const originalAmount = scheduleItem?.original_amount || scheduleItem?.expected_amount || 0;
@@ -54,11 +59,26 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
     defaultValues: {
       paid_date: new Date(),
       paid_amount: pendingAmount,
+      payment_currency: contractCurrency as 'ARS' | 'USD',
+      exchange_rate: undefined,
       payment_method: 'transfer',
       reference_number: '',
       notes: '',
     },
   });
+
+  const { convertPayment } = useCurrencyConverter();
+  const paymentCurrency = form.watch('payment_currency');
+  const exchangeRate = form.watch('exchange_rate');
+  const paidAmount = form.watch('paid_amount');
+
+  // Obtener moneda del contrato
+  useEffect(() => {
+    if (scheduleItem?.currency) {
+      setContractCurrency(scheduleItem.currency);
+      form.setValue('payment_currency', scheduleItem.currency as 'ARS' | 'USD');
+    }
+  }, [scheduleItem?.currency]);
 
   // Cargar historial de pagos cuando se abre el modal
   useEffect(() => {
@@ -117,6 +137,24 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
         isFullyPaid
       });
 
+      // Validar tipo de cambio si las monedas son diferentes
+      if (data.payment_currency !== contractCurrency && !data.exchange_rate) {
+        toast.error('El tipo de cambio es requerido cuando la moneda de pago difiere de la moneda del contrato');
+        setLoading(false);
+        return;
+      }
+
+      // Calcular conversión si es necesario
+      let conversionResult;
+      if (data.payment_currency !== contractCurrency && data.exchange_rate) {
+        conversionResult = convertPayment(
+          data.paid_amount,
+          data.payment_currency,
+          contractCurrency,
+          data.exchange_rate
+        );
+      }
+
       // 1. Crear registro en pms_payments con notas correctamente formateadas
       const paymentNotes = data.notes 
         ? `${data.notes}\n[schedule_item:${scheduleItem.id}]`
@@ -129,7 +167,10 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
         paid_date: formatDateForDB(data.paid_date),
         amount: originalAmount,
         paid_amount: data.paid_amount,
-        currency: 'ARS',
+        currency: data.payment_currency,
+        exchange_rate: data.exchange_rate || null,
+        contract_currency: contractCurrency,
+        amount_in_contract_currency: conversionResult?.convertedAmount || data.paid_amount,
         payment_type: 'rent',
         item: scheduleItem.item,
         payment_method: data.payment_method,
@@ -180,7 +221,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
 
       const successMessage = isFullyPaid 
         ? 'Pago completo registrado exitosamente' 
-        : `Pago parcial registrado. Saldo pendiente: ${formatCurrency(newPendingAmount, 'es', 'ARS')}`;
+        : `Pago parcial registrado. Saldo pendiente: ${formatCurrency(newPendingAmount, 'es', contractCurrency as 'ARS' | 'USD')}`;
 
       toast.success(successMessage);
       onSuccess();
@@ -225,19 +266,19 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
           
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Monto Original:</span>
-            <span className="font-semibold">{formatCurrency(originalAmount, 'es', 'ARS')}</span>
+            <span className="font-semibold">{formatCurrency(originalAmount, 'es', contractCurrency as 'ARS' | 'USD')}</span>
           </div>
           
           {accumulatedPaid > 0 && (
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Ya Pagado:</span>
-              <span className="font-medium text-green-600">{formatCurrency(accumulatedPaid, 'es', 'ARS')}</span>
+              <span className="font-medium text-green-600">{formatCurrency(accumulatedPaid, 'es', contractCurrency as 'ARS' | 'USD')}</span>
             </div>
           )}
           
           <div className="flex justify-between pt-2 border-t">
             <span className="text-sm font-medium">Saldo Pendiente:</span>
-            <span className="font-bold text-primary">{formatCurrency(pendingAmount, 'es', 'ARS')}</span>
+            <span className="font-bold text-primary">{formatCurrency(pendingAmount, 'es', contractCurrency as 'ARS' | 'USD')}</span>
           </div>
 
           <div className="pt-2 border-t">
@@ -262,7 +303,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
                     {formatDateDisplay(payment.paid_date)}
                   </span>
                   <span className="font-medium">
-                    {formatCurrency(payment.paid_amount, 'es', 'ARS')}
+                    {formatCurrency(payment.paid_amount, 'es', contractCurrency as 'ARS' | 'USD')}
                   </span>
                 </div>
               ))}
@@ -338,12 +379,90 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
                     />
                   </FormControl>
                   <div className="text-xs text-muted-foreground mt-1">
-                    Máximo: {formatCurrency(pendingAmount, 'es', 'ARS')}
+                    Máximo: {formatCurrency(pendingAmount, 'es', contractCurrency as 'ARS' | 'USD')}
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="payment_currency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Moneda de Pago</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="ARS">Pesos Argentinos (ARS)</SelectItem>
+                      <SelectItem value="USD">Dólares (USD)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {paymentCurrency !== contractCurrency && (
+              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
+                  El contrato está en <strong>{contractCurrency}</strong> pero el pago es en <strong>{paymentCurrency}</strong>. 
+                  Debe ingresar el tipo de cambio del día.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {paymentCurrency !== contractCurrency && (
+              <FormField
+                control={form.control}
+                name="exchange_rate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Tipo de Cambio *
+                      <span className="text-xs text-muted-foreground ml-2">
+                        ({paymentCurrency === 'ARS' ? '1 USD = ? ARS' : '1 ARS = ? USD'})
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={paymentCurrency === 'ARS' ? "Ej: 1200" : "Ej: 0.00083"}
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
+                      />
+                    </FormControl>
+                    <div className="text-xs text-muted-foreground">
+                      Valor Tipo de Cambio Vendedor Banco Nación Argentina, del día de pago
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {paymentCurrency !== contractCurrency && exchangeRate && paidAmount && (
+              <CurrencyExchangeIndicator
+                contractCurrency={contractCurrency}
+                paymentCurrency={paymentCurrency}
+                exchangeRate={exchangeRate}
+                originalAmount={paidAmount}
+                convertedAmount={
+                  paymentCurrency === 'ARS' && contractCurrency === 'USD'
+                    ? paidAmount / exchangeRate
+                    : paymentCurrency === 'USD' && contractCurrency === 'ARS'
+                    ? paidAmount * exchangeRate
+                    : paidAmount
+                }
+              />
+            )}
 
             <FormField
               control={form.control}
