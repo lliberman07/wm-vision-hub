@@ -133,15 +133,27 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
     try {
       setLoading(true);
 
-      // Validar que el monto no exceda el saldo pendiente
-      if (data.paid_amount > pendingAmount) {
-        toast.error('El monto pagado no puede exceder el saldo pendiente');
+      // Calcular el equivalente en moneda del contrato para validación
+      let amountInContractCurrency = data.paid_amount;
+
+      if (data.payment_currency !== contractCurrency && data.exchange_rate) {
+        // Convertir de moneda de pago a moneda del contrato
+        amountInContractCurrency = data.payment_currency === 'ARS' && contractCurrency === 'USD'
+          ? data.paid_amount / data.exchange_rate  // ARS → USD: dividir
+          : data.payment_currency === 'USD' && contractCurrency === 'ARS'
+          ? data.paid_amount * data.exchange_rate  // USD → ARS: multiplicar
+          : data.paid_amount;
+      }
+
+      // Validar que el monto (en moneda del contrato) no exceda el saldo pendiente
+      if (amountInContractCurrency > pendingAmount) {
+        toast.error(`El monto pagado excede el saldo pendiente de ${formatCurrency(pendingAmount, 'es', contractCurrency as 'ARS' | 'USD')}`);
         setLoading(false);
         return;
       }
 
-      // Calcular nuevo accumulated_paid_amount
-      const newAccumulatedPaid = accumulatedPaid + data.paid_amount;
+      // Calcular nuevo accumulated_paid_amount (siempre en moneda del contrato)
+      const newAccumulatedPaid = accumulatedPaid + amountInContractCurrency;
       const newPendingAmount = originalAmount - newAccumulatedPaid;
       const isFullyPaid = newPendingAmount <= 0.01; // Tolerancia de 1 centavo
 
@@ -161,16 +173,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
         return;
       }
 
-      // Calcular conversión si es necesario
-      let conversionResult;
-      if (data.payment_currency !== contractCurrency && data.exchange_rate) {
-        conversionResult = convertPayment(
-          data.paid_amount,
-          data.payment_currency,
-          contractCurrency,
-          data.exchange_rate
-        );
-      }
+      // amountInContractCurrency ya está calculado arriba, no necesitamos convertPayment aquí
 
       // 1. Crear registro en pms_payments con notas correctamente formateadas
       const paymentNotes = data.notes 
@@ -187,7 +190,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
         currency: data.payment_currency,
         exchange_rate: data.exchange_rate || null,
         contract_currency: contractCurrency,
-        amount_in_contract_currency: conversionResult?.convertedAmount || data.paid_amount,
+        amount_in_contract_currency: amountInContractCurrency,
         payment_type: 'rent',
         item: scheduleItem.item,
         payment_method: data.payment_method,
@@ -396,7 +399,18 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
                     />
                   </FormControl>
                   <div className="text-xs text-muted-foreground mt-1">
-                    Máximo: {formatCurrency(pendingAmount, 'es', contractCurrency as 'ARS' | 'USD')}
+                    {paymentCurrency === contractCurrency ? (
+                      <>Máximo: {formatCurrency(pendingAmount, 'es', contractCurrency as 'ARS' | 'USD')}</>
+                    ) : (
+                      <>
+                        Saldo pendiente: {formatCurrency(pendingAmount, 'es', contractCurrency as 'ARS' | 'USD')}
+                        {exchangeRate && ` (≈ ${formatCurrency(
+                          contractCurrency === 'USD' ? pendingAmount * exchangeRate : pendingAmount / exchangeRate,
+                          'es',
+                          paymentCurrency as 'ARS' | 'USD'
+                        )})`}
+                      </>
+                    )}
                   </div>
                   <FormMessage />
                 </FormItem>
