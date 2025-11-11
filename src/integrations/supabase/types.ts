@@ -3848,6 +3848,7 @@ export type Database = {
         | "inmobiliaria"
         | "proveedor"
         | "GESTOR"
+        | "INQUILINO"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4026,6 +4027,7 @@ export const Constants = {
         "inmobiliaria",
         "proveedor",
         "GESTOR",
+        "INQUILINO",
       ],
     },
   },

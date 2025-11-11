@@ -540,7 +540,7 @@ const PMSRolesManagement = () => {
       if (['SUPERADMIN', 'INMOBILIARIA'].includes(newRoleType)) {
         toast({
           title: "Rol No Permitido",
-          description: "Los propietarios independientes solo pueden tener roles operativos (PROPIETARIO, GESTOR)",
+          description: "Los propietarios independientes solo pueden tener roles operativos (PROPIETARIO, GESTOR, INQUILINO)",
           variant: "destructive"
         });
         return;
@@ -1107,7 +1107,7 @@ const PMSRolesManagement = () => {
                           <strong>Tenant Principal:</strong> {selectedUserInfo.primary_tenant_name} (tipo: {selectedUserInfo.primary_tenant_type})
                         </p>
                         <p className="text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200">
-                          ⚠️ Este usuario solo puede tener roles operativos (PROPIETARIO, GESTOR) en su tenant principal.
+                          ⚠️ Este usuario solo puede tener roles operativos (PROPIETARIO, GESTOR, INQUILINO) en su tenant principal.
                         </p>
                       </>
                     ) : selectedUserInfo.existing_roles.length > 0 ? (
