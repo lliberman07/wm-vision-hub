@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/utils/numberFormat';
 
 interface Owner {
   id: string;
@@ -83,12 +84,8 @@ export function ContractPaymentDistribution({
     return methods[method] || method;
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 2
-    }).format(amount);
+  const formatCurrencyValue = (amount: number) => {
+    return formatCurrency(amount, 'es', currency as 'ARS' | 'USD');
   };
 
   if (loading) {
@@ -153,13 +150,13 @@ export function ContractPaymentDistribution({
                     <TableCell>{owner.full_name}</TableCell>
                     <TableCell>{owner.share_percent}%</TableCell>
                     <TableCell className="text-right">
-                      {formatCurrency(montoItemA * (owner.share_percent / 100))}
+                      {formatCurrencyValue(montoItemA * (owner.share_percent / 100))}
                     </TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="font-semibold bg-muted/50">
                   <TableCell colSpan={2}>Total Item A</TableCell>
-                  <TableCell className="text-right">{formatCurrency(montoItemA)}</TableCell>
+                  <TableCell className="text-right">{formatCurrencyValue(montoItemA)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -188,13 +185,13 @@ export function ContractPaymentDistribution({
                     <TableCell>{owner.full_name}</TableCell>
                     <TableCell>{owner.share_percent}%</TableCell>
                     <TableCell className="text-right">
-                      {formatCurrency(montoItemB * (owner.share_percent / 100))}
+                      {formatCurrencyValue(montoItemB * (owner.share_percent / 100))}
                     </TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="font-semibold bg-muted/50">
                   <TableCell colSpan={2}>Total Item B</TableCell>
-                  <TableCell className="text-right">{formatCurrency(montoItemB)}</TableCell>
+                  <TableCell className="text-right">{formatCurrencyValue(montoItemB)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

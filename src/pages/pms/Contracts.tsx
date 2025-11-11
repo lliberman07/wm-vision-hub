@@ -608,13 +608,13 @@ const Contracts = () => {
                               </div>
                             </div>
                             <div className="flex items-center gap-4">
-                              {selectedContract.property_bedrooms && (
+                              {selectedContract.property_bedrooms > 0 && (
                                 <div className="flex items-center gap-1.5">
                                   <BedDouble className="h-4 w-4 text-muted-foreground" />
                                   <span className="text-sm text-foreground">{selectedContract.property_bedrooms}</span>
                                 </div>
                               )}
-                              {selectedContract.property_bathrooms && (
+                              {selectedContract.property_bathrooms > 0 && (
                                 <div className="flex items-center gap-1.5">
                                   <Bath className="h-4 w-4 text-muted-foreground" />
                                   <span className="text-sm text-foreground">{selectedContract.property_bathrooms}</span>
