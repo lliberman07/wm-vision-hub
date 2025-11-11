@@ -94,61 +94,87 @@ const handler = async (req: Request): Promise<Response> => {
           let tempPassword = null;
           let isNewUser = false;
 
-          // Si no tiene user_id, crear usuario
+          // Si no tiene user_id, intentar crear usuario o buscar existente
           if (!owner.user_id) {
-            console.log(`Creating user for owner: ${owner.email}`);
+            console.log(`Checking user for owner: ${owner.email}`);
             
-            // Extraer first_name y last_name del full_name
-            const nameParts = owner.full_name?.split(" ") || ["Usuario", "PMS"];
-            const firstName = nameParts[0] || "Usuario";
-            const lastName = nameParts.slice(1).join(" ") || "PMS";
+            // Primero buscar si ya existe usuario en auth.users con este email
+            const { data: { users: existingAuthUsers }, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+            const existingUser = existingAuthUsers?.find(u => u.email === owner.email);
+            
+            let userId = existingUser ? existingUser.id : null;
 
-            // Invocar create-pms-user
-            const { data: createUserData, error: createUserError } = await supabaseAdmin.functions.invoke(
-              "create-pms-user",
-              {
-                body: {
-                  email: owner.email,
-                  first_name: firstName,
-                  last_name: lastName,
-                },
+            if (!userId) {
+              // No existe, crear usuario
+              console.log(`Creating new user for owner: ${owner.email}`);
+              
+              const nameParts = owner.full_name?.split(" ") || ["Usuario", "PMS"];
+              const firstName = nameParts[0] || "Usuario";
+              const lastName = nameParts.slice(1).join(" ") || "PMS";
+
+              const { data: createUserData, error: createUserError } = await supabaseAdmin.functions.invoke(
+                "create-pms-user",
+                {
+                  body: {
+                    email: owner.email,
+                    first_name: firstName,
+                    last_name: lastName,
+                  },
+                }
+              );
+
+              if (createUserError) {
+                console.error(`Error creating user for owner ${owner.email}:`, createUserError);
+                errors.push({ owner: owner.email, error: createUserError.message });
+                continue;
               }
-            );
 
-            if (createUserError) {
-              console.error(`Error creating user for owner ${owner.email}:`, createUserError);
-              errors.push({ owner: owner.email, error: createUserError.message });
-              continue;
+              userId = createUserData.user_id;
+              tempPassword = createUserData.temp_password;
+              isNewUser = true;
+              ownersCreated++;
+            } else {
+              console.log(`User already exists for owner: ${owner.email}, skipping user creation`);
+              isNewUser = false;
             }
 
-            const newUserId = createUserData.user_id;
-            tempPassword = createUserData.temp_password;
-            isNewUser = true;
-            ownersCreated++;
+            // Verificar si ya tiene rol de propietario
+            const { data: existingRole } = await supabaseAdmin
+              .from("user_roles")
+              .select("id")
+              .eq("user_id", userId)
+              .eq("role", "PROPIETARIO")
+              .eq("module", "PMS")
+              .eq("tenant_id", contractData.tenant_id)
+              .limit(1);
 
-            // Asignar rol PROPIETARIO
-            const { error: roleError } = await supabaseAdmin.from("user_roles").insert({
-              user_id: newUserId,
-              role: "PROPIETARIO",
-              module: "PMS",
-              tenant_id: contractData.tenant_id,
-              status: "approved",
-            });
+            if (!existingRole || existingRole.length === 0) {
+              // Asignar rol PROPIETARIO
+              const { error: roleError } = await supabaseAdmin.from("user_roles").insert({
+                user_id: userId,
+                role: "PROPIETARIO",
+                module: "PMS",
+                tenant_id: contractData.tenant_id,
+                status: "approved",
+              });
 
-            if (roleError) {
-              console.error(`Error assigning role to owner ${owner.email}:`, roleError);
-              errors.push({ owner: owner.email, error: roleError.message });
+              if (roleError) {
+                console.error(`Error assigning role to owner ${owner.email}:`, roleError);
+                errors.push({ owner: owner.email, error: roleError.message });
+              }
             }
 
-            // Actualizar pms_owners.user_id
-            const { error: updateOwnerError } = await supabaseAdmin
-              .from("pms_owners")
-              .update({ user_id: newUserId })
-              .eq("id", owner.id);
+            // Actualizar pms_owners.user_id si aún no está asignado
+            if (userId) {
+              const { error: updateOwnerError } = await supabaseAdmin
+                .from("pms_owners")
+                .update({ user_id: userId })
+                .eq("id", owner.id);
 
-            if (updateOwnerError) {
-              console.error(`Error updating owner user_id:`, updateOwnerError);
-              errors.push({ owner: owner.email, error: updateOwnerError.message });
+              if (updateOwnerError) {
+                console.error(`Error updating owner user_id:`, updateOwnerError);
+                errors.push({ owner: owner.email, error: updateOwnerError.message });
+              }
             }
           }
 
@@ -251,45 +277,73 @@ const handler = async (req: Request): Promise<Response> => {
         let isNewUser = false;
 
         if (!tenant.user_id) {
-          console.log(`Creating user for tenant: ${tenant.email}`);
+          console.log(`Checking user for tenant: ${tenant.email}`);
           
-          const nameParts = tenant.full_name?.split(" ") || ["Inquilino", "PMS"];
-          const firstName = nameParts[0] || "Inquilino";
-          const lastName = nameParts.slice(1).join(" ") || "PMS";
+          // Buscar si ya existe usuario en auth.users con este email
+          const { data: { users: existingAuthUsers }, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+          const existingUser = existingAuthUsers?.find(u => u.email === tenant.email);
+          
+          let userId = existingUser ? existingUser.id : null;
 
-          const { data: createUserData, error: createUserError } = await supabaseAdmin.functions.invoke(
-            "create-pms-user",
-            {
-              body: {
-                email: tenant.email,
-                first_name: firstName,
-                last_name: lastName,
-              },
+          if (!userId) {
+            // No existe, crear usuario
+            console.log(`Creating new user for tenant: ${tenant.email}`);
+            
+            const nameParts = tenant.full_name?.split(" ") || ["Inquilino", "PMS"];
+            const firstName = nameParts[0] || "Inquilino";
+            const lastName = nameParts.slice(1).join(" ") || "PMS";
+
+            const { data: createUserData, error: createUserError } = await supabaseAdmin.functions.invoke(
+              "create-pms-user",
+              {
+                body: {
+                  email: tenant.email,
+                  first_name: firstName,
+                  last_name: lastName,
+                },
+              }
+            );
+
+            if (createUserError) {
+              console.error(`Error creating user for tenant:`, createUserError);
+              errors.push({ tenant: tenant.email, error: createUserError.message });
+            } else {
+              userId = createUserData.user_id;
+              tempPassword = createUserData.temp_password;
+              isNewUser = true;
+              tenantCreated = true;
             }
-          );
-
-          if (createUserError) {
-            console.error(`Error creating user for tenant:`, createUserError);
-            errors.push({ tenant: tenant.email, error: createUserError.message });
           } else {
-            const newUserId = createUserData.user_id;
-            tempPassword = createUserData.temp_password;
-            isNewUser = true;
-            tenantCreated = true;
+            console.log(`User already exists for tenant: ${tenant.email}, skipping user creation`);
+            isNewUser = false;
+          }
 
-            // Asignar rol INQUILINO
-            await supabaseAdmin.from("user_roles").insert({
-              user_id: newUserId,
-              role: "INQUILINO",
-              module: "PMS",
-              tenant_id: contractData.tenant_id,
-              status: "approved",
-            });
+          if (userId) {
+            // Verificar si ya tiene rol de inquilino
+            const { data: existingRole } = await supabaseAdmin
+              .from("user_roles")
+              .select("id")
+              .eq("user_id", userId)
+              .eq("role", "INQUILINO")
+              .eq("module", "PMS")
+              .eq("tenant_id", contractData.tenant_id)
+              .limit(1);
+
+            if (!existingRole || existingRole.length === 0) {
+              // Asignar rol INQUILINO
+              await supabaseAdmin.from("user_roles").insert({
+                user_id: userId,
+                role: "INQUILINO",
+                module: "PMS",
+                tenant_id: contractData.tenant_id,
+                status: "approved",
+              });
+            }
 
             // Actualizar pms_tenants_renters.user_id
             await supabaseAdmin
               .from("pms_tenants_renters")
-              .update({ user_id: newUserId })
+              .update({ user_id: userId })
               .eq("id", tenant.id);
           }
         }
