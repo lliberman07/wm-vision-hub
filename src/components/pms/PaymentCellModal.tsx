@@ -80,6 +80,23 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
     }
   }, [scheduleItem?.currency]);
 
+  // Auto-calcular monto a pagar cuando cambia la moneda de pago o el tipo de cambio
+  useEffect(() => {
+    if (paymentCurrency !== contractCurrency && exchangeRate && exchangeRate > 0) {
+      // Convertir el monto pendiente a la moneda de pago
+      const convertedAmount = paymentCurrency === 'ARS' && contractCurrency === 'USD'
+        ? pendingAmount * exchangeRate  // USD a ARS: multiplicar
+        : paymentCurrency === 'USD' && contractCurrency === 'ARS'
+        ? pendingAmount / exchangeRate  // ARS a USD: dividir
+        : pendingAmount;
+      
+      form.setValue('paid_amount', parseFloat(convertedAmount.toFixed(2)));
+    } else if (paymentCurrency === contractCurrency) {
+      // Si vuelve a la misma moneda, restaurar el monto original
+      form.setValue('paid_amount', pendingAmount);
+    }
+  }, [paymentCurrency, exchangeRate, pendingAmount, contractCurrency]);
+
   // Cargar historial de pagos cuando se abre el modal
   useEffect(() => {
     if (open && scheduleItem?.id) {
@@ -448,19 +465,13 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
               />
             )}
 
-            {paymentCurrency !== contractCurrency && exchangeRate && paidAmount && (
+            {paymentCurrency !== contractCurrency && exchangeRate && (
               <CurrencyExchangeIndicator
                 contractCurrency={contractCurrency}
                 paymentCurrency={paymentCurrency}
                 exchangeRate={exchangeRate}
-                originalAmount={paidAmount}
-                convertedAmount={
-                  paymentCurrency === 'ARS' && contractCurrency === 'USD'
-                    ? paidAmount / exchangeRate
-                    : paymentCurrency === 'USD' && contractCurrency === 'ARS'
-                    ? paidAmount * exchangeRate
-                    : paidAmount
-                }
+                originalAmount={pendingAmount}
+                convertedAmount={paidAmount}
               />
             )}
 

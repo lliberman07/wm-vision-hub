@@ -26,11 +26,11 @@ export function CurrencyExchangeIndicator({
       <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
       <div className="flex-1 flex items-center gap-2 flex-wrap">
         <span className="font-medium text-blue-700 dark:text-blue-300">
-          {formatCurrency(originalAmount, 'es', paymentCurrency as 'ARS' | 'USD')}
+          {formatCurrency(originalAmount, 'es', contractCurrency as 'ARS' | 'USD')}
         </span>
         <ArrowRight className="h-3 w-3 text-blue-500 flex-shrink-0" />
         <span className="font-medium text-blue-700 dark:text-blue-300">
-          {formatCurrency(convertedAmount || 0, 'es', contractCurrency as 'ARS' | 'USD')}
+          {formatCurrency(convertedAmount || 0, 'es', paymentCurrency as 'ARS' | 'USD')}
         </span>
       </div>
       {exchangeRate && (
