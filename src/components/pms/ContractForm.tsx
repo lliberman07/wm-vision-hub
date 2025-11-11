@@ -22,6 +22,8 @@ import { useState, useEffect } from 'react';
 import { ContractPaymentMethods } from './ContractPaymentMethods';
 import { ContractDocumentsUpload } from './ContractDocumentsUpload';
 import { cn } from '@/lib/utils';
+import { useContractValidation } from '@/hooks/useContractValidation';
+import { formatDateDisplay } from '@/utils/dateUtils';
 
 const formSchema = z.object({
   contract_number: z.string().min(1, 'Número de contrato requerido'),
@@ -91,6 +93,12 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   const [continueEditing, setContinueEditing] = useState(false);
   const [savedContractId, setSavedContractId] = useState<string | null>(null);
   const [showDocuments, setShowDocuments] = useState(false);
+  
+  // Validación de contratos superpuestos
+  const [propertyConflict, setPropertyConflict] = useState<any>(null);
+  const [dateConflict, setDateConflict] = useState<any>(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const { checkPropertyAvailability } = useContractValidation();
   
   // Helper para determinar si un campo está deshabilitado
   const isFieldDisabled = (fieldName: string) => {
@@ -326,8 +334,95 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
     checkIfCloned();
   }, [form.watch('property_id')]);
 
+  // Validación: Detectar contrato activo al seleccionar propiedad
+  useEffect(() => {
+    const checkProperty = async () => {
+      const propertyId = form.watch('property_id');
+      if (!propertyId) {
+        setPropertyConflict(null);
+        return;
+      }
+
+      setIsValidating(true);
+      
+      const { data: activeContracts } = await supabase
+        .from('pms_contracts')
+        .select(`
+          id,
+          contract_number,
+          start_date,
+          end_date,
+          status,
+          pms_tenants_renters!inner(full_name)
+        `)
+        .eq('property_id', propertyId)
+        .eq('status', 'active')
+        .gte('end_date', new Date().toISOString().split('T')[0])
+        .order('start_date', { ascending: true });
+
+      if (activeContracts && activeContracts.length > 0) {
+        setPropertyConflict(activeContracts[0]);
+      } else {
+        setPropertyConflict(null);
+      }
+      
+      setIsValidating(false);
+    };
+
+    checkProperty();
+  }, [form.watch('property_id')]);
+
+  // Validación: Detectar superposición de fechas
+  useEffect(() => {
+    const validateDates = async () => {
+      const propertyId = form.watch('property_id');
+      const startDate = form.watch('start_date');
+      const endDate = form.watch('end_date');
+
+      if (!propertyId || !startDate || !endDate) {
+        setDateConflict(null);
+        return;
+      }
+
+      setIsValidating(true);
+      
+      const result = await checkPropertyAvailability(
+        propertyId,
+        startDate,
+        endDate,
+        contract?.id
+      );
+
+      if (result.hasConflict) {
+        setDateConflict(result);
+      } else {
+        setDateConflict(null);
+      }
+      
+      setIsValidating(false);
+    };
+
+    validateDates();
+  }, [form.watch('property_id'), form.watch('start_date'), form.watch('end_date')]);
+
   const onSubmit = async (data: FormValues) => {
     try {
+      // VALIDACIÓN FINAL: Verificar conflictos antes de guardar
+      if (!contract?.id) {
+        const validation = await checkPropertyAvailability(
+          data.property_id,
+          data.start_date!,
+          data.end_date!
+        );
+
+        if (validation.hasConflict) {
+          toast.error('No se puede guardar el contrato', {
+            description: validation.message
+          });
+          return;
+        }
+      }
+
       const payload: any = {
         contract_number: data.contract_number,
         property_id: data.property_id,
@@ -576,6 +671,64 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 </FormItem>
               )}
             />
+
+            {/* ALERTA: Propiedad con contrato activo */}
+            {propertyConflict && (
+              <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertTitle className="text-blue-800 dark:text-blue-200">
+                  Propiedad con Contrato Activo
+                </AlertTitle>
+                <AlertDescription className="text-blue-700 dark:text-blue-300 space-y-2">
+                  <p>
+                    Esta propiedad tiene un contrato activo:
+                  </p>
+                  <div className="bg-background p-3 rounded border border-blue-200 dark:border-blue-800 mt-2">
+                    <p className="text-sm">
+                      <strong>Contrato:</strong> {propertyConflict.contract_number}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Inquilino:</strong> {propertyConflict.pms_tenants_renters.full_name}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Vigencia:</strong> {formatDateDisplay(propertyConflict.start_date)} - {formatDateDisplay(propertyConflict.end_date)}
+                    </p>
+                  </div>
+                  <p className="text-xs mt-2">
+                    ⚠️ Asegúrate de que las fechas del nuevo contrato no se superpongan con el contrato activo.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* ALERTA: Conflicto de fechas */}
+            {dateConflict && dateConflict.hasConflict && (
+              <Alert className="border-destructive bg-destructive/10">
+                <AlertCircle className="h-4 w-4 text-destructive" />
+                <AlertTitle className="text-destructive">
+                  ⛔ Conflicto de Fechas Detectado
+                </AlertTitle>
+                <AlertDescription className="text-destructive/90 space-y-2">
+                  <p>
+                    {dateConflict.message}
+                  </p>
+                  <div className="bg-background p-3 rounded border border-destructive mt-2">
+                    <p className="text-sm">
+                      <strong>Contrato existente:</strong> {dateConflict.activeContract.contract_number}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Inquilino:</strong> {dateConflict.activeContract.tenant_name}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Período:</strong> {formatDateDisplay(dateConflict.activeContract.start_date)} - {formatDateDisplay(dateConflict.activeContract.end_date)}
+                    </p>
+                  </div>
+                  <p className="font-semibold text-sm mt-2">
+                    ❌ No se puede guardar este contrato hasta que se resuelva el conflicto.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Mostrar propietarios de la propiedad seleccionada */}
             {form.watch('property_id') && propertyOwners.length > 0 && (
@@ -1261,22 +1414,34 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     type="submit" 
                     variant="secondary"
                     onClick={() => setContinueEditing(false)}
+                    disabled={dateConflict?.hasConflict || isValidating}
                   >
-                    Guardar Borrador
+                    {isValidating ? 'Validando...' : 'Guardar Borrador'}
                   </Button>
                   <Button 
                     type="submit"
                     onClick={() => setContinueEditing(true)}
+                    disabled={dateConflict?.hasConflict || isValidating}
                   >
-                    Guardar y Cargar Documentos
+                    {isValidating ? 'Validando...' : 'Guardar y Cargar Documentos'}
                   </Button>
                 </>
               ) : (
-                <Button type="submit">
-                  {contract ? 'Actualizar' : 'Guardar Cambios'}
+                <Button 
+                  type="submit"
+                  disabled={dateConflict?.hasConflict || isValidating}
+                >
+                  {isValidating ? 'Validando...' : (contract ? 'Actualizar' : 'Guardar Cambios')}
                 </Button>
               )}
             </div>
+            
+            {/* Mensaje de ayuda si hay conflicto */}
+            {dateConflict?.hasConflict && (
+              <p className="text-sm text-destructive text-center mt-2">
+                💡 Sugerencia: Ajusta las fechas o cancela el contrato existente antes de crear uno nuevo.
+              </p>
+            )}
           </form>
         </Form>
       </DialogContent>
