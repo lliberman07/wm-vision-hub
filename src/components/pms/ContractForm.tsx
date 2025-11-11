@@ -444,8 +444,12 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         forma_pago_item_a: data.forma_pago_item_a,
         detalle_otro_item_a: data.detalle_otro_item_a,
         forma_pago_item_b: data.forma_pago_item_b,
-        indice_ajuste: data.indice_ajuste,
-        frecuencia_ajuste: data.indice_ajuste === 'none' || !data.indice_ajuste 
+        // ✅ Enviar NULL si no hay índice de ajuste o es 'none'
+        indice_ajuste: !data.indice_ajuste || data.indice_ajuste === 'none' 
+          ? null 
+          : data.indice_ajuste,
+        // ✅ Enviar NULL para frecuencia si no hay índice de ajuste
+        frecuencia_ajuste: !data.indice_ajuste || data.indice_ajuste === 'none' 
           ? null 
           : data.frecuencia_ajuste || null,
         frecuencia_factura: data.frecuencia_factura,
