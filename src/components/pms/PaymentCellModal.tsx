@@ -393,7 +393,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
                     <Input
                       type="number"
                       step="0.01"
-                      max={pendingAmount}
+                      min="0.01"
                       {...field}
                       onChange={(e) => field.onChange(parseFloat(e.target.value))}
                     />
