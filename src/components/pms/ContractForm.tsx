@@ -457,9 +457,11 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         tenant_id: currentTenant?.id,
       };
 
-      if (contract?.id) {
+      const contractId = contract?.id || savedContractId;
+
+      if (contractId) {
         // Si es un contrato existente
-        if (contract.status === 'active') {
+        if (contract?.status === 'active') {
           // Contrato activo: solo permitir editar campos seguros
           const safePayload = {
             special_clauses: data.special_clauses,
@@ -469,21 +471,21 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           const { error } = await supabase
             .from('pms_contracts')
             .update(safePayload)
-            .eq('id', contract.id);
+            .eq('id', contractId);
           
           if (error) throw error;
           toast.success('Contrato actualizado (campos editables)');
-        } else if (contract.status === 'draft' && data.status === 'active') {
+        } else if (contract?.status === 'draft' && data.status === 'active') {
           // Borrador → Activo: usar activate_contract
           const { error: updateError } = await supabase
             .from('pms_contracts')
             .update(payload)
-            .eq('id', contract.id);
+            .eq('id', contractId);
           
           if (updateError) throw updateError;
 
           const { error: activateError } = await supabase
-            .rpc('activate_contract', { contract_id_param: contract.id });
+            .rpc('activate_contract', { contract_id_param: contractId });
           
           if (activateError) throw activateError;
           toast.success('Contrato activado exitosamente');
@@ -492,7 +494,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           const { error } = await supabase
             .from('pms_contracts')
             .update(payload)
-            .eq('id', contract.id);
+            .eq('id', contractId);
           
           if (error) throw error;
           toast.success('Contrato actualizado');
@@ -525,21 +527,9 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
           
           if (insertError) throw insertError;
           
-          // Mostrar documentos automáticamente después de guardar
-          setSavedContractId(newContract.id);
           toast.success('Contrato guardado exitosamente', {
-            description: 'Ahora puedes cargar los documentos del contrato'
+            description: 'Usa el botón "Ver" para cargar documentos del contrato'
           });
-          
-          // Scroll automático a la sección de documentos
-          setTimeout(() => {
-            document.getElementById('documents-section')?.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'start' 
-            });
-          }, 300);
-          
-          return; // No cerrar el diálogo
         }
       }
 
@@ -1383,33 +1373,6 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     propertyId={form.watch('property_id')}
                     montoA={form.watch('monto_a')}
                     montoB={form.watch('monto_b')}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Sección de documentos - visible después de guardar */}
-            {!contract?.id && !savedContractId && (
-              <Alert className="my-6 border-blue-500 bg-blue-50 dark:bg-blue-950">
-                <AlertCircle className="h-4 w-4 text-blue-600" />
-                <AlertTitle className="text-blue-800 dark:text-blue-200">
-                  📄 Documentos disponibles después de guardar
-                </AlertTitle>
-                <AlertDescription className="text-blue-700 dark:text-blue-300">
-                  Para cargar documentos, primero guarda el contrato. La sección de documentos aparecerá automáticamente después de guardarlo.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {(contract?.id || savedContractId) && (
-              <>
-                <Separator className="my-6" />
-                <div id="documents-section" className="space-y-4">
-                  <h3 className="text-lg font-semibold">📄 Documentos del Contrato</h3>
-                  <ContractDocumentsUpload
-                    contractId={contract?.id || savedContractId!}
-                    tenantId={currentTenant?.id || null}
-                    disabled={false}
                   />
                 </div>
               </>
