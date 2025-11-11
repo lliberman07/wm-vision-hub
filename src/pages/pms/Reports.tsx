@@ -256,7 +256,7 @@ const Reports = () => {
         const scheduleItemIds = scheduleItems?.map(item => item.id) || [];
         const { data: payments, error: paymentsError } = await supabase
           .from('pms_payments')
-          .select('id, schedule_item_id, paid_date, amount_in_contract_currency')
+          .select('id, schedule_item_id, paid_date, paid_amount, currency, contract_currency, exchange_rate')
           .in('schedule_item_id', scheduleItemIds)
           .order('paid_date', { ascending: false });
 
@@ -294,7 +294,19 @@ const Reports = () => {
             
             // Solo sumar ingresos regulares (no reembolsos)
             if (!item.expense_id) {
-              cashflowByMonth[period].income += Number(payment.amount_in_contract_currency || 0);
+              // Calcular monto en moneda del contrato
+              let amountInContractCurrency = payment.paid_amount || 0;
+              
+              // Si las monedas difieren, aplicar conversión
+              if (payment.currency !== payment.contract_currency && payment.exchange_rate) {
+                if (payment.currency === 'ARS' && payment.contract_currency === 'USD') {
+                  amountInContractCurrency = payment.paid_amount / payment.exchange_rate;
+                } else if (payment.currency === 'USD' && payment.contract_currency === 'ARS') {
+                  amountInContractCurrency = payment.paid_amount * payment.exchange_rate;
+                }
+              }
+              
+              cashflowByMonth[period].income += Number(amountInContractCurrency);
             }
           });
         });
