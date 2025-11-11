@@ -14,7 +14,6 @@ const Payments = () => {
   const { user } = useAuth();
   const { currentTenant, hasPMSAccess } = usePMS();
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
-  const [selectedCurrency, setSelectedCurrency] = useState<string>('ARS');
 
   if (!user || !hasPMSAccess) {
     navigate('/pms');
@@ -45,7 +44,6 @@ const Payments = () => {
             {selectedContractId && (
               <PaymentScheduleView
                 contractId={selectedContractId}
-                currency={selectedCurrency}
               />
             )}
           </TabsContent>

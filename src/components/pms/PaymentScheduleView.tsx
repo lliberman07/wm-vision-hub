@@ -33,6 +33,7 @@ interface ScheduleItem {
   owner_percentage: number;
   status: string;
   payment_id: string | null;
+  currency: string;
   owner: {
     id: string;
     full_name: string;
@@ -54,10 +55,9 @@ interface ScheduleItem {
 
 interface PaymentScheduleViewProps {
   contractId: string;
-  currency: string;
 }
 
-export function PaymentScheduleView({ contractId, currency }: PaymentScheduleViewProps) {
+export function PaymentScheduleView({ contractId }: PaymentScheduleViewProps) {
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ScheduleItem | null>(null);
@@ -235,7 +235,7 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
-                          {currency} ${monthTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                          {items[0]?.currency || 'ARS'} ${monthTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
                     </Button>
@@ -270,12 +270,12 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
                                 {item.owner_percentage.toFixed(2)}%
                               </TableCell>
                               <TableCell className="text-right text-muted-foreground">
-                                {currency} ${originalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                {item.currency} ${originalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                               </TableCell>
                               <TableCell className="text-right">
                                 {accumulatedPaid > 0 ? (
                                   <span className="text-green-600 font-medium">
-                                    {currency} ${accumulatedPaid.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                    {item.currency} ${accumulatedPaid.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                   </span>
                                 ) : (
                                   <span className="text-muted-foreground">-</span>
@@ -284,7 +284,7 @@ export function PaymentScheduleView({ contractId, currency }: PaymentScheduleVie
                               <TableCell className="text-right">
                                 {pendingAmount > 0 ? (
                                   <span className="font-semibold">
-                                    {currency} ${pendingAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                    {item.currency} ${pendingAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                                   </span>
                                 ) : (
                                   <span className="text-muted-foreground">-</span>
