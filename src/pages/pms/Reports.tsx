@@ -262,10 +262,10 @@ const Reports = () => {
 
         if (paymentsError) throw paymentsError;
 
-        // 3. Obtener gastos
+        // 3. Obtener gastos CON currency
         const { data: expenses, error: expensesError } = await supabase
           .from('pms_expenses')
-          .select('id, amount, expense_date, is_reimbursable')
+          .select('id, amount, expense_date, is_reimbursable, currency')
           .eq('contract_id', selectedContract)
           .order('expense_date', { ascending: false });
 
@@ -278,61 +278,82 @@ const Reports = () => {
           .eq('id', selectedContract)
           .single();
 
-        // 5. Agrupar por mes de cobro
-        const cashflowByMonth: Record<string, { income: number; expenses: number; currency: string }> = {};
+        // 5. Agrupar por mes de cobro - ESTRUCTURA MULTI-MONEDA
+        interface CashflowPeriod {
+          flows: Record<string, { income: number; expenses: number; net: number }>;
+          contract_currency: string;
+        }
+        
+        const cashflowByMonth: Record<string, CashflowPeriod> = {};
 
-        // Procesar pagos
+        // Procesar pagos - AGRUPAR POR MONEDA REAL DEL PAGO
         scheduleItems?.forEach((item: any) => {
           const itemPayments = payments?.filter(p => p.schedule_item_id === item.id) || [];
           
           itemPayments.forEach((payment: any) => {
             const period = payment.paid_date.substring(0, 7); // YYYY-MM
+            const currency = payment.currency || contractInfo?.currency || 'ARS';
             
             if (!cashflowByMonth[period]) {
-              cashflowByMonth[period] = { income: 0, expenses: 0, currency: contractInfo?.currency || 'ARS' };
+              cashflowByMonth[period] = {
+                flows: {},
+                contract_currency: contractInfo?.currency || 'ARS'
+              };
+            }
+            
+            if (!cashflowByMonth[period].flows[currency]) {
+              cashflowByMonth[period].flows[currency] = { income: 0, expenses: 0, net: 0 };
             }
             
             // Solo sumar ingresos regulares (no reembolsos)
+            // USAR MONEDA ORIGINAL (sin conversión)
             if (!item.expense_id) {
-              // Calcular monto en moneda del contrato
-              let amountInContractCurrency = payment.paid_amount || 0;
-              
-              // Si las monedas difieren, aplicar conversión
-              if (payment.currency !== payment.contract_currency && payment.exchange_rate) {
-                if (payment.currency === 'ARS' && payment.contract_currency === 'USD') {
-                  amountInContractCurrency = payment.paid_amount / payment.exchange_rate;
-                } else if (payment.currency === 'USD' && payment.contract_currency === 'ARS') {
-                  amountInContractCurrency = payment.paid_amount * payment.exchange_rate;
-                }
-              }
-              
-              cashflowByMonth[period].income += Number(amountInContractCurrency);
+              cashflowByMonth[period].flows[currency].income += Number(payment.paid_amount || 0);
             }
           });
         });
 
-        // Procesar gastos (por expense_date, no reembolsables)
+        // Procesar gastos - AGRUPAR POR MONEDA REAL DEL GASTO
         expenses?.forEach((expense: any) => {
           if (!expense.is_reimbursable) {
             const period = expense.expense_date.substring(0, 7);
+            const currency = expense.currency || contractInfo?.currency || 'ARS';
             
             if (!cashflowByMonth[period]) {
-              cashflowByMonth[period] = { income: 0, expenses: 0, currency: contractInfo?.currency || 'ARS' };
+              cashflowByMonth[period] = {
+                flows: {},
+                contract_currency: contractInfo?.currency || 'ARS'
+              };
             }
             
-            cashflowByMonth[period].expenses += Number(expense.amount || 0);
+            if (!cashflowByMonth[period].flows[currency]) {
+              cashflowByMonth[period].flows[currency] = { income: 0, expenses: 0, net: 0 };
+            }
+            
+            cashflowByMonth[period].flows[currency].expenses += Number(expense.amount || 0);
           }
         });
 
-        // 6. Convertir a formato esperado
+        // Calcular netos por moneda
+        Object.values(cashflowByMonth).forEach(periodData => {
+          Object.keys(periodData.flows).forEach(currency => {
+            const flow = periodData.flows[currency];
+            flow.net = flow.income - flow.expenses;
+          });
+        });
+
+        // 6. Convertir a formato esperado - MANTENER ESTRUCTURA MULTI-MONEDA
         const formattedData = Object.entries(cashflowByMonth)
           .map(([period, data]) => ({
             id: `${period}-cash`,
             period,
-            currency: data.currency,
-            total_income: data.income,
-            total_expenses: data.expenses,
-            net_result: data.income - data.expenses,
+            flows: data.flows,
+            contract_currency: data.contract_currency,
+            // Para compatibilidad (usado en modo devengamiento)
+            currency: data.contract_currency,
+            total_income: Object.values(data.flows).reduce((sum, f) => sum + f.income, 0),
+            total_expenses: Object.values(data.flows).reduce((sum, f) => sum + f.expenses, 0),
+            net_result: Object.values(data.flows).reduce((sum, f) => sum + f.net, 0),
             contract_id: selectedContract,
             tenant_id: currentTenant.id
           }))
@@ -781,31 +802,82 @@ const Reports = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {cashflowData.map((cf) => (
-                            <TableRow key={cf.id}>
-                              <TableCell className="font-medium">{cf.period}</TableCell>
-                              <TableCell>
-                                <Badge variant="outline">{cf.currency}</Badge>
-                              </TableCell>
-                              <TableCell className="text-right text-green-600 font-medium">
-                                ${Number(cf.total_income || 0).toLocaleString('es-AR', {
-                                  minimumFractionDigits: 2,
-                                })}
-                              </TableCell>
-                              <TableCell className="text-right text-red-600">
-                                ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
-                                  minimumFractionDigits: 2,
-                                })}
-                              </TableCell>
-                              <TableCell className="text-right font-bold">
-                                <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
-                                  ${Number(cf.net_result || 0).toLocaleString('es-AR', {
-                                    minimumFractionDigits: 2,
-                                  })}
-                                </Badge>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                          {cashflowData.map((cf) => {
+                            // Obtener monedas únicas en este período
+                            const currencies = cf.flows ? Object.keys(cf.flows) : [cf.currency];
+                            
+                            // Si es modo devengamiento (accrual), mostrar una sola fila
+                            if (cashflowViewMode === 'accrual' || !cf.flows) {
+                              return (
+                                <TableRow key={cf.id}>
+                                  <TableCell className="font-medium">{cf.period}</TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline">{cf.currency}</Badge>
+                                  </TableCell>
+                                  <TableCell className="text-right text-green-600 font-medium">
+                                    ${Number(cf.total_income || 0).toLocaleString('es-AR', {
+                                      minimumFractionDigits: 2,
+                                    })}
+                                  </TableCell>
+                                  <TableCell className="text-right text-red-600">
+                                    ${Number(cf.total_expenses || 0).toLocaleString('es-AR', {
+                                      minimumFractionDigits: 2,
+                                    })}
+                                  </TableCell>
+                                  <TableCell className="text-right font-bold">
+                                    <Badge variant={Number(cf.net_result) >= 0 ? 'default' : 'destructive'}>
+                                      ${Number(cf.net_result || 0).toLocaleString('es-AR', {
+                                        minimumFractionDigits: 2,
+                                      })}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            }
+                            
+                            // Modo cash: Mostrar múltiples filas por moneda
+                            return currencies.map((currency, idx) => {
+                              const flow = cf.flows[currency];
+                              const isFirstRow = idx === 0;
+                              
+                              return (
+                                <TableRow key={`${cf.period}-${currency}`}>
+                                  {isFirstRow && (
+                                    <TableCell 
+                                      rowSpan={currencies.length} 
+                                      className="font-medium border-r align-top"
+                                    >
+                                      {cf.period}
+                                    </TableCell>
+                                  )}
+                                  
+                                  <TableCell>
+                                    <Badge variant="outline">{currency}</Badge>
+                                  </TableCell>
+                                  
+                                  <TableCell className="text-right text-green-600 font-medium">
+                                    ${Number(flow.income || 0).toLocaleString('es-AR', {
+                                      minimumFractionDigits: 2,
+                                    })}
+                                  </TableCell>
+                                  
+                                  <TableCell className="text-right text-red-600">
+                                    ${Number(flow.expenses || 0).toLocaleString('es-AR', {
+                                      minimumFractionDigits: 2,
+                                    })}
+                                  </TableCell>
+                                  
+                                  <TableCell className="text-right font-bold">
+                                    <Badge variant={flow.net >= 0 ? 'default' : 'destructive'}>
+                                      ${Number(flow.net || 0).toLocaleString('es-AR', {
+                                        minimumFractionDigits: 2,
+                                      })}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            });
+                          })}
                         </TableBody>
                       </Table>
                     )}

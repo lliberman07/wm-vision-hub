@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Users, DollarSign, Calendar } from 'lucide-react';
+import { Users, DollarSign, Calendar, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { PropertyYieldCalculator } from './PropertyYieldCalculator';
+import { consolidateFlows, type CurrencyFlows } from '@/utils/currencyConversion';
 
 interface OwnerNetIncomeReportProps {
   tenantId: string;
@@ -49,6 +53,8 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
   const [ownerTotals, setOwnerTotals] = useState<MonthlyOwnerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [displayCurrency, setDisplayCurrency] = useState<'contract' | 'payment'>('contract');
+  const [contractCurrency, setContractCurrency] = useState<string>('ARS');
+  const [exchangeRate, setExchangeRate] = useState<number>(1450);
   
   // Sincronizar con el modo externo
   const viewByPaymentDate = viewMode === 'cash';
@@ -64,10 +70,10 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
     try {
       console.log('🔍 Fetching owner totals - viewByPaymentDate:', viewByPaymentDate);
 
-      // 1. Obtener información del contrato
+      // 1. Obtener información del contrato (incluyendo currency)
       const { data: contract, error: contractError } = await supabase
         .from('pms_contracts')
-        .select('property_id')
+        .select('property_id, currency')
         .eq('id', selectedContract)
         .single();
 
@@ -76,6 +82,9 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
         setOwnerTotals([]);
         return;
       }
+
+      // Guardar moneda del contrato
+      setContractCurrency(contract.currency || 'ARS');
 
       // 2. Obtener propietarios del contrato
       const { data: owners, error: ownersError } = await supabase
@@ -389,33 +398,61 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
     );
   }
 
+  // Calcular resultado consolidado en moneda funcional
+  const calculateConsolidatedResult = () => {
+    const flows: CurrencyFlows = {};
+    
+    ownerTotals.forEach(data => {
+      const currency = contractCurrency;
+      if (!flows[currency]) {
+        flows[currency] = { income: 0, expenses: 0, net: 0 };
+      }
+      flows[currency].income += data.income;
+      flows[currency].expenses += data.expenses;
+      flows[currency].net += data.net_result;
+    });
+
+    return consolidateFlows(flows, contractCurrency === 'USD' ? 'USD' : 'USD', exchangeRate);
+  };
+
+  const consolidatedResult = calculateConsolidatedResult();
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Totales por Propietario
-          </CardTitle>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="currency-display" className="text-sm text-muted-foreground">
-                Ver montos en:
-              </Label>
-              <Select value={displayCurrency} onValueChange={(val: 'contract' | 'payment') => setDisplayCurrency(val)}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="contract">Moneda del Contrato</SelectItem>
-                  <SelectItem value="payment">Moneda de Pago</SelectItem>
-                </SelectContent>
-              </Select>
+    <>
+      <Alert className="mb-4">
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          Los montos se muestran en <strong>{contractCurrency}</strong> (moneda del contrato) 
+          para permitir el cálculo de rendimiento anual.
+        </AlertDescription>
+      </Alert>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Totales por Propietario
+            </CardTitle>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="currency-display" className="text-sm text-muted-foreground">
+                  Ver montos en:
+                </Label>
+                <Select value={displayCurrency} onValueChange={(val: 'contract' | 'payment') => setDisplayCurrency(val)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="contract">Moneda del Contrato</SelectItem>
+                    <SelectItem value="payment">Moneda de Pago</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
+        </CardHeader>
+        <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
@@ -568,7 +605,102 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
             ))}
           </TableBody>
         </Table>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <Separator className="my-6" />
+
+      <PropertyYieldCalculator
+        monthlyNetIncome={consolidatedResult.netResult / Object.keys(groupByPeriod(ownerTotals)).length || 0}
+        functionalCurrency={contractCurrency === 'USD' ? 'USD' : 'USD'}
+        propertyValue={0}
+      />
+
+      <Card className="mt-6 border-primary/20">
+        <CardHeader className="bg-primary/5">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <DollarSign className="h-5 w-5 text-primary" />
+            Resultado Consolidado
+          </CardTitle>
+          <CardDescription>
+            Resumen total en moneda funcional para análisis de rendimiento
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
+              <p className="text-sm text-muted-foreground mb-1">Ingresos Totales</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {consolidatedResult.functionalCurrency} {consolidatedResult.totalIncome.toLocaleString('es-AR', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+              </p>
+            </div>
+            
+            <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
+              <p className="text-sm text-muted-foreground mb-1">Gastos Totales</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                {consolidatedResult.functionalCurrency} {consolidatedResult.totalExpenses.toLocaleString('es-AR', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+              </p>
+            </div>
+            
+            <div className={`p-4 rounded-lg border ${
+              consolidatedResult.netResult >= 0 
+                ? 'bg-primary/5 border-primary/30' 
+                : 'bg-destructive/5 border-destructive/30'
+            }`}>
+              <p className="text-sm text-muted-foreground mb-1">Resultado Neto</p>
+              <p className={`text-3xl font-bold ${
+                consolidatedResult.netResult >= 0 
+                  ? 'text-primary' 
+                  : 'text-destructive'
+              }`}>
+                {consolidatedResult.functionalCurrency} {consolidatedResult.netResult.toLocaleString('es-AR', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+              </p>
+            </div>
+          </div>
+
+          {consolidatedResult.breakdown.length > 1 && (
+            <>
+              <Separator className="my-4" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Detalle por Moneda:</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {consolidatedResult.breakdown.map(item => (
+                    <div key={item.currency} className="p-3 rounded-lg bg-muted/30 border border-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline">{item.currency}</Badge>
+                        <span className="text-sm text-muted-foreground">Neto: ${item.net.toLocaleString('es-AR', {
+                          minimumFractionDigits: 2
+                        })}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Ingresos: ${item.income.toLocaleString('es-AR')} • 
+                        Gastos: ${item.expenses.toLocaleString('es-AR')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          <Alert className="mt-4">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              Tipo de cambio utilizado: 1 USD = {consolidatedResult.exchangeRate.toLocaleString('es-AR')} ARS.
+              {contractCurrency !== 'USD' && ' Los montos se consolidaron a USD para cálculo de rendimiento.'}
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    </>
   );
 };
