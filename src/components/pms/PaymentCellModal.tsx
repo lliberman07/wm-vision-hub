@@ -258,7 +258,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {readOnly 
@@ -426,7 +426,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
             />
 
             {paymentCurrency !== contractCurrency && (
-              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 py-2">
                 <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
                   El contrato está en <strong>{contractCurrency}</strong> pero el pago es en <strong>{paymentCurrency}</strong>. 
@@ -440,7 +440,7 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
                 control={form.control}
                 name="exchange_rate"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-1">
                     <FormLabel>
                       Tipo de Cambio *
                       <span className="text-xs text-muted-foreground ml-2">
