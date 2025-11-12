@@ -8,13 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight, BarChart3, Receipt, Info } from 'lucide-react';
+import { TrendingUp, Building2, Users, FileText, DollarSign, Calendar, MapPin, ChevronRight, Receipt, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
 import { PropertyExpensesReport } from '@/components/pms/PropertyExpensesReport';
-import { TenantsAnalytics } from '@/components/pms/TenantsAnalytics';
 import { ReimbursementDashboard } from '@/components/pms/ReimbursementDashboard';
 import { OwnerReportExportDialog } from '@/components/pms/OwnerReportExportDialog';
 import { OwnerReportDirectDownload } from '@/components/pms/OwnerReportDirectDownload';
@@ -41,9 +40,7 @@ const Reports = () => {
     activeTenants: 0,
     monthlyIncome: 0,
   });
-  const [activeTab, setActiveTab] = useState<'properties' | 'tenants' | 'reimbursements'>('properties');
-  const [hasWMAccess, setHasWMAccess] = useState(false);
-  const [loadingWMAccess, setLoadingWMAccess] = useState(true);
+  const [activeTab, setActiveTab] = useState<'properties' | 'reimbursements'>('properties');
   const [cashflowViewMode, setCashflowViewMode] = useState<'accrual' | 'cash'>('cash');
 
   useEffect(() => {
@@ -55,42 +52,10 @@ const Reports = () => {
   }, [user, hasPMSAccess, navigate, currentTenant]);
 
   useEffect(() => {
-    if (user) {
-      checkWMAccess();
-    }
-  }, [user, userRole]);
-
-  useEffect(() => {
     if (currentTenant?.id && selectedContract) {
       fetchCashflow();
     }
   }, [selectedContract, currentTenant, cashflowViewMode]);
-
-  const checkWMAccess = async () => {
-    if (userRole === 'SUPERADMIN') {
-      setHasWMAccess(true);
-      setLoadingWMAccess(false);
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('id')
-        .eq('user_id', user?.id)
-        .eq('module', 'WM')
-        .eq('role', 'admin')
-        .eq('status', 'approved')
-        .maybeSingle();
-      
-      setHasWMAccess(!!data);
-    } catch (error) {
-      console.error('Error checking WM access:', error);
-      setHasWMAccess(false);
-    } finally {
-      setLoadingWMAccess(false);
-    }
-  };
 
   const fetchData = async () => {
     if (!currentTenant?.id) return;
@@ -431,12 +396,6 @@ const Reports = () => {
               <Receipt className="h-4 w-4" />
               Reembolsos
             </TabsTrigger>
-            {hasWMAccess && (
-              <TabsTrigger value="tenants" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Análisis de Tenants
-              </TabsTrigger>
-            )}
           </TabsList>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 my-8">
@@ -936,20 +895,6 @@ const Reports = () => {
           )}
         </TabsContent>
 
-
-        <TabsContent value="tenants">
-          {hasWMAccess ? (
-            <TenantsAnalytics />
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <p className="text-muted-foreground">
-                  No tienes permisos para ver esta sección
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
         </Tabs>
       </div>
     </PMSLayout>
