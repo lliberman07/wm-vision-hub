@@ -3218,6 +3218,86 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_change_history: {
+        Row: {
+          change_type: string
+          changed_at: string | null
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          new_billing_cycle: string | null
+          new_plan_id: string | null
+          new_price: number | null
+          old_billing_cycle: string | null
+          old_plan_id: string | null
+          old_price: number | null
+          reason: string | null
+          subscription_id: string | null
+          tenant_id: string | null
+        }
+        Insert: {
+          change_type: string
+          changed_at?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          new_billing_cycle?: string | null
+          new_plan_id?: string | null
+          new_price?: number | null
+          old_billing_cycle?: string | null
+          old_plan_id?: string | null
+          old_price?: number | null
+          reason?: string | null
+          subscription_id?: string | null
+          tenant_id?: string | null
+        }
+        Update: {
+          change_type?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          new_billing_cycle?: string | null
+          new_plan_id?: string | null
+          new_price?: number | null
+          old_billing_cycle?: string | null
+          old_plan_id?: string | null
+          old_price?: number | null
+          reason?: string | null
+          subscription_id?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_change_history_new_plan_id_fkey"
+            columns: ["new_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_change_history_old_plan_id_fkey"
+            columns: ["old_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_change_history_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_change_history_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_change_requests: {
         Row: {
           created_at: string | null
@@ -3812,6 +3892,10 @@ export type Database = {
         }[]
       }
       get_default_tenant_id: { Args: never; Returns: string }
+      get_granada_subscription_analytics: {
+        Args: { p_months_back?: number }
+        Returns: Json
+      }
       get_manageable_tenants: {
         Args: { p_user_id: string }
         Returns: {
@@ -3836,6 +3920,16 @@ export type Database = {
         Args: { property_id_param: string }
         Returns: string
       }
+      get_revenue_by_payment_method: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: {
+          payment_method: string
+          percentage: number
+          total_ars: number
+          total_usd: number
+          transaction_count: number
+        }[]
+      }
       get_role_distribution_by_tenant: {
         Args: never
         Returns: {
@@ -3849,6 +3943,27 @@ export type Database = {
           tenant_name: string
           tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
           total_users: number
+        }[]
+      }
+      get_subscription_plan_changes: {
+        Args: {
+          p_end_date?: string
+          p_start_date?: string
+          p_tenant_id?: string
+        }
+        Returns: {
+          change_type: string
+          changed_at: string
+          id: string
+          new_billing_cycle: string
+          new_plan_name: string
+          new_price: number
+          old_billing_cycle: string
+          old_plan_name: string
+          old_price: number
+          reason: string
+          subscription_id: string
+          tenant_name: string
         }[]
       }
       get_tenant_admin_user_count: {

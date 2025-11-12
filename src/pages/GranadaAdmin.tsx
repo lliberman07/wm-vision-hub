@@ -11,6 +11,7 @@ import { PlatformUsersManagement } from '@/components/granada/PlatformUsersManag
 import { SubscriptionsManagement } from '@/components/granada/SubscriptionsManagement';
 import { PaymentsManagement } from '@/components/granada/PaymentsManagement';
 import { SubscriptionPlansManagement } from '@/components/granada/SubscriptionPlansManagement';
+import { GranadaSubscriptionAnalyticsDashboard } from '@/components/granada/GranadaSubscriptionAnalyticsDashboard';
 import {
   Building2,
   CreditCard,
@@ -23,6 +24,12 @@ function GranadaDashboard() {
   const navigate = useNavigate();
 
   const cards = [
+    {
+      title: 'Analítica de Suscripciones',
+      description: 'MRR, ARR, churn rate y proyecciones anuales',
+      icon: FileBarChart,
+      path: '/granada-admin/analytics',
+    },
     {
       title: 'Clientes Suscriptores',
       description: 'Gestionar inmobiliarias, administradores y propietarios',
@@ -147,6 +154,7 @@ export default function GranadaAdmin() {
     <GranadaAdminLayout>
       <Routes>
         <Route path="/" element={<GranadaDashboard />} />
+        <Route path="/analytics" element={<GranadaSubscriptionAnalyticsDashboard />} />
         <Route path="/clients" element={<ClientsManagement />} />
         <Route path="/client-users" element={<ClientUsersManagement />} />
         <Route path="/platform-users" element={<PlatformUsersManagement />} />
