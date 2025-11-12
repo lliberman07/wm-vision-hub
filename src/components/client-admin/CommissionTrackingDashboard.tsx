@@ -26,7 +26,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   FileSpreadsheet,
-  FileText,
   Search,
   TrendingUp,
   TrendingDown,
@@ -71,7 +70,7 @@ interface CommissionData {
   is_within_subscription_limit: boolean;
 }
 
-interface HistoricalCommissionData {
+interface HistoricalData {
   period_month: string;
   total_commission_ars: number;
   commission_with_contract: number;
@@ -84,7 +83,7 @@ interface HistoricalCommissionData {
 export function CommissionTrackingDashboard() {
   const { clientData } = useClient();
   const [data, setData] = useState<CommissionData[]>([]);
-  const [historicalData, setHistoricalData] = useState<HistoricalCommissionData[]>([]);
+  const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -127,7 +126,7 @@ export function CommissionTrackingDashboard() {
         });
 
       if (error) throw error;
-      setHistoricalData((result || []) as HistoricalCommissionData[]);
+      setHistoricalData((result || []) as HistoricalData[]);
     } catch (error) {
       console.error('Error loading historical data:', error);
     }
@@ -188,9 +187,9 @@ export function CommissionTrackingDashboard() {
     .reverse()
     .map(item => ({
       mes: new Date(item.period_month).toLocaleDateString('es-AR', { month: 'short', year: '2-digit' }),
-      total: item.total_commission_ars,
-      conContrato: item.commission_with_contract,
-      sinContrato: item.commission_without_contract,
+      total: parseFloat(item.total_commission_ars.toString()),
+      conContrato: parseFloat(item.commission_with_contract.toString()),
+      sinContrato: parseFloat(item.commission_without_contract.toString()),
     }));
 
   // Calcular comparativa mes actual vs anterior
@@ -198,7 +197,7 @@ export function CommissionTrackingDashboard() {
   const previousMonth = historicalData[1];
   
   const monthOverMonthChange = currentMonth && previousMonth 
-    ? ((currentMonth.total_commission_ars - previousMonth.total_commission_ars) / previousMonth.total_commission_ars) * 100
+    ? ((parseFloat(currentMonth.total_commission_ars.toString()) - parseFloat(previousMonth.total_commission_ars.toString())) / parseFloat(previousMonth.total_commission_ars.toString())) * 100
     : 0;
 
   const getTrendIcon = (change: number) => {
@@ -407,7 +406,7 @@ export function CommissionTrackingDashboard() {
             <LineChart data={historicalChartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
-              <YAxis />
+              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
               <Tooltip 
                 formatter={(value: number) => `$${value.toLocaleString('es-AR', { maximumFractionDigits: 0 })}`}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
@@ -417,32 +416,32 @@ export function CommissionTrackingDashboard() {
                 type="monotone" 
                 dataKey="total" 
                 stroke="hsl(var(--primary))" 
-                strokeWidth={2}
+                strokeWidth={3}
                 name="Total"
-                dot={{ r: 4 }}
+                dot={{ fill: 'hsl(var(--primary))' }}
               />
               <Line 
                 type="monotone" 
                 dataKey="conContrato" 
-                stroke="hsl(var(--chart-1))" 
+                stroke="hsl(var(--chart-2))" 
                 strokeWidth={2}
                 name="Con Contrato"
-                dot={{ r: 4 }}
+                strokeDasharray="5 5"
               />
               <Line 
                 type="monotone" 
                 dataKey="sinContrato" 
-                stroke="hsl(var(--chart-2))" 
+                stroke="hsl(var(--chart-3))" 
                 strokeWidth={2}
                 name="Sin Contrato"
-                dot={{ r: 4 }}
+                strokeDasharray="5 5"
               />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Gráficos */}
+      {/* Gráficos de Distribución */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
