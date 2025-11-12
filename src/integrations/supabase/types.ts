@@ -3855,6 +3855,18 @@ export type Database = {
         Args: { tenant_id_param: string }
         Returns: number
       }
+      get_tenant_commission_history: {
+        Args: { p_months_back?: number; p_tenant_id: string }
+        Returns: {
+          avg_commission_percentage: number
+          commission_with_contract: number
+          commission_without_contract: number
+          period_month: string
+          properties_with_contract: number
+          properties_without_contract: number
+          total_commission_ars: number
+        }[]
+      }
       get_tenant_commission_report: {
         Args: { p_tenant_id: string }
         Returns: {

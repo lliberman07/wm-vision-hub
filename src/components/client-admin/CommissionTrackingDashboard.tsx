@@ -31,6 +31,10 @@ import {
   TrendingUp,
   TrendingDown,
   Home,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -67,17 +71,30 @@ interface CommissionData {
   is_within_subscription_limit: boolean;
 }
 
+interface HistoricalCommissionData {
+  period_month: string;
+  total_commission_ars: number;
+  commission_with_contract: number;
+  commission_without_contract: number;
+  properties_with_contract: number;
+  properties_without_contract: number;
+  avg_commission_percentage: number;
+}
+
 export function CommissionTrackingDashboard() {
   const { clientData } = useClient();
   const [data, setData] = useState<CommissionData[]>([]);
+  const [historicalData, setHistoricalData] = useState<HistoricalCommissionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [contractFilter, setContractFilter] = useState<string>('all');
+  const [monthsToShow, setMonthsToShow] = useState<number>(6);
 
   useEffect(() => {
     loadCommissionData();
-  }, [clientData]);
+    loadHistoricalData();
+  }, [clientData, monthsToShow]);
 
   const loadCommissionData = async () => {
     if (!clientData?.id) return;
@@ -96,6 +113,23 @@ export function CommissionTrackingDashboard() {
       toast.error('Error al cargar datos de comisiones');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadHistoricalData = async () => {
+    if (!clientData?.id) return;
+
+    try {
+      const { data: result, error } = await supabase
+        .rpc('get_tenant_commission_history', {
+          p_tenant_id: clientData.id,
+          p_months_back: monthsToShow
+        });
+
+      if (error) throw error;
+      setHistoricalData((result || []) as HistoricalCommissionData[]);
+    } catch (error) {
+      console.error('Error loading historical data:', error);
     }
   };
 
@@ -148,6 +182,36 @@ export function CommissionTrackingDashboard() {
   ];
 
   const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))'];
+
+  // Datos para gráfico de evolución temporal
+  const historicalChartData = [...historicalData]
+    .reverse()
+    .map(item => ({
+      mes: new Date(item.period_month).toLocaleDateString('es-AR', { month: 'short', year: '2-digit' }),
+      total: item.total_commission_ars,
+      conContrato: item.commission_with_contract,
+      sinContrato: item.commission_without_contract,
+    }));
+
+  // Calcular comparativa mes actual vs anterior
+  const currentMonth = historicalData[0];
+  const previousMonth = historicalData[1];
+  
+  const monthOverMonthChange = currentMonth && previousMonth 
+    ? ((currentMonth.total_commission_ars - previousMonth.total_commission_ars) / previousMonth.total_commission_ars) * 100
+    : 0;
+
+  const getTrendIcon = (change: number) => {
+    if (change > 0) return <ArrowUpRight className="h-4 w-4 text-green-600" />;
+    if (change < 0) return <ArrowDownRight className="h-4 w-4 text-red-600" />;
+    return <Minus className="h-4 w-4 text-muted-foreground" />;
+  };
+
+  const getTrendColor = (change: number) => {
+    if (change > 0) return 'text-green-600';
+    if (change < 0) return 'text-red-600';
+    return 'text-muted-foreground';
+  };
 
   // Datos para gráfico de barras (Top 10 propiedades)
   const barData = [...filteredData]
@@ -269,6 +333,114 @@ export function CommissionTrackingDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Comparativa Histórica */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Evolución Histórica
+              </CardTitle>
+              <CardDescription>Comisiones de los últimos {monthsToShow} meses</CardDescription>
+            </div>
+            <Select value={monthsToShow.toString()} onValueChange={(v) => setMonthsToShow(parseInt(v))}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">3 meses</SelectItem>
+                <SelectItem value="6">6 meses</SelectItem>
+                <SelectItem value="12">12 meses</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3 mb-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs">Mes Actual</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">
+                  ${currentMonth?.total_commission_ars.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {new Date(currentMonth?.period_month || new Date()).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs">Mes Anterior</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">
+                  ${previousMonth?.total_commission_ars.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {new Date(previousMonth?.period_month || new Date()).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs">Variación</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-xl font-bold flex items-center gap-2 ${getTrendColor(monthOverMonthChange)}`}>
+                  {getTrendIcon(monthOverMonthChange)}
+                  {Math.abs(monthOverMonthChange).toFixed(1)}%
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {monthOverMonthChange > 0 ? 'Crecimiento' : monthOverMonthChange < 0 ? 'Descenso' : 'Sin cambios'}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={historicalChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="mes" />
+              <YAxis />
+              <Tooltip 
+                formatter={(value: number) => `$${value.toLocaleString('es-AR', { maximumFractionDigits: 0 })}`}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+              />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="total" 
+                stroke="hsl(var(--primary))" 
+                strokeWidth={2}
+                name="Total"
+                dot={{ r: 4 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="conContrato" 
+                stroke="hsl(var(--chart-1))" 
+                strokeWidth={2}
+                name="Con Contrato"
+                dot={{ r: 4 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="sinContrato" 
+                stroke="hsl(var(--chart-2))" 
+                strokeWidth={2}
+                name="Sin Contrato"
+                dot={{ r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
       {/* Gráficos */}
       <div className="grid gap-6 md:grid-cols-2">
