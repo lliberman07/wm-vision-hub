@@ -106,7 +106,7 @@ const App = () => (
               <Route path="/pms/mi-contrato" element={<MyContract />} />
               <Route path="/pms/help" element={<Help />} />
               <Route path="/pms/my-subscription" element={<MySubscription />} />
-              <Route path="/granada-admin" element={<GranadaAdmin />} />
+              <Route path="/granada-admin/*" element={<GranadaAdmin />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

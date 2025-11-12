@@ -13,13 +13,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Building2,
-  CreditCard,
-  FileBarChart,
   Users,
-  Settings,
   LogOut,
   UserCircle,
-  ArrowLeftRight,
   LayoutDashboard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -40,34 +36,14 @@ const menuItems = [
     path: '/granada-admin/clients',
   },
   {
-    title: 'Suscripciones',
-    icon: CreditCard,
-    path: '/granada-admin/subscriptions',
+    title: 'Usuarios Clientes',
+    icon: Users,
+    path: '/granada-admin/client-users',
   },
   {
-    title: 'Pagos',
-    icon: CreditCard,
-    path: '/granada-admin/payments',
-  },
-  {
-    title: 'Transferencias',
-    icon: ArrowLeftRight,
-    path: '/granada-admin/transfers',
-  },
-  {
-    title: 'Usuarios',
+    title: 'Usuarios Granada',
     icon: Users,
     path: '/granada-admin/platform-users',
-  },
-  {
-    title: 'Reportes',
-    icon: FileBarChart,
-    path: '/granada-admin/reports',
-  },
-  {
-    title: 'Configuración',
-    icon: Settings,
-    path: '/granada-admin/settings',
   },
 ];
 
