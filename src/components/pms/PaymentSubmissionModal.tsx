@@ -23,12 +23,14 @@ import { toast } from "sonner";
 import { ReceiptUpload } from "./ReceiptUpload";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, AlertTriangle } from "lucide-react";
+import { CalendarIcon, AlertTriangle, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDateForDB, formatDateToDisplay, formatDateDisplay } from "@/utils/dateUtils";
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { CurrencyExchangeIndicator } from './CurrencyExchangeIndicator';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 interface PaymentSubmissionModalProps {
   open: boolean;
@@ -67,6 +69,22 @@ export function PaymentSubmissionModal({
   const [notes, setNotes] = useState("");
   const [contractCurrency, setContractCurrency] = useState<string>('ARS');
   const [exchangeRate, setExchangeRate] = useState("");
+
+  // Hook para obtener tipo de cambio automático
+  const { rate: suggestedRate, loading: rateLoading, source: rateSource } = useExchangeRate({
+    date: paidDate ? new Date(paidDate).toISOString().split('T')[0] : undefined,
+    sourceType: 'oficial',
+    preferredType: 'sell'
+  });
+
+  // Auto-completar tipo de cambio cuando hay una sugerencia y las monedas son diferentes
+  useEffect(() => {
+    if (suggestedRate && 
+        paymentCurrency !== contractCurrency && 
+        !exchangeRate) {
+      setExchangeRate(suggestedRate.toString());
+    }
+  }, [suggestedRate, paymentCurrency, contractCurrency]);
 
   useEffect(() => {
     if (open) {
@@ -278,48 +296,64 @@ export function PaymentSubmissionModal({
             />
           </div>
 
-          {/* Alert y tipo de cambio si las monedas son diferentes */}
           {paymentCurrency !== contractCurrency && (
-            <>
-              <Alert className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900">
-                <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                <AlertDescription className="text-yellow-800 dark:text-yellow-200">
-                  El contrato está en <strong>{contractCurrency}</strong> pero estás pagando en <strong>{paymentCurrency}</strong>.
-                  Ingresa el tipo de cambio aplicado.
-                </AlertDescription>
-              </Alert>
-              
-              <div className="space-y-2">
-                <Label htmlFor="exchange-rate">
-                  Tipo de Cambio * (1 {contractCurrency} = ? {paymentCurrency})
-                </Label>
-                <Input
-                  id="exchange-rate"
-                  type="number"
-                  step="0.01"
-                  value={exchangeRate}
-                  onChange={(e) => setExchangeRate(e.target.value)}
-                  placeholder="Ej: 1200.00"
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Valor tipo de Cambio Vendedor Banco Nación Argentina, del día de pago
-                </p>
-                {exchangeRate && paidAmount && (
-                  <CurrencyExchangeIndicator
-                    contractCurrency={contractCurrency}
-                    paymentCurrency={paymentCurrency}
-                    exchangeRate={parseFloat(exchangeRate)}
-                    originalAmount={parseFloat(paidAmount)}
-                    convertedAmount={
-                      paymentCurrency === 'ARS' && contractCurrency === 'USD'
-                        ? parseFloat(paidAmount) / parseFloat(exchangeRate)
-                        : parseFloat(paidAmount) * parseFloat(exchangeRate)
-                    }
-                  />
+            <Alert className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                El contrato está en <strong>{contractCurrency}</strong> pero el pago es en <strong>{paymentCurrency}</strong>.
+                {suggestedRate && !rateLoading && (
+                  <span> Tipo de cambio sugerido: <strong>{suggestedRate.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>
                 )}
-              </div>
-            </>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {paymentCurrency !== contractCurrency && (
+            <div className="space-y-2">
+              <Label htmlFor="exchange-rate" className="flex items-center gap-2">
+                Tipo de Cambio *
+                {suggestedRate && !rateLoading && (
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <TrendingUp className="h-3 w-3" />
+                    Sugerido: {suggestedRate.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Badge>
+                )}
+              </Label>
+              <Input
+                id="exchange-rate"
+                type="number"
+                step="0.01"
+                placeholder={suggestedRate ? suggestedRate.toString() : `1 ${contractCurrency} = ? ${paymentCurrency}`}
+                value={exchangeRate}
+                onChange={(e) => setExchangeRate(e.target.value)}
+                required
+              />
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                {rateSource !== 'no-data' && rateSource !== 'error' && rateSource !== 'no-tenant' ? (
+                  <>
+                    <TrendingUp className="h-3 w-3" />
+                    Dólar {rateSource} (DolarAPI.com)
+                  </>
+                ) : rateLoading ? (
+                  'Cargando tipo de cambio...'
+                ) : (
+                  'Ingrese el tipo de cambio del día de pago'
+                )}
+              </p>
+              {exchangeRate && paidAmount && (
+                <CurrencyExchangeIndicator
+                  contractCurrency={contractCurrency}
+                  paymentCurrency={paymentCurrency}
+                  exchangeRate={parseFloat(exchangeRate)}
+                  originalAmount={parseFloat(paidAmount)}
+                  convertedAmount={
+                    paymentCurrency === 'ARS' && contractCurrency === 'USD'
+                      ? parseFloat(paidAmount) / parseFloat(exchangeRate)
+                      : parseFloat(paidAmount) * parseFloat(exchangeRate)
+                  }
+                />
+              )}
+            </div>
           )}
 
           <div className="space-y-2">

@@ -4,11 +4,14 @@ import { usePMS } from '@/contexts/PMSContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Calendar, RefreshCw } from 'lucide-react';
 import { formatDateDisplay } from '@/utils/dateUtils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface ExchangeRateData {
   date: string;
@@ -33,12 +36,55 @@ export function ExchangeRatesAnalytics() {
   const [monthlyData, setMonthlyData] = useState<MonthlyStats[]>([]);
   const [currentRate, setCurrentRate] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
 
   useEffect(() => {
     if (currentTenant?.id) {
       fetchExchangeRates();
+      fetchLastSync();
     }
   }, [currentTenant?.id]);
+
+  const fetchLastSync = async () => {
+    if (!currentTenant?.id) return;
+    
+    try {
+      const { data } = await supabase
+        .from('pms_exchange_rates')
+        .select('created_at')
+        .eq('tenant_id', currentTenant.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (data) {
+        setLastSync(data.created_at);
+      }
+    } catch (error) {
+      console.error('Error fetching last sync:', error);
+    }
+  };
+
+  const handleForceSync = async () => {
+    setSyncing(true);
+    try {
+      const { error } = await supabase.functions.invoke('sync-exchange-rates', {
+        body: { triggered_at: new Date().toISOString() }
+      });
+      
+      if (error) throw error;
+      
+      toast.success('Tipos de cambio actualizados exitosamente');
+      await fetchExchangeRates();
+      await fetchLastSync();
+    } catch (error) {
+      console.error('Error syncing exchange rates:', error);
+      toast.error('Error al sincronizar tipos de cambio');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const fetchExchangeRates = async () => {
     if (!currentTenant?.id) return;
@@ -165,6 +211,26 @@ export function ExchangeRatesAnalytics() {
 
   return (
     <div className="space-y-6">
+      {lastSync && (
+        <Alert>
+          <Calendar className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              Última sincronización: {new Date(lastSync).toLocaleString('es-AR')}
+            </span>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={handleForceSync}
+              disabled={syncing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Sincronizando...' : 'Sincronizar Ahora'}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>

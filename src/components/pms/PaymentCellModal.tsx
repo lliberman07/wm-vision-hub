@@ -11,14 +11,17 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CalendarIcon, AlertCircle } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDateForDB, formatDateToDisplay, formatDateDisplay } from '@/utils/dateUtils';
 import { formatCurrency } from '@/utils/numberFormat';
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { CurrencyExchangeIndicator } from './CurrencyExchangeIndicator';
+import { Badge } from '@/components/ui/badge';
+import { TrendingUp, AlertCircle } from 'lucide-react';
 
 const formSchema = z.object({
   paid_date: z.date({ required_error: 'Fecha de pago requerida' }),
@@ -71,6 +74,14 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
   const paymentCurrency = form.watch('payment_currency');
   const exchangeRate = form.watch('exchange_rate');
   const paidAmount = form.watch('paid_amount');
+  const paidDate = form.watch('paid_date');
+
+  // Hook para obtener tipo de cambio automático
+  const { rate: suggestedRate, loading: rateLoading, source: rateSource } = useExchangeRate({
+    date: paidDate ? new Date(paidDate).toISOString().split('T')[0] : undefined,
+    sourceType: 'oficial',
+    preferredType: 'sell'
+  });
 
   // Obtener moneda del contrato
   useEffect(() => {
@@ -79,6 +90,15 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
       form.setValue('payment_currency', scheduleItem.currency as 'ARS' | 'USD');
     }
   }, [scheduleItem?.currency]);
+
+  // Auto-completar tipo de cambio cuando hay una sugerencia y las monedas son diferentes
+  useEffect(() => {
+    if (suggestedRate && 
+        paymentCurrency !== contractCurrency && 
+        !form.getValues('exchange_rate')) {
+      form.setValue('exchange_rate', suggestedRate);
+    }
+  }, [suggestedRate, paymentCurrency, contractCurrency]);
 
   // Auto-calcular monto a pagar cuando cambia la moneda de pago o el tipo de cambio
   useEffect(() => {

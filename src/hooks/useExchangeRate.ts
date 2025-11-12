@@ -23,8 +23,8 @@ export function useExchangeRate(options: ExchangeRateOptions = {}): ExchangeRate
 
   const fetchExchangeRate = async () => {
     if (!currentTenant?.id) {
-      setRate(1450); // Fallback
-      setSource('default');
+      setRate(null);
+      setSource('no-tenant');
       setLoading(false);
       return;
     }
@@ -32,7 +32,7 @@ export function useExchangeRate(options: ExchangeRateOptions = {}): ExchangeRate
     setLoading(true);
     
     const targetDate = options.date || new Date().toISOString().split('T')[0];
-    const sourceType = options.sourceType || 'oficial'; // Default a oficial
+    const sourceType = options.sourceType || 'oficial';
     const preferredType = options.preferredType || 'sell';
 
     try {
@@ -65,15 +65,36 @@ export function useExchangeRate(options: ExchangeRateOptions = {}): ExchangeRate
         setRate(Number(rateValue));
         setSource(`${data.source_type} (${data.date})`);
       } else {
-        // Fallback a valor por defecto
-        console.warn('No exchange rate found, using default value');
-        setRate(1450);
-        setSource('default');
+        // No hay datos - intentar llamar API directamente como fallback
+        console.warn('No exchange rate found in DB, calling API directly');
+        try {
+          const apiUrl = sourceType === 'blue' 
+            ? 'https://dolarapi.com/v1/dolares/blue'
+            : sourceType === 'mep'
+            ? 'https://dolarapi.com/v1/dolares/bolsa'
+            : 'https://dolarapi.com/v1/dolares/oficial';
+          
+          const response = await fetch(apiUrl);
+          const apiData = await response.json();
+          
+          if (apiData && apiData.venta) {
+            const rateValue = preferredType === 'sell' ? apiData.venta : apiData.compra;
+            setRate(Number(rateValue));
+            setSource(`API ${sourceType} (${new Date().toISOString().split('T')[0]})`);
+          } else {
+            setRate(null);
+            setSource('no-data');
+          }
+        } catch (apiError) {
+          console.error('Error fetching from API:', apiError);
+          setRate(null);
+          setSource('error');
+        }
       }
     } catch (err) {
       console.error('Error fetching exchange rate:', err);
-      setRate(1450);
-      setSource('default');
+      setRate(null);
+      setSource('error');
     } finally {
       setLoading(false);
     }
