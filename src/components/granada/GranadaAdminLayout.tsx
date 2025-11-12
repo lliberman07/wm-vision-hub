@@ -45,6 +45,21 @@ const menuItems = [
     icon: Users,
     path: '/granada-admin/platform-users',
   },
+  {
+    title: 'Planes',
+    icon: Users,
+    path: '/granada-admin/subscription-plans',
+  },
+  {
+    title: 'Suscripciones',
+    icon: Users,
+    path: '/granada-admin/subscriptions',
+  },
+  {
+    title: 'Pagos',
+    icon: Users,
+    path: '/granada-admin/payments',
+  },
 ];
 
 export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
