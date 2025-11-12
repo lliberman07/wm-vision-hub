@@ -36,7 +36,14 @@ const ClientContext = createContext<ClientContextType | undefined>(undefined);
 export const useClient = () => {
   const context = useContext(ClientContext);
   if (!context) {
-    throw new Error('useClient must be used within a ClientProvider');
+    // Return default values when not within provider
+    return {
+      isClientAdmin: false,
+      clientData: null,
+      subscription: null,
+      loading: false,
+      refreshClientData: async () => {},
+    };
   }
   return context;
 };
