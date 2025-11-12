@@ -55,6 +55,8 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
   const [loading, setLoading] = useState(true);
   const [displayCurrency, setDisplayCurrency] = useState<'contract' | 'payment'>('contract');
   const [contractCurrency, setContractCurrency] = useState<string>('ARS');
+  const [propertyValue, setPropertyValue] = useState<number>(0);
+  const [property, setProperty] = useState<any>(null);
   
   // Obtener tipo de cambio dinámico
   const { rate: exchangeRate } = useExchangeRate({
@@ -76,10 +78,10 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
     try {
       console.log('🔍 Fetching owner totals - viewByPaymentDate:', viewByPaymentDate);
 
-      // 1. Obtener información del contrato (incluyendo currency)
+      // 1. Obtener información del contrato (incluyendo currency y propiedad)
       const { data: contract, error: contractError } = await supabase
         .from('pms_contracts')
-        .select('property_id, currency')
+        .select('property_id, currency, pms_properties!inner(id, valor_venta, code, address)')
         .eq('id', selectedContract)
         .single();
 
@@ -87,6 +89,17 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
       if (!contract) {
         setOwnerTotals([]);
         return;
+      }
+
+      // Guardar información de la propiedad
+      const propertyData = contract.pms_properties;
+      setProperty(propertyData);
+
+      // Pre-llenar el valor de mercado si existe en la propiedad
+      if (propertyData?.valor_venta && propertyData.valor_venta > 0) {
+        setPropertyValue(propertyData.valor_venta);
+      } else {
+        setPropertyValue(0);
       }
 
       // Guardar moneda del contrato
@@ -619,7 +632,8 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
       <PropertyYieldCalculator
         monthlyNetIncome={consolidatedResult.netResult / Object.keys(groupByPeriod(ownerTotals)).length || 0}
         functionalCurrency={contractCurrency === 'USD' ? 'USD' : 'USD'}
-        propertyValue={0}
+        propertyValue={propertyValue}
+        onPropertyValueChange={setPropertyValue}
         showExchangeRateInfo={true}
       />
 

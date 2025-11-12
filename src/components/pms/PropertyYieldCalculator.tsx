@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -11,20 +11,34 @@ interface PropertyYieldCalculatorProps {
   monthlyNetIncome: number;
   functionalCurrency: string;
   propertyValue?: number;
+  onPropertyValueChange?: (value: number) => void;
   showExchangeRateInfo?: boolean;
 }
 
 export const PropertyYieldCalculator = ({
   monthlyNetIncome,
   functionalCurrency,
-  propertyValue: initialValue = 0,
+  propertyValue: externalValue = 0,
+  onPropertyValueChange,
   showExchangeRateInfo = false
 }: PropertyYieldCalculatorProps) => {
-  const [propertyValue, setPropertyValue] = useState(initialValue);
+  const [internalValue, setInternalValue] = useState(externalValue);
   const { rate: exchangeRate, source } = useExchangeRate({
     sourceType: 'oficial',
     preferredType: 'sell'
   });
+
+  // Sincronizar con valor externo cuando cambia
+  useEffect(() => {
+    setInternalValue(externalValue);
+  }, [externalValue]);
+
+  const handleValueChange = (newValue: number) => {
+    setInternalValue(newValue);
+    onPropertyValueChange?.(newValue);
+  };
+
+  const propertyValue = internalValue;
 
   const annualIncome = monthlyNetIncome * 12;
   const grossYield = propertyValue > 0 ? (annualIncome / propertyValue) * 100 : 0;
@@ -47,7 +61,7 @@ export const PropertyYieldCalculator = ({
             id="propertyValue"
             type="number"
             value={propertyValue || ''}
-            onChange={(e) => setPropertyValue(Number(e.target.value))}
+            onChange={(e) => handleValueChange(Number(e.target.value))}
             placeholder="Ej: 150000"
             className="mt-1.5"
           />

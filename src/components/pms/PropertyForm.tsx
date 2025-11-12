@@ -946,10 +946,23 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                 name="valor_venta"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Valor Venta</FormLabel>
+                    <FormLabel>Valor Venta (USD)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} placeholder="Ingrese valor" />
+                      <div className="relative">
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          onChange={e => field.onChange(e.target.valueAsNumber)} 
+                          placeholder="Ej: 150000" 
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                          USD
+                        </span>
+                      </div>
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      El valor debe estar expresado en dólares (USD)
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

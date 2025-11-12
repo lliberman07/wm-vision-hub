@@ -265,7 +265,12 @@ export const PropertyDetailsDialog = ({ open, onOpenChange, property }: Property
               {property.valor_venta && property.valor_venta > 0 && (
                 <div className="space-y-2">
                   <Label className="text-muted-foreground">Valor Venta</Label>
-                  <p className="font-medium">${property.valor_venta.toLocaleString()}</p>
+                  <p className="font-medium">
+                    USD ${property.valor_venta.toLocaleString('es-AR', {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    })}
+                  </p>
                 </div>
               )}
             </div>
