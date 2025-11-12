@@ -6,9 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PMSProvider } from "@/contexts/PMSContext";
+import { GranadaAuthProvider } from "@/contexts/GranadaAuthContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import GranadaAdmin from "./pages/GranadaAdmin";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import PropertyManagement from "./pages/PropertyManagement";
@@ -54,10 +56,11 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <AuthProvider>
-          <PMSProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+          <GranadaAuthProvider>
+            <PMSProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
               <ScrollToTop />
               <Routes>
               <Route path="/" element={<Index />} />
@@ -103,13 +106,15 @@ const App = () => (
               <Route path="/pms/mi-contrato" element={<MyContract />} />
               <Route path="/pms/help" element={<Help />} />
               <Route path="/pms/my-subscription" element={<MySubscription />} />
+              <Route path="/granada-admin" element={<GranadaAdmin />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-          </PMSProvider>
+            </PMSProvider>
+          </GranadaAuthProvider>
         </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>

@@ -480,6 +480,42 @@ export type Database = {
           },
         ]
       }
+      granada_platform_users: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          email: string
+          first_name: string
+          id: string
+          is_active: boolean | null
+          last_name: string
+          role: Database["public"]["Enums"]["granada_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          email: string
+          first_name: string
+          id?: string
+          is_active?: boolean | null
+          last_name: string
+          role: Database["public"]["Enums"]["granada_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          is_active?: boolean | null
+          last_name?: string
+          role?: Database["public"]["Enums"]["granada_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       investment_simulations: {
         Row: {
           analysis_results: Json
@@ -832,6 +868,85 @@ export type Database = {
           },
           {
             foreignKeyName: "pms_cashflow_property_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pms_client_users: {
+        Row: {
+          contract_id: string | null
+          created_at: string | null
+          created_by: string | null
+          cuit_cuil: string | null
+          deactivated_at: string | null
+          deactivated_by: string | null
+          email: string
+          first_name: string | null
+          id: string
+          is_active: boolean | null
+          last_name: string | null
+          owner_id: string | null
+          phone: string | null
+          tenant_id: string
+          user_id: string
+          user_type: Database["public"]["Enums"]["pms_client_user_type"]
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          cuit_cuil?: string | null
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          email: string
+          first_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_name?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          tenant_id: string
+          user_id: string
+          user_type: Database["public"]["Enums"]["pms_client_user_type"]
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          cuit_cuil?: string | null
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          email?: string
+          first_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_name?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          tenant_id?: string
+          user_id?: string
+          user_type?: Database["public"]["Enums"]["pms_client_user_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_client_users_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_client_users_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "pms_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_client_users_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "pms_tenants"
@@ -2885,6 +3000,7 @@ export type Database = {
       pms_tenants: {
         Row: {
           admin_email: string | null
+          client_type: Database["public"]["Enums"]["pms_client_type"] | null
           created_at: string | null
           current_subscription_id: string | null
           exchange_rate_source: string | null
@@ -2901,6 +3017,7 @@ export type Database = {
         }
         Insert: {
           admin_email?: string | null
+          client_type?: Database["public"]["Enums"]["pms_client_type"] | null
           created_at?: string | null
           current_subscription_id?: string | null
           exchange_rate_source?: string | null
@@ -2917,6 +3034,7 @@ export type Database = {
         }
         Update: {
           admin_email?: string | null
+          client_type?: Database["public"]["Enums"]["pms_client_type"] | null
           created_at?: string | null
           current_subscription_id?: string | null
           exchange_rate_source?: string | null
@@ -3777,10 +3895,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_client_admin: {
+        Args: { tenant_id?: string; user_id: string }
+        Returns: boolean
+      }
       is_contract_active: {
         Args: { contract_id_param: string }
         Returns: boolean
       }
+      is_granada_admin: { Args: { user_id: string }; Returns: boolean }
+      is_granada_superadmin: { Args: { user_id: string }; Returns: boolean }
       is_superadmin_pms: { Args: never; Returns: boolean }
       link_existing_payments_to_schedule: {
         Args: { contract_id_param: string }
@@ -3870,6 +3994,7 @@ export type Database = {
       billing_cycle: "monthly" | "yearly"
       employment_status: "employed" | "self-employed" | "other"
       entity_type: "persona" | "empresa"
+      granada_role: "GRANADA_SUPERADMIN" | "GRANADA_ADMIN"
       invoice_status: "pending" | "paid" | "overdue" | "cancelled" | "refunded"
       module_type: "WM" | "PMS"
       pms_app_role:
@@ -3880,6 +4005,11 @@ export type Database = {
         | "INQUILINO"
         | "PROVEEDOR"
         | "GESTOR"
+      pms_client_type:
+        | "INMOBILIARIA"
+        | "ADMINISTRADOR_INDEPENDIENTE"
+        | "PROPIETARIO"
+      pms_client_user_type: "CLIENT_ADMIN" | "PROPIETARIO" | "INQUILINO"
       pms_tenant_type:
         | "inmobiliaria"
         | "administrador"
@@ -4046,6 +4176,7 @@ export const Constants = {
       billing_cycle: ["monthly", "yearly"],
       employment_status: ["employed", "self-employed", "other"],
       entity_type: ["persona", "empresa"],
+      granada_role: ["GRANADA_SUPERADMIN", "GRANADA_ADMIN"],
       invoice_status: ["pending", "paid", "overdue", "cancelled", "refunded"],
       module_type: ["WM", "PMS"],
       pms_app_role: [
@@ -4057,6 +4188,12 @@ export const Constants = {
         "PROVEEDOR",
         "GESTOR",
       ],
+      pms_client_type: [
+        "INMOBILIARIA",
+        "ADMINISTRADOR_INDEPENDIENTE",
+        "PROPIETARIO",
+      ],
+      pms_client_user_type: ["CLIENT_ADMIN", "PROPIETARIO", "INQUILINO"],
       pms_tenant_type: [
         "inmobiliaria",
         "administrador",
