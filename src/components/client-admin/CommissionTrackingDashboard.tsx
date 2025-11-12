@@ -34,6 +34,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
+  Target,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -80,10 +81,21 @@ interface HistoricalData {
   avg_commission_percentage: number;
 }
 
+interface AnnualProjection {
+  total_projection: number;
+  from_active_contracts: number;
+  from_properties_without_contract: number;
+  active_contracts_count: number;
+  properties_without_contract_count: number;
+  avg_monthly_commission: number;
+  projection_details: any;
+}
+
 export function CommissionTrackingDashboard() {
   const { clientData } = useClient();
   const [data, setData] = useState<CommissionData[]>([]);
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
+  const [annualProjection, setAnnualProjection] = useState<AnnualProjection | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -93,6 +105,7 @@ export function CommissionTrackingDashboard() {
   useEffect(() => {
     loadCommissionData();
     loadHistoricalData();
+    loadAnnualProjection();
   }, [clientData, monthsToShow]);
 
   const loadCommissionData = async () => {
@@ -117,18 +130,34 @@ export function CommissionTrackingDashboard() {
 
   const loadHistoricalData = async () => {
     if (!clientData?.id) return;
-
+    
     try {
-      const { data: result, error } = await supabase
-        .rpc('get_tenant_commission_history', {
-          p_tenant_id: clientData.id,
-          p_months_back: monthsToShow
-        });
+      const { data, error } = await supabase.rpc('get_tenant_commission_history', {
+        p_tenant_id: clientData.id,
+        p_months_back: monthsToShow
+      });
 
       if (error) throw error;
-      setHistoricalData((result || []) as HistoricalData[]);
+      setHistoricalData(data || []);
     } catch (error) {
-      console.error('Error loading historical data:', error);
+      console.error("Error loading historical data:", error);
+    }
+  };
+
+  const loadAnnualProjection = async () => {
+    if (!clientData?.id) return;
+    
+    try {
+      const { data, error } = await supabase.rpc('get_tenant_annual_commission_projection', {
+        p_tenant_id: clientData.id
+      });
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        setAnnualProjection(data[0]);
+      }
+    } catch (error) {
+      console.error("Error loading annual projection:", error);
     }
   };
 
@@ -332,6 +361,90 @@ export function CommissionTrackingDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Proyección Anual */}
+      {annualProjection && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Proyección Anual
+            </CardTitle>
+            <CardDescription>
+              Estimación de ingresos por comisiones basada en contratos activos y propiedades disponibles
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <CardContent className="pt-6">
+                  <div className="text-sm text-muted-foreground mb-2">Proyección Total</div>
+                  <div className="text-3xl font-bold text-primary">
+                    ${annualProjection.total_projection.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Promedio mensual: ${annualProjection.avg_monthly_commission.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+                <CardContent className="pt-6">
+                  <div className="text-sm text-muted-foreground mb-2">Contratos Activos</div>
+                  <div className="text-3xl font-bold text-green-600">
+                    ${annualProjection.from_active_contracts.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    {annualProjection.active_contracts_count} contrato{annualProjection.active_contracts_count !== 1 ? 's' : ''}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
+                <CardContent className="pt-6">
+                  <div className="text-sm text-muted-foreground mb-2">Propiedades Disponibles</div>
+                  <div className="text-3xl font-bold text-amber-600">
+                    ${annualProjection.from_properties_without_contract.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    {annualProjection.properties_without_contract_count} propiedad{annualProjection.properties_without_contract_count !== 1 ? 'es' : ''}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="bg-muted/30 rounded-lg p-4">
+              <h4 className="text-sm font-semibold mb-3">Desglose de la Proyección</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Ingresos confirmados (contratos activos):</span>
+                  <span className="font-medium text-green-600">
+                    ${annualProjection.from_active_contracts.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Potencial de ingresos (propiedades disponibles):</span>
+                  <span className="font-medium text-amber-600">
+                    ${annualProjection.from_properties_without_contract.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="border-t pt-2 mt-2">
+                  <div className="flex justify-between font-semibold">
+                    <span>Total proyectado:</span>
+                    <span className="text-primary">
+                      ${annualProjection.total_projection.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-4 italic">
+                * La proyección de contratos activos considera los meses restantes hasta su vencimiento. 
+                La proyección de propiedades disponibles asume contratación anual (12 meses).
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Comparativa Histórica */}
       <Card>
