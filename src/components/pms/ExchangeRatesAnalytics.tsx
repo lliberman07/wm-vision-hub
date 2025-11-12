@@ -307,23 +307,7 @@ export function ExchangeRatesAnalytics() {
             {monthlyData.map((monthData) => (
               <AccordionItem key={monthData.month} value={monthData.month}>
                 <AccordionTrigger className="hover:no-underline">
-                  <div className="flex items-center justify-between w-full pr-4">
-                    <span className="font-semibold">{monthData.monthLabel}</span>
-                    <div className="flex items-center gap-4 text-sm">
-                      <Badge variant="outline">
-                        Promedio: ${monthData.avg_sell.toFixed(2)}
-                      </Badge>
-                      <Badge variant="outline">
-                        Min: ${monthData.min_sell.toFixed(2)}
-                      </Badge>
-                      <Badge variant="outline">
-                        Max: ${monthData.max_sell.toFixed(2)}
-                      </Badge>
-                      <Badge variant={monthData.variance_pct >= 0 ? "default" : "destructive"}>
-                        {monthData.variance_pct >= 0 ? '+' : ''}{monthData.variance_pct.toFixed(2)}%
-                      </Badge>
-                    </div>
-                  </div>
+                  <span className="font-semibold">{monthData.monthLabel}</span>
                 </AccordionTrigger>
                 <AccordionContent>
                   <Table>

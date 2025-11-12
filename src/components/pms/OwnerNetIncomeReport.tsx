@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { PropertyYieldCalculator } from './PropertyYieldCalculator';
 import { consolidateFlows, type CurrencyFlows } from '@/utils/currencyConversion';
+import { useExchangeRate } from '@/hooks/useExchangeRate';
 
 interface OwnerNetIncomeReportProps {
   tenantId: string;
@@ -54,7 +55,12 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
   const [loading, setLoading] = useState(true);
   const [displayCurrency, setDisplayCurrency] = useState<'contract' | 'payment'>('contract');
   const [contractCurrency, setContractCurrency] = useState<string>('ARS');
-  const [exchangeRate, setExchangeRate] = useState<number>(1450);
+  
+  // Obtener tipo de cambio dinámico
+  const { rate: exchangeRate } = useExchangeRate({
+    sourceType: 'oficial',
+    preferredType: 'sell'
+  });
   
   // Sincronizar con el modo externo
   const viewByPaymentDate = viewMode === 'cash';
@@ -614,6 +620,7 @@ export const OwnerNetIncomeReport = ({ tenantId, selectedContract, viewMode = 'c
         monthlyNetIncome={consolidatedResult.netResult / Object.keys(groupByPeriod(ownerTotals)).length || 0}
         functionalCurrency={contractCurrency === 'USD' ? 'USD' : 'USD'}
         propertyValue={0}
+        showExchangeRateInfo={true}
       />
 
       <Card className="mt-6 border-primary/20">

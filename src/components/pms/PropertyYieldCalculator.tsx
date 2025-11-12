@@ -3,20 +3,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { TrendingUp, Percent, DollarSign, Calculator } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { TrendingUp, Percent, DollarSign, Calculator, Info } from 'lucide-react';
+import { useExchangeRate } from '@/hooks/useExchangeRate';
 
 interface PropertyYieldCalculatorProps {
   monthlyNetIncome: number;
   functionalCurrency: string;
   propertyValue?: number;
+  showExchangeRateInfo?: boolean;
 }
 
 export const PropertyYieldCalculator = ({
   monthlyNetIncome,
   functionalCurrency,
-  propertyValue: initialValue = 0
+  propertyValue: initialValue = 0,
+  showExchangeRateInfo = false
 }: PropertyYieldCalculatorProps) => {
   const [propertyValue, setPropertyValue] = useState(initialValue);
+  const { rate: exchangeRate, source } = useExchangeRate({
+    sourceType: 'oficial',
+    preferredType: 'sell'
+  });
 
   const annualIncome = monthlyNetIncome * 12;
   const grossYield = propertyValue > 0 ? (annualIncome / propertyValue) * 100 : 0;
@@ -84,6 +92,21 @@ export const PropertyYieldCalculator = ({
             description="Asumiendo 15% gastos operativos"
           />
         </div>
+
+        {showExchangeRateInfo && exchangeRate && (
+          <>
+            <Separator />
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                Tipo de cambio utilizado: 1 USD = ${exchangeRate.toLocaleString('es-AR', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })} ARS. Los montos se consolidaron a USD para cálculo de rendimiento.
+              </AlertDescription>
+            </Alert>
+          </>
+        )}
       </CardContent>
     </Card>
   );
