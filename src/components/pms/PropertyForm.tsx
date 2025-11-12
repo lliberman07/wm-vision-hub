@@ -953,10 +953,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                             </div>
                           </SelectItem>
                           <SelectItem value="USD">
-                            <div className="flex items-center gap-2">
-                              <DollarSign className="h-4 w-4" />
-                              <span>Dólar (USD)</span>
-                            </div>
+                            <span>Dólar (USD)</span>
                           </SelectItem>
                         </SelectContent>
                       </Select>
