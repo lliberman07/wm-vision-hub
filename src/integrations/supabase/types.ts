@@ -2746,6 +2746,8 @@ export type Database = {
       pms_properties: {
         Row: {
           address: string
+          admin_commission_fixed_amount: number | null
+          admin_commission_percentage: number | null
           alias: string | null
           alquiler_moneda: string | null
           amenities: string[] | null
@@ -2792,6 +2794,8 @@ export type Database = {
         }
         Insert: {
           address: string
+          admin_commission_fixed_amount?: number | null
+          admin_commission_percentage?: number | null
           alias?: string | null
           alquiler_moneda?: string | null
           amenities?: string[] | null
@@ -2838,6 +2842,8 @@ export type Database = {
         }
         Update: {
           address?: string
+          admin_commission_fixed_amount?: number | null
+          admin_commission_percentage?: number | null
           alias?: string | null
           alquiler_moneda?: string | null
           amenities?: string[] | null
@@ -3848,6 +3854,24 @@ export type Database = {
       get_tenant_admin_user_count: {
         Args: { tenant_id_param: string }
         Returns: number
+      }
+      get_tenant_commission_report: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          commission_amount_ars: number
+          commission_type: string
+          commission_value: number
+          contract_id: string
+          contract_number: string
+          has_active_contract: boolean
+          is_within_subscription_limit: boolean
+          monthly_rent: number
+          property_address: string
+          property_code: string
+          property_id: string
+          property_status: string
+          rent_currency: string
+        }[]
       }
       get_tenant_consuming_users_count: {
         Args: { p_tenant_id: string }

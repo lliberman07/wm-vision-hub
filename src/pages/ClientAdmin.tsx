@@ -11,6 +11,7 @@ import { ClientUsersManagement } from '@/components/client-admin/ClientUsersMana
 import { ClientSubscriptionPanel } from '@/components/client-admin/ClientSubscriptionPanel';
 import { ClientReportsPanel } from '@/components/client-admin/ClientReportsPanel';
 import { ClientSettings } from '@/components/client-admin/ClientSettings';
+import { CommissionTrackingDashboard } from '@/components/client-admin/CommissionTrackingDashboard';
 
 export default function ClientAdmin() {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ export default function ClientAdmin() {
         <Route path="/analytics" element={<ClientAnalyticsDashboard />} />
         <Route path="/users" element={<ClientUsersManagement />} />
         <Route path="/subscription" element={<ClientSubscriptionPanel />} />
+        <Route path="/commissions" element={<CommissionTrackingDashboard />} />
         <Route path="/reports" element={<ClientReportsPanel />} />
         <Route path="/settings" element={<ClientSettings />} />
       </Routes>

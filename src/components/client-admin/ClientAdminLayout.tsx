@@ -23,6 +23,7 @@ import {
   Settings,
   Home,
   BarChart3,
+  DollarSign,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -51,6 +52,11 @@ const menuItems = [
     title: 'Suscripción',
     icon: CreditCard,
     path: '/client-admin/subscription',
+  },
+  {
+    title: 'Comisiones',
+    icon: DollarSign,
+    path: '/client-admin/commissions',
   },
   {
     title: 'Reportes',

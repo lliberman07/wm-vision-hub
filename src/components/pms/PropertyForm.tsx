@@ -18,7 +18,8 @@ import { PropertyPhotosUpload } from './PropertyPhotosUpload';
 import { usePropertyStatus } from '@/hooks/usePropertyStatus';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Bot, Wrench, Loader2, AlertCircle, DollarSign } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Bot, Wrench, Loader2, AlertCircle, DollarSign, Info } from 'lucide-react';
 
 const formSchema = z.object({
   code: z.string().min(1, 'Código requerido'),
@@ -50,6 +51,8 @@ const formSchema = z.object({
   alquiler_moneda: z.enum(['ARS', 'USD']).default('ARS'),
   valor_venta: z.number().min(0).optional(),
   estado_publicacion: z.string().optional(),
+  admin_commission_percentage: z.number().min(0).max(100).optional(),
+  admin_commission_fixed_amount: z.number().min(0).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -230,6 +233,8 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         alquiler_moneda: property.alquiler_moneda || 'ARS',
         valor_venta: property.valor_venta || 0,
         estado_publicacion: property.estado_publicacion || 'borrador',
+        admin_commission_percentage: property.admin_commission_percentage || 10,
+        admin_commission_fixed_amount: property.admin_commission_fixed_amount || 50000,
       });
       setPhotos(property.photos || []);
     } else if (open && !property) {
@@ -263,6 +268,8 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         alquiler_moneda: 'ARS',
         valor_venta: 0,
         estado_publicacion: 'borrador',
+        admin_commission_percentage: 10,
+        admin_commission_fixed_amount: 50000,
       });
       setPhotos([]);
     }
@@ -330,6 +337,8 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         alquiler_moneda: data.alquiler_moneda,
         valor_venta: data.valor_venta,
         estado_publicacion: data.estado_publicacion,
+        admin_commission_percentage: data.admin_commission_percentage,
+        admin_commission_fixed_amount: data.admin_commission_fixed_amount,
         tenant_id: currentTenant?.id,
         photos: photos,
       };
@@ -1054,6 +1063,110 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
                 </FormItem>
               )}
             />
+
+            <Separator className="my-4" />
+
+            {/* Sección de Comisiones */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Configuración de Comisiones
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Define los honorarios por administración de esta propiedad
+                </p>
+              </div>
+              
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li><strong>Con contrato activo:</strong> Se cobra un porcentaje sobre la renta mensual</li>
+                    <li><strong>Sin contrato:</strong> Se cobra un monto fijo por gestión y mantenimiento</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="admin_commission_percentage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        Comisión con Contrato Activo (%)
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">
+                                Porcentaje que se cobrará sobre la renta mensual cuando exista un contrato activo
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="100"
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          placeholder="Ej: 10.00"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Ejemplo: 10% sobre $1.000.000 = $100.000
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="admin_commission_fixed_amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        Comisión sin Contrato (ARS)
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">
+                                Monto fijo en pesos que se cobrará mensualmente cuando no haya contrato activo
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="1000"
+                          min="0"
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          placeholder="Ej: 50000"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Por gestión, marketing y mantenimiento preventivo
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
             <Separator className="my-4" />
 

@@ -3,7 +3,7 @@ import { useClient } from '@/contexts/ClientContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Building2, FileText, AlertCircle, DollarSign, TrendingUp } from 'lucide-react';
+import { Users, Building2, FileText, AlertCircle, DollarSign, TrendingUp, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,14 +17,28 @@ interface Stats {
   monthly_revenue: number;
 }
 
+interface CommissionStats {
+  total_monthly_commission_ars: number;
+  properties_with_contract: number;
+  properties_without_contract: number;
+  properties_out_limit: number;
+}
+
 export function ClientAdminDashboard() {
   const { clientData, subscription } = useClient();
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [commissionStats, setCommissionStats] = useState<CommissionStats>({
+    total_monthly_commission_ars: 0,
+    properties_with_contract: 0,
+    properties_without_contract: 0,
+    properties_out_limit: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadStats();
+    loadCommissionStats();
   }, [clientData]);
 
   const loadStats = async () => {
@@ -41,6 +55,32 @@ export function ClientAdminDashboard() {
       console.error('Error loading stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCommissionStats = async () => {
+    if (!clientData?.id) return;
+
+    try {
+      const { data, error } = await supabase.rpc('get_tenant_commission_report', {
+        p_tenant_id: clientData.id
+      });
+
+      if (data) {
+        const stats = {
+          total_monthly_commission_ars: data.reduce((sum: number, p: any) => 
+            sum + (p.commission_amount_ars || 0), 0),
+          properties_with_contract: data.filter((p: any) => 
+            p.has_active_contract).length,
+          properties_without_contract: data.filter((p: any) => 
+            !p.has_active_contract).length,
+          properties_out_limit: data.filter((p: any) => 
+            !p.is_within_subscription_limit).length,
+        };
+        setCommissionStats(stats);
+      }
+    } catch (error) {
+      console.error('Error loading commission stats:', error);
     }
   };
 
@@ -153,6 +193,41 @@ export function ClientAdminDashboard() {
               ${(stats?.monthly_revenue || 0).toLocaleString('es-AR')}
             </div>
             <p className="text-xs text-muted-foreground">Pagos recibidos este mes</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Comisiones Mensuales</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
+              ${commissionStats.total_monthly_commission_ars.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+            </div>
+            <div className="space-y-1 mt-2">
+              <p className="text-xs text-muted-foreground">
+                <CheckCircle2 className="h-3 w-3 inline mr-1 text-green-600" />
+                {commissionStats.properties_with_contract} con contrato
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <Building2 className="h-3 w-3 inline mr-1 text-blue-600" />
+                {commissionStats.properties_without_contract} sin contrato
+              </p>
+              {commissionStats.properties_out_limit > 0 && (
+                <p className="text-xs text-destructive">
+                  <AlertTriangle className="h-3 w-3 inline mr-1" />
+                  {commissionStats.properties_out_limit} fuera del límite
+                </p>
+              )}
+            </div>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto mt-2 text-xs"
+              onClick={() => navigate('/client-admin/commissions')}
+            >
+              Ver detalle completo →
+            </Button>
           </CardContent>
         </Card>
       </div>
