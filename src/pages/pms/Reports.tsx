@@ -399,12 +399,14 @@ const Reports = () => {
           </TabsList>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 my-8">
-          <Card>
+          <Card className="card-elevated hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Propiedades Totales
               </CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-500/20">
+                <Building2 className="h-4 w-4 text-blue-500" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalProperties}</div>
@@ -414,12 +416,14 @@ const Reports = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="card-elevated hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Contratos Activos
               </CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-gradient-to-br from-success/10 to-success/20">
+                <FileText className="h-4 w-4 text-success" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.activeContracts}</div>
@@ -429,12 +433,14 @@ const Reports = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="card-elevated hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Inquilinos
               </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/10 to-purple-500/20">
+                <Users className="h-4 w-4 text-purple-500" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.activeTenants}</div>
@@ -444,12 +450,14 @@ const Reports = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="card-elevated hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Ingresos Cobrados
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-gradient-to-br from-accent/10 to-accent/20">
+                <TrendingUp className="h-4 w-4 text-accent" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
