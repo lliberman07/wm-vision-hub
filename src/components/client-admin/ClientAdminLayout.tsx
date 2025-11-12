@@ -22,6 +22,7 @@ import {
   FileBarChart,
   Settings,
   Home,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,6 +36,11 @@ const menuItems = [
     title: 'Dashboard',
     icon: LayoutDashboard,
     path: '/client-admin',
+  },
+  {
+    title: 'Analíticas',
+    icon: BarChart3,
+    path: '/client-admin/analytics',
   },
   {
     title: 'Usuarios',

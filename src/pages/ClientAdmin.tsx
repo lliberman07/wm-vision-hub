@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ClientAdminLayout } from '@/components/client-admin/ClientAdminLayout';
 import { ClientAdminDashboard } from '@/components/client-admin/ClientAdminDashboard';
+import { ClientAnalyticsDashboard } from '@/components/client-admin/ClientAnalyticsDashboard';
 import { ClientUsersManagement } from '@/components/client-admin/ClientUsersManagement';
 import { ClientSubscriptionPanel } from '@/components/client-admin/ClientSubscriptionPanel';
 import { ClientReportsPanel } from '@/components/client-admin/ClientReportsPanel';
@@ -53,6 +54,7 @@ export default function ClientAdmin() {
     <ClientAdminLayout>
       <Routes>
         <Route path="/" element={<ClientAdminDashboard />} />
+        <Route path="/analytics" element={<ClientAnalyticsDashboard />} />
         <Route path="/users" element={<ClientUsersManagement />} />
         <Route path="/subscription" element={<ClientSubscriptionPanel />} />
         <Route path="/reports" element={<ClientReportsPanel />} />
