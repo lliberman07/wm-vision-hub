@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PMSProvider } from "@/contexts/PMSContext";
+import { ClientProvider } from "@/contexts/ClientContext";
 import { GranadaAuthProvider } from "@/contexts/GranadaAuthContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -29,6 +30,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import { FinancingApplication } from "./pages/FinancingApplication";
 import CreditSimulator from "./pages/CreditSimulator";
+import ClientAdmin from "./pages/ClientAdmin";
 import PMS from "./pages/PMS";
 import PMSRequestAccess from "./pages/PMSRequestAccess";
 import PMSLogin from "./pages/PMSLogin";
@@ -58,10 +60,11 @@ const App = () => (
         <AuthProvider>
           <GranadaAuthProvider>
             <PMSProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-              <ScrollToTop />
+              <ClientProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                <ScrollToTop />
               <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<About />} />
@@ -106,6 +109,7 @@ const App = () => (
               <Route path="/pms/mi-contrato" element={<MyContract />} />
               <Route path="/pms/help" element={<Help />} />
               <Route path="/pms/my-subscription" element={<MySubscription />} />
+              <Route path="/client-admin/*" element={<ClientAdmin />} />
               <Route path="/granada-admin/*" element={<GranadaAdmin />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -113,6 +117,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+              </ClientProvider>
             </PMSProvider>
           </GranadaAuthProvider>
         </AuthProvider>

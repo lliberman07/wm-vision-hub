@@ -3212,6 +3212,73 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_change_requests: {
+        Row: {
+          created_at: string | null
+          current_plan_id: string | null
+          id: string
+          reason: string | null
+          requested_at: string | null
+          requested_by: string
+          requested_plan_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_plan_id?: string | null
+          id?: string
+          reason?: string | null
+          requested_at?: string | null
+          requested_by: string
+          requested_plan_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_plan_id?: string | null
+          id?: string
+          reason?: string | null
+          requested_at?: string | null
+          requested_by?: string
+          requested_plan_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_change_requests_current_plan_id_fkey"
+            columns: ["current_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_change_requests_requested_plan_id_fkey"
+            columns: ["requested_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_change_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_invoices: {
         Row: {
           amount: number
@@ -3724,6 +3791,16 @@ export type Database = {
         Args: { parent_contract_id_param: string }
         Returns: string
       }
+      get_client_activity_log: {
+        Args: { p_limit?: number; p_tenant_id: string }
+        Returns: {
+          activity_type: string
+          created_at: string
+          description: string
+          user_email: string
+        }[]
+      }
+      get_client_statistics: { Args: { p_tenant_id: string }; Returns: Json }
       get_contract_activity_by_tenant: {
         Args: never
         Returns: {

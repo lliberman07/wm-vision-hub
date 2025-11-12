@@ -1,4 +1,4 @@
-import { Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt, TrendingUp, BookOpen } from 'lucide-react';
+import { Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt, TrendingUp, BookOpen, Settings } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -14,6 +14,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { usePMS } from '@/contexts/PMSContext';
+import { useClient } from '@/contexts/ClientContext';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import granadaLogo from '@/assets/granada-logo.jpg';
@@ -62,6 +63,7 @@ export function PMSSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { currentTenant, pmsRoles, activeRoleContext } = usePMS();
+  const { isClientAdmin } = useClient();
   const currentPath = location.pathname;
   const isCollapsed = state === 'collapsed';
   const activeRole = activeRoleContext?.role;
@@ -102,6 +104,27 @@ export function PMSSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* CLIENT_ADMIN Link */}
+        {isClientAdmin && (
+          <>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={currentPath.startsWith('/client-admin')} tooltip="Admin Panel">
+                      <NavLink to="/client-admin">
+                        <Settings className="h-4 w-4" />
+                        {!isCollapsed && <span>Admin Panel</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+            <Separator />
+          </>
+        )}
+
         {filteredMenuItems.map((section, idx) => (
           <SidebarGroup key={idx}>
             {!isCollapsed && <SidebarGroupLabel>{section.group}</SidebarGroupLabel>}

@@ -31,12 +31,12 @@ export function ClientAdminDashboard() {
     if (!clientData) return;
 
     try {
-      const { data, error } = await supabase.rpc('get_client_statistics', {
+      const { data, error } = await supabase.rpc('get_client_statistics' as any, {
         p_tenant_id: clientData.id
       });
 
       if (error) throw error;
-      setStats(data);
+      setStats(data as Stats);
     } catch (error) {
       console.error('Error loading stats:', error);
     } finally {

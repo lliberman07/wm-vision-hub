@@ -95,27 +95,35 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Get subscription data
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('tenant_subscriptions')
-        .select(`
-          id,
-          plan_id,
-          status,
-          start_date,
-          end_date,
-          trial_end_date,
-          is_trial,
-          auto_renew,
-          subscription_plans(name)
-        `)
+        .select('*')
         .eq('tenant_id', clientUserData.tenant_id)
-        .order('start_date', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
       if (!subscriptionError && subscriptionData) {
+        // Get plan name separately
+        const { data: planData } = await supabase
+          .from('subscription_plans')
+          .select('name')
+          .eq('id', subscriptionData.plan_id)
+          .single();
+
+        const currentPeriodEnd = subscriptionData.current_period_end ? new Date(subscriptionData.current_period_end) : null;
+        const now = new Date();
+        const isTrial = currentPeriodEnd ? currentPeriodEnd > now && subscriptionData.status === 'trial' : false;
+
         setSubscription({
-          ...subscriptionData,
-          plan_name: (subscriptionData.subscription_plans as any)?.name || 'Plan Desconocido'
-        } as SubscriptionData);
+          id: subscriptionData.id,
+          plan_id: subscriptionData.plan_id,
+          plan_name: planData?.name || 'Plan Desconocido',
+          status: subscriptionData.status,
+          start_date: subscriptionData.created_at || '',
+          end_date: subscriptionData.current_period_end,
+          trial_end_date: isTrial ? subscriptionData.current_period_end : null,
+          is_trial: isTrial,
+          auto_renew: !subscriptionData.cancel_at_period_end,
+        });
       }
 
     } catch (error) {

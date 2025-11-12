@@ -24,7 +24,8 @@ interface Invoice {
   due_date: string;
   amount: number;
   status: string;
-  payment_proof_url: string | null;
+  payment_proof_url?: string | null;
+  payment_reference?: string | null;
 }
 
 export function ClientSubscriptionPanel() {
@@ -43,7 +44,7 @@ export function ClientSubscriptionPanel() {
     try {
       // Load usage limits
       const limitsPromises = ['user', 'property', 'contract', 'branch'].map(async (type) => {
-        const { data } = await supabase.rpc('check_tenant_limits', {
+        const { data } = await supabase.rpc('check_tenant_limits' as any, {
           p_tenant_id: clientData.id,
           p_resource_type: type
         });
@@ -52,9 +53,10 @@ export function ClientSubscriptionPanel() {
 
       const limitsResults = await Promise.all(limitsPromises);
       const limits = limitsResults.reduce((acc, { type, data }) => {
+        const limitData = data as any;
         acc[`${type}s` as keyof UsageLimits] = {
-          current: data?.current_count || 0,
-          limit: data?.limit
+          current: limitData?.current_count || 0,
+          limit: limitData?.limit
         };
         return acc;
       }, {} as UsageLimits);
@@ -69,8 +71,8 @@ export function ClientSubscriptionPanel() {
         .order('issue_date', { ascending: false })
         .limit(10);
 
-      if (!invoicesError) {
-        setInvoices(invoicesData || []);
+      if (!invoicesError && invoicesData) {
+        setInvoices(invoicesData as any[]);
       }
     } catch (error) {
       console.error('Error loading subscription data:', error);
