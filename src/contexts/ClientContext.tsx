@@ -1,0 +1,145 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
+
+interface ClientData {
+  id: string;
+  name: string;
+  slug: string;
+  tenant_type: string;
+  settings: any;
+  is_active: boolean;
+}
+
+interface SubscriptionData {
+  id: string;
+  plan_id: string;
+  plan_name: string;
+  status: string;
+  start_date: string;
+  end_date: string | null;
+  trial_end_date: string | null;
+  is_trial: boolean;
+  auto_renew: boolean;
+}
+
+interface ClientContextType {
+  isClientAdmin: boolean;
+  clientData: ClientData | null;
+  subscription: SubscriptionData | null;
+  loading: boolean;
+  refreshClientData: () => Promise<void>;
+}
+
+const ClientContext = createContext<ClientContextType | undefined>(undefined);
+
+export const useClient = () => {
+  const context = useContext(ClientContext);
+  if (!context) {
+    throw new Error('useClient must be used within a ClientProvider');
+  }
+  return context;
+};
+
+export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const [isClientAdmin, setIsClientAdmin] = useState(false);
+  const [clientData, setClientData] = useState<ClientData | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const refreshClientData = async () => {
+    if (!user) {
+      setIsClientAdmin(false);
+      setClientData(null);
+      setSubscription(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Check if user is CLIENT_ADMIN
+      const { data: clientUserData, error: clientUserError } = await supabase
+        .from('pms_client_users')
+        .select('tenant_id, user_type, is_active')
+        .eq('user_id', user.id)
+        .eq('user_type', 'CLIENT_ADMIN')
+        .eq('is_active', true)
+        .single();
+
+      if (clientUserError || !clientUserData) {
+        setIsClientAdmin(false);
+        setClientData(null);
+        setSubscription(null);
+        setLoading(false);
+        return;
+      }
+
+      setIsClientAdmin(true);
+
+      // Get client (tenant) data
+      const { data: tenantData, error: tenantError } = await supabase
+        .from('pms_tenants')
+        .select('*')
+        .eq('id', clientUserData.tenant_id)
+        .single();
+
+      if (tenantError) {
+        console.error('Error fetching client data:', tenantError);
+        setLoading(false);
+        return;
+      }
+
+      setClientData(tenantData as ClientData);
+
+      // Get subscription data
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+        .from('tenant_subscriptions')
+        .select(`
+          id,
+          plan_id,
+          status,
+          start_date,
+          end_date,
+          trial_end_date,
+          is_trial,
+          auto_renew,
+          subscription_plans(name)
+        `)
+        .eq('tenant_id', clientUserData.tenant_id)
+        .order('start_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!subscriptionError && subscriptionData) {
+        setSubscription({
+          ...subscriptionData,
+          plan_name: (subscriptionData.subscription_plans as any)?.name || 'Plan Desconocido'
+        } as SubscriptionData);
+      }
+
+    } catch (error) {
+      console.error('Error in refreshClientData:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshClientData();
+  }, [user]);
+
+  const value = {
+    isClientAdmin,
+    clientData,
+    subscription,
+    loading,
+    refreshClientData,
+  };
+
+  return (
+    <ClientContext.Provider value={value}>
+      {children}
+    </ClientContext.Provider>
+  );
+};
