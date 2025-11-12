@@ -30,6 +30,7 @@ interface Property {
   barrio?: string;
   operacion?: string;
   monto_alquiler?: number;
+  alquiler_moneda?: string;
   valor_venta?: number;
   estado_publicacion?: string;
 }
@@ -259,7 +260,13 @@ export const PropertyDetailsDialog = ({ open, onOpenChange, property }: Property
               {property.monto_alquiler && property.monto_alquiler > 0 && (
                 <div className="space-y-2">
                   <Label className="text-muted-foreground">Monto Alquiler</Label>
-                  <p className="font-medium">${property.monto_alquiler.toLocaleString()}</p>
+                  <p className="font-medium">
+                    {property.alquiler_moneda === 'USD' ? 'USD ' : '$'}
+                    {property.monto_alquiler.toLocaleString('es-AR', {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    })}
+                  </p>
                 </div>
               )}
               {property.valor_venta && property.valor_venta > 0 && (

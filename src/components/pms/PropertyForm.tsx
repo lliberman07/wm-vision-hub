@@ -18,7 +18,7 @@ import { PropertyPhotosUpload } from './PropertyPhotosUpload';
 import { usePropertyStatus } from '@/hooks/usePropertyStatus';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Bot, Wrench, Loader2, AlertCircle } from 'lucide-react';
+import { Bot, Wrench, Loader2, AlertCircle, DollarSign } from 'lucide-react';
 
 const formSchema = z.object({
   code: z.string().min(1, 'Código requerido'),
@@ -47,6 +47,7 @@ const formSchema = z.object({
   barrio: z.string().optional(),
   operacion: z.string().optional(),
   monto_alquiler: z.number().min(0).optional(),
+  alquiler_moneda: z.enum(['ARS', 'USD']).default('ARS'),
   valor_venta: z.number().min(0).optional(),
   estado_publicacion: z.string().optional(),
 });
@@ -107,6 +108,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
       barrio: '',
       operacion: '',
       monto_alquiler: undefined,
+      alquiler_moneda: 'ARS',
       valor_venta: undefined,
       estado_publicacion: 'borrador',
     },
@@ -225,6 +227,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         barrio: property.barrio || '',
         operacion: property.operacion || '',
         monto_alquiler: property.monto_alquiler || 0,
+        alquiler_moneda: property.alquiler_moneda || 'ARS',
         valor_venta: property.valor_venta || 0,
         estado_publicacion: property.estado_publicacion || 'borrador',
       });
@@ -257,6 +260,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         barrio: '',
         operacion: '',
         monto_alquiler: 0,
+        alquiler_moneda: 'ARS',
         valor_venta: 0,
         estado_publicacion: 'borrador',
       });
@@ -323,6 +327,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         barrio: data.barrio,
         operacion: data.operacion || null,
         monto_alquiler: data.monto_alquiler,
+        alquiler_moneda: data.alquiler_moneda,
         valor_venta: data.valor_venta,
         estado_publicacion: data.estado_publicacion,
         tenant_id: currentTenant?.id,
@@ -926,48 +931,94 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="monto_alquiler"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Monto Alquiler</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} placeholder="Ingrese monto" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="valor_venta"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Valor Venta (USD)</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input 
-                          type="number" 
-                          {...field} 
-                          onChange={e => field.onChange(e.target.valueAsNumber)} 
-                          placeholder="Ej: 150000" 
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
-                          USD
-                        </span>
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      El valor debe estar expresado en dólares (USD)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="space-y-2">
+              <FormLabel>Monto Alquiler</FormLabel>
+              <div className="grid grid-cols-12 gap-2">
+                {/* Currency Selector */}
+                <FormField
+                  control={form.control}
+                  name="alquiler_moneda"
+                  render={({ field }) => (
+                    <FormItem className="col-span-4">
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ARS">
+                            <div className="flex items-center gap-2">
+                              <span>Pesos ($)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="USD">
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4" />
+                              <span>Dólar (USD)</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Amount Input */}
+                <FormField
+                  control={form.control}
+                  name="monto_alquiler"
+                  render={({ field }) => (
+                    <FormItem className="col-span-8">
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            onChange={e => field.onChange(e.target.valueAsNumber)} 
+                            placeholder="Ej: 350000" 
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                            {form.watch('alquiler_moneda') === 'USD' ? 'USD' : '$'}
+                          </span>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormDescription className="text-xs text-muted-foreground">
+                Selecciona la moneda y el monto del alquiler mensual
+              </FormDescription>
             </div>
+
+            <FormField
+              control={form.control}
+              name="valor_venta"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valor Venta (USD)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(e.target.valueAsNumber)} 
+                        placeholder="Ej: 150000" 
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                        USD
+                      </span>
+                    </div>
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    El valor debe estar expresado en dólares (USD)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Separator className="my-4" />
 

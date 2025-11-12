@@ -2632,6 +2632,7 @@ export type Database = {
         Row: {
           address: string
           alias: string | null
+          alquiler_moneda: string | null
           amenities: string[] | null
           apartment: string | null
           balcon: boolean | null
@@ -2677,6 +2678,7 @@ export type Database = {
         Insert: {
           address: string
           alias?: string | null
+          alquiler_moneda?: string | null
           amenities?: string[] | null
           apartment?: string | null
           balcon?: boolean | null
@@ -2722,6 +2724,7 @@ export type Database = {
         Update: {
           address?: string
           alias?: string | null
+          alquiler_moneda?: string | null
           amenities?: string[] | null
           apartment?: string | null
           balcon?: boolean | null
