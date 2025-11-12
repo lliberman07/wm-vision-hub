@@ -47,6 +47,7 @@ const menuItems = [
     items: [
       { title: 'Reportes', url: '/pms/reports', icon: BarChart3 },
       { title: 'Índices', url: '/pms/indices', icon: TrendingUp },
+      { title: 'Tipos de Cambio', url: '/pms/exchange-rates', icon: DollarSign },
     ]
   },
   {
@@ -70,11 +71,11 @@ export function PMSSidebar() {
   // Define which modules each role can see
   const modulesByRole: Record<string, string[]> = {
     SUPERADMIN: ['all'],
-    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'help'],
-    ADMINISTRADOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'help'],
-    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'help'],
-    PROPIETARIO: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'help'],
-    INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance', 'help'],
+    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'help'],
+    ADMINISTRADOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'exchange-rates', 'help'],
+    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'exchange-rates', 'help'],
+    PROPIETARIO: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'exchange-rates', 'help'],
+    INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance', 'exchange-rates', 'help'],
     PROVEEDOR: ['maintenance', 'help']
   };
 

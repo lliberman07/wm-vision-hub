@@ -16,7 +16,6 @@ import { OwnerNetIncomeReport } from '@/components/pms/OwnerNetIncomeReport';
 import { PropertyExpensesReport } from '@/components/pms/PropertyExpensesReport';
 import { TenantsAnalytics } from '@/components/pms/TenantsAnalytics';
 import { ReimbursementDashboard } from '@/components/pms/ReimbursementDashboard';
-import { ExchangeRatesAnalytics } from '@/components/pms/ExchangeRatesAnalytics';
 import { OwnerReportExportDialog } from '@/components/pms/OwnerReportExportDialog';
 import { OwnerReportDirectDownload } from '@/components/pms/OwnerReportDirectDownload';
 import { Download, Mail } from 'lucide-react';
@@ -42,7 +41,7 @@ const Reports = () => {
     activeTenants: 0,
     monthlyIncome: 0,
   });
-  const [activeTab, setActiveTab] = useState<'properties' | 'tenants' | 'reimbursements' | 'exchange-rates'>('properties');
+  const [activeTab, setActiveTab] = useState<'properties' | 'tenants' | 'reimbursements'>('properties');
   const [hasWMAccess, setHasWMAccess] = useState(false);
   const [loadingWMAccess, setLoadingWMAccess] = useState(true);
   const [cashflowViewMode, setCashflowViewMode] = useState<'accrual' | 'cash'>('cash');
@@ -423,7 +422,7 @@ const Reports = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="properties" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               Propiedades y Contratos
@@ -431,10 +430,6 @@ const Reports = () => {
             <TabsTrigger value="reimbursements" className="flex items-center gap-2">
               <Receipt className="h-4 w-4" />
               Reembolsos
-            </TabsTrigger>
-            <TabsTrigger value="exchange-rates" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Tipos de Cambio
             </TabsTrigger>
             {hasWMAccess && (
               <TabsTrigger value="tenants" className="flex items-center gap-2">
@@ -941,9 +936,6 @@ const Reports = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="exchange-rates">
-          <ExchangeRatesAnalytics />
-        </TabsContent>
 
         <TabsContent value="tenants">
           {hasWMAccess ? (

@@ -41,6 +41,7 @@ import Maintenance from "./pages/pms/Maintenance";
 import Reports from "./pages/pms/Reports";
 import Expenses from "./pages/pms/Expenses";
 import Indices from "./pages/pms/Indices";
+import ExchangeRates from "./pages/pms/ExchangeRates";
 import MyContract from "./pages/pms/MyContract";
 import Receipts from "./pages/pms/Receipts";
 import Help from "./pages/pms/Help";
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/pms/reports" element={<Reports />} />
               <Route path="/pms/expenses" element={<Expenses />} />
               <Route path="/pms/indices" element={<Indices />} />
+              <Route path="/pms/exchange-rates" element={<ExchangeRates />} />
               <Route path="/pms/mi-contrato" element={<MyContract />} />
               <Route path="/pms/help" element={<Help />} />
               <Route path="/pms/my-subscription" element={<MySubscription />} />
