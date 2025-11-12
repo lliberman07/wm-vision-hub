@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, TrendingUp, TrendingDown, DollarSign, Users, Calendar, FileDown, CreditCard, Activity, Target } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, DollarSign, Users, Calendar, FileDown, CreditCard, Activity, Target, AlertTriangle, Bell } from 'lucide-react';
 import { LineChart, Line, PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import * as XLSX from 'xlsx';
 
@@ -85,10 +86,34 @@ export function GranadaSubscriptionAnalyticsDashboard() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [paymentMethodData, setPaymentMethodData] = useState<PaymentMethodData[]>([]);
   const [planChanges, setPlanChanges] = useState<PlanChange[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
 
   useEffect(() => {
     loadAnalytics();
+    checkAlerts();
   }, [monthsBack]);
+
+  const checkAlerts = async () => {
+    try {
+      const { data, error } = await supabase.rpc('check_subscription_alerts');
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        const { data: alertsData } = await supabase
+          .from('subscription_alerts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (alertsData) {
+          setAlerts(alertsData);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error checking alerts:', error);
+    }
+  };
 
   const loadAnalytics = async () => {
     try {
@@ -213,6 +238,71 @@ export function GranadaSubscriptionAnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Alertas Activas */}
+      {alerts.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Bell className="h-5 w-5 text-destructive" />
+            Alertas Automáticas Activas
+          </h3>
+          <div className="grid gap-3">
+            {alerts.map((alert) => (
+              <Alert 
+                key={alert.id} 
+                variant={alert.severity === 'critical' ? 'destructive' : 'default'}
+                className="border-l-4"
+              >
+                <div className="flex items-start gap-3">
+                  {alert.alert_type === 'high_churn_rate' && <Users className="h-5 w-5 mt-0.5" />}
+                  {alert.alert_type === 'mrr_drop' && <TrendingDown className="h-5 w-5 mt-0.5" />}
+                  {alert.alert_type === 'mass_cancellations' && <AlertTriangle className="h-5 w-5 mt-0.5" />}
+                  <div className="flex-1">
+                    <AlertTitle className="mb-1">
+                      {alert.alert_type === 'high_churn_rate' && 'Churn Rate Elevado'}
+                      {alert.alert_type === 'mrr_drop' && 'Caída Significativa de MRR'}
+                      {alert.alert_type === 'mass_cancellations' && 'Cancelaciones Masivas'}
+                    </AlertTitle>
+                    <AlertDescription>
+                      <div className="space-y-1">
+                        <p>
+                          Métrica: <strong>{alert.metric_value.toFixed(2)}{alert.alert_type !== 'mass_cancellations' ? '%' : ' cancelaciones'}</strong>
+                          {' '}(umbral: {alert.threshold_value}{alert.alert_type !== 'mass_cancellations' ? '%' : ''})
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Período: {new Date(alert.period_start).toLocaleDateString()} - {new Date(alert.period_end).toLocaleDateString()}
+                        </p>
+                        {alert.details && (
+                          <div className="text-xs text-muted-foreground mt-2">
+                            {alert.alert_type === 'high_churn_rate' && (
+                              <>
+                                Suscripciones activas: {alert.details.active_subscriptions} | 
+                                Cancelaciones: {alert.details.cancellations}
+                              </>
+                            )}
+                            {alert.alert_type === 'mrr_drop' && (
+                              <>
+                                MRR anterior: ${alert.details.last_mrr?.toFixed(2)} | 
+                                MRR actual: ${alert.details.current_mrr?.toFixed(2)} | 
+                                Cambio: ${alert.details.change_amount?.toFixed(2)}
+                              </>
+                            )}
+                            {alert.alert_type === 'mass_cancellations' && (
+                              <>
+                                Cancelaciones en {alert.details.period_days} días
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </AlertDescription>
+                  </div>
+                </div>
+              </Alert>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

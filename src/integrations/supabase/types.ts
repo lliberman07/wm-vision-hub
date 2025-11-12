@@ -3218,6 +3218,45 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          metric_value: number
+          notified_at: string | null
+          period_end: string
+          period_start: string
+          severity: string
+          threshold_value: number
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          metric_value: number
+          notified_at?: string | null
+          period_end: string
+          period_start: string
+          severity: string
+          threshold_value: number
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          metric_value?: number
+          notified_at?: string | null
+          period_end?: string
+          period_start?: string
+          severity?: string
+          threshold_value?: number
+        }
+        Relationships: []
+      }
       subscription_change_history: {
         Row: {
           change_type: string
@@ -3800,6 +3839,16 @@ export type Database = {
       check_property_code_uniqueness: {
         Args: { p_code: string; p_property_id?: string; p_tenant_id?: string }
         Returns: boolean
+      }
+      check_subscription_alerts: {
+        Args: never
+        Returns: {
+          alert_type: string
+          message: string
+          metric_value: number
+          severity: string
+          threshold_value: number
+        }[]
       }
       check_tenant_has_records: {
         Args: { tenant_id_param: string }
