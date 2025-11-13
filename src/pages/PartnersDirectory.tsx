@@ -141,7 +141,7 @@ export default function PartnersDirectory() {
               <Link to="/contact">Contactar Ventas</Link>
             </Button>
             <Button size="lg" className="bg-[hsl(var(--granada-navy))] hover:bg-[hsl(var(--granada-navy-dark))]" asChild>
-              <Link to="/pms/subscribe">Comenzar Gratis</Link>
+              <Link to="/contact">Contactar</Link>
             </Button>
           </div>
         </div>

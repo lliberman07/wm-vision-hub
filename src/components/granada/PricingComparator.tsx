@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ const FEATURE_LABELS: Record<string, string> = {
 };
 
 export default function PricingComparator() {
+  const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
   const [showComparator, setShowComparator] = useState(false);
 
@@ -242,9 +244,9 @@ export default function PricingComparator() {
                   <Button
                     className="w-full"
                     variant={popular ? "default" : "outline"}
-                    onClick={() => window.location.href = `/pms/subscribe?plan=${plan.slug}`}
+                    onClick={() => navigate('/contact')}
                   >
-                    Suscribir
+                    Contactar
                   </Button>
                 </CardFooter>
               </Card>

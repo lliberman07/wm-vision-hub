@@ -26,23 +26,6 @@ interface PMSContextType {
   currentTenant: PMSTenant | null;
   loading: boolean;
   switchContext: (roleContext: PMSRoleContext) => void;
-  requestAccess: (role: PMSRole, reason: string, userData?: {
-    email: string;
-    entity_type: 'fisica' | 'juridica';
-    address: string;
-    city: string;
-    state: string;
-    postal_code: string;
-    contract_number?: string;
-    first_name?: string;
-    last_name?: string;
-    phone?: string;
-    document_id?: string;
-    cuit_cuil?: string;
-    razon_social?: string;
-    cuit?: string;
-    contact_name?: string;
-  }) => Promise<{ error: any }>;
   checkPMSAccess: () => Promise<void>;
 }
 
@@ -185,108 +168,6 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const requestAccess = async (
-    role: PMSRole, 
-    reason: string,
-    userData?: {
-      email: string;
-      entity_type: 'fisica' | 'juridica';
-      address: string;
-      city: string;
-      state: string;
-      postal_code: string;
-      contract_number?: string;
-      first_name?: string;
-      last_name?: string;
-      phone?: string;
-      document_id?: string;
-      cuit_cuil?: string;
-      razon_social?: string;
-      cuit?: string;
-      contact_name?: string;
-    }
-  ) => {
-    if (!userData?.email) {
-      return { error: { message: 'Email es requerido' } };
-    }
-
-    try {
-      // Get the default tenant ID
-      const { data: tenantId, error: tenantError } = await supabase
-        .rpc('get_default_tenant_id');
-
-      if (tenantError) {
-        console.error('Error fetching default tenant:', tenantError);
-        return { error: { message: 'Error al obtener tenant predeterminado' } };
-      }
-
-      if (!tenantId) {
-        return { error: { message: 'Tenant predeterminado no encontrado. Contacte al administrador.' } };
-      }
-
-      // Check if user exists with this email by querying auth.users indirectly
-      const { data: existingUsers } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', userData.email)
-        .limit(1);
-
-      // Use existing user ID if found, otherwise null
-      // When admin approves a request with null user_id, they'll create the user account
-      const userId = existingUsers && existingUsers.length > 0 
-        ? existingUsers[0].id 
-        : null;
-
-      // Preparar datos según entity_type
-      const insertData: any = {
-        user_id: userId,
-        tenant_id: tenantId,
-        email: userData.email,
-        requested_role: role.toUpperCase() as any,
-        reason: reason,
-        entity_type: userData.entity_type,
-        address: userData.address,
-        city: userData.city,
-        state: userData.state,
-        postal_code: userData.postal_code,
-        contract_number: userData.contract_number || null,
-        status: 'pending',
-      };
-
-      // Si es Persona Física
-      if (userData.entity_type === 'fisica') {
-        insertData.first_name = userData.first_name;
-        insertData.last_name = userData.last_name;
-        insertData.phone = userData.phone;
-        insertData.document_id = userData.document_id;
-        insertData.cuit_cuil = userData.cuit_cuil;
-      }
-      
-      // Si es Persona Jurídica
-      if (userData.entity_type === 'juridica') {
-        insertData.razon_social = userData.razon_social;
-        insertData.tax_id = userData.cuit; // El CUIT va a tax_id
-        insertData.contact_name = userData.contact_name;
-        insertData.phone = userData.phone;
-      }
-
-      // Insert into pms_access_requests table
-      const { error: requestError } = await supabase
-        .from('pms_access_requests')
-        .insert([insertData]);
-
-      if (requestError) {
-        console.error('Error creating access request:', requestError);
-        return { error: { message: 'Error al crear solicitud de acceso: ' + requestError.message } };
-      }
-
-      return { error: null };
-    } catch (error: any) {
-      console.error('Unexpected error:', error);
-      return { error: { message: 'Error inesperado al procesar solicitud' } };
-    }
-  };
-
   useEffect(() => {
     checkPMSAccess();
   }, [user]);
@@ -300,7 +181,6 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     currentTenant,
     loading,
     switchContext,
-    requestAccess,
     checkPMSAccess,
   };
 

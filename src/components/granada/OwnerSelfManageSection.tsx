@@ -76,9 +76,9 @@ export function OwnerSelfManageSection() {
             <Button 
               size="lg" 
               className="bg-[hsl(var(--granada-gold))] hover:bg-[hsl(var(--granada-gold-light))] text-white"
-              onClick={() => navigate('/pms/subscribe?plan=basic')}
+              onClick={() => navigate('/contact')}
             >
-              Probar Gratis 14 Días
+              Contactar para Empezar
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Badge variant="outline" className="text-base py-2 px-4">
@@ -217,9 +217,9 @@ export function OwnerSelfManageSection() {
               <Button 
                 size="lg"
                 className="bg-[hsl(var(--granada-gold))] hover:bg-[hsl(var(--granada-gold-light))] text-white"
-                onClick={() => navigate('/pms/subscribe?plan=basic')}
+                onClick={() => navigate('/contact')}
               >
-                Comenzar Gratis Ahora
+                Contactar para Empezar
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <p className="text-sm text-muted-foreground mt-4">
