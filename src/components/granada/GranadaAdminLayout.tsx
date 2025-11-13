@@ -84,7 +84,7 @@ export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate('/pms/login');
+    navigate('/granada-platform');
   };
 
   return (
@@ -148,9 +148,13 @@ export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/pms')}>
+                  <DropdownMenuItem onClick={() => navigate('/granada-platform')}>
                     <Building2 className="h-4 w-4 mr-2" />
-                    Ir al PMS
+                    Inicio Granada
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/pms/login')}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Acceso PMS Clientes
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />

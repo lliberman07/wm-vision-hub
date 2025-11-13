@@ -120,6 +120,9 @@ const Footer = () => {
             <Link to="/terms-of-service" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
               {t('footer.termsOfService')}
             </Link>
+            <Link to="/granada-platform" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              Granada Platform
+            </Link>
           </div>
         </div>
       </div>

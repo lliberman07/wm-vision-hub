@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { useNavigate, Routes, Route } from 'react-router-dom';
+import { useNavigate, Routes, Route, Link } from 'react-router-dom';
 import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -117,34 +118,68 @@ export default function GranadaAdmin() {
   const navigate = useNavigate();
   const { user, isGranadaAdmin, loading } = useGranadaAuth();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/pms/login');
-    }
-  }, [user, loading, navigate]);
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/granada-platform');
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Acceso Requerido</CardTitle>
+            <CardDescription>
+              Debes iniciar sesión para acceder al panel de administración de Granada Platform.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button asChild className="w-full">
+              <Link to="/granada-admin/login">Iniciar Sesión Admin</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/granada-platform">Volver a Granada Platform</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!isGranadaAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Acceso Denegado</CardTitle>
             <CardDescription>
-              No tienes permisos de administrador de Granada Platform.
+              No tienes permisos para acceder al panel de administración de Granada Platform.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button onClick={() => navigate('/pms')} className="w-full">
-              Volver al PMS
-            </Button>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Este panel es exclusivo para administradores de la plataforma. Si necesitas acceso como cliente, 
+              dirígete al panel PMS.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/granada-platform">Granada Platform</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/pms/login">Acceso PMS Clientes</Link>
+              </Button>
+              <Button className="w-full" onClick={handleSignOut}>
+                Cerrar Sesión
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
