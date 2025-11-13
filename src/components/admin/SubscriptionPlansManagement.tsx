@@ -69,6 +69,7 @@ type PlanFormValues = z.infer<typeof planFormSchema>;
 export function SubscriptionPlansManagement() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showMigrationBanner, setShowMigrationBanner] = useState(true);
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -300,6 +301,40 @@ export function SubscriptionPlansManagement() {
 
   return (
     <div className="space-y-6">
+      {/* Migration Banner */}
+      {showMigrationBanner && (
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-l-4 border-primary rounded-lg p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Building className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Gestión Migrada a Granada Platform</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                La gestión centralizada de planes de suscripción ahora se realiza desde <strong>Granada Admin</strong>.
+                Desde allí puedes crear, editar y gestionar todos los planes que se mostrarán en la página pública de Granada Platform.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => window.location.href = '/granada-admin/subscription-plans'}
+                  className="gap-2"
+                >
+                  Ir a Granada Admin
+                  <span className="text-xs">→</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMigrationBanner(false)}
+                >
+                  Cerrar aviso
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Planes de Suscripción</h2>
