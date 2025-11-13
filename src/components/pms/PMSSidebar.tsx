@@ -74,9 +74,8 @@ export function PMSSidebar() {
   const modulesByRole: Record<string, string[]> = {
     SUPERADMIN: ['all'],
     INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'help'],
-    ADMINISTRADOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'exchange-rates', 'help'],
-    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'exchange-rates', 'help'],
-    PROPIETARIO: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'exchange-rates', 'help'],
+    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'help'],
+    PROPIETARIO: ['properties', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'exchange-rates', 'help'],
     INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance', 'exchange-rates', 'help'],
     PROVEEDOR: ['maintenance', 'help']
   };

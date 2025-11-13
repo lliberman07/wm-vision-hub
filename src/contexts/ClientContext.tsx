@@ -65,16 +65,37 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     try {
-      // Check if user is CLIENT_ADMIN
-      const { data: clientUserData, error: clientUserError } = await supabase
+      // Check if user has INMOBILIARIA or GESTOR role via v_current_user_tenants
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('v_current_user_tenants')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+      }
+
+      // Check if any tenant has INMOBILIARIA or GESTOR role
+      const adminTenant = rolesData?.find((row: any) => {
+        const roles = row.roles || [];
+        return roles.some((role: string) => 
+          role.toUpperCase() === 'INMOBILIARIA' || role.toUpperCase() === 'GESTOR'
+        );
+      });
+
+      // Also check for CLIENT_ADMIN in pms_client_users
+      const { data: clientUserData } = await supabase
         .from('pms_client_users')
         .select('tenant_id, user_type, is_active')
         .eq('user_id', user.id)
         .eq('user_type', 'CLIENT_ADMIN')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (clientUserError || !clientUserData) {
+      const tenantId = adminTenant?.tenant_id || clientUserData?.tenant_id;
+      const hasAdminAccess = !!(adminTenant || clientUserData);
+
+      if (!hasAdminAccess || !tenantId) {
         setIsClientAdmin(false);
         setClientData(null);
         setSubscription(null);
@@ -88,7 +109,7 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const { data: tenantData, error: tenantError } = await supabase
         .from('pms_tenants')
         .select('*')
-        .eq('id', clientUserData.tenant_id)
+        .eq('id', tenantId)
         .single();
 
       if (tenantError) {
@@ -103,7 +124,7 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('tenant_subscriptions')
         .select('*')
-        .eq('tenant_id', clientUserData.tenant_id)
+        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
