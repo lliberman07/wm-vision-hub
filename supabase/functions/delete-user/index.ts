@@ -120,7 +120,6 @@ const handler = async (req: Request): Promise<Response> => {
     
     const deletedData: any = {
       user_id,
-      access_requests: 0,
       owners: 0,
       tenants_renters: 0,
       personal_tenants: [],
@@ -164,18 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`No se puede eliminar: el usuario tiene ${tenantContracts.length} contrato(s) activo(s) como inquilino`);
     }
 
-    // 3. Eliminar access requests
-    const { error: accessRequestsError, count: accessRequestsCount } = await supabaseAdmin
-      .from('pms_access_requests')
-      .delete({ count: 'exact' })
-      .eq('user_id', user_id);
-
-    if (!accessRequestsError && accessRequestsCount !== null) {
-      deletedData.access_requests = accessRequestsCount;
-      console.log(`[delete-user] Deleted ${accessRequestsCount} access requests`);
-    }
-
-    // 4. Buscar tenants personales del usuario (inquilino/propietario)
+    // 3. Buscar tenants personales del usuario (inquilino/propietario)
     const { data: userRoles } = await supabaseAdmin
       .from('user_roles')
       .select('tenant_id, role')

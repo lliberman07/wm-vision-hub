@@ -73,9 +73,9 @@ export function PropertyManagersSection() {
             <Button 
               size="lg" 
               className="bg-[hsl(var(--granada-navy))] hover:bg-[hsl(var(--granada-navy-dark))] text-white"
-              onClick={() => navigate('/pms/subscribe?plan=basic')}
+              onClick={() => navigate('/contact')}
             >
-              Comenzar Gratis
+              Contactar para Empezar
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Badge variant="outline" className="text-base py-2 px-4">
@@ -205,9 +205,9 @@ export function PropertyManagersSection() {
               <Button 
                 size="lg"
                 className="bg-[hsl(var(--granada-navy))] hover:bg-[hsl(var(--granada-navy-dark))] text-white"
-                onClick={() => navigate('/pms/subscribe?plan=basic')}
+                onClick={() => navigate('/contact')}
               >
-                Crear Cuenta Gratis
+                Contactar para Empezar
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </CardContent>

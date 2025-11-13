@@ -502,15 +502,9 @@ const PropertyManagement = () => {
                     {/* CTA Button */}
                     <Button 
                       className="w-full" 
-                      onClick={() => {
-                        if (user) {
-                          navigate(`/pms/subscribe?plan=${plan.slug}`);
-                        } else {
-                          navigate(`/auth?returnTo=/pms/subscribe?plan=${plan.slug}`);
-                        }
-                      }}
+                      onClick={() => navigate('/contact')}
                     >
-                      Suscribir
+                      Contactar
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
 
