@@ -21,6 +21,7 @@ import {
   Mail,
 } from "lucide-react";
 import granadaLogo from "@/assets/granada-logo-new.jpg";
+import pmsDashboardHero from "@/assets/pms-dashboard-hero.jpg";
 import PricingComparator from "@/components/granada/PricingComparator";
 import FeatureShowcase from "@/components/granada/FeatureShowcase";
 import ProviderRegistrationForm from "@/components/granada/ProviderRegistrationForm";
@@ -113,6 +114,28 @@ export default function GranadaPlatformHome() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Dashboard Preview Section */}
+      <section className="py-16 px-4 bg-gradient-to-b from-background to-muted/30">
+        <div className="container">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+              <Badge className="mb-4" variant="secondary">Interfaz Intuitiva</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Dashboard Completo de Gestión</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Todo lo que necesitas para administrar tus propiedades en un solo lugar
+              </p>
+            </div>
+            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-border/50">
+              <img 
+                src={pmsDashboardHero} 
+                alt="Granada Property Management System Dashboard" 
+                className="w-full h-auto"
+              />
             </div>
           </div>
         </div>
