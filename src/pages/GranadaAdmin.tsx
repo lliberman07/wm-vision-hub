@@ -12,6 +12,7 @@ import { SubscriptionsManagement } from '@/components/granada/SubscriptionsManag
 import { PaymentsManagement } from '@/components/granada/PaymentsManagement';
 import { SubscriptionPlansManagement } from '@/components/granada/SubscriptionPlansManagement';
 import { GranadaSubscriptionAnalyticsDashboard } from '@/components/granada/GranadaSubscriptionAnalyticsDashboard';
+import { SubscriptionRequestsManagement } from '@/components/granada/SubscriptionRequestsManagement';
 import {
   Building2,
   CreditCard,
@@ -155,6 +156,7 @@ export default function GranadaAdmin() {
       <Routes>
         <Route path="/" element={<GranadaDashboard />} />
         <Route path="/analytics" element={<GranadaSubscriptionAnalyticsDashboard />} />
+        <Route path="/subscription-requests" element={<SubscriptionRequestsManagement />} />
         <Route path="/clients" element={<ClientsManagement />} />
         <Route path="/client-users" element={<ClientUsersManagement />} />
         <Route path="/platform-users" element={<PlatformUsersManagement />} />

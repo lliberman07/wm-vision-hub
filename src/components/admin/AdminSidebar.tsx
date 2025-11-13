@@ -28,15 +28,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
     { title: "AI Chatbot", path: "/admin/chatbot", icon: MessageSquare },
   ];
 
-  const wmPMSItems = [
-    { title: "Solicitudes Suscripción", path: "/admin/subscription-requests", icon: FileCheck },
-    { title: "Facturas", path: "/admin/invoices", icon: Receipt },
-    { title: "Suscripciones", path: "/admin/pms-licenses", icon: BarChart3 },
-    { title: "Planes", path: "/admin/pms-plans", icon: CreditCard },
-    { title: "Tenants PMS", path: "/admin/pms-tenants", icon: Building },
-    { title: "Usuarios y Roles", path: "/admin/pms-users-roles", icon: Shield },
-    { title: "Solicitudes PMS", path: "/admin/pms-access", icon: Users },
-  ];
+  // WM PMS items moved to Granada Admin
 
   const wmUsersItems = [
     { title: "User Approvals", path: "/admin/approvals", icon: Users },
@@ -78,32 +70,6 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* WM PMS Section - Only for superadmin */}
-        {userRole === 'superadmin' && (
-          <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel>WM PMS</SidebarGroupLabel>}
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {wmPMSItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton asChild>
-                        <NavLink 
-                          to={item.path} 
-                          className={({ isActive }) => getNavClassName(isActive)}
-                        >
-                          <Icon className="h-4 w-4" />
-                          {!isCollapsed && <span>{item.title}</span>}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
 
         {/* WM Users Admin Section - Only for superadmin */}
         {userRole === 'superadmin' && (

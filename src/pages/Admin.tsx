@@ -13,15 +13,8 @@ import { ContactSubmissionsView } from "@/components/admin/ContactSubmissionsVie
 import { SimulationsView } from "@/components/admin/SimulationsView";
 import { ApplicationsView } from "@/components/admin/ApplicationsView";
 import { ChatbotView } from "@/components/admin/ChatbotView";
-import { PMSTenantsView } from "@/components/admin/PMSTenantsView";
-import { PMSAccessView } from "@/components/admin/PMSAccessView";
-import { PMSUsersAndRolesView } from "@/components/admin/PMSUsersAndRolesView";
 import { UserApprovalsView } from "@/components/admin/UserApprovalsView";
 import { AdminUsersView } from "@/components/admin/AdminUsersView";
-import { TenantSubscriptionsView } from "@/components/admin/TenantSubscriptionsView";
-import { SubscriptionPlansManagement } from "@/components/admin/SubscriptionPlansManagement";
-import SubscriptionRequestsView from "@/components/admin/SubscriptionRequestsView";
-import InvoiceManagementView from "@/components/admin/InvoiceManagementView";
 
 // Admin Dashboard with Sidebar Layout
 const Admin = () => {
@@ -87,6 +80,11 @@ const Admin = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <LanguageSwitcher />
+                {userProfile?.role === 'superadmin' && (
+                  <Button variant="outline" onClick={() => window.location.href = '/granada-admin'}>
+                    Granada Admin
+                  </Button>
+                )}
                 <Badge variant="outline" className="px-3 py-1">
                   <User className="h-3 w-3 mr-1" />
                   {user?.email}
@@ -107,15 +105,9 @@ const Admin = () => {
               <Route path="simulations" element={<SimulationsView />} />
               <Route path="applications" element={<ApplicationsView />} />
               <Route path="chatbot" element={<ChatbotView />} />
+              
               {userProfile?.role === 'superadmin' && (
                 <>
-                  <Route path="subscription-requests" element={<SubscriptionRequestsView />} />
-                  <Route path="invoices" element={<InvoiceManagementView />} />
-                  <Route path="pms-licenses" element={<TenantSubscriptionsView />} />
-                  <Route path="pms-plans" element={<SubscriptionPlansManagement />} />
-                  <Route path="pms-tenants" element={<PMSTenantsView />} />
-                  <Route path="pms-access" element={<PMSAccessView />} />
-                  <Route path="pms-users-roles" element={<PMSUsersAndRolesView />} />
                   <Route path="approvals" element={<UserApprovalsView />} />
                   <Route path="admin-users" element={<AdminUsersView />} />
                 </>

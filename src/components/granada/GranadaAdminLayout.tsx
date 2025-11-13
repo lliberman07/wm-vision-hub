@@ -17,6 +17,12 @@ import {
   LogOut,
   UserCircle,
   LayoutDashboard,
+  CreditCard,
+  BarChart3,
+  Shield,
+  Wallet,
+  FileBarChart,
+  FileCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +37,16 @@ const menuItems = [
     path: '/granada-admin',
   },
   {
+    title: 'Analítica',
+    icon: FileBarChart,
+    path: '/granada-admin/analytics',
+  },
+  {
+    title: 'Solicitudes',
+    icon: FileCheck,
+    path: '/granada-admin/subscription-requests',
+  },
+  {
     title: 'Clientes',
     icon: Building2,
     path: '/granada-admin/clients',
@@ -42,22 +58,22 @@ const menuItems = [
   },
   {
     title: 'Usuarios Granada',
-    icon: Users,
+    icon: Shield,
     path: '/granada-admin/platform-users',
   },
   {
     title: 'Planes',
-    icon: Users,
+    icon: CreditCard,
     path: '/granada-admin/subscription-plans',
   },
   {
     title: 'Suscripciones',
-    icon: Users,
+    icon: BarChart3,
     path: '/granada-admin/subscriptions',
   },
   {
     title: 'Pagos',
-    icon: Users,
+    icon: Wallet,
     path: '/granada-admin/payments',
   },
 ];
