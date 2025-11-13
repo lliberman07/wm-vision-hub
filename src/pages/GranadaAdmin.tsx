@@ -125,7 +125,7 @@ export default function GranadaAdmin() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="granada-theme flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -133,7 +133,7 @@ export default function GranadaAdmin() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="granada-theme flex flex-col items-center justify-center min-h-screen p-4">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Acceso Requerido</CardTitle>
@@ -156,7 +156,7 @@ export default function GranadaAdmin() {
 
   if (!isGranadaAdmin) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="granada-theme flex flex-col items-center justify-center min-h-screen p-4">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Acceso Denegado</CardTitle>
@@ -187,7 +187,8 @@ export default function GranadaAdmin() {
   }
 
   return (
-    <GranadaAdminLayout>
+    <div className="granada-theme">
+      <GranadaAdminLayout>
       <Routes>
         <Route path="/" element={<GranadaDashboard />} />
         <Route path="/analytics" element={<GranadaSubscriptionAnalyticsDashboard />} />
@@ -203,5 +204,6 @@ export default function GranadaAdmin() {
         <Route path="/settings" element={<div className="p-4">Configuración (próximamente)</div>} />
       </Routes>
     </GranadaAdminLayout>
+    </div>
   );
 }

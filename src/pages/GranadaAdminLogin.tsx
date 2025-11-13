@@ -108,7 +108,7 @@ const GranadaAdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <div className="granada-theme min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <div className="w-full max-w-md space-y-2">
         {/* Logo and Header */}
         <div className="text-center space-y-1">

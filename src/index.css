@@ -21,7 +21,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 12%;
 
-    /* Granada Brand Colors */
+    /* Granada Brand Colors - Keep for Granada Platform */
     --granada-red: 0 73% 41%;
     --granada-red-dark: 0 58% 40%;
     --granada-navy: 221 69% 31%;
@@ -31,25 +31,25 @@
     --granada-cream: 60 56% 91%;
     --granada-gray: 215 16% 47%;
 
-    /* Primary: Granada Red */
-    --primary: 0 73% 41%;
+    /* Primary: WM Cyan/Blue */
+    --primary: 189 94% 43%;          /* cyan-500 */
     --primary-foreground: 0 0% 98%;
-    --primary-hover: 0 58% 40%;
-    --primary-light: 0 73% 51%;
+    --primary-hover: 189 94% 38%;    /* cyan-600 */
+    --primary-light: 189 94% 53%;    /* cyan-400 */
 
-    /* Secondary: Granada Navy */
-    --secondary: 221 69% 31%;
+    /* Secondary: Navy Blue */
+    --secondary: 215 84% 19%;        /* navy blue */
     --secondary-foreground: 0 0% 98%;
 
     /* Muted: Neutral Grays */
     --muted: 220 8% 93%;
     --muted-foreground: 215 12% 45%;
 
-    /* Accent: Granada Gold */
-    --accent: 43 85% 38%;
+    /* Accent: Gold/Yellow */
+    --accent: 43 89% 38%;            /* gold */
     --accent-foreground: 0 0% 98%;
-    --accent-hover: 43 85% 35%;
-    --accent-light: 43 88% 51%;
+    --accent-hover: 43 89% 42%;
+    --accent-light: 43 89% 45%;
 
     /* Status Colors */
     --success: 142 76% 36%;
@@ -66,9 +66,9 @@
     --input: 220 13% 91%;
     --ring: 215 84% 19%;
 
-    /* Professional Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(215 84% 19%), hsl(215 84% 25%));
-    --gradient-hero: linear-gradient(135deg, hsl(215 25% 12% / 0.95), hsl(215 84% 19% / 0.85));
+    /* Professional Gradients - WM */
+    --gradient-primary: linear-gradient(135deg, hsl(189 94% 43%), hsl(189 94% 53%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 25% 12% / 0.95), hsl(189 94% 43% / 0.85));
     --gradient-accent: linear-gradient(135deg, hsl(43 89% 38%), hsl(43 89% 45%));
     --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 8% 98%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 8% 97%));
@@ -136,9 +136,9 @@
     --popover: 215 28% 8%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 43 89% 45%;
+    --primary: 189 94% 53%;          /* cyan lighter for dark mode */
     --primary-foreground: 215 28% 6%;
-    --primary-hover: 43 89% 42%;
+    --primary-hover: 189 94% 48%;
 
     --secondary: 215 20% 15%;
     --secondary-foreground: 0 0% 95%;
@@ -156,11 +156,11 @@
 
     --border: 215 20% 18%;
     --input: 215 20% 15%;
-    --ring: 43 89% 45%;
+    --ring: 189 94% 53%;
 
-    /* Dark Mode Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(43 89% 45%), hsl(43 89% 50%));
-    --gradient-hero: linear-gradient(135deg, hsl(215 28% 6% / 0.95), hsl(215 28% 12% / 0.9));
+    /* Dark Mode Gradients - WM */
+    --gradient-primary: linear-gradient(135deg, hsl(189 94% 53%), hsl(189 94% 58%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 28% 6% / 0.95), hsl(189 94% 43% / 0.9));
     --gradient-surface: linear-gradient(180deg, hsl(215 28% 8%), hsl(215 28% 6%));
     --gradient-card: linear-gradient(145deg, hsl(215 28% 8%), hsl(215 20% 12%));
 
@@ -174,12 +174,45 @@
 
     --sidebar-background: 215 28% 8%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 43 89% 45%;
+    --sidebar-primary: 189 94% 53%;
     --sidebar-primary-foreground: 215 28% 6%;
     --sidebar-accent: 215 20% 15%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 215 20% 18%;
-    --sidebar-ring: 43 89% 45%;
+    --sidebar-ring: 189 94% 53%;
+  }
+
+  /* Granada Platform Theme Override */
+  .granada-theme {
+    --primary: var(--granada-red);
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: var(--granada-red-dark);
+    --primary-light: 0 73% 51%;
+    
+    --secondary: var(--granada-navy);
+    --secondary-foreground: 0 0% 98%;
+    
+    --accent: var(--granada-gold);
+    --accent-foreground: 0 0% 98%;
+    --accent-hover: var(--granada-gold);
+    --accent-light: var(--granada-gold-light);
+
+    /* Granada Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--granada-red)), hsl(var(--granada-red-dark)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--granada-navy)) 0%, hsl(var(--granada-red)) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(var(--granada-gold)), hsl(var(--granada-gold-light)));
+  }
+
+  .dark .granada-theme {
+    --primary: 0 73% 51%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 0 73% 46%;
+    
+    --secondary: 221 69% 36%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --accent: var(--granada-gold-light);
+    --accent-foreground: 215 28% 6%;
   }
 }
 
