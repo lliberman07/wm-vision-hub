@@ -19,8 +19,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
-import type { PMSUser } from './PMSUsersManagement';
 import type { PMSRole } from '@/lib/pmsRoleHelpers';
+
+interface PMSUser {
+  role_id: string;
+  user_id: string;
+  email: string;
+  role: string;
+  tenant_id: string;
+  tenant_name: string;
+  status: string;
+  created_at: string;
+  approved_at: string;
+}
 
 interface EditPMSUserDialogProps {
   user: PMSUser;
