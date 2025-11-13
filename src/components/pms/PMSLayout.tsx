@@ -3,9 +3,10 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { PMSSidebar } from './PMSSidebar';
 import { PMSBreadcrumbs } from './PMSBreadcrumbs';
 import { Button } from '@/components/ui/button';
-import { Bell, Settings, LogOut, User } from 'lucide-react';
+import { Bell, Settings, LogOut, User, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePMS } from '@/contexts/PMSContext';
+import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ interface PMSLayoutProps {
 export function PMSLayout({ children }: PMSLayoutProps) {
   const { user } = useAuth();
   const { currentTenant, pmsRoles, allRoleContexts, activeRoleContext, switchContext } = usePMS();
+  const { isGranadaAdmin } = useGranadaAuth();
   const navigate = useNavigate();
   
   // Run automatic contract maintenance checks
@@ -116,6 +118,12 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                           <Settings className="mr-2 h-4 w-4" />
                           Dashboard
                         </DropdownMenuItem>
+                        {isGranadaAdmin && (
+                          <DropdownMenuItem onClick={() => navigate('/granada-admin')}>
+                            <Building2 className="mr-2 h-4 w-4" />
+                            Acceso a Granada Admin
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onClick={handleSignOut}>
                           <LogOut className="mr-2 h-4 w-4" />
                           Cerrar Sesión
