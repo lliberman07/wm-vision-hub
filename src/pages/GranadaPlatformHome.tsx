@@ -24,6 +24,7 @@ import granadaLogo from "@/assets/granada-logo-new.jpg";
 import pmsDashboardHero from "@/assets/pms-dashboard-hero.jpg";
 import PricingComparator from "@/components/granada/PricingComparator";
 import FeatureShowcase from "@/components/granada/FeatureShowcase";
+import { FeaturedPartnersSection } from "@/components/granada/FeaturedPartnersSection";
 import ProviderRegistrationForm from "@/components/granada/ProviderRegistrationForm";
 import FAQAccordion from "@/components/granada/FAQAccordion";
 import StatsCounter from "@/components/granada/StatsCounter";
@@ -159,6 +160,14 @@ export default function GranadaPlatformHome() {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">Granada Platform es la columna vertebral tecnológica de inmobiliarias exitosas.</p>
           </div>
           <FeatureShowcase />
+          
+          {/* Featured Partners for Real Estate Agencies */}
+          <FeaturedPartnersSection 
+            type="real_estate_agency"
+            title="Inmobiliarias que confían en Granada Platform"
+            description="Profesionales destacados que ya están revolucionando su gestión"
+          />
+          
           <div className="mt-12 text-center">
             <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
               <DialogTrigger asChild><Button size="lg">Agenda una Demo Personalizada</Button></DialogTrigger>
@@ -198,6 +207,13 @@ export default function GranadaPlatformHome() {
               </Card>
             ))}
           </div>
+          
+          {/* Featured Partners for Independent Managers */}
+          <FeaturedPartnersSection 
+            type="independent_manager"
+            title="Administradores Independientes Certificados"
+            description="Profesionales verificados que utilizan Granada Platform para ofrecer el mejor servicio"
+          />
         </div>
       </section>
 
