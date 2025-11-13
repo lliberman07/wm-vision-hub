@@ -21,25 +21,35 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 12%;
 
-    /* Primary: Professional Navy Blue */
-    --primary: 215 84% 19%;
-    --primary-foreground: 0 0% 98%;
-    --primary-hover: 215 84% 16%;
-    --primary-light: 215 84% 25%;
+    /* Granada Brand Colors */
+    --granada-red: 0 73% 41%;
+    --granada-red-dark: 0 58% 40%;
+    --granada-navy: 221 69% 31%;
+    --granada-navy-dark: 224 64% 33%;
+    --granada-gold: 43 85% 38%;
+    --granada-gold-light: 43 88% 51%;
+    --granada-cream: 60 56% 91%;
+    --granada-gray: 215 16% 47%;
 
-    /* Secondary: Clean Light Gray */
-    --secondary: 220 10% 95%;
-    --secondary-foreground: 215 25% 12%;
+    /* Primary: Granada Red */
+    --primary: 0 73% 41%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 0 58% 40%;
+    --primary-light: 0 73% 51%;
+
+    /* Secondary: Granada Navy */
+    --secondary: 221 69% 31%;
+    --secondary-foreground: 0 0% 98%;
 
     /* Muted: Neutral Grays */
     --muted: 220 8% 93%;
     --muted-foreground: 215 12% 45%;
 
-    /* Accent: Premium Gold */
-    --accent: 43 89% 38%;
+    /* Accent: Granada Gold */
+    --accent: 43 85% 38%;
     --accent-foreground: 0 0% 98%;
-    --accent-hover: 43 89% 35%;
-    --accent-light: 43 89% 45%;
+    --accent-hover: 43 85% 35%;
+    --accent-light: 43 88% 51%;
 
     /* Status Colors */
     --success: 142 76% 36%;
