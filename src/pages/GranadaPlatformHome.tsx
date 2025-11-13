@@ -20,6 +20,7 @@ import {
   Instagram,
   Mail,
 } from "lucide-react";
+import granadaLogo from "@/assets/granada-logo-new.jpg";
 import PricingComparator from "@/components/granada/PricingComparator";
 import FeatureShowcase from "@/components/granada/FeatureShowcase";
 import ProviderRegistrationForm from "@/components/granada/ProviderRegistrationForm";
@@ -51,14 +52,12 @@ export default function GranadaPlatformHome() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <Building2 className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Granada Platform
-            </span>
+            <img src={granadaLogo} alt="Granada Property Management" className="h-12 w-auto" />
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <a href="#inmobiliarias" className="text-sm font-medium hover:text-primary transition-colors">Para Inmobiliarias</a>
             <a href="#propietarios" className="text-sm font-medium hover:text-primary transition-colors">Para Propietarios</a>
+            <Link to="/partners-directory" className="text-sm font-medium hover:text-primary transition-colors">Directorio</Link>
             <a href="#planes" className="text-sm font-medium hover:text-primary transition-colors">Planes</a>
             <a href="#proveedores" className="text-sm font-medium hover:text-primary transition-colors">Proveedores</a>
           </nav>

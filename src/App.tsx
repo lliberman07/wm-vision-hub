@@ -14,6 +14,7 @@ import Index from "./pages/Index";
 import GranadaAdmin from "./pages/GranadaAdmin";
 import GranadaPlatformHome from "./pages/GranadaPlatformHome";
 import GranadaAdminLogin from "./pages/GranadaAdminLogin";
+import PartnersDirectory from "./pages/PartnersDirectory";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import PropertyManagement from "./pages/PropertyManagement";
@@ -70,6 +71,7 @@ const App = () => (
               <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/granada-platform" element={<GranadaPlatformHome />} />
+              <Route path="/partners-directory" element={<PartnersDirectory />} />
               <Route path="/granada-admin/login" element={<GranadaAdminLogin />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
