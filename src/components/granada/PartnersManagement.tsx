@@ -37,6 +37,8 @@ interface Partner {
   is_active: boolean;
 }
 
+type PartnerInsert = Omit<Partner, 'id'>;
+
 export function PartnersManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -48,19 +50,19 @@ export function PartnersManagement() {
   const { data: partners = [], isLoading } = useQuery({
     queryKey: ['partners-admin'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('granada_partners')
         .select('*')
         .order('name', { ascending: true });
       
       if (error) throw error;
-      return data as Partner[];
+      return (data || []) as Partner[];
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: Partial<Partner>) => {
-      const { error } = await supabase
+    mutationFn: async (data: PartnerInsert) => {
+      const { error } = await (supabase as any)
         .from('granada_partners')
         .insert([data]);
       
@@ -78,8 +80,8 @@ export function PartnersManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Partner> }) => {
-      const { error } = await supabase
+    mutationFn: async ({ id, data }: { id: string; data: PartnerInsert }) => {
+      const { error } = await (supabase as any)
         .from('granada_partners')
         .update(data)
         .eq('id', id);
@@ -99,7 +101,7 @@ export function PartnersManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('granada_partners')
         .delete()
         .eq('id', id);
@@ -121,12 +123,12 @@ export function PartnersManagement() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const data = {
+    const data: PartnerInsert = {
       name: formData.get('name') as string,
-      description: formData.get('description') as string,
+      description: formData.get('description') as string || null,
       type: formData.get('type') as 'real_estate_agency' | 'independent_manager',
-      province: formData.get('province') as string,
-      city: formData.get('city') as string,
+      province: formData.get('province') as string || null,
+      city: formData.get('city') as string || null,
       neighborhood: formData.get('neighborhood') as string || null,
       address: formData.get('address') as string || null,
       phone: formData.get('phone') as string || null,

@@ -44,7 +44,7 @@ export function PartnersDirectory({ type = 'all', featured = false, limit }: Par
   const { data: partners = [], isLoading } = useQuery({
     queryKey: ['partners-directory', type, featured],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('granada_partners')
         .select('*')
         .eq('is_active', true);
@@ -65,7 +65,7 @@ export function PartnersDirectory({ type = 'all', featured = false, limit }: Par
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Partner[];
+      return (data || []) as Partner[];
     },
   });
 
