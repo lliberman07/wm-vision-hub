@@ -13,12 +13,14 @@ import { SubscriptionsManagement } from '@/components/granada/SubscriptionsManag
 import { PaymentsManagement } from '@/components/granada/PaymentsManagement';
 import { SubscriptionPlansManagement } from '@/components/granada/SubscriptionPlansManagement';
 import { GranadaSubscriptionAnalyticsDashboard } from '@/components/granada/GranadaSubscriptionAnalyticsDashboard';
+import { GranadaContactsManagement } from '@/components/granada/GranadaContactsManagement';
 import {
   Building2,
   CreditCard,
   FileBarChart,
   Users,
   ArrowLeftRight,
+  MessageSquare,
 } from 'lucide-react';
 
 function GranadaDashboard() {
@@ -30,6 +32,12 @@ function GranadaDashboard() {
       description: 'MRR, ARR, churn rate y proyecciones anuales',
       icon: FileBarChart,
       path: '/granada-admin/analytics',
+    },
+    {
+      title: 'Contactos',
+      description: 'Gestionar consultas y leads de Granada Platform',
+      icon: MessageSquare,
+      path: '/granada-admin/contacts',
     },
     {
       title: 'Clientes Suscriptores',
@@ -191,6 +199,7 @@ export default function GranadaAdmin() {
       <Routes>
         <Route path="/" element={<GranadaDashboard />} />
         <Route path="/analytics" element={<GranadaSubscriptionAnalyticsDashboard />} />
+        <Route path="/contacts" element={<GranadaContactsManagement />} />
         <Route path="/clients" element={<ClientsManagement />} />
         <Route path="/client-users" element={<ClientUsersManagement />} />
         <Route path="/platform-users" element={<PlatformUsersManagement />} />

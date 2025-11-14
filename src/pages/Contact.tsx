@@ -67,7 +67,10 @@ const Contact = () => {
           email: formData.email,
           phone: formData.phone || null,
           company: formData.company || null,
-          message: formData.message
+          message: formData.message,
+          source: 'wm',
+          status: 'new',
+          priority: 'medium'
         });
 
       if (error) {
@@ -88,6 +91,7 @@ const Contact = () => {
             lastName: formData.lastName,
             email: formData.email,
             language: language,
+            source: 'wm'
           },
         });
         
