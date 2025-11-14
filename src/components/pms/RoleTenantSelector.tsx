@@ -28,7 +28,55 @@ export function RoleTenantSelector({
   activeContext, 
   onSwitch 
 }: RoleTenantSelectorProps) {
-  // Group by tenant for better UX
+  // Detect if this is a GRANADA_SUPERADMIN (all contexts have SUPERADMIN role)
+  const isGranadaSuperAdmin = allContexts.length > 1 && 
+    allContexts.every(ctx => ctx.role === 'SUPERADMIN');
+
+  // For GRANADA_SUPERADMIN: Show tenant-only selector
+  if (isGranadaSuperAdmin) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Badge variant="destructive" className="font-mono text-[10px]">
+              GRANADA
+            </Badge>
+            <span className="hidden sm:inline text-sm">
+              {activeContext.tenant_name}
+            </span>
+            <ChevronDown className="h-3 w-3 opacity-50" />
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuLabel className="text-xs text-muted-foreground">
+            Cambiar Tenant (Vista Global)
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+
+          {allContexts.map((ctx) => {
+            const isActive = ctx.tenant_id === activeContext.tenant_id;
+            
+            return (
+              <DropdownMenuItem
+                key={ctx.tenant_id}
+                onClick={() => !isActive && onSwitch(ctx)}
+                disabled={isActive}
+                className="gap-2"
+              >
+                <span className="flex-1">{ctx.tenant_name}</span>
+                {isActive && (
+                  <span className="ml-auto text-xs">✓</span>
+                )}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  // Regular users: Group by tenant for better UX
   const contextsByTenant = allContexts.reduce((acc, ctx) => {
     if (!acc[ctx.tenant_name]) {
       acc[ctx.tenant_name] = [];

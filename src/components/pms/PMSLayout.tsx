@@ -78,9 +78,15 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                         onSwitch={switchContext}
                       />
                     ) : allRoleContexts.length === 1 ? (
-                      <Badge variant="outline" className="font-mono text-[10px]">
-                        {allRoleContexts[0].role}
-                      </Badge>
+                      isGranadaAdmin ? (
+                        <Badge variant="destructive" className="font-mono text-[10px]">
+                          GRANADA ADMIN
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="font-mono text-[10px]">
+                          {allRoleContexts[0].role}
+                        </Badge>
+                      )
                     ) : null}
 
                     {/* Notifications */}
