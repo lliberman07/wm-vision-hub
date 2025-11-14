@@ -24,12 +24,12 @@ const PMS = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Redirect CLIENT_ADMIN users to /client-admin dashboard
+  // Redirect CLIENT_ADMIN users to /client-admin dashboard only if they don't have PMS operational roles
   useEffect(() => {
-    if (!authLoading && !pmsLoading && !clientLoading && user && isClientAdmin) {
+    if (!authLoading && !pmsLoading && !clientLoading && user && isClientAdmin && !hasPMSAccess) {
       navigate('/client-admin');
     }
-  }, [isClientAdmin, authLoading, pmsLoading, clientLoading, user, navigate]);
+  }, [isClientAdmin, hasPMSAccess, authLoading, pmsLoading, clientLoading, user, navigate]);
 
   if (authLoading || pmsLoading || clientLoading) {
     return (
