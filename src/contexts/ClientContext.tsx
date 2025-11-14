@@ -76,11 +76,16 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
 
       // Check if any tenant has INMOBILIARIA or GESTOR role
+      // INMOBILIARIA users are owners/admins of their own tenant
       const adminTenant = rolesData?.find((row: any) => {
         const roles = row.roles || [];
-        return roles.some((role: string) => 
-          role.toUpperCase() === 'INMOBILIARIA' || role.toUpperCase() === 'GESTOR'
+        const hasInmobiliariaRole = roles.some((role: string) => 
+          role.toUpperCase() === 'INMOBILIARIA'
         );
+        const hasGestorRole = roles.some((role: string) => 
+          role.toUpperCase() === 'GESTOR'
+        );
+        return hasInmobiliariaRole || hasGestorRole;
       });
 
       // Also check for CLIENT_ADMIN in pms_client_users
