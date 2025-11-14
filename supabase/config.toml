@@ -1,5 +1,11 @@
 project_id = "jrzeabjpxkhccopxfwqa"
 
+[functions.setup-wm-client-user]
+verify_jwt = false
+
+[functions.setup-inmobiliaria-client-admin]
+verify_jwt = false
+
 [functions.sync-exchange-rates]
 verify_jwt = false
 
