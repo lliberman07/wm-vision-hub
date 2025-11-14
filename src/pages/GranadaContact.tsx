@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +8,7 @@ import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DynamicContactForm } from '@/components/DynamicContactForm';
+import granadaLogo from '@/assets/granada-logo-new.jpg';
 
 export default function GranadaContact() {
   const navigate = useNavigate();
@@ -74,15 +75,36 @@ export default function GranadaContact() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--granada-navy))] via-[hsl(var(--granada-navy-dark))] to-[hsl(var(--granada-red))]">
+    <div className="granada-theme min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
+          <Link to="/granada-platform" className="flex items-center gap-2">
+            <img src={granadaLogo} alt="Granada Property Management" className="h-12 w-auto" />
+          </Link>
+          <nav className="hidden md:flex items-center gap-6">
+            <Link to="/granada-platform#inmobiliarias" className="text-sm font-medium hover:text-primary transition-colors">Para Inmobiliarias</Link>
+            <Link to="/granada-platform#propietarios" className="text-sm font-medium hover:text-primary transition-colors">Para Propietarios</Link>
+            <Link to="/partners-directory" className="text-sm font-medium hover:text-primary transition-colors">Directorio</Link>
+            <Link to="/granada-platform#planes" className="text-sm font-medium hover:text-primary transition-colors">Planes</Link>
+            <Link to="/granada-platform#proveedores" className="text-sm font-medium hover:text-primary transition-colors">Proveedores</Link>
+            <Link to="/granada-platform/contact" className="text-sm font-medium text-primary transition-colors">Contacto</Link>
+          </nav>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" asChild><Link to="/pms-login">Acceso PMS</Link></Button>
+            <Button asChild><Link to="/granada-platform#demo">Solicitar Demo</Link></Button>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 text-white">
+      <section className="relative pt-20 pb-16 bg-gradient-to-br from-primary/10 via-background to-accent/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground">
               {language === 'es' ? 'Contáctanos' : 'Contact Us'}
             </h1>
-            <p className="text-xl text-white/80 mb-8">
+            <p className="text-xl text-muted-foreground mb-8">
               {language === 'es' 
                 ? 'Estamos aquí para ayudarte a revolucionar tu gestión inmobiliaria'
                 : 'We are here to help you revolutionize your real estate management'}

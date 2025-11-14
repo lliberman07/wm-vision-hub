@@ -72,6 +72,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/granada-platform" element={<GranadaPlatformHome />} />
               <Route path="/granada-platform/contact" element={<GranadaContact />} />
+              <Route path="/granada/contact" element={<GranadaContact />} />
               <Route path="/partners-directory" element={<PartnersDirectory />} />
               <Route path="/granada-admin/login" element={<GranadaAdminLogin />} />
               <Route path="/about" element={<About />} />

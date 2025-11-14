@@ -62,6 +62,7 @@ export default function GranadaPlatformHome() {
             <Link to="/partners-directory" className="text-sm font-medium hover:text-primary transition-colors">Directorio</Link>
             <a href="#planes" className="text-sm font-medium hover:text-primary transition-colors">Planes</a>
             <a href="#proveedores" className="text-sm font-medium hover:text-primary transition-colors">Proveedores</a>
+            <Link to="/granada-platform/contact" className="text-sm font-medium hover:text-primary transition-colors">Contacto</Link>
           </nav>
           <div className="flex items-center gap-3">
             <Button variant="outline" asChild><Link to="/pms-login">Acceso PMS</Link></Button>
