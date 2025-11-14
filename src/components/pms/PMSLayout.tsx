@@ -59,9 +59,9 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                   {/* Tenant Info */}
                   <div className="hidden md:block">
                     <h2 className="text-lg font-semibold leading-tight">
-                      {currentTenant?.name || 'WM Admin Prop'}
+                      {currentTenant?.name || 'Granada PMS'}
                     </h2>
-                    <p className="text-xs text-muted-foreground">Sistema PMS</p>
+                    <p className="text-xs text-muted-foreground">Cliente: {currentTenant?.name}</p>
                   </div>
                 </div>
 
@@ -153,7 +153,7 @@ export function PMSLayout({ children }: PMSLayoutProps) {
             <footer className="border-t bg-background py-4 mt-auto">
               <div className="container mx-auto px-4">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
-                  <p>© 2025 WM Admin Prop - Sistema de Gestión Inmobiliaria</p>
+                  <p>© 2025 Granada Platform - Sistema de Gestión de Propiedades</p>
                   <div className="flex gap-4">
                     <button className="hover:text-foreground transition-colors">
                       Soporte

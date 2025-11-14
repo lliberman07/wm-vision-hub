@@ -66,7 +66,7 @@ const CreditSimulator = () => {
   return (
     <>
       <Helmet>
-        <title>{t('credit.page.title')} - WM Global</title>
+        <title>{t('credit.page.title')} - Granada Platform</title>
         <meta name="description" content={t('credit.page.description')} />
       </Helmet>
 

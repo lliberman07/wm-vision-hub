@@ -65,7 +65,7 @@ export default function GranadaPlatformHome() {
             <Link to="/granada-platform/contact" className="text-sm font-medium hover:text-primary transition-colors">Contacto</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Button variant="outline" asChild><Link to="/pms-login">Acceso PMS</Link></Button>
+            <Button variant="outline" asChild><Link to="/pms/login">Acceso PMS</Link></Button>
             <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
               <DialogTrigger asChild><Button>Solicitar Demo</Button></DialogTrigger>
               <DialogContent className="max-w-md">

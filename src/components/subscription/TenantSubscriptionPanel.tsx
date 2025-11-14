@@ -253,9 +253,9 @@ export default function TenantSubscriptionPanel() {
 
                 <div className="bg-muted p-3 rounded text-sm space-y-1">
                   <p><strong>Datos bancarios:</strong></p>
-                  <p>Titular: WM Property Management</p>
+                  <p>Titular: Granada Platform</p>
                   <p>CBU: XXXXXXXXXXXXXXXXXXXXXXXX</p>
-                  <p>Alias: WM.PROPERTY.MP</p>
+                  <p>Alias: GRANADA.PMS</p>
                 </div>
 
                 <Button

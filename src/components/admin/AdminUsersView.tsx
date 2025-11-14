@@ -8,10 +8,10 @@ export function AdminUsersView() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Shield className="h-5 w-5" />
-          <span>WM Admin Users Management</span>
+          <span>Usuarios Admin de WM</span>
         </CardTitle>
         <CardDescription>
-          Gestionar roles y accesos de usuarios administradores de WM
+          Gestionar roles y accesos de usuarios administradores del cliente WM
         </CardDescription>
       </CardHeader>
       <CardContent>

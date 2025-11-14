@@ -84,6 +84,7 @@ const PMSLogin = () => {
             />
           </div>
           <div>
+            <h1 className="text-xl font-bold text-foreground">Granada PMS</h1>
             <p className="text-muted-foreground">Sistema de Gestión de Propiedades</p>
           </div>
         </div>
