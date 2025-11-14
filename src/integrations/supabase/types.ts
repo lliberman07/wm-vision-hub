@@ -154,38 +154,120 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_actions: {
+        Row: {
+          action_date: string
+          action_type: string
+          contact_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          performed_by: string
+        }
+        Insert: {
+          action_date?: string
+          action_type: string
+          contact_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          performed_by: string
+        }
+        Update: {
+          action_date?: string
+          action_type?: string
+          contact_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          performed_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_actions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_submissions: {
         Row: {
+          assigned_to: string | null
           company: string | null
           created_at: string
           email: string
           first_name: string
           id: string
+          internal_notes: string | null
+          last_action_date: string | null
+          last_action_notes: string | null
+          last_action_type: string | null
           last_name: string
           message: string
           phone: string | null
+          priority: string
+          source: string
+          status: string
+          tags: string[] | null
+          tenant_id: string | null
+          updated_at: string | null
         }
         Insert: {
+          assigned_to?: string | null
           company?: string | null
           created_at?: string
           email: string
           first_name: string
           id?: string
+          internal_notes?: string | null
+          last_action_date?: string | null
+          last_action_notes?: string | null
+          last_action_type?: string | null
           last_name: string
           message: string
           phone?: string | null
+          priority?: string
+          source?: string
+          status?: string
+          tags?: string[] | null
+          tenant_id?: string | null
+          updated_at?: string | null
         }
         Update: {
+          assigned_to?: string | null
           company?: string | null
           created_at?: string
           email?: string
           first_name?: string
           id?: string
+          internal_notes?: string | null
+          last_action_date?: string | null
+          last_action_notes?: string | null
+          last_action_type?: string | null
           last_name?: string
           message?: string
           phone?: string | null
+          priority?: string
+          source?: string
+          status?: string
+          tags?: string[] | null
+          tenant_id?: string | null
+          updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contact_submissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
@@ -480,6 +562,78 @@ export type Database = {
           },
         ]
       }
+      granada_partners: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          facebook: string | null
+          id: string
+          instagram: string | null
+          is_active: boolean
+          is_featured: boolean
+          linkedin: string | null
+          logo_url: string | null
+          name: string
+          neighborhood: string | null
+          phone: string | null
+          province: string | null
+          tiktok: string | null
+          twitter: string | null
+          type: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          facebook?: string | null
+          id?: string
+          instagram?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          linkedin?: string | null
+          logo_url?: string | null
+          name: string
+          neighborhood?: string | null
+          phone?: string | null
+          province?: string | null
+          tiktok?: string | null
+          twitter?: string | null
+          type: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          facebook?: string | null
+          id?: string
+          instagram?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          linkedin?: string | null
+          logo_url?: string | null
+          name?: string
+          neighborhood?: string | null
+          phone?: string | null
+          province?: string | null
+          tiktok?: string | null
+          twitter?: string | null
+          type?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       granada_platform_users: {
         Row: {
           created_at: string | null
@@ -677,133 +831,6 @@ export type Database = {
             columns: ["simulation_id"]
             isOneToOne: false
             referencedRelation: "investment_simulations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pms_access_requests: {
-        Row: {
-          address: string | null
-          approved_subscription_id: string | null
-          billing_cycle: string | null
-          city: string | null
-          company_name: string | null
-          contact_name: string | null
-          contract_number: string | null
-          created_at: string | null
-          cuit_cuil: string | null
-          desired_plan_id: string | null
-          document_id: string | null
-          email: string
-          entity_type: string | null
-          first_name: string | null
-          id: string
-          last_name: string | null
-          payment_method: string | null
-          payment_proof_url: string | null
-          phone: string | null
-          postal_code: string | null
-          razon_social: string | null
-          reason: string | null
-          recommended_at: string | null
-          recommended_by: string | null
-          requested_role: Database["public"]["Enums"]["pms_app_role"]
-          reviewed_at: string | null
-          reviewed_by: string | null
-          state: string | null
-          status: string | null
-          tax_id: string | null
-          tenant_id: string
-          user_id: string | null
-        }
-        Insert: {
-          address?: string | null
-          approved_subscription_id?: string | null
-          billing_cycle?: string | null
-          city?: string | null
-          company_name?: string | null
-          contact_name?: string | null
-          contract_number?: string | null
-          created_at?: string | null
-          cuit_cuil?: string | null
-          desired_plan_id?: string | null
-          document_id?: string | null
-          email: string
-          entity_type?: string | null
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          payment_method?: string | null
-          payment_proof_url?: string | null
-          phone?: string | null
-          postal_code?: string | null
-          razon_social?: string | null
-          reason?: string | null
-          recommended_at?: string | null
-          recommended_by?: string | null
-          requested_role: Database["public"]["Enums"]["pms_app_role"]
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          state?: string | null
-          status?: string | null
-          tax_id?: string | null
-          tenant_id: string
-          user_id?: string | null
-        }
-        Update: {
-          address?: string | null
-          approved_subscription_id?: string | null
-          billing_cycle?: string | null
-          city?: string | null
-          company_name?: string | null
-          contact_name?: string | null
-          contract_number?: string | null
-          created_at?: string | null
-          cuit_cuil?: string | null
-          desired_plan_id?: string | null
-          document_id?: string | null
-          email?: string
-          entity_type?: string | null
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          payment_method?: string | null
-          payment_proof_url?: string | null
-          phone?: string | null
-          postal_code?: string | null
-          razon_social?: string | null
-          reason?: string | null
-          recommended_at?: string | null
-          recommended_by?: string | null
-          requested_role?: Database["public"]["Enums"]["pms_app_role"]
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          state?: string | null
-          status?: string | null
-          tax_id?: string | null
-          tenant_id?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pms_access_requests_approved_subscription_id_fkey"
-            columns: ["approved_subscription_id"]
-            isOneToOne: false
-            referencedRelation: "tenant_subscriptions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pms_access_requests_desired_plan_id_fkey"
-            columns: ["desired_plan_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_plans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pms_access_requests_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
         ]

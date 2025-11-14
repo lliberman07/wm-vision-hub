@@ -23,6 +23,7 @@ import {
   Wallet,
   FileBarChart,
   FileCheck,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -45,6 +46,11 @@ const menuItems = [
     title: 'Solicitudes',
     icon: FileCheck,
     path: '/granada-admin/subscription-requests',
+  },
+  {
+    title: 'Contactos',
+    icon: MessageSquare,
+    path: '/granada-admin/contacts',
   },
   {
     title: 'Clientes',

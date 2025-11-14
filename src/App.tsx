@@ -52,6 +52,8 @@ import Receipts from "./pages/pms/Receipts";
 import Help from "./pages/pms/Help";
 import MySubscription from "./pages/pms/MySubscription";
 
+import GranadaContact from "./pages/GranadaContact";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -69,6 +71,7 @@ const App = () => (
               <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/granada-platform" element={<GranadaPlatformHome />} />
+              <Route path="/granada-platform/contact" element={<GranadaContact />} />
               <Route path="/partners-directory" element={<PartnersDirectory />} />
               <Route path="/granada-admin/login" element={<GranadaAdminLogin />} />
               <Route path="/about" element={<About />} />
