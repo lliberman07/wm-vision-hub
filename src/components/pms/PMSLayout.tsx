@@ -3,9 +3,10 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { PMSSidebar } from './PMSSidebar';
 import { PMSBreadcrumbs } from './PMSBreadcrumbs';
 import { Button } from '@/components/ui/button';
-import { Bell, Settings, LogOut, User, Building2 } from 'lucide-react';
+import { Bell, Settings, LogOut, User, Building2, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePMS } from '@/contexts/PMSContext';
+import { useClient } from '@/contexts/ClientContext';
 import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +30,7 @@ interface PMSLayoutProps {
 export function PMSLayout({ children }: PMSLayoutProps) {
   const { user } = useAuth();
   const { currentTenant, pmsRoles, allRoleContexts, activeRoleContext, switchContext } = usePMS();
+  const { isClientAdmin } = useClient();
   const { isGranadaAdmin } = useGranadaAuth();
   const navigate = useNavigate();
   
@@ -116,14 +118,21 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate('/pms')}>
                           <Settings className="mr-2 h-4 w-4" />
-                          Dashboard
+                          Dashboard PMS
                         </DropdownMenuItem>
+                        {isClientAdmin && (
+                          <DropdownMenuItem onClick={() => navigate('/client-admin')}>
+                            <Shield className="mr-2 h-4 w-4" />
+                            Panel de Cliente
+                          </DropdownMenuItem>
+                        )}
                         {isGranadaAdmin && (
                           <DropdownMenuItem onClick={() => navigate('/granada-admin')}>
                             <Building2 className="mr-2 h-4 w-4" />
-                            Acceso a Granada Admin
+                            Granada Admin
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleSignOut}>
                           <LogOut className="mr-2 h-4 w-4" />
                           Cerrar Sesión
