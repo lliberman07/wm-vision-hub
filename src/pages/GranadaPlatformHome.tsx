@@ -108,10 +108,14 @@ export default function GranadaPlatformHome() {
                 { icon: Globe, text: "Multi-moneda" },
                 { icon: Lock, text: "Seguridad Bancaria" },
               ].map((badge, index) => (
-                <Card key={index} className="bg-white/10 backdrop-blur border-white/20">
+                <Card 
+                  key={index} 
+                  className="bg-white/10 backdrop-blur border-white/20 transition-all duration-300 hover:bg-white/20 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/20 hover:-translate-y-1 group animate-fade-in cursor-pointer"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   <CardContent className="p-4 flex items-center gap-2 justify-center">
-                    <badge.icon className="h-5 w-5 text-accent" />
-                    <span className="text-sm font-semibold text-white">{badge.text}</span>
+                    <badge.icon className="h-5 w-5 text-accent transition-all duration-300 group-hover:scale-125 group-hover:rotate-12" />
+                    <span className="text-sm font-semibold text-white group-hover:text-accent transition-colors duration-300">{badge.text}</span>
                   </CardContent>
                 </Card>
               ))}
