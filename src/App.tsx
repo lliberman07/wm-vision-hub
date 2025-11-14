@@ -10,6 +10,7 @@ import { ClientProvider } from "@/contexts/ClientContext";
 import { GranadaAuthProvider } from "@/contexts/GranadaAuthContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import GranadaProtectedRoute from "@/components/GranadaProtectedRoute";
 import Index from "./pages/Index";
 import GranadaAdmin from "./pages/GranadaAdmin";
 import GranadaPlatformHome from "./pages/GranadaPlatformHome";
@@ -116,7 +117,14 @@ const App = () => (
               <Route path="/pms/help" element={<Help />} />
               <Route path="/pms/my-subscription" element={<MySubscription />} />
               <Route path="/client-admin/*" element={<ClientAdmin />} />
-              <Route path="/granada-admin/*" element={<GranadaAdmin />} />
+              <Route 
+                path="/granada-admin/*" 
+                element={
+                  <GranadaProtectedRoute>
+                    <GranadaAdmin />
+                  </GranadaProtectedRoute>
+                } 
+              />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
