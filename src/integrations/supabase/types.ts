@@ -676,6 +676,39 @@ export type Database = {
         }
         Relationships: []
       }
+      granada_user_permissions: {
+        Row: {
+          can_delete: boolean | null
+          can_read: boolean | null
+          can_write: boolean | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          module: Database["public"]["Enums"]["granada_module"]
+          user_id: string
+        }
+        Insert: {
+          can_delete?: boolean | null
+          can_read?: boolean | null
+          can_write?: boolean | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          module: Database["public"]["Enums"]["granada_module"]
+          user_id: string
+        }
+        Update: {
+          can_delete?: boolean | null
+          can_read?: boolean | null
+          can_write?: boolean | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          module?: Database["public"]["Enums"]["granada_module"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       investment_simulations: {
         Row: {
           analysis_results: Json
@@ -4177,6 +4210,10 @@ export type Database = {
           tenant_slug: string
         }[]
       }
+      has_granada_module_permission: {
+        Args: { _module: string; _permission?: string; _user_id: string }
+        Returns: boolean
+      }
       has_hierarchical_access: {
         Args: { p_target_tenant_id: string; p_user_id: string }
         Returns: boolean
@@ -4301,6 +4338,17 @@ export type Database = {
       billing_cycle: "monthly" | "yearly"
       employment_status: "employed" | "self-employed" | "other"
       entity_type: "persona" | "empresa"
+      granada_module:
+        | "dashboard"
+        | "analytics"
+        | "subscription_requests"
+        | "contacts"
+        | "clients"
+        | "client_users"
+        | "platform_users"
+        | "subscription_plans"
+        | "subscriptions"
+        | "payments"
       granada_role: "GRANADA_SUPERADMIN" | "GRANADA_ADMIN"
       invoice_status: "pending" | "paid" | "overdue" | "cancelled" | "refunded"
       module_type: "WM" | "PMS"
@@ -4483,6 +4531,18 @@ export const Constants = {
       billing_cycle: ["monthly", "yearly"],
       employment_status: ["employed", "self-employed", "other"],
       entity_type: ["persona", "empresa"],
+      granada_module: [
+        "dashboard",
+        "analytics",
+        "subscription_requests",
+        "contacts",
+        "clients",
+        "client_users",
+        "platform_users",
+        "subscription_plans",
+        "subscriptions",
+        "payments",
+      ],
       granada_role: ["GRANADA_SUPERADMIN", "GRANADA_ADMIN"],
       invoice_status: ["pending", "paid", "overdue", "cancelled", "refunded"],
       module_type: ["WM", "PMS"],
