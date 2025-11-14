@@ -62,7 +62,74 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     try {
-      // ✅ NEW: Use v_current_user_tenants view (more efficient than RPC)
+      // Check if user is GRANADA_SUPERADMIN first
+      const { data: granadaUser } = await supabase
+        .from('granada_platform_users')
+        .select('role, is_active')
+        .eq('user_id', user.id)
+        .single();
+
+      if (granadaUser?.role === 'GRANADA_SUPERADMIN' && granadaUser.is_active) {
+        // Get all active tenants for Granada SuperAdmin
+        const { data: allTenants } = await supabase
+          .from('pms_tenants')
+          .select('id, name, slug')
+          .eq('is_active', true)
+          .order('name');
+
+        if (!allTenants || allTenants.length === 0) {
+          setHasPMSAccess(false);
+          setPMSRoles([]);
+          setAllRoleContexts([]);
+          setActiveRoleContext(null);
+          setUserRole(null);
+          setCurrentTenant(null);
+          setLoading(false);
+          return;
+        }
+
+        // Create SUPERADMIN context for each tenant
+        const contexts: PMSRoleContext[] = allTenants.map(tenant => ({
+          role: 'SUPERADMIN' as PMSRole,
+          tenant_id: tenant.id,
+          tenant_name: tenant.name,
+          tenant_slug: tenant.slug
+        }));
+
+        setAllRoleContexts(contexts);
+        
+        // Try to restore context from sessionStorage
+        const savedContext = sessionStorage.getItem('pms_active_context');
+        let activeContext = contexts[0];
+        
+        if (savedContext) {
+          try {
+            const parsed = JSON.parse(savedContext);
+            const verified = contexts.find(c => c.tenant_id === parsed.tenant_id);
+            if (verified) {
+              activeContext = verified;
+            } else {
+              sessionStorage.removeItem('pms_active_context');
+            }
+          } catch (e) {
+            sessionStorage.removeItem('pms_active_context');
+          }
+        }
+        
+        setActiveRoleContext(activeContext);
+        setPMSRoles(['SUPERADMIN']);
+        setUserRole('SUPERADMIN');
+        setCurrentTenant({
+          id: activeContext.tenant_id,
+          name: activeContext.tenant_name,
+          slug: activeContext.tenant_slug
+        });
+        setHasPMSAccess(true);
+        setLoading(false);
+        return;
+      }
+
+      // Regular user flow - use v_current_user_tenants view
       const { data: rolesData, error: rolesError } = await supabase
         .from('v_current_user_tenants')
         .select('*')
