@@ -1,48 +1,38 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Mail, Phone, MapPin, Clock, Send, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { DynamicContactForm } from '@/components/DynamicContactForm';
 
 export default function GranadaContact() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    company: '',
-    message: ''
-  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFormSubmit = async (data: any) => {
     setLoading(true);
-
     try {
       // 1. Guardar en base de datos con source: 'granada'
       const { error: dbError } = await supabase
         .from('contact_submissions')
         .insert({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone || null,
-          company: formData.company || null,
-          message: formData.message,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          phone: data.phone || null,
+          company: data.company || null,
+          message: data.message || data.issue_description || '',
           source: 'granada',
           status: 'new',
-          priority: 'medium'
+          priority: data.inquiry_type === 'support' ? 'high' : 'medium',
+          inquiry_type: data.inquiry_type,
+          dynamic_fields: data.dynamic_fields
         });
 
       if (dbError) throw dbError;
@@ -52,9 +42,9 @@ export default function GranadaContact() {
         'send-contact-confirmation',
         {
           body: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
             language: language,
             source: 'granada'
           }
@@ -69,16 +59,6 @@ export default function GranadaContact() {
         description: language === 'es' 
           ? 'Te contactaremos en las próximas 24-48 horas.'
           : 'We will contact you within 24-48 hours.',
-      });
-
-      // Reset form
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        company: '',
-        message: ''
       });
 
     } catch (error) {
@@ -119,101 +99,11 @@ export default function GranadaContact() {
             {/* Contact Form */}
             <Card className="shadow-xl">
               <CardContent className="pt-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName">
-                        {language === 'es' ? 'Nombre' : 'First Name'} *
-                      </Label>
-                      <Input
-                        id="firstName"
-                        required
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="lastName">
-                        {language === 'es' ? 'Apellido' : 'Last Name'} *
-                      </Label>
-                      <Input
-                        id="lastName"
-                        required
-                        value={formData.lastName}
-                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="phone">
-                      {language === 'es' ? 'Teléfono' : 'Phone'}
-                    </Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="company">
-                      {language === 'es' ? 'Empresa/Inmobiliaria' : 'Company/Real Estate Agency'}
-                    </Label>
-                    <Input
-                      id="company"
-                      value={formData.company}
-                      onChange={(e) => setFormData({...formData, company: e.target.value})}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="message">
-                      {language === 'es' ? 'Mensaje' : 'Message'} *
-                    </Label>
-                    <Textarea
-                      id="message"
-                      required
-                      rows={5}
-                      value={formData.message}
-                      onChange={(e) => setFormData({...formData, message: e.target.value})}
-                      placeholder={language === 'es' 
-                        ? 'Cuéntanos sobre tus necesidades...'
-                        : 'Tell us about your needs...'}
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    size="lg"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {language === 'es' ? 'Enviando...' : 'Sending...'}
-                      </>
-                    ) : (
-                      <>
-                        <Send className="mr-2 h-4 w-4" />
-                        {language === 'es' ? 'Enviar Mensaje' : 'Send Message'}
-                      </>
-                    )}
-                  </Button>
-                </form>
+                <DynamicContactForm 
+                  source="granada" 
+                  onSubmit={handleFormSubmit}
+                  loading={loading}
+                />
               </CardContent>
             </Card>
 
