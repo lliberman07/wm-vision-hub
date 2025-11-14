@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useClient } from '@/contexts/ClientContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt } from 'lucide-react';
@@ -14,14 +15,23 @@ const PMS = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { hasPMSAccess, pmsRoles, currentTenant, loading: pmsLoading, allRoleContexts, activeRoleContext } = usePMS();
+  const { isClientAdmin, loading: clientLoading } = useClient();
 
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/pms/login');
     }
   }, [user, authLoading, navigate]);
 
-  if (authLoading || pmsLoading) {
+  // Redirect CLIENT_ADMIN users to /client-admin dashboard
+  useEffect(() => {
+    if (!authLoading && !pmsLoading && !clientLoading && user && isClientAdmin) {
+      navigate('/client-admin');
+    }
+  }, [isClientAdmin, authLoading, pmsLoading, clientLoading, user, navigate]);
+
+  if (authLoading || pmsLoading || clientLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

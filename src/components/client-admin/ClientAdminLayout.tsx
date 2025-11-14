@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useClient } from '@/contexts/ClientContext';
+import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,7 @@ import {
   Home,
   BarChart3,
   DollarSign,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,6 +77,7 @@ export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
   const location = useLocation();
   const { user } = useAuth();
   const { clientData, subscription } = useClient();
+  const { isGranadaAdmin } = useGranadaAuth();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -150,7 +153,7 @@ export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
             <div className="flex items-center gap-4">
               <Button variant="ghost" onClick={() => navigate('/pms')}>
                 <Home className="h-4 w-4 mr-2" />
-                Ir al PMS
+                Acceso al PMS
               </Button>
               
               <DropdownMenu>
@@ -169,8 +172,15 @@ export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/pms')}>
                     <Home className="h-4 w-4 mr-2" />
-                    Ir al PMS
+                    Acceso al PMS
                   </DropdownMenuItem>
+                  {isGranadaAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/granada-admin')}>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Granada Admin
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Cerrar Sesión

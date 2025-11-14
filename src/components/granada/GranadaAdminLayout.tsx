@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
+import { useClient } from '@/contexts/ClientContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +25,7 @@ import {
   FileBarChart,
   FileCheck,
   MessageSquare,
+  Home,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -87,6 +89,7 @@ const menuItems = [
 export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
   const navigate = useNavigate();
   const { user, granadaRole } = useGranadaAuth();
+  const { isClientAdmin } = useClient();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -158,10 +161,17 @@ export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
                     <Building2 className="h-4 w-4 mr-2" />
                     Inicio Granada
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/pms/login')}>
-                    <Users className="h-4 w-4 mr-2" />
-                    Acceso PMS Clientes
+                  {isClientAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/client-admin')}>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Panel de Cliente
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => navigate('/pms')}>
+                    <Home className="h-4 w-4 mr-2" />
+                    Acceso al PMS
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Cerrar Sesión
