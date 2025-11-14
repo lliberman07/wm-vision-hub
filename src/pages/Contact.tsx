@@ -2,9 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
@@ -13,64 +10,39 @@ import { EnhancedChatbot } from "@/components/EnhancedChatbot";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import contactHeroBackground from "@/assets/contact-hero-background.jpg";
+import { DynamicContactForm } from "@/components/DynamicContactForm";
 import { 
   Mail, 
   Phone, 
   MapPin, 
   Clock,
-  Send,
   MessageSquare
 } from "lucide-react";
 
 const Contact = () => {
   const { toast } = useToast();
   const { t, language } = useLanguage();
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    company: "",
-    message: ""
-  });
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Set custom validation messages before submitting
-    const form = e.target as HTMLFormElement;
-    const firstNameInput = form.querySelector('#firstName') as HTMLInputElement;
-    const lastNameInput = form.querySelector('#lastName') as HTMLInputElement;
-    const emailInput = form.querySelector('#email') as HTMLInputElement;
-    const messageInput = form.querySelector('#message') as HTMLTextAreaElement;
-
-    // Set custom validation messages
-    firstNameInput.setCustomValidity(firstNameInput.value ? '' : t('contact.form.validation.firstName'));
-    lastNameInput.setCustomValidity(lastNameInput.value ? '' : t('contact.form.validation.lastName'));
-    emailInput.setCustomValidity(emailInput.value ? '' : t('contact.form.validation.email'));
-    messageInput.setCustomValidity(messageInput.value ? '' : t('contact.form.validation.message'));
-
-    // Check if form is valid
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
+  const handleFormSubmit = async (data: any) => {
+    setLoading(true);
     try {
       // Save to Supabase
       const { error } = await supabase
         .from('contact_submissions')
         .insert({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone || null,
-          company: formData.company || null,
-          message: formData.message,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          phone: data.phone || null,
+          company: data.company || null,
+          message: data.message || data.issue_description || '',
           source: 'wm',
           status: 'new',
-          priority: 'medium'
+          priority: data.inquiry_type === 'support' ? 'high' : 'medium',
+          inquiry_type: data.inquiry_type,
+          dynamic_fields: data.dynamic_fields
         });
 
       if (error) {
@@ -87,9 +59,9 @@ const Contact = () => {
       try {
         const { error: emailError } = await supabase.functions.invoke('send-contact-confirmation', {
           body: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
             language: language,
             source: 'wm'
           },
@@ -100,11 +72,9 @@ const Contact = () => {
         }
       } catch (emailError) {
         console.error('Error sending confirmation email:', emailError);
-        // Don't fail the form submission if email fails
       }
 
       setShowSuccessDialog(true);
-      setFormData({ firstName: "", lastName: "", email: "", phone: "", company: "", message: "" });
     } catch (error) {
       console.error('Error submitting contact form:', error);
       toast({
@@ -112,30 +82,8 @@ const Contact = () => {
         description: "There was a problem submitting your message. Please try again.",
         variant: "destructive"
       });
-      setFormData({ firstName: "", lastName: "", email: "", phone: "", company: "", message: "" });
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear custom validation message when user types
-    (e.target as HTMLInputElement | HTMLTextAreaElement).setCustomValidity('');
-  };
-
-  // Set validation messages when language changes
-  const handleInputInvalid = (e: React.FormEvent<HTMLInputElement>) => {
-    const target = e.target as HTMLInputElement;
-    if (target.name === 'firstName' && !target.value) {
-      target.setCustomValidity(t('contact.form.validation.firstName'));
-    } else if (target.name === 'lastName' && !target.value) {
-      target.setCustomValidity(t('contact.form.validation.lastName'));
-    } else if (target.name === 'email' && !target.value) {
-      target.setCustomValidity(t('contact.form.validation.email'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -186,94 +134,11 @@ const Contact = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-2">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">{t('contact.form.firstName')} *</Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        onInvalid={handleInputInvalid}
-                        required
-                        placeholder={t('contact.form.firstNamePlaceholder')}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">{t('contact.form.lastName')} *</Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        onInvalid={handleInputInvalid}
-                        required
-                        placeholder={t('contact.form.lastNamePlaceholder')}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{t('contact.form.email')} *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      onInvalid={handleInputInvalid}
-                      required
-                      placeholder={t('contact.form.emailPlaceholder')}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">{t('contact.form.phone')}</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        placeholder={t('contact.form.phonePlaceholder')}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="company">{t('contact.form.company')}</Label>
-                      <Input
-                        id="company"
-                        name="company"
-                        value={formData.company}
-                        onChange={handleChange}
-                        placeholder={t('contact.form.companyPlaceholder')}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="message">{t('contact.form.message')} *</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      onInvalid={handleTextareaInvalid}
-                      required
-                      placeholder={t('contact.form.messagePlaceholder')}
-                      rows={8}
-                      className="min-h-[180px]"
-                    />
-                  </div>
-
-                  <div className="pt-4">
-                    <Button type="submit" size="lg" className="w-full">
-                      <Send className="mr-2 h-4 w-4" />
-                      {t('contact.form.send')}
-                    </Button>
-                  </div>
-                </form>
+                <DynamicContactForm 
+                  source="wm" 
+                  onSubmit={handleFormSubmit}
+                  loading={loading}
+                />
               </CardContent>
             </Card>
 

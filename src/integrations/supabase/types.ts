@@ -200,9 +200,11 @@ export type Database = {
           assigned_to: string | null
           company: string | null
           created_at: string
+          dynamic_fields: Json | null
           email: string
           first_name: string
           id: string
+          inquiry_type: string | null
           internal_notes: string | null
           last_action_date: string | null
           last_action_notes: string | null
@@ -221,9 +223,11 @@ export type Database = {
           assigned_to?: string | null
           company?: string | null
           created_at?: string
+          dynamic_fields?: Json | null
           email: string
           first_name: string
           id?: string
+          inquiry_type?: string | null
           internal_notes?: string | null
           last_action_date?: string | null
           last_action_notes?: string | null
@@ -242,9 +246,11 @@ export type Database = {
           assigned_to?: string | null
           company?: string | null
           created_at?: string
+          dynamic_fields?: Json | null
           email?: string
           first_name?: string
           id?: string
+          inquiry_type?: string | null
           internal_notes?: string | null
           last_action_date?: string | null
           last_action_notes?: string | null
