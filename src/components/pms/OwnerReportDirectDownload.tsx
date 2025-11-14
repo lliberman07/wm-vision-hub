@@ -111,7 +111,7 @@ export const OwnerReportDirectDownload = ({
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
-      doc.text('WM Property Management', pageWidth / 2, 15, { align: 'center' });
+      doc.text('Granada PMS', pageWidth / 2, 15, { align: 'center' });
       
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
