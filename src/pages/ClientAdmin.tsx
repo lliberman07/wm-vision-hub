@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import { useClient } from '@/contexts/ClientContext';
+import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,12 +17,24 @@ import { CommissionTrackingDashboard } from '@/components/client-admin/Commissio
 export default function ClientAdmin() {
   const navigate = useNavigate();
   const { isClientAdmin, loading } = useClient();
+  const { isGranadaSuperAdmin } = useGranadaAuth();
 
+  // Block GRANADA_SUPERADMIN from accessing /client-admin
   useEffect(() => {
+    if (!loading && isGranadaSuperAdmin) {
+      navigate('/granada-admin');
+      return;
+    }
+    
     if (!loading && !isClientAdmin) {
       navigate('/pms');
     }
-  }, [isClientAdmin, loading, navigate]);
+  }, [isClientAdmin, isGranadaSuperAdmin, loading, navigate]);
+
+  // Also block rendering
+  if (isGranadaSuperAdmin) {
+    return null;
+  }
 
   if (loading) {
     return (

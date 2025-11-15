@@ -65,6 +65,23 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     try {
+      // FIRST: Check if user is GRANADA_SUPERADMIN or GRANADA_ADMIN
+      const { data: granadaUser } = await supabase
+        .from('granada_platform_users')
+        .select('role, is_active')
+        .eq('user_id', user.id)
+        .single();
+
+      // If Granada Platform user, NOT a ClientAdmin
+      if (granadaUser?.is_active && 
+          (granadaUser.role === 'GRANADA_SUPERADMIN' || granadaUser.role === 'GRANADA_ADMIN')) {
+        setIsClientAdmin(false);
+        setClientData(null);
+        setSubscription(null);
+        setLoading(false);
+        return;
+      }
+
       // Check if user has INMOBILIARIA or GESTOR role via v_current_user_tenants
       const { data: rolesData, error: rolesError } = await supabase
         .from('v_current_user_tenants')

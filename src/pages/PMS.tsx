@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePMS } from '@/contexts/PMSContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClient } from '@/contexts/ClientContext';
+import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt } from 'lucide-react';
@@ -16,6 +17,7 @@ const PMS = () => {
   const { user, loading: authLoading } = useAuth();
   const { hasPMSAccess, pmsRoles, currentTenant, loading: pmsLoading, allRoleContexts, activeRoleContext } = usePMS();
   const { isClientAdmin, loading: clientLoading } = useClient();
+  const { isGranadaSuperAdmin } = useGranadaAuth();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -129,6 +131,22 @@ const PMS = () => {
   return (
     <PMSLayout>
       <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Dynamic Title */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">
+            {isGranadaSuperAdmin 
+              ? 'Dashboard Global - Granada Platform' 
+              : 'Dashboard PMS'
+            }
+          </h1>
+          <p className="text-muted-foreground">
+            {isGranadaSuperAdmin
+              ? 'Métricas consolidadas de todos los clientes suscriptores'
+              : 'Gestión operativa del negocio'
+            }
+          </p>
+        </div>
+
         {/* KPIs */}
         <DashboardKPIs />
 
