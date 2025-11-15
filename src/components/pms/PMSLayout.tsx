@@ -31,7 +31,7 @@ export function PMSLayout({ children }: PMSLayoutProps) {
   const { user } = useAuth();
   const { currentTenant, pmsRoles, allRoleContexts, activeRoleContext, switchContext } = usePMS();
   const { isClientAdmin } = useClient();
-  const { isGranadaAdmin } = useGranadaAuth();
+  const { isGranadaAdmin, isGranadaSuperAdmin } = useGranadaAuth();
   const navigate = useNavigate();
   
   // Run automatic contract maintenance checks
@@ -59,9 +59,14 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                   {/* Tenant Info */}
                   <div className="hidden md:block">
                     <h2 className="text-lg font-semibold leading-tight">
-                      {currentTenant?.name || 'Granada PMS'}
+                      {isGranadaSuperAdmin 
+                        ? 'Granada PMS - Vista Global' 
+                        : (currentTenant?.name || 'Granada PMS')
+                      }
                     </h2>
-                    <p className="text-xs text-muted-foreground">Cliente: {currentTenant?.name}</p>
+                    {!isGranadaSuperAdmin && (
+                      <p className="text-xs text-muted-foreground">Cliente: {currentTenant?.name}</p>
+                    )}
                   </div>
                 </div>
 
@@ -70,14 +75,14 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                   <PMSBreadcrumbs />
                   
                   <div className="flex items-center gap-2">
-                    {/* Role/Tenant Selector - only show if multiple roles */}
-                    {allRoleContexts.length > 1 && activeRoleContext ? (
+                    {/* Role/Tenant Selector - NOT shown for GRANADA_SUPERADMIN */}
+                    {!isGranadaSuperAdmin && allRoleContexts.length > 1 && activeRoleContext ? (
                       <RoleTenantSelector
                         allContexts={allRoleContexts}
                         activeContext={activeRoleContext}
                         onSwitch={switchContext}
                       />
-                    ) : allRoleContexts.length === 1 ? (
+                    ) : !isGranadaSuperAdmin && allRoleContexts.length === 1 ? (
                       isGranadaAdmin ? (
                         <Badge variant="destructive" className="font-mono text-[10px]">
                           GRANADA ADMIN
@@ -87,6 +92,10 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                           {allRoleContexts[0].role}
                         </Badge>
                       )
+                    ) : isGranadaSuperAdmin ? (
+                      <Badge variant="destructive" className="font-mono text-[10px]">
+                        VISTA GLOBAL
+                      </Badge>
                     ) : null}
 
                     {/* Notifications */}
@@ -111,13 +120,21 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                         <DropdownMenuLabel>
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium">{user?.email}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {activeRoleContext?.tenant_name || currentTenant?.name}
-                            </p>
-                            {allRoleContexts.length === 1 && (
-                              <Badge variant="secondary" className="text-xs w-fit">
-                                {allRoleContexts[0].role}
-                              </Badge>
+                            {isGranadaSuperAdmin ? (
+                              <p className="text-xs font-semibold text-destructive uppercase">
+                                GRANADA_SUPERADMIN
+                              </p>
+                            ) : (
+                              <>
+                                <p className="text-xs text-muted-foreground">
+                                  {activeRoleContext?.tenant_name || currentTenant?.name}
+                                </p>
+                                {allRoleContexts.length === 1 && (
+                                  <Badge variant="secondary" className="text-xs w-fit">
+                                    {allRoleContexts[0].role}
+                                  </Badge>
+                                )}
+                              </>
                             )}
                           </div>
                         </DropdownMenuLabel>
@@ -126,7 +143,8 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                           <Settings className="mr-2 h-4 w-4" />
                           Dashboard PMS
                         </DropdownMenuItem>
-                        {isClientAdmin && (
+                        {/* Remove Panel de Cliente for GRANADA_SUPERADMIN */}
+                        {isClientAdmin && !isGranadaSuperAdmin && (
                           <DropdownMenuItem onClick={() => navigate('/client-admin')}>
                             <Shield className="mr-2 h-4 w-4" />
                             Panel de Cliente
