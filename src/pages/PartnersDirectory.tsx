@@ -13,18 +13,18 @@ export default function PartnersDirectory() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/granada-platform" className="flex items-center gap-3">
             <img src={granadaLogo} alt="Granada Property Management" className="h-12 w-auto" />
           </Link>
           <div className="flex items-center gap-3">
             <Button variant="outline" asChild>
-              <Link to="/">
+              <Link to="/granada-platform">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver al inicio
               </Link>
             </Button>
             <Button asChild>
-              <Link to="/pms-login">Acceso PMS</Link>
+              <Link to="/pms/login">Acceso PMS</Link>
             </Button>
           </div>
         </div>
