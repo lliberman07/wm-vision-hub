@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, MapPin, Phone, Mail, Globe, Facebook, Instagram, Twitter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TrustedCompaniesCarousel } from "./TrustedCompaniesCarousel";
 
 interface Partner {
   id: string;
@@ -253,15 +254,19 @@ export function PartnersDirectory({ type = 'all', featured = false, limit }: Par
         ))}
       </div>
 
-      {filteredPartners.length === 0 && (
-        <Card className="p-12">
-          <div className="text-center text-muted-foreground">
-            <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-semibold mb-2">No se encontraron resultados</p>
-            <p>Intenta ajustar los filtros de búsqueda</p>
+        {filteredPartners.length === 0 && (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-foreground mb-3">
+                Inmobiliarias que ya confían en Granada Platform
+              </h3>
+              <p className="text-muted-foreground text-lg">
+                Únete a los profesionales que están revolucionando su gestión
+              </p>
+            </div>
+            <TrustedCompaniesCarousel />
           </div>
-        </Card>
-      )}
+        )}
     </div>
   );
 }
