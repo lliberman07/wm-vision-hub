@@ -181,14 +181,14 @@ export default function PricingComparator() {
             const popular = isPopularPlan(plan.slug);
 
             return (
-              <Card
-                key={plan.id}
-                className={`relative flex flex-col ${
-                  popular
-                    ? "border-primary shadow-lg scale-105"
-                    : "border-border"
-                }`}
-              >
+            <Card 
+              key={plan.id}
+              className={`relative flex flex-col transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-2 ${
+                popular 
+                  ? "border-primary shadow-lg scale-105" 
+                  : "border-border"
+              }`}
+            >
                 {popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                     <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
@@ -200,13 +200,20 @@ export default function PricingComparator() {
                 <CardHeader>
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-foreground">
-                      {formatPrice(price)}
-                    </span>
-                    <span className="text-muted-foreground">
-                      {isYearly ? '/año' : '/mes'}
-                    </span>
+                  <div className="mt-4 flex items-center gap-3">
+                    <div>
+                      <span className="text-4xl font-bold text-foreground">
+                        {formatPrice(price)}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {isYearly ? '/año' : '/mes'}
+                      </span>
+                    </div>
+                    {isYearly && calculateDiscount(plan.price_monthly, plan.price_yearly) > 0 && (
+                      <Badge className="bg-blue-600 hover:bg-blue-700 text-white text-base px-3 py-1 animate-fade-in">
+                        Ahorrá {calculateDiscount(plan.price_monthly, plan.price_yearly)}%
+                      </Badge>
+                    )}
                   </div>
                 </CardHeader>
 
@@ -244,9 +251,9 @@ export default function PricingComparator() {
                   <Button
                     className="w-full"
                     variant={popular ? "default" : "outline"}
-                    onClick={() => navigate('/contact')}
+                    onClick={() => navigate(`/subscription-request?plan=${plan.id}`)}
                   >
-                    Contactar
+                    Solicitar Plan
                   </Button>
                 </CardFooter>
               </Card>
