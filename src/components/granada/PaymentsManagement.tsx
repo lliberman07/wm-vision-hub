@@ -94,7 +94,7 @@ export function PaymentsManagement() {
 
       // Fetch active subscriptions
       const { data: subsData, error: subsError } = await supabase
-        .from('pms_tenant_subscriptions' as any)
+        .from('tenant_subscriptions' as any)
         .select(`
           id,
           tenant:tenant_id (
@@ -102,8 +102,8 @@ export function PaymentsManagement() {
           ),
           plan:plan_id (
             name,
-            price,
-            currency
+            price_monthly,
+            price_yearly
           )
         `)
         .in('status', ['active', 'trial'])
@@ -114,7 +114,7 @@ export function PaymentsManagement() {
 
       // Fetch payments
       const { data: paymentsData, error: paymentsError } = await supabase
-        .from('pms_subscription_payments' as any)
+        .from('subscription_payments' as any)
         .select(`
           id,
           subscription_id,

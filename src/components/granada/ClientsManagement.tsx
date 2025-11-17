@@ -24,6 +24,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Building2, Edit, Eye } from 'lucide-react';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { 
   Select,
   SelectContent,
@@ -51,6 +52,9 @@ export function ClientsManagement() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -218,9 +222,9 @@ export function ClientsManagement() {
             <DialogContent>
               <form onSubmit={handleCreateClient}>
                 <DialogHeader>
-                  <DialogTitle>Crear Cliente Suscriptor</DialogTitle>
+                  <DialogTitle>{editingClient ? 'Editar Cliente' : 'Crear Cliente Suscriptor'}</DialogTitle>
                   <DialogDescription>
-                    Ingresa la información del nuevo cliente
+                    {editingClient ? 'Actualiza la información del cliente' : 'Ingresa la información del nuevo cliente'}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -302,7 +306,7 @@ export function ClientsManagement() {
                   </Button>
                   <Button type="submit" disabled={submitting}>
                     {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Crear Cliente
+                    {editingClient ? 'Actualizar Cliente' : 'Crear Cliente'}
                   </Button>
                 </DialogFooter>
               </form>
@@ -332,9 +336,13 @@ export function ClientsManagement() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getClientTypeColor(client.client_type)}>
-                    {client.client_type}
-                  </Badge>
+                  {client.client_type ? (
+                    <Badge variant={getClientTypeColor(client.client_type)}>
+                      {client.client_type}
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">Sin tipo</Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   {client.parent_tenant?.name || '-'}
@@ -347,10 +355,30 @@ export function ClientsManagement() {
                 <TableCell>{format(new Date(client.created_at), 'dd/MM/yyyy')}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedClient(client);
+                        setViewDialogOpen(true);
+                      }}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setFormData({
+                          name: client.name,
+                          slug: client.slug,
+                          client_type: (client.client_type || 'INMOBILIARIA') as any,
+                          parent_tenant_id: client.parent_tenant_id || '',
+                        });
+                        setEditingClient(client);
+                        setDialogOpen(true);
+                      }}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                   </div>
@@ -366,6 +394,58 @@ export function ClientsManagement() {
           </div>
         )}
       </CardContent>
+
+      {/* View Client Details Sheet */}
+      <Sheet open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <SheetContent className="overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Detalles del Cliente</SheetTitle>
+            <SheetDescription>
+              Información completa del cliente suscriptor
+            </SheetDescription>
+          </SheetHeader>
+          {selectedClient && (
+            <div className="space-y-4 mt-6">
+              <div>
+                <Label className="text-muted-foreground">Nombre</Label>
+                <p className="font-medium">{selectedClient.name}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Identificador (Slug)</Label>
+                <p className="font-mono text-sm">{selectedClient.slug}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Tipo de Cliente</Label>
+                <div className="mt-1">
+                  {selectedClient.client_type ? (
+                    <Badge variant={getClientTypeColor(selectedClient.client_type)}>
+                      {selectedClient.client_type}
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">Sin tipo</Badge>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Cliente Padre</Label>
+                <p>{selectedClient.parent_tenant?.name || 'Sin cliente padre'}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Estado</Label>
+                <div className="mt-1">
+                  <Badge variant={selectedClient.is_active ? 'default' : 'destructive'}>
+                    {selectedClient.is_active ? 'Activo' : 'Inactivo'}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Fecha de Creación</Label>
+                <p>{format(new Date(selectedClient.created_at), 'dd/MM/yyyy HH:mm')}</p>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </Card>
   );
 }
