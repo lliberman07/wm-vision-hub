@@ -52,11 +52,6 @@ const features: Feature[] = [
     title: "Seguridad Empresarial",
     description: "Encriptación de datos sensibles, backups automáticos diarios y control de acceso por roles.",
   },
-  {
-    icon: TrendingUp,
-    title: "Escalabilidad Garantizada",
-    description: "De 10 a 10,000+ propiedades. Performance consistente e infraestructura cloud elástica.",
-  },
 ];
 
 export default function FeatureShowcase() {
