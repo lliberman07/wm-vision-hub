@@ -833,6 +833,57 @@ export type Database = {
           },
         ]
       }
+      payment_receipts: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          invoice_id: string
+          payment_date: string
+          receipt_type: string | null
+          receipt_url: string
+          tenant_id: string
+          updated_at: string | null
+          uploaded_by: string
+          verification_notes: string | null
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          invoice_id: string
+          payment_date: string
+          receipt_type?: string | null
+          receipt_url: string
+          tenant_id: string
+          updated_at?: string | null
+          uploaded_by: string
+          verification_notes?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          invoice_id?: string
+          payment_date?: string
+          receipt_type?: string | null
+          receipt_url?: string
+          tenant_id?: string
+          updated_at?: string | null
+          uploaded_by?: string
+          verification_notes?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
       pdf_report_requests: {
         Row: {
           completed_at: string | null
@@ -3473,55 +3524,91 @@ export type Database = {
       subscription_invoices: {
         Row: {
           amount: number
+          auto_payment_attempted: boolean | null
+          auto_payment_failed_reason: string | null
+          billing_period_end: string | null
+          billing_period_start: string | null
           created_at: string
+          created_by: string | null
           currency: string
           due_date: string
+          gateway_charge_id: string | null
+          gateway_payment_id: string | null
           id: string
           invoice_number: string
           issue_date: string
           notes: string | null
           paid_date: string | null
+          payment_gateway: string | null
           payment_method: string | null
+          payment_proof_url: string | null
           payment_reference: string | null
           pdf_url: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           subscription_id: string
+          subtotal: number | null
+          tax_amount: number | null
+          tax_percentage: number | null
           tenant_id: string
           updated_at: string
         }
         Insert: {
           amount: number
+          auto_payment_attempted?: boolean | null
+          auto_payment_failed_reason?: string | null
+          billing_period_end?: string | null
+          billing_period_start?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           due_date: string
+          gateway_charge_id?: string | null
+          gateway_payment_id?: string | null
           id?: string
           invoice_number: string
           issue_date: string
           notes?: string | null
           paid_date?: string | null
+          payment_gateway?: string | null
           payment_method?: string | null
+          payment_proof_url?: string | null
           payment_reference?: string | null
           pdf_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subscription_id: string
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_percentage?: number | null
           tenant_id: string
           updated_at?: string
         }
         Update: {
           amount?: number
+          auto_payment_attempted?: boolean | null
+          auto_payment_failed_reason?: string | null
+          billing_period_end?: string | null
+          billing_period_start?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           due_date?: string
+          gateway_charge_id?: string | null
+          gateway_payment_id?: string | null
           id?: string
           invoice_number?: string
           issue_date?: string
           notes?: string | null
           paid_date?: string | null
+          payment_gateway?: string | null
           payment_method?: string | null
+          payment_proof_url?: string | null
           payment_reference?: string | null
           pdf_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subscription_id?: string
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_percentage?: number | null
           tenant_id?: string
           updated_at?: string
         }
@@ -3596,6 +3683,90 @@ export type Database = {
           slug?: string
           sort_order?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      subscription_requests: {
+        Row: {
+          applicant_type: string
+          billing_cycle: string
+          city: string | null
+          comments: string | null
+          company_name: string | null
+          country: string
+          created_at: string | null
+          created_subscription_id: string | null
+          created_tenant_id: string | null
+          cuit_cuil: string | null
+          current_system: string | null
+          email: string
+          estimated_properties: number | null
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          province: string | null
+          rejection_reason: string | null
+          requested_plan_id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          applicant_type: string
+          billing_cycle?: string
+          city?: string | null
+          comments?: string | null
+          company_name?: string | null
+          country?: string
+          created_at?: string | null
+          created_subscription_id?: string | null
+          created_tenant_id?: string | null
+          cuit_cuil?: string | null
+          current_system?: string | null
+          email: string
+          estimated_properties?: number | null
+          first_name: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          province?: string | null
+          rejection_reason?: string | null
+          requested_plan_id: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          applicant_type?: string
+          billing_cycle?: string
+          city?: string | null
+          comments?: string | null
+          company_name?: string | null
+          country?: string
+          created_at?: string | null
+          created_subscription_id?: string | null
+          created_tenant_id?: string | null
+          cuit_cuil?: string | null
+          current_system?: string | null
+          email?: string
+          estimated_properties?: number | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          province?: string | null
+          rejection_reason?: string | null
+          requested_plan_id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

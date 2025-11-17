@@ -16,6 +16,7 @@ import { SubscriptionPlansManagement } from '@/components/granada/SubscriptionPl
 import { GranadaSubscriptionAnalyticsDashboard } from '@/components/granada/GranadaSubscriptionAnalyticsDashboard';
 import { GranadaContactsManagement } from '@/components/granada/GranadaContactsManagement';
 import { SubscriptionRequests } from '@/components/granada/SubscriptionRequests';
+import { SubscriptionRequestsManagement } from '@/components/granada/SubscriptionRequestsManagement';
 import {
   Building2,
   CreditCard,
@@ -23,6 +24,7 @@ import {
   Users,
   ArrowLeftRight,
   MessageSquare,
+  FileCheck,
 } from 'lucide-react';
 
 function GranadaDashboard() {
@@ -40,6 +42,12 @@ function GranadaDashboard() {
       description: 'Gestionar consultas y leads de Granada Platform',
       icon: MessageSquare,
       path: '/granada-admin/contacts',
+    },
+    {
+      title: 'Solicitudes de Suscripción',
+      description: 'Aprobar y gestionar nuevas solicitudes de suscripción',
+      icon: FileCheck,
+      path: '/granada-admin/subscription-requests',
     },
     {
       title: 'Clientes Suscriptores',
@@ -201,7 +209,8 @@ export default function GranadaAdmin() {
       <Routes>
         <Route path="/" element={<GranadaDashboard />} />
         <Route path="/analytics" element={<GranadaSubscriptionAnalyticsDashboard />} />
-        <Route path="/subscription-requests" element={<SubscriptionRequests />} />
+        <Route path="/subscription-requests" element={<SubscriptionRequestsManagement />} />
+        <Route path="/contacts" element={<GranadaContactsManagement />} />
         <Route path="/contacts" element={<GranadaContactsManagement />} />
         <Route path="/clients" element={<ClientsManagement />} />
         <Route path="/client-users" element={<ClientUsersManagement />} />
