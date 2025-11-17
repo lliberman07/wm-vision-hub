@@ -247,14 +247,14 @@ export function SubscriptionRequests() {
   const getStatusBadge = (status: string, trialEndDate?: string | null) => {
     if (status === 'trial' && trialEndDate) {
       const daysLeft = Math.ceil((new Date(trialEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-      return <Badge variant="outline" className="gap-1 bg-blue-600 text-white"><Clock className="h-3 w-3" /> Trial ({daysLeft} días)</Badge>;
+      return <Badge variant="outline" className="gap-1 bg-primary text-primary-foreground"><Clock className="h-3 w-3" /> Trial ({daysLeft} días)</Badge>;
     }
     
     switch (status) {
       case 'pending':
         return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" /> Pendiente</Badge>;
       case 'trial':
-        return <Badge variant="outline" className="gap-1 bg-blue-600 text-white"><Clock className="h-3 w-3" /> Trial</Badge>;
+        return <Badge variant="outline" className="gap-1 bg-primary text-primary-foreground"><Clock className="h-3 w-3" /> Trial</Badge>;
       case 'approved':
       case 'active':
         return <Badge className="gap-1 bg-green-600"><CheckCircle className="h-3 w-3" /> Aprobada</Badge>;
