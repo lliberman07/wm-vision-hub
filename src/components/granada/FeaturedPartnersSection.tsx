@@ -27,6 +27,30 @@ export function FeaturedPartnersSection({ type, title, description }: FeaturedPa
 
         {/* Featured Partners Grid */}
         <PartnersDirectory type={type} featured={true} limit={6} />
+
+        {/* CTA to full directory */}
+        <div className="mt-12 text-center">
+          <Card className="bg-gradient-to-r from-[hsl(var(--granada-navy))]/5 to-[hsl(var(--granada-navy))]/10 border-[hsl(var(--granada-navy))]/20">
+            <CardContent className="py-8">
+              <h3 className="text-2xl font-bold mb-4">
+                Explora Más Profesionales
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Descubre todos los profesionales que confían en Granada Platform para gestionar propiedades en toda Argentina
+              </p>
+              <Button 
+                size="lg"
+                className="bg-[hsl(var(--granada-navy))] hover:bg-[hsl(var(--granada-navy-dark))] text-white"
+                asChild
+              >
+                <Link to="/partners-directory">
+                  Ver Directorio Completo
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </section>
   );
