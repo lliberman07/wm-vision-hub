@@ -132,13 +132,6 @@ export default function GranadaPlatformHome() {
             </Card>
           </div>
           
-          {/* Featured Partners for Real Estate Agencies */}
-          <FeaturedPartnersSection 
-            type="real_estate_agency"
-            title="Inmobiliarias que confían en Granada Platform"
-            description="Profesionales destacados que ya están revolucionando su gestión"
-          />
-          
           <div className="mt-12 text-center">
             <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
               <DialogTrigger asChild><Button size="lg">Agenda una Demo Personalizada</Button></DialogTrigger>
