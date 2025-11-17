@@ -40,6 +40,8 @@ interface SubscriptionPlan {
   price_monthly: number;
   price_yearly: number;
   max_users?: number;
+  max_properties?: number | null;
+  max_contracts?: number | null;
 }
 
 interface SubscriptionRequestFormProps {
@@ -56,7 +58,7 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
     queryFn: async () => {
       const { data, error } = await supabase
         .from("subscription_plans")
-        .select("id, name, price_monthly, price_yearly, max_users")
+        .select("id, name, price_monthly, price_yearly, max_users, max_properties, max_contracts")
         .eq("is_active", true)
         .order("price_monthly", { ascending: true });
 
@@ -448,16 +450,16 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
 
             {/* Summary Card */}
             {selectedPlan && (
-              <Card className="bg-muted/50">
+              <Card className="bg-muted/50 border-border">
                 <CardContent className="pt-6">
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Plan seleccionado:</span>
-                      <Badge>{selectedPlan.name}</Badge>
+                      <span className="text-sm text-muted-foreground font-bold">Plan seleccionado:</span>
+                      <Badge variant="secondary">{selectedPlan.name}</Badge>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Precio:</span>
-                      <span className="font-semibold">
+                      <span className="font-semibold text-foreground">
                         ${billingCycle === "annual" ? selectedPlan.price_yearly : selectedPlan.price_monthly}
                         {billingCycle === "annual" ? "/año" : "/mes"}
                       </span>
@@ -465,7 +467,19 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
                     {selectedPlan.max_users && (
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Usuarios incluidos:</span>
-                        <span>{selectedPlan.max_users}</span>
+                        <span className="text-foreground">{selectedPlan.max_users}</span>
+                      </div>
+                    )}
+                    {selectedPlan.max_properties && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Propiedades activas:</span>
+                        <span className="text-foreground">{selectedPlan.max_properties}</span>
+                      </div>
+                    )}
+                    {selectedPlan.max_contracts && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Contratos activos:</span>
+                        <span className="text-foreground">{selectedPlan.max_contracts}</span>
                       </div>
                     )}
                   </div>
