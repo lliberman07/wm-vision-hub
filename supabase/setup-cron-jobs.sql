@@ -11,10 +11,11 @@
 -- =====================================================
 
 -- 0️⃣ SINCRONIZACIÓN DE TIPOS DE CAMBIO
--- Ejecuta diariamente a las 10:00 AM para actualizar cotizaciones
+-- Ejecuta diariamente a las 18:00 hs Argentina (21:00 UTC)
+-- Esto garantiza datos actualizados para el día siguiente
 SELECT cron.schedule(
   'sync-exchange-rates-daily',
-  '0 10 * * *', -- Todos los días a las 10:00 AM
+  '0 21 * * *', -- 6 PM Argentina (GMT-3) = 9 PM UTC
   $$
   SELECT
     net.http_post(

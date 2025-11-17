@@ -216,7 +216,8 @@ export function ExchangeRatesAnalytics() {
           <Calendar className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>
-              Última sincronización: {new Date(lastSync).toLocaleString('es-AR')}
+              Sincronización automática diaria a las 18:00 hs (Argentina). 
+              Última actualización: {new Date(lastSync).toLocaleString('es-AR')}
             </span>
             <Button 
               size="sm" 
