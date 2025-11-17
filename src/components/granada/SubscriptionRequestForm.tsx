@@ -137,15 +137,21 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
             <h3 className="text-2xl font-bold text-foreground mb-2">
               ¡Solicitud Enviada Exitosamente!
             </h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Hemos recibido tu solicitud de suscripción. Nuestro equipo la revisará y te contactaremos 
-              en las próximas 24-48 horas con los detalles de acceso.
-            </p>
-          </div>
-          <div className="pt-4">
-            <Button variant="outline" onClick={() => setSubmitted(false)}>
-              Enviar Otra Solicitud
-            </Button>
+            <div className="text-muted-foreground max-w-md mx-auto space-y-3">
+              <p>
+                Hemos recibido tu solicitud de suscripción. Recibirás un mail con los datos de usuario.
+              </p>
+              <p>
+                Por cualquier consulta puedes comunicarte con nuestro equipo vía mail a{" "}
+                <a 
+                  href="mailto:inmobiliaria@granadaplatform.com" 
+                  className="text-primary hover:underline font-medium"
+                >
+                  inmobiliaria@granadaplatform.com
+                </a>
+                {" "}o por el asistente virtual de nuestra página.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
