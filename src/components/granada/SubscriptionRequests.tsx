@@ -127,10 +127,14 @@ export function SubscriptionRequests() {
           pms_tenants(name),
           subscription_plans(name)
         `)
-        .eq('status', 'trial')
+        .or('status.eq.trial,status.eq.pending')
+        .not('trial_end_date', 'is', null)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching trial subscriptions:', error);
+        throw error;
+      }
 
       const formatted: TrialSubscription[] = (data || []).map((sub: any) => ({
         id: sub.id,
@@ -149,7 +153,7 @@ export function SubscriptionRequests() {
       setTrialSubscriptions(formatted);
     } catch (error: any) {
       console.error('Error fetching trial subscriptions:', error);
-      toast.error('Error al cargar suscripciones en trial');
+      toast.error(`Error al cargar suscripciones: ${error.message || 'Error desconocido'}`);
     }
   };
 
@@ -341,8 +345,12 @@ export function SubscriptionRequests() {
             </CardHeader>
             <CardContent>
               {trialSubscriptions.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No hay suscripciones en periodo de prueba</p>
+                <div className="text-center py-12 space-y-3">
+                  <Plus className="h-12 w-12 text-muted-foreground mx-auto opacity-50" />
+                  <p className="text-muted-foreground font-medium">No hay suscripciones en periodo de prueba</p>
+                  <p className="text-sm text-muted-foreground">
+                    Las nuevas suscripciones de prueba aparecerán aquí automáticamente
+                  </p>
                 </div>
               ) : (
                 <Table>
@@ -430,8 +438,12 @@ export function SubscriptionRequests() {
             </CardHeader>
             <CardContent>
               {changeRequests.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No hay solicitudes de cambio registradas</p>
+                <div className="text-center py-12 space-y-3">
+                  <RefreshCw className="h-12 w-12 text-muted-foreground mx-auto opacity-50" />
+                  <p className="text-muted-foreground font-medium">No hay solicitudes de cambio registradas</p>
+                  <p className="text-sm text-muted-foreground">
+                    Las solicitudes de cambio de plan aparecerán aquí cuando los clientes las envíen
+                  </p>
                 </div>
               ) : (
                 <Table>
