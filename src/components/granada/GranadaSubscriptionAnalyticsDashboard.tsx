@@ -126,31 +126,17 @@ export function GranadaSubscriptionAnalyticsDashboard() {
       );
 
       if (analyticsError) throw analyticsError;
+      
+      // Transform billing_distribution from object to array for the chart
+      if (analytics && typeof analytics === 'object' && 'billing_distribution' in analytics) {
+        const billingObj = analytics.billing_distribution as any;
+        (analytics as any).billing_distribution = [
+          { type: 'Mensual', count: billingObj.monthly || 0 },
+          { type: 'Anual', count: billingObj.yearly || 0 }
+        ];
+      }
+      
       setAnalyticsData(analytics as unknown as AnalyticsData);
-
-      // Cargar ingresos por método de pago
-      const { data: paymentData, error: paymentError } = await supabase.rpc(
-        'get_revenue_by_payment_method',
-        { 
-          p_start_date: new Date(new Date().setMonth(new Date().getMonth() - parseInt(monthsBack))).toISOString().split('T')[0],
-          p_end_date: new Date().toISOString().split('T')[0]
-        }
-      );
-
-      if (paymentError) throw paymentError;
-      setPaymentMethodData(paymentData || []);
-
-      // Cargar cambios de plan
-      const { data: changes, error: changesError } = await supabase.rpc(
-        'get_subscription_plan_changes',
-        { 
-          p_start_date: new Date(new Date().setMonth(new Date().getMonth() - parseInt(monthsBack))).toISOString().split('T')[0],
-          p_end_date: new Date().toISOString().split('T')[0]
-        }
-      );
-
-      if (changesError) throw changesError;
-      setPlanChanges(changes || []);
 
     } catch (error) {
       console.error('Error loading analytics:', error);
