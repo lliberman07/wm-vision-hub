@@ -22,9 +22,9 @@ export function GranadaHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-20 items-center justify-between">
         <Link to="/granada-platform" className="flex items-center gap-2 relative z-[100]">
-          <img src={granadaLogo} alt="Granada Property Management" className="h-32 w-auto drop-shadow-lg" />
+          <img src={granadaLogo} alt="Granada Property Management" className="h-40 w-auto drop-shadow-lg" />
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           <a href="/granada-platform#inmobiliarias" className="text-sm font-medium hover:text-primary transition-colors">Para Inmobiliarias</a>
