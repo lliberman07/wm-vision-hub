@@ -148,7 +148,7 @@ export function GranadaContactsManagement() {
           *,
           assigned_profile:profiles!contact_submissions_assigned_to_fkey(first_name, last_name)
         `)
-        .eq('source', 'granada')
+        .in('source', ['granada', 'website', 'platform'])
         .order('created_at', { ascending: false });
 
       if (error) throw error;

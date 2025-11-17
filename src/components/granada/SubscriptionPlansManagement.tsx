@@ -177,6 +177,35 @@ export function SubscriptionPlansManagement() {
     }
   };
 
+  const handleDeletePlan = async (planId: string, planName: string) => {
+    if (!confirm(`¿Está seguro de eliminar el plan "${planName}"? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('subscription_plans')
+        .delete()
+        .eq('id', planId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Plan eliminado',
+        description: 'El plan se eliminó correctamente',
+      });
+
+      fetchPlans();
+    } catch (error: any) {
+      console.error('Error deleting plan:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'No se pudo eliminar el plan. Puede que tenga suscripciones activas.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
@@ -740,6 +769,14 @@ export function SubscriptionPlansManagement() {
                       onClick={() => handleToggleActive(plan.id, plan.is_active)}
                     >
                       {plan.is_active ? 'Desactivar' : 'Activar'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeletePlan(plan.id, plan.name)}
+                      disabled={plan.is_active}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

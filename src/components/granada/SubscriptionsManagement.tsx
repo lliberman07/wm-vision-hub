@@ -104,10 +104,10 @@ export function SubscriptionsManagement() {
 
       // Fetch plans
       const { data: plansData, error: plansError } = await supabase
-        .from('pms_subscription_plans' as any)
+        .from('subscription_plans' as any)
         .select('*')
         .eq('is_active', true)
-        .order('price');
+        .order('price_monthly');
 
       if (plansError) throw plansError;
       setPlans(plansData as any || []);
@@ -123,7 +123,7 @@ export function SubscriptionsManagement() {
 
       // Fetch subscriptions
       const { data: subsData, error: subsError } = await supabase
-        .from('pms_tenant_subscriptions' as any)
+        .from('tenant_subscriptions' as any)
         .select(`
           id,
           tenant_id,
@@ -141,8 +141,8 @@ export function SubscriptionsManagement() {
           ),
           plan:plan_id (
             name,
-            price,
-            currency
+            price_monthly,
+            price_yearly
           )
         `)
         .order('created_at', { ascending: false });
