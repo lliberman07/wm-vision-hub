@@ -28,6 +28,8 @@ import { FeaturedPartnersSection } from "@/components/granada/FeaturedPartnersSe
 import ProviderRegistrationForm from "@/components/granada/ProviderRegistrationForm";
 import FAQAccordion from "@/components/granada/FAQAccordion";
 import StatsCounter from "@/components/granada/StatsCounter";
+import { GranadaHeader } from "@/components/granada/GranadaHeader";
+import { GranadaFooter } from "@/components/granada/GranadaFooter";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -51,41 +53,7 @@ export default function GranadaPlatformHome() {
 
   return (
     <div className="granada-theme min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={granadaLogo} alt="Granada Property Management" className="h-12 w-auto" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <a href="#inmobiliarias" className="text-sm font-medium hover:text-primary transition-colors">Para Inmobiliarias</a>
-            <a href="#propietarios" className="text-sm font-medium hover:text-primary transition-colors">Para Propietarios</a>
-            <Link to="/partners-directory" className="text-sm font-medium hover:text-primary transition-colors">Directorio</Link>
-            <a href="#planes" className="text-sm font-medium hover:text-primary transition-colors">Planes</a>
-            <a href="#proveedores" className="text-sm font-medium hover:text-primary transition-colors">Proveedores</a>
-            <Link to="/granada-platform/contact" className="text-sm font-medium hover:text-primary transition-colors">Contacto</Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" asChild><Link to="/pms/login">Acceso PMS</Link></Button>
-            <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
-              <DialogTrigger asChild><Button>Solicitar Demo</Button></DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Solicitar Demo Gratuita</DialogTitle>
-                  <DialogDescription>Completa el formulario y te contactaremos</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleDemoRequest} className="space-y-4">
-                  <div className="space-y-2"><Label htmlFor="demo-name">Nombre Completo</Label><Input id="demo-name" name="name" required /></div>
-                  <div className="space-y-2"><Label htmlFor="demo-email">Email</Label><Input id="demo-email" name="email" type="email" required /></div>
-                  <div className="space-y-2"><Label htmlFor="demo-phone">Teléfono</Label><Input id="demo-phone" name="phone" type="tel" required /></div>
-                  <div className="space-y-2"><Label htmlFor="demo-company">Empresa/Inmobiliaria</Label><Input id="demo-company" name="company" /></div>
-                  <div className="space-y-2"><Label htmlFor="demo-message">Mensaje (opcional)</Label><Textarea id="demo-message" name="message" rows={3} /></div>
-                  <Button type="submit" className="w-full">Enviar Solicitud</Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-      </header>
+      <GranadaHeader />
 
       <section className="relative py-20 px-4 overflow-hidden bg-gradient-to-br from-secondary via-secondary/90 to-primary">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
@@ -275,26 +243,7 @@ export default function GranadaPlatformHome() {
         </div>
       </section>
 
-      <footer className="bg-secondary text-secondary-foreground py-12 px-4">
-        <div className="container max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
-            <div className="lg:col-span-2">
-              <Link to="/" className="flex items-center gap-2 mb-4">
-                <Building2 className="h-8 w-8 text-accent" />
-                <span className="text-xl font-bold">Granada Platform</span>
-              </Link>
-            </div>
-          </div>
-          <Separator className="my-8 bg-border" />
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-              <Link to="/privacy-policy" className="hover:text-foreground transition-colors">Política de Privacidad</Link>
-              <Link to="/pms-login" className="hover:text-foreground transition-colors">Iniciar Sesión PMS</Link>
-            </div>
-            <p className="text-sm text-muted-foreground">© 2024 Granada Platform. Todos los derechos reservados.</p>
-          </div>
-        </div>
-      </footer>
+      <GranadaFooter />
     </div>
   );
 }
