@@ -132,6 +132,13 @@ export default function GranadaPlatformHome() {
             </Card>
           </div>
           
+          {/* Featured Partners for Real Estate Agencies */}
+          <FeaturedPartnersSection 
+            type="real_estate_agency"
+            title="Inmobiliarias que confían en Granada Platform"
+            description="Profesionales destacados que ya están revolucionando su gestión"
+          />
+          
           <div className="mt-12 text-center">
             <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
               <DialogTrigger asChild><Button size="lg">Agenda una Demo Personalizada</Button></DialogTrigger>
@@ -142,8 +149,38 @@ export default function GranadaPlatformHome() {
 
       <section id="propietarios" className="py-20 px-4 bg-secondary/5">
         <div className="container max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge className="mb-4" variant="outline">Para Propietarios</Badge>
+            <h2 className="text-4xl font-bold mb-4 text-foreground">Confíe en Profesionales que Usan Tecnología de Punta</h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">Transparencia total, reportes mensuales automáticos y acceso 24/7.</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {[
+              { icon: Smartphone, title: "Acceso en Línea 24/7", description: "Portal web personalizado" },
+              { icon: Mail, title: "Reportes Mensuales Automáticos", description: "Desglose completo por email" },
+              { icon: CheckCircle2, title: "Transparencia Financiera", description: "Cada peso justificado" },
+              { icon: Shield, title: "Notificaciones Proactivas", description: "Confirmación de pagos" },
+              { icon: Lock, title: "Seguridad y Respaldo", description: "Datos encriptados" },
+              { icon: TrendingUp, title: "Visibilidad Total", description: "Acceso desde cualquier dispositivo" },
+            ].map((benefit, index) => (
+              <Card key={index} className="border-border hover:shadow-lg transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <benefit.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-2">{benefit.title}</h3>
+                      <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
           {/* Featured Partners for Independent Managers */}
-          <FeaturedPartnersSection 
+          <FeaturedPartnersSection
             type="independent_manager"
             title="Administradores Independientes Certificados"
             description="Profesionales verificados que utilizan Granada Platform para ofrecer el mejor servicio"
