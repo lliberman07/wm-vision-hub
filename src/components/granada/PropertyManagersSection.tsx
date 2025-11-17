@@ -173,7 +173,7 @@ export function PropertyManagersSection() {
         </div>
 
         {/* Testimonial (Optional) */}
-        <div className="bg-white rounded-2xl p-8 md:p-12 shadow-lg border border-border/50 mb-12">
+        <div className="bg-card rounded-2xl p-8 md:p-12 shadow-lg border border-border mb-12">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
               <div className="w-16 h-16 rounded-full bg-[hsl(var(--granada-navy))] flex items-center justify-center">

@@ -210,7 +210,7 @@ export default function PricingComparator() {
                       </span>
                     </div>
                     {isYearly && calculateDiscount(plan.price_monthly, plan.price_yearly) > 0 && (
-                      <Badge className="bg-blue-600 hover:bg-blue-700 text-white text-base px-3 py-1 animate-fade-in">
+                      <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-base px-3 py-1 animate-fade-in">
                         Ahorrá {calculateDiscount(plan.price_monthly, plan.price_yearly)}%
                       </Badge>
                     )}

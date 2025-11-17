@@ -92,13 +92,13 @@ export default function GranadaPlatformHome() {
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="mb-4 bg-accent hover:bg-accent/90" variant="secondary">Tecnología Cloud de Nueva Generación</Badge>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">La Plataforma de Gestión Inmobiliaria que Revoluciona el Sector</h1>
-            <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">Tecnología inteligente para inmobiliarias, administradores independientes y propietarios</p>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-primary-foreground">La Plataforma de Gestión Inmobiliaria que Revoluciona el Sector</h1>
+            <p className="text-xl md:text-2xl mb-8 text-primary-foreground/90 max-w-3xl mx-auto">Tecnología inteligente para inmobiliarias, administradores independientes y propietarios</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
                 <DialogTrigger asChild><Button size="lg" className="text-lg px-8">Solicitar Demo Gratuita</Button></DialogTrigger>
               </Dialog>
-              <Button size="lg" variant="outline" className="text-lg px-8 bg-white/10 hover:bg-white/20 text-white border-white/30" asChild>
+              <Button size="lg" variant="outline" className="text-lg px-8 bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30" asChild>
                 <a href="#planes">Ver Planes y Precios</a>
               </Button>
             </div>
@@ -111,12 +111,12 @@ export default function GranadaPlatformHome() {
               ].map((badge, index) => (
                 <Card 
                   key={index} 
-                  className="bg-white/10 backdrop-blur border-white/20 transition-all duration-300 hover:bg-white/20 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/20 hover:-translate-y-1 group animate-fade-in cursor-pointer"
+                  className="bg-primary-foreground/10 backdrop-blur border-primary-foreground/20 transition-all duration-300 hover:bg-primary-foreground/20 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/20 hover:-translate-y-1 group animate-fade-in cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <CardContent className="p-4 flex items-center gap-2 justify-center">
                     <badge.icon className="h-5 w-5 text-accent transition-all duration-300 group-hover:scale-125 group-hover:rotate-12" />
-                    <span className="text-sm font-semibold text-white group-hover:text-accent transition-colors duration-300">{badge.text}</span>
+                    <span className="text-sm font-semibold text-primary-foreground group-hover:text-accent transition-colors duration-300">{badge.text}</span>
                   </CardContent>
                 </Card>
               ))}
@@ -264,18 +264,18 @@ export default function GranadaPlatformHome() {
 
       <FAQAccordion />
 
-      <section className="py-20 px-4 bg-gradient-to-br from-primary via-secondary to-accent text-white">
+      <section className="py-20 px-4 bg-gradient-to-br from-primary via-secondary to-accent text-primary-foreground">
         <div className="container max-w-5xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Transformá tu Gestión Inmobiliaria Hoy</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
-              <DialogTrigger asChild><Button size="lg" className="text-lg px-8 bg-white text-primary hover:bg-white/90">Solicitar Demo</Button></DialogTrigger>
+              <DialogTrigger asChild><Button size="lg" className="text-lg px-8 bg-background text-foreground hover:bg-background/90">Solicitar Demo</Button></DialogTrigger>
             </Dialog>
           </div>
         </div>
       </section>
 
-      <footer className="bg-secondary text-white py-12 px-4">
+      <footer className="bg-secondary text-secondary-foreground py-12 px-4">
         <div className="container max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
             <div className="lg:col-span-2">
@@ -285,13 +285,13 @@ export default function GranadaPlatformHome() {
               </Link>
             </div>
           </div>
-          <Separator className="my-8 bg-white/20" />
+          <Separator className="my-8 bg-border" />
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex flex-wrap gap-6 text-sm text-white/80">
-              <Link to="/privacy-policy" className="hover:text-white transition-colors">Política de Privacidad</Link>
-              <Link to="/pms-login" className="hover:text-white transition-colors">Iniciar Sesión PMS</Link>
+            <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
+              <Link to="/privacy-policy" className="hover:text-foreground transition-colors">Política de Privacidad</Link>
+              <Link to="/pms-login" className="hover:text-foreground transition-colors">Iniciar Sesión PMS</Link>
             </div>
-            <p className="text-sm text-white/60">© 2024 Granada Platform. Todos los derechos reservados.</p>
+            <p className="text-sm text-muted-foreground">© 2024 Granada Platform. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

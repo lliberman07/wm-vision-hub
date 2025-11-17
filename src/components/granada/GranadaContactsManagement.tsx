@@ -98,11 +98,11 @@ const statusConfig = {
   in_progress: { label: 'En Proceso', color: 'bg-orange-500' },
   qualified: { label: 'Calificado', color: 'bg-purple-500' },
   converted: { label: 'Convertido', color: 'bg-green-500' },
-  archived: { label: 'Archivado', color: 'bg-gray-500' }
+  archived: { label: 'Archivado', color: 'bg-muted' }
 };
 
 const priorityConfig = {
-  low: { label: 'Baja', color: 'bg-gray-400' },
+  low: { label: 'Baja', color: 'bg-muted' },
   medium: { label: 'Media', color: 'bg-blue-400' },
   high: { label: 'Alta', color: 'bg-orange-400' },
   urgent: { label: 'Urgente', color: 'bg-red-500' }
