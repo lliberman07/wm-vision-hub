@@ -145,6 +145,25 @@ export default function GranadaPlatformHome() {
           </div>
           <FeatureShowcase />
           
+          {/* Escalabilidad Garantizada - Centered Card */}
+          <div className="mt-12 flex justify-center">
+            <Card className="max-w-2xl w-full bg-card border border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <CardContent className="p-8 flex items-start gap-6">
+                <div className="shrink-0 w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-3">
+                    Escalabilidad Garantizada
+                  </h3>
+                  <p className="text-base text-muted-foreground leading-relaxed">
+                    De 10 a 10,000+ propiedades. Performance consistente e infraestructura cloud elástica.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
           {/* Featured Partners for Real Estate Agencies */}
           <FeaturedPartnersSection 
             type="real_estate_agency"
