@@ -54,6 +54,7 @@ import Help from "./pages/pms/Help";
 import MySubscription from "./pages/pms/MySubscription";
 
 import GranadaContact from "./pages/GranadaContact";
+import SubscriptionRequest from "./pages/SubscriptionRequest";
 
 const queryClient = new QueryClient();
 
@@ -71,8 +72,9 @@ const App = () => (
                 <ScrollToTop />
               <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/granada-platform" element={<GranadaPlatformHome />} />
-              <Route path="/granada-platform/contact" element={<GranadaContact />} />
+            <Route path="/granada-platform" element={<GranadaPlatformHome />} />
+            <Route path="/subscription-request" element={<SubscriptionRequest />} />
+            <Route path="/granada-platform/contact" element={<GranadaContact />} />
               <Route path="/granada/contact" element={<GranadaContact />} />
               <Route path="/partners-directory" element={<PartnersDirectory />} />
               <Route path="/granada-admin/login" element={<GranadaAdminLogin />} />

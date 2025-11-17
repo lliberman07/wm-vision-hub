@@ -4,6 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, X, DollarSign, Users, Building, FileText, Briefcase } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface SubscriptionPlan {
   id: string;
@@ -33,6 +35,8 @@ const FEATURE_LABELS: Record<string, string> = {
 };
 
 export function SubscriptionPlansComparator() {
+  const navigate = useNavigate();
+  
   const { data: plans, isLoading } = useQuery({
     queryKey: ['subscription-plans-comparator'],
     queryFn: async () => {
@@ -130,8 +134,15 @@ export function SubscriptionPlansComparator() {
               <TableCell className="font-medium">Precio Mensual</TableCell>
               {plans.map((plan) => (
                 <TableCell key={plan.id} className="text-center">
-                  <div className="font-bold text-lg">{formatCurrency(plan.price_monthly)}</div>
-                  <div className="text-xs text-muted-foreground">/mes</div>
+                  <div className="space-y-2">
+                    <div>
+                      <div className="font-bold text-lg">{formatCurrency(plan.price_monthly)}</div>
+                      <div className="text-xs text-muted-foreground">/mes</div>
+                    </div>
+                    <Button size="sm" className="w-full" onClick={() => navigate(`/subscription-request?plan=${plan.id}`)}>
+                      Solicitar
+                    </Button>
+                  </div>
                 </TableCell>
               ))}
             </TableRow>
