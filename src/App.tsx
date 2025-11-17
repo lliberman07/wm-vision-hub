@@ -31,6 +31,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import GranadaPrivacyPolicy from "./pages/GranadaPrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import { FinancingApplication } from "./pages/FinancingApplication";
 import CreditSimulator from "./pages/CreditSimulator";
@@ -128,7 +129,8 @@ const App = () => (
                 } 
               />
               <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/privacy-policy" element={<GranadaPrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
