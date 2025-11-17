@@ -121,22 +121,6 @@ export default function GranadaPlatformHome() {
                 </Card>
               ))}
             </div>
-            
-            {/* Escalabilidad Garantizada - Centered Below */}
-            <Card 
-              className="mt-8 max-w-xl mx-auto bg-white/10 backdrop-blur border-white/20 transition-all duration-300 hover:bg-white/20 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/20 hover:-translate-y-1 animate-fade-in"
-              style={{ animationDelay: '400ms' }}
-            >
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="bg-accent/20 p-3 rounded-lg flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-accent" />
-                </div>
-                <div className="text-left">
-                  <h3 className="text-xl font-bold text-white mb-2">Escalabilidad Garantizada</h3>
-                  <p className="text-sm text-white/80">De 10 a 10,000+ propiedades. Performance consistente e infraestructura cloud elástica.</p>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
