@@ -1,9 +1,199 @@
-import { useState } from 'react';
-import TenantSubscriptionPanel from '@/components/subscription/TenantSubscriptionPanel';
+import { useState, useEffect } from 'react';
 import { PMSLayout } from '@/components/pms/PMSLayout';
 import { PMSPageWrapper } from '@/components/pms/PMSPageWrapper';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { supabase } from '@/integrations/supabase/client';
+import { usePMS } from '@/contexts/PMSContext';
+import { useToast } from '@/hooks/use-toast';
+import { PaymentReceiptUpload } from '@/components/subscription/PaymentReceiptUpload';
+import { 
+  Calendar, 
+  CreditCard, 
+  AlertTriangle, 
+  CheckCircle2, 
+  Clock,
+  ArrowUpCircle,
+  Download,
+  Upload
+} from 'lucide-react';
+import { format, differenceInDays } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+interface SubscriptionData {
+  id: string;
+  plan_id: string;
+  status: string;
+  trial_end: string | null;
+  current_period_start: string;
+  current_period_end: string;
+  billing_cycle: string;
+  subscription_plans: {
+    name: string;
+    price_monthly: number;
+    price_yearly: number;
+    max_users: number;
+    max_properties: number;
+    max_contracts: number;
+  };
+}
+
+interface Invoice {
+  id: string;
+  invoice_number: string;
+  amount: number;
+  status: string;
+  issue_date: string;
+  due_date: string;
+  billing_period_start: string;
+  billing_period_end: string;
+}
+
+interface UsageLimits {
+  users: { current: number; limit: number };
+  properties: { current: number; limit: number };
+  contracts: { current: number; limit: number };
+}
 
 export default function MySubscription() {
+  const { currentTenant } = usePMS();
+  const { toast } = useToast();
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [usageLimits, setUsageLimits] = useState<UsageLimits | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [uploadingInvoiceId, setUploadingInvoiceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (currentTenant) {
+      loadSubscriptionData();
+    }
+  }, [currentTenant]);
+
+  const loadSubscriptionData = async () => {
+    if (!currentTenant) return;
+
+    try {
+      // Cargar suscripción
+      const { data: subData, error: subError } = await supabase
+        .from('tenant_subscriptions')
+        .select(`
+          *,
+          subscription_plans (
+            name,
+            price_monthly,
+            price_yearly,
+            max_users,
+            max_properties,
+            max_contracts
+          )
+        `)
+        .eq('tenant_id', currentTenant.id)
+        .single();
+
+      if (subError) throw subError;
+      setSubscription(subData as any);
+
+      // Cargar facturas
+      const { data: invoicesData, error: invError } = await supabase
+        .from('subscription_invoices')
+        .select('*')
+        .eq('tenant_id', currentTenant.id)
+        .order('issue_date', { ascending: false })
+        .limit(12);
+
+      if (invError) throw invError;
+      setInvoices(invoicesData || []);
+
+      // Cargar límites de uso
+      const { data: limitsData } = await supabase.rpc('check_tenant_limits', {
+        p_tenant_id: currentTenant.id,
+        p_resource_type: 'user'
+      });
+
+      const { data: propsData } = await supabase.rpc('check_tenant_limits', {
+        p_tenant_id: currentTenant.id,
+        p_resource_type: 'property'
+      });
+
+      const { data: contractsData } = await supabase.rpc('check_tenant_limits', {
+        p_tenant_id: currentTenant.id,
+        p_resource_type: 'contract'
+      });
+
+      setUsageLimits({
+        users: { current: (limitsData as any)?.current_count || 0, limit: (limitsData as any)?.limit || 0 },
+        properties: { current: (propsData as any)?.current_count || 0, limit: (propsData as any)?.limit || 0 },
+        contracts: { current: (contractsData as any)?.current_count || 0, limit: (contractsData as any)?.limit || 0 },
+      });
+
+    } catch (error) {
+      console.error('Error loading subscription:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo cargar la información de la suscripción',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+      trial: { label: 'Prueba', variant: 'secondary' },
+      active: { label: 'Activo', variant: 'default' },
+      suspended: { label: 'Suspendido', variant: 'destructive' },
+      cancelled: { label: 'Cancelado', variant: 'outline' },
+    };
+    const config = variants[status] || { label: status, variant: 'outline' };
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  const getUsagePercentage = (current: number, limit: number) => {
+    if (limit === 0) return 0;
+    return Math.min((current / limit) * 100, 100);
+  };
+
+  if (loading) {
+    return (
+      <PMSPageWrapper>
+        <PMSLayout>
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Cargando suscripción...</p>
+            </div>
+          </div>
+        </PMSLayout>
+      </PMSPageWrapper>
+    );
+  }
+
+  if (!subscription) {
+    return (
+      <PMSPageWrapper>
+        <PMSLayout>
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-center text-muted-foreground">No se encontró información de suscripción</p>
+            </CardContent>
+          </Card>
+        </PMSLayout>
+      </PMSPageWrapper>
+    );
+  }
+
+  const daysRemaining = subscription.trial_end 
+    ? differenceInDays(new Date(subscription.trial_end), new Date())
+    : null;
+
+  const isTrialExpiringSoon = daysRemaining !== null && daysRemaining <= 3 && daysRemaining >= 0;
+
   return (
     <PMSPageWrapper>
       <PMSLayout>
@@ -12,8 +202,191 @@ export default function MySubscription() {
             <h1 className="text-3xl font-bold">Mi Suscripción</h1>
             <p className="text-muted-foreground">Gestiona tu plan y facturación</p>
           </div>
-          
-          <TenantSubscriptionPanel />
+
+          {/* Alert de Trial Expirando */}
+          {isTrialExpiringSoon && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>¡Tu período de prueba está por expirar!</AlertTitle>
+              <AlertDescription>
+                Te quedan {daysRemaining} día{daysRemaining !== 1 ? 's' : ''} de prueba.
+                Sube tu comprobante de pago para continuar con acceso completo.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Estado Actual */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Estado de la Suscripción</span>
+                {getStatusBadge(subscription.status)}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Plan Actual</p>
+                  <p className="text-xl font-bold">{subscription.subscription_plans.name}</p>
+                </div>
+                {subscription.trial_end && subscription.status === 'trial' && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Trial termina</p>
+                    <p className="text-xl font-bold">
+                      {daysRemaining !== null && daysRemaining >= 0 
+                        ? `${daysRemaining} día${daysRemaining !== 1 ? 's' : ''}`
+                        : 'Expirado'}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-muted-foreground">Próxima Renovación</p>
+                  <p className="text-xl font-bold">
+                    {format(new Date(subscription.current_period_end), 'dd/MM/yyyy', { locale: es })}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Uso de Recursos */}
+          {usageLimits && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Uso de Recursos</CardTitle>
+                <CardDescription>Límites de tu plan actual</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {[
+                  { label: 'Usuarios', key: 'users' as const, icon: '👥' },
+                  { label: 'Propiedades', key: 'properties' as const, icon: '🏢' },
+                  { label: 'Contratos', key: 'contracts' as const, icon: '📄' },
+                ].map(({ label, key, icon }) => {
+                  const usage = usageLimits[key];
+                  const percentage = getUsagePercentage(usage.current, usage.limit);
+                  const isNearLimit = percentage > 80;
+
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          {icon} {label}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {usage.current} / {usage.limit}
+                        </span>
+                      </div>
+                      <Progress value={percentage} className={isNearLimit ? 'bg-destructive' : ''} />
+                      {isNearLimit && (
+                        <p className="text-xs text-destructive">
+                          ⚠️ Te estás acercando al límite. Considera un upgrade.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Historial de Pagos */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Historial de Pagos</CardTitle>
+              <CardDescription>
+                {subscription.billing_cycle === 'monthly' ? 'Facturación mensual' : 'Facturación anual'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Período</TableHead>
+                    <TableHead>Monto</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Vencimiento</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoices.map((invoice) => (
+                    <TableRow key={invoice.id}>
+                      <TableCell>
+                        {format(new Date(invoice.billing_period_start), 'dd MMM', { locale: es })} -{' '}
+                        {format(new Date(invoice.billing_period_end), 'dd MMM yyyy', { locale: es })}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        ${invoice.amount.toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        {invoice.status === 'paid' ? (
+                          <Badge variant="default" className="gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Pagado
+                          </Badge>
+                        ) : invoice.status === 'pending' ? (
+                          <Badge variant="secondary" className="gap-1">
+                            <Clock className="h-3 w-3" />
+                            Pendiente
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive">Vencido</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(invoice.due_date), 'dd/MM/yyyy', { locale: es })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {invoice.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            onClick={() => setUploadingInvoiceId(invoice.id)}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Subir Comprobante
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {invoices.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        No hay facturas registradas
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Upload Receipt Dialog */}
+          {uploadingInvoiceId && (
+            <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+              <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg">
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-4 top-4 z-10"
+                    onClick={() => setUploadingInvoiceId(null)}
+                  >
+                    ✕
+                  </Button>
+                  <PaymentReceiptUpload
+                    invoiceId={uploadingInvoiceId}
+                    tenantId={currentTenant!.id}
+                    amount={invoices.find(i => i.id === uploadingInvoiceId)?.amount || 0}
+                    onSuccess={() => {
+                      setUploadingInvoiceId(null);
+                      loadSubscriptionData();
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </PMSLayout>
     </PMSPageWrapper>

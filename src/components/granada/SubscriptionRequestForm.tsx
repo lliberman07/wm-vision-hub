@@ -11,9 +11,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import { Building2, User, CheckCircle2 } from "lucide-react";
+import { Building2, User, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LocationSelector } from "./LocationSelector";
 import { useSearchParams } from "react-router-dom";
 
@@ -56,6 +57,12 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
+  const [trialEligibility, setTrialEligibility] = useState<{
+    is_eligible: boolean;
+    message: string;
+    previous_tenant?: string;
+  } | null>(null);
+  const [checkingTrial, setCheckingTrial] = useState(false);
 
   const { data: plans, isLoading: plansLoading } = useQuery({
     queryKey: ["subscription-plans"],
@@ -86,8 +93,38 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
   const applicantType = form.watch("applicant_type");
   const selectedPlanId = form.watch("requested_plan_id");
   const billingCycle = form.watch("billing_cycle");
+  const email = form.watch("email");
+  const cuitCuil = form.watch("cuit_cuil");
 
   const selectedPlan = plans?.find(p => p.id === selectedPlanId);
+
+  // Verificar elegibilidad de trial cuando cambia email o CUIT
+  useEffect(() => {
+    const checkTrialEligibility = async () => {
+      if (!email || email.length < 5) {
+        setTrialEligibility(null);
+        return;
+      }
+
+      setCheckingTrial(true);
+      try {
+        const { data, error } = await supabase.rpc('check_trial_eligibility', {
+          p_email: email,
+          p_cuit_cuil: cuitCuil || null,
+        });
+
+        if (error) throw error;
+        setTrialEligibility(data as any);
+      } catch (error) {
+        console.error('Error checking trial:', error);
+      } finally {
+        setCheckingTrial(false);
+      }
+    };
+
+    const debounce = setTimeout(checkTrialEligibility, 500);
+    return () => clearTimeout(debounce);
+  }, [email, cuitCuil]);
 
   // Pre-seleccionar plan desde query parameter
   useEffect(() => {
