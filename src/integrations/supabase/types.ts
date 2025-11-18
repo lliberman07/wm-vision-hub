@@ -3127,6 +3127,7 @@ export type Database = {
           created_at: string | null
           current_subscription_id: string | null
           exchange_rate_source: string | null
+          has_used_trial: boolean | null
           id: string
           is_active: boolean | null
           name: string
@@ -3135,6 +3136,8 @@ export type Database = {
           settings: Json | null
           slug: string
           tenant_type: Database["public"]["Enums"]["pms_tenant_type"]
+          trial_email: string | null
+          trial_used_at: string | null
           updated_at: string | null
           use_automatic_rates: boolean | null
         }
@@ -3144,6 +3147,7 @@ export type Database = {
           created_at?: string | null
           current_subscription_id?: string | null
           exchange_rate_source?: string | null
+          has_used_trial?: boolean | null
           id?: string
           is_active?: boolean | null
           name: string
@@ -3152,6 +3156,8 @@ export type Database = {
           settings?: Json | null
           slug: string
           tenant_type?: Database["public"]["Enums"]["pms_tenant_type"]
+          trial_email?: string | null
+          trial_used_at?: string | null
           updated_at?: string | null
           use_automatic_rates?: boolean | null
         }
@@ -3161,6 +3167,7 @@ export type Database = {
           created_at?: string | null
           current_subscription_id?: string | null
           exchange_rate_source?: string | null
+          has_used_trial?: boolean | null
           id?: string
           is_active?: boolean | null
           name?: string
@@ -3169,6 +3176,8 @@ export type Database = {
           settings?: Json | null
           slug?: string
           tenant_type?: Database["public"]["Enums"]["pms_tenant_type"]
+          trial_email?: string | null
+          trial_used_at?: string | null
           updated_at?: string | null
           use_automatic_rates?: boolean | null
         }
@@ -4102,6 +4111,10 @@ export type Database = {
         Args: { p_resource_type: string; p_tenant_id: string }
         Returns: Json
       }
+      check_trial_eligibility: {
+        Args: { p_cuit_cuil?: string; p_email: string }
+        Returns: Json
+      }
       cleanup_orphan_payments: {
         Args: never
         Returns: {
@@ -4112,6 +4125,7 @@ export type Database = {
         Args: { contract_id_param: string }
         Returns: undefined
       }
+      convert_expired_trials: { Args: never; Returns: Json }
       deactivate_tenant_on_contract_expiry: { Args: never; Returns: undefined }
       deduct_approved_expense_from_next_payment: {
         Args: { expense_id_param: string }
@@ -4151,6 +4165,7 @@ export type Database = {
         Args: { parent_contract_id_param: string }
         Returns: string
       }
+      generate_renewal_invoices: { Args: never; Returns: Json }
       get_client_activity_log: {
         Args: { p_limit?: number; p_tenant_id: string }
         Returns: {
