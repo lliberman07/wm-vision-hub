@@ -35,38 +35,10 @@ interface IndicesFormProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   indice?: any;
+  isGranadaAdmin: boolean;
 }
 
-const canEditIndex = (period: string): boolean => {
-  try {
-    let periodDate: Date;
-    
-    if (period.length === 10) {
-      // YYYY-MM-DD (ICL)
-      periodDate = new Date(period);
-    } else if (period.length === 7) {
-      // YYYY-MM (IPC/UVA)
-      periodDate = new Date(period + '-01');
-    } else {
-      return false;
-    }
-    
-    // Calcular cutoff: primer día del mes P+2
-    const cutoffDate = new Date(periodDate);
-    cutoffDate.setMonth(cutoffDate.getMonth() + 2);
-    cutoffDate.setDate(1);
-    cutoffDate.setHours(0, 0, 0, 0);
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return today < cutoffDate;
-  } catch {
-    return false;
-  }
-};
-
-export function IndicesForm({ open, onOpenChange, onSuccess, indice }: IndicesFormProps) {
+export function IndicesForm({ open, onOpenChange, onSuccess, indice, isGranadaAdmin }: IndicesFormProps) {
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
@@ -81,19 +53,21 @@ export function IndicesForm({ open, onOpenChange, onSuccess, indice }: IndicesFo
 
   const onSubmit = async (values: FormValues) => {
     try {
+      // Verificar permisos de Granada Admin
+      if (!isGranadaAdmin) {
+        toast({
+          title: "Sin permisos",
+          description: "Solo administradores de Granada Platform pueden gestionar índices económicos.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuario no autenticado");
 
       if (indice) {
-        // MODO EDICIÓN: Validar ventana temporal
-        if (!canEditIndex(indice.period)) {
-          toast({
-            title: "Fuera de ventana de edición",
-            description: `El índice de ${indice.period} solo puede editarse durante ese mes y el siguiente. Para corregirlo, elimínelo y créelo nuevamente.`,
-            variant: "destructive",
-          });
-          return;
-        }
+        // MODO EDICIÓN - Granada Admin puede editar siempre
 
         const { error } = await supabase
           .from('pms_economic_indices')
