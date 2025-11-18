@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   Clock,
   DollarSign,
-  Shield
+  Shield,
+  Home
 } from "lucide-react";
 
 const pathways = [
@@ -72,6 +73,11 @@ const benefits = [
     icon: Shield,
     title: "Seguridad y Privacidad",
     description: "Tus datos protegidos con encriptación y acceso exclusivo para vos."
+  },
+  {
+    icon: Home,
+    title: "Administración Continua",
+    description: "Tu propiedad está gestionada profesionalmente incluso cuando está desocupada. Seguimiento de expensas, impuestos, servicios y mantenimientos mientras se buscan nuevos inquilinos."
   }
 ];
 
@@ -139,6 +145,63 @@ export default function Propietarios() {
                 </Card>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Administración Sin Pausas */}
+        <section className="py-16 px-4 bg-primary/5">
+          <div className="container max-w-4xl">
+            <Card className="border-primary/20">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <Home className="h-8 w-8 text-primary" />
+                  <CardTitle className="text-2xl">
+                    Tu Propiedad Siempre Gestionada
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-lg">
+                  <strong>Incluso cuando tu propiedad está desocupada</strong>, seguís teniendo gastos mensuales:
+                  expensas, impuestos, servicios, y posibles reparaciones.
+                </p>
+                <p className="text-muted-foreground">
+                  Con Granada, tu inmobiliaria (o vos mismo) puede registrar y administrar todos estos gastos
+                  mientras se busca un nuevo inquilino. <strong>No perdés visibilidad ni control</strong> en los
+                  períodos de vacancia.
+                </p>
+                <div className="grid md:grid-cols-2 gap-4 pt-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">Registro de gastos mensuales</p>
+                      <p className="text-sm text-muted-foreground">Expensas, ABL, servicios</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">Mantenimientos y reparaciones</p>
+                      <p className="text-sm text-muted-foreground">Con aprobación y seguimiento</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">Reportes mensuales</p>
+                      <p className="text-sm text-muted-foreground">Incluso sin inquilino activo</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">Búsqueda en paralelo</p>
+                      <p className="text-sm text-muted-foreground">Mientras gestionan tus gastos</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
