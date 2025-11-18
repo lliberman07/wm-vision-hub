@@ -720,7 +720,7 @@ const Contracts = () => {
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {contractOwners.map((owner, idx) => (
-                              <Badge key={idx} variant="secondary" className="px-3 py-1.5 text-sm text-foreground">
+                              <Badge key={idx} variant="outline" className="px-3 py-1.5 text-sm">
                                 {owner.name} ({owner.percentage}%)
                               </Badge>
                             ))}
