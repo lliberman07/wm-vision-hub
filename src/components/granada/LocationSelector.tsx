@@ -130,25 +130,24 @@ export function LocationSelector({
             onValueChange={onNeighborhoodChange}
             disabled={!cityValue}
           >
-            <FormControl>
-              <SelectTrigger disabled={!cityValue}>
-                <SelectValue 
-                  placeholder={
-                    !cityValue 
-                      ? "Primero selecciona ciudad" 
-                      : "Selecciona barrio (opcional)"
-                  } 
-                />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              <SelectItem value="">Sin especificar</SelectItem>
-              {selectedCity?.neighborhoods.map((neighborhood) => (
-                <SelectItem key={neighborhood} value={neighborhood}>
-                  {neighborhood}
-                </SelectItem>
-              ))}
-            </SelectContent>
+          <FormControl>
+            <SelectTrigger disabled={!cityValue}>
+              <SelectValue 
+                placeholder={
+                  !cityValue 
+                    ? "Primero selecciona ciudad" 
+                    : "Selecciona barrio (opcional)"
+                } 
+              />
+            </SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            {selectedCity?.neighborhoods.map((neighborhood) => (
+              <SelectItem key={neighborhood} value={neighborhood}>
+                {neighborhood}
+              </SelectItem>
+            ))}
+          </SelectContent>
           </Select>
           <FormMessage />
         </FormItem>
