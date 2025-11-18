@@ -14,78 +14,96 @@ import {
 
 const plans = [
   {
-    name: "Prueba",
-    price: "Gratis",
-    period: "15 días",
-    description: "Probá todas las funcionalidades sin compromiso",
-    features: [
-      { text: "Hasta 3 propiedades", included: true },
-      { text: "1 usuario admin", included: true },
-      { text: "Contratos básicos", included: true },
-      { text: "Calendario de pagos", included: true },
-      { text: "Reportes básicos", included: true },
-      { text: "Soporte por email", included: true },
-      { text: "Portal propietarios", included: false },
-      { text: "Multi-usuario", included: false },
-    ],
-    highlighted: false,
-    cta: "Empezar Prueba"
-  },
-  {
     name: "Básico",
-    price: "$12.000",
-    period: "/mes",
-    description: "Para inmobiliarias que recién arrancan",
+    slug: "basic",
+    description: "Plan ideal para pequeños propietarios o administradores individuales",
+    priceMonthly: 15000,
+    priceYearly: 150000,
+    maxProperties: 1,
+    maxContracts: 2,
+    maxUsers: 2,
+    maxBranches: 0,
     features: [
-      { text: "Hasta 20 propiedades", included: true },
+      { text: "Hasta 1 propiedad", included: true },
+      { text: "Hasta 2 contratos simultáneos", included: true },
       { text: "2 usuarios activos", included: true },
-      { text: "Contratos con ajustes", included: true },
-      { text: "Gestión de pagos completa", included: true },
-      { text: "Reportes mensuales automáticos", included: true },
-      { text: "Portal para propietarios", included: true },
-      { text: "Soporte prioritario", included: true },
-      { text: "Red de proveedores", included: false },
+      { text: "Reportes básicos", included: true },
+      { text: "5 GB almacenamiento", included: true },
+      { text: "Soporte por email", included: true },
+      { text: "Reportes avanzados", included: false },
+      { text: "Analytics avanzados", included: false },
+      { text: "API access", included: false },
+      { text: "Operaciones masivas", included: false },
     ],
     highlighted: false,
-    cta: "Solicitar Plan"
+    cta: "Solicitar Plan Básico"
   },
   {
     name: "Profesional",
-    price: "$28.000",
-    period: "/mes",
-    description: "El más elegido por inmobiliarias en crecimiento",
+    slug: "professional",
+    description: "Para inmobiliarias o administradoras medianas con múltiples propiedades",
+    priceMonthly: 50000,
+    priceYearly: 500000,
+    maxProperties: 5,
+    maxContracts: 10,
+    maxUsers: 5,
+    maxBranches: 2,
     features: [
-      { text: "Hasta 100 propiedades", included: true },
-      { text: "Usuarios ilimitados", included: true },
-      { text: "Todos los módulos incluidos", included: true },
-      { text: "Roles y permisos granulares", included: true },
-      { text: "Red de proveedores completa", included: true },
-      { text: "API para integraciones", included: true },
-      { text: "Soporte prioritario + WhatsApp", included: true },
-      { text: "Capacitación incluida", included: true },
+      { text: "Hasta 5 propiedades", included: true },
+      { text: "Hasta 10 contratos simultáneos", included: true },
+      { text: "5 usuarios activos", included: true },
+      { text: "Hasta 2 sucursales", included: true },
+      { text: "Reportes avanzados", included: true },
+      { text: "Analytics avanzados", included: true },
+      { text: "API access (1000 calls/día)", included: true },
+      { text: "Operaciones masivas", included: true },
+      { text: "Branding personalizado", included: true },
+      { text: "25 GB almacenamiento", included: true },
+      { text: "Notificaciones personalizadas", included: true },
+      { text: "Soporte prioritario", included: false },
     ],
     highlighted: true,
-    cta: "Solicitar Plan"
+    cta: "Solicitar Plan Profesional"
   },
   {
     name: "Enterprise",
-    price: "Consultar",
-    period: "",
-    description: "Para grandes administradores con necesidades específicas",
+    slug: "enterprise",
+    description: "Solución completa para grandes inmobiliarias y corporativos",
+    priceMonthly: 120000,
+    priceYearly: 1200000,
+    maxProperties: 15,
+    maxContracts: 30,
+    maxUsers: 5,
+    maxBranches: 10,
     features: [
-      { text: "Propiedades ilimitadas", included: true },
-      { text: "Usuarios ilimitados", included: true },
-      { text: "Infraestructura dedicada", included: true },
-      { text: "Integraciones personalizadas", included: true },
-      { text: "SLA garantizado", included: true },
-      { text: "Account manager dedicado", included: true },
-      { text: "Capacitación on-site", included: true },
-      { text: "Desarrollo a medida", included: true },
+      { text: "Hasta 15 propiedades", included: true },
+      { text: "Hasta 30 contratos simultáneos", included: true },
+      { text: "5 usuarios activos", included: true },
+      { text: "Hasta 10 sucursales", included: true },
+      { text: "Reportes avanzados ilimitados", included: true },
+      { text: "Analytics avanzados con BI", included: true },
+      { text: "API access ilimitado", included: true },
+      { text: "Operaciones masivas", included: true },
+      { text: "Branding personalizado", included: true },
+      { text: "100 GB almacenamiento", included: true },
+      { text: "Notificaciones personalizadas", included: true },
+      { text: "Soporte prioritario 24/7", included: true },
+      { text: "Whitelabel (sin marca Granada)", included: true },
     ],
     highlighted: false,
-    cta: "Contactar Ventas"
+    cta: "Solicitar Plan Enterprise"
   }
 ];
+
+const calculateYearlySavings = (monthlyPrice: number) => {
+  const yearlyWithoutDiscount = monthlyPrice * 12;
+  const discountAmount = yearlyWithoutDiscount * 0.17;
+  return {
+    yearlyWithoutDiscount,
+    discountAmount,
+    percentageSaved: 17
+  };
+};
 
 const faqs = [
   {
@@ -110,7 +128,11 @@ const faqs = [
   }
 ];
 
+import { useState } from "react";
+
 export default function Planes() {
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+
   return (
     <div className="granada-theme min-h-screen bg-background">
       <GranadaHeader />
@@ -127,8 +149,33 @@ export default function Planes() {
                 Planes flexibles que crecen con vos
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Empezá gratis. Escalá cuando necesites. Sin sorpresas ni costos ocultos.
+                Empezá con plan mensual o ahorrá 17% con facturación anual. Sin sorpresas ni costos ocultos.
               </p>
+              
+              {/* Toggle Mensual/Anual */}
+              <div className="flex items-center justify-center gap-4 pt-6">
+                <span className={`font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>
+                  Mensual
+                </span>
+                <button
+                  onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                    billingPeriod === "yearly" ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-background transition-transform ${
+                      billingPeriod === "yearly" ? "translate-x-7" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <span className={`font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
+                  Anual
+                  <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary">
+                    -17%
+                  </Badge>
+                </span>
+              </div>
             </div>
           </div>
         </section>
@@ -136,8 +183,17 @@ export default function Planes() {
         {/* Comparador de Planes */}
         <section className="py-20 px-4">
           <div className="container max-w-7xl">
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {plans.map((plan) => (
+            <div className="grid md:grid-cols-3 gap-8">
+              {plans.map((plan) => {
+                const savings = calculateYearlySavings(plan.priceMonthly);
+                const displayPrice = billingPeriod === "monthly" 
+                  ? plan.priceMonthly 
+                  : plan.priceYearly;
+                const yearlyEquivalent = billingPeriod === "yearly" 
+                  ? plan.priceYearly / 12 
+                  : null;
+
+                return (
                 <Card 
                   key={plan.name} 
                   className={`hover:shadow-xl transition-all duration-300 ${
@@ -154,12 +210,28 @@ export default function Planes() {
                     )}
                     <CardTitle className="text-2xl">{plan.name}</CardTitle>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      {plan.period && (
-                        <span className="text-muted-foreground ml-1">{plan.period}</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-bold">
+                          ${(displayPrice / 1000).toFixed(0)}k
+                        </span>
+                        <span className="text-muted-foreground">
+                          /{billingPeriod === "monthly" ? "mes" : "año"}
+                        </span>
+                      </div>
+                      {billingPeriod === "yearly" && yearlyEquivalent && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          ${(yearlyEquivalent / 1000).toFixed(1)}k/mes facturado anualmente
+                        </p>
+                      )}
+                      {billingPeriod === "yearly" && (
+                        <div className="mt-2 text-sm">
+                          <span className="text-primary font-semibold">
+                            Ahorrás ${(savings.discountAmount / 1000).toFixed(0)}k/año
+                          </span>
+                        </div>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-sm text-muted-foreground mt-3">
                       {plan.description}
                     </p>
                   </CardHeader>
@@ -188,7 +260,8 @@ export default function Planes() {
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
+              );
+            })}
             </div>
           </div>
         </section>
