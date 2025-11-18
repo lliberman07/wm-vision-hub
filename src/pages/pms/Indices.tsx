@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePMS } from "@/contexts/PMSContext";
+import { useGranadaAuth } from "@/contexts/GranadaAuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { IndicesForm } from "@/components/pms/IndicesForm";
 import { IndicesBulkImport } from "@/components/pms/IndicesBulkImport";
-import { Plus, TrendingUp, RefreshCw, CalendarIcon, Upload, Trash2 } from "lucide-react";
+import { Plus, TrendingUp, RefreshCw, CalendarIcon, Upload, Trash2, Edit2, AlertTriangle } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -31,7 +32,8 @@ interface EconomicIndex {
 
 export default function Indices() {
   const { currentTenant, userRole } = usePMS();
-  const isSuperAdmin = userRole === 'SUPERADMIN';
+  const { isGranadaAdmin, isGranadaSuperAdmin } = useGranadaAuth();
+  const canManageIndices = isGranadaAdmin || isGranadaSuperAdmin;
   const [indices, setIndices] = useState<EconomicIndex[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,6 +46,8 @@ export default function Indices() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [showCleanupDialog, setShowCleanupDialog] = useState(false);
   const [cleanupYear, setCleanupYear] = useState<string>('2025');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [indexToDelete, setIndexToDelete] = useState<EconomicIndex | null>(null);
 
   useEffect(() => {
     fetchIndices();
@@ -109,6 +113,27 @@ export default function Indices() {
     setRecalculating(value);
   };
 
+  const handleDeleteIndex = async () => {
+    if (!indexToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('pms_economic_indices')
+        .delete()
+        .eq('id', indexToDelete.id);
+      
+      if (error) throw error;
+      
+      toast.success(`Índice ${indexToDelete.index_type} de ${indexToDelete.period} eliminado correctamente`);
+      toast.info("Se recomienda recalcular las proyecciones de contratos activos");
+      setDeleteDialogOpen(false);
+      setIndexToDelete(null);
+      fetchIndices();
+    } catch (error: any) {
+      toast.error(error.message || "Error al eliminar índice");
+    }
+  };
+
   const filteredIndices = indices.filter(idx => {
     // Filtro por tipo seleccionado
     const matchesType = !selectedIndexType || idx.index_type === selectedIndexType;
@@ -168,7 +193,7 @@ export default function Indices() {
                 Gestión de valores de IPC y UVA (mensuales) e ICL (diarios del BCRA)
               </p>
             </div>
-            {isSuperAdmin && (
+            {canManageIndices && (
               <div className="flex gap-2">
                 <Button 
                   variant="outline" 
@@ -202,6 +227,12 @@ export default function Indices() {
                     </Button>
                   </>
                 )}
+              </div>
+            )}
+            {!canManageIndices && (
+              <div className="text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-md border">
+                <AlertTriangle className="h-4 w-4 inline mr-2" />
+                Solo administradores de Granada Platform pueden gestionar índices económicos
               </div>
             )}
           </div>
@@ -340,12 +371,12 @@ export default function Indices() {
                 icon={TrendingUp}
                 title="No hay índices cargados"
                 description={
-                  isSuperAdmin 
+                  canManageIndices 
                     ? "Comienza cargando los valores mensuales de los índices económicos oficiales (IPC, ICL, UVA)"
                     : "Los índices económicos oficiales aún no han sido cargados por el administrador del sistema"
                 }
-                actionLabel={isSuperAdmin ? "+ Cargar Índice" : undefined}
-                onAction={isSuperAdmin ? () => {
+                actionLabel={canManageIndices ? "+ Cargar Índice" : undefined}
+                onAction={canManageIndices ? () => {
                   setSelectedIndex(undefined);
                   setIsFormOpen(true);
                 } : undefined}
@@ -360,22 +391,28 @@ export default function Indices() {
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead>Fuente</TableHead>
                     <TableHead>Fecha de Carga</TableHead>
+                    {canManageIndices && <TableHead className="text-center">Acciones</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredIndices.map((idx) => (
-                    <TableRow
-                      key={idx.id}
-                      className={isSuperAdmin ? "cursor-pointer hover:bg-muted/50" : ""}
-                      onClick={isSuperAdmin ? () => {
-                        setSelectedIndex(idx);
-                        setIsFormOpen(true);
-                      } : undefined}
-                    >
+                    <TableRow key={idx.id}>
                       <TableCell>
-                        <Badge variant={getIndexBadgeVariant(idx.index_type)}>
-                          {idx.index_type}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getIndexBadgeVariant(idx.index_type)}>
+                            {idx.index_type}
+                          </Badge>
+                          {canManageIndices && (
+                            <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-500/20">
+                              Editable
+                            </Badge>
+                          )}
+                          {!canManageIndices && (
+                            <Badge variant="outline" className="bg-muted text-muted-foreground">
+                              Solo Lectura
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="font-mono">
                         {idx.period.length === 10 
@@ -390,6 +427,33 @@ export default function Indices() {
                       <TableCell className="text-sm text-muted-foreground">
                         {format(new Date(idx.created_at), 'dd/MM/yyyy HH:mm')}
                       </TableCell>
+                      {canManageIndices && (
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedIndex(idx);
+                                setIsFormOpen(true);
+                              }}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setIndexToDelete(idx);
+                                setDeleteDialogOpen(true);
+                              }}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -399,13 +463,14 @@ export default function Indices() {
           </CardContent>
         </Card>
 
-        {isSuperAdmin && (
+        {canManageIndices && (
           <>
             <IndicesForm
               open={isFormOpen}
               onOpenChange={setIsFormOpen}
               onSuccess={fetchIndices}
               indice={selectedIndex}
+              isGranadaAdmin={canManageIndices}
             />
             {selectedIndexType && ['ICL', 'UVA'].includes(selectedIndexType) && (
               <IndicesBulkImport
@@ -444,6 +509,35 @@ export default function Indices() {
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     Eliminar Registros
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Eliminar índice?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Estás por eliminar el índice <strong>{indexToDelete?.index_type}</strong> del período{' '}
+                    <strong>{indexToDelete?.period}</strong> con valor <strong>{indexToDelete?.value.toFixed(4)}</strong>.
+                    <br /><br />
+                    <div className="flex items-start gap-2 text-amber-600 dark:text-amber-500">
+                      <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                      <span>
+                        Esta acción puede afectar las proyecciones de contratos activos que usen este índice. 
+                        Se recomienda recalcular las proyecciones después de eliminar.
+                      </span>
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDeleteIndex}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Eliminar Índice
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
