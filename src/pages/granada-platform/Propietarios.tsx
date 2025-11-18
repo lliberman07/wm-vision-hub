@@ -218,8 +218,15 @@ export default function Propietarios() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {benefits.map((benefit) => (
-                <Card key={benefit.title} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              {benefits.map((benefit, index) => (
+                <Card 
+                  key={benefit.title} 
+                  className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${
+                    index === benefits.length - 1 && benefits.length % 3 !== 0 
+                      ? 'md:col-span-2 lg:col-span-3 md:max-w-md md:mx-auto' 
+                      : ''
+                  }`}
+                >
                   <CardContent className="p-6">
                     <div className="mb-4 p-3 bg-primary/10 rounded-lg w-fit">
                       <benefit.icon className="h-6 w-6 text-primary" />
