@@ -14,6 +14,12 @@ import GranadaProtectedRoute from "@/components/GranadaProtectedRoute";
 import Index from "./pages/Index";
 import GranadaAdmin from "./pages/GranadaAdmin";
 import GranadaPlatformHome from "./pages/GranadaPlatformHome";
+import GranadaHome from "./pages/granada-platform/Home";
+import InmobiliariasAdmin from "./pages/granada-platform/InmobiliariasAdmin";
+import Propietarios from "./pages/granada-platform/Propietarios";
+import Planes from "./pages/granada-platform/Planes";
+import Proveedores from "./pages/granada-platform/Proveedores";
+import Contacto from "./pages/granada-platform/Contacto";
 import GranadaAdminLogin from "./pages/GranadaAdminLogin";
 import PartnersDirectory from "./pages/PartnersDirectory";
 import About from "./pages/About";
@@ -73,11 +79,21 @@ const App = () => (
                 <ScrollToTop />
               <Routes>
               <Route path="/" element={<Index />} />
-            <Route path="/granada-platform" element={<GranadaPlatformHome />} />
+            
+            {/* Granada Platform - Nuevo sitio multi-página */}
+            <Route path="/granada-platform" element={<GranadaHome />} />
+            <Route path="/granada-platform/inmobiliarias-admin" element={<InmobiliariasAdmin />} />
+            <Route path="/granada-platform/propietarios" element={<Propietarios />} />
+            <Route path="/granada-platform/planes" element={<Planes />} />
+            <Route path="/granada-platform/proveedores" element={<Proveedores />} />
+            <Route path="/granada-platform/contacto" element={<Contacto />} />
+            
+            {/* Granada Platform - Rutas legacy (mantener por compatibilidad) */}
+            <Route path="/granada-platform-old" element={<GranadaPlatformHome />} />
             <Route path="/subscription-request" element={<SubscriptionRequest />} />
             <Route path="/granada-platform/contact" element={<GranadaContact />} />
-              <Route path="/granada/contact" element={<GranadaContact />} />
-              <Route path="/partners-directory" element={<PartnersDirectory />} />
+            <Route path="/granada/contact" element={<GranadaContact />} />
+            <Route path="/partners-directory" element={<PartnersDirectory />} />
               <Route path="/granada-admin/login" element={<GranadaAdminLogin />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
