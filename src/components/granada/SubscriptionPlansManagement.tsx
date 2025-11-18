@@ -178,11 +178,29 @@ export function SubscriptionPlansManagement() {
   };
 
   const handleDeletePlan = async (planId: string, planName: string) => {
-    if (!confirm(`¿Está seguro de eliminar el plan "${planName}"? Esta acción no se puede deshacer.`)) {
-      return;
-    }
-
     try {
+      // Primero verificar si hay suscripciones activas con este plan
+      const { data: subscriptions, error: checkError } = await supabase
+        .from('tenant_subscriptions')
+        .select('id')
+        .eq('plan_id', planId)
+        .in('status', ['active', 'trial']);
+
+      if (checkError) throw checkError;
+
+      if (subscriptions && subscriptions.length > 0) {
+        toast({
+          title: 'No se puede eliminar',
+          description: `El plan "${planName}" tiene ${subscriptions.length} suscripción(es) activa(s). Desactívelo en lugar de eliminarlo para evitar problemas.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!confirm(`¿Está seguro de eliminar el plan "${planName}"? Esta acción no se puede deshacer.`)) {
+        return;
+      }
+
       const { error } = await supabase
         .from('subscription_plans')
         .delete()
@@ -200,7 +218,7 @@ export function SubscriptionPlansManagement() {
       console.error('Error deleting plan:', error);
       toast({
         title: 'Error',
-        description: error.message || 'No se pudo eliminar el plan. Puede que tenga suscripciones activas.',
+        description: error.message || 'No se pudo eliminar el plan',
         variant: 'destructive',
       });
     }
