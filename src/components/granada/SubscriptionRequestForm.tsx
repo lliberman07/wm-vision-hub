@@ -322,36 +322,22 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
               )}
             />
 
-            {/* Location */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="province"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Provincia</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Buenos Aires" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ciudad</FormLabel>
-                    <FormControl>
-                      <Input placeholder="CABA" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {/* Location - using LocationSelector */}
+            <FormField
+              control={form.control}
+              name="province"
+              render={({ field }) => (
+                <LocationSelector
+                  provinceValue={field.value || ""}
+                  cityValue={form.watch("city") || ""}
+                  neighborhoodValue={form.watch("neighborhood") || ""}
+                  onProvinceChange={field.onChange}
+                  onCityChange={(value) => form.setValue("city", value)}
+                  onNeighborhoodChange={(value) => form.setValue("neighborhood", value)}
+                  required={true}
+                />
+              )}
+            />
 
             {/* Plan Selection */}
             <FormField

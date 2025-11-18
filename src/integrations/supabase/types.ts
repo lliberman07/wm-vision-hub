@@ -3690,7 +3690,7 @@ export type Database = {
         Row: {
           applicant_type: string
           billing_cycle: string
-          city: string | null
+          city: string
           comments: string | null
           company_name: string | null
           country: string
@@ -3704,8 +3704,9 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          neighborhood: string | null
           phone: string | null
-          province: string | null
+          province: string
           rejection_reason: string | null
           requested_plan_id: string
           review_notes: string | null
@@ -3717,7 +3718,7 @@ export type Database = {
         Insert: {
           applicant_type: string
           billing_cycle?: string
-          city?: string | null
+          city: string
           comments?: string | null
           company_name?: string | null
           country?: string
@@ -3731,8 +3732,9 @@ export type Database = {
           first_name: string
           id?: string
           last_name: string
+          neighborhood?: string | null
           phone?: string | null
-          province?: string | null
+          province: string
           rejection_reason?: string | null
           requested_plan_id: string
           review_notes?: string | null
@@ -3744,7 +3746,7 @@ export type Database = {
         Update: {
           applicant_type?: string
           billing_cycle?: string
-          city?: string | null
+          city?: string
           comments?: string | null
           company_name?: string | null
           country?: string
@@ -3758,8 +3760,9 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
+          neighborhood?: string | null
           phone?: string | null
-          province?: string | null
+          province?: string
           rejection_reason?: string | null
           requested_plan_id?: string
           review_notes?: string | null
