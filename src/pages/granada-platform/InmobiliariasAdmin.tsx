@@ -14,7 +14,9 @@ import {
   CreditCard,
   Wrench,
   BarChart3,
-  UserCog
+  UserCog,
+  ClipboardCheck,
+  CheckCircle2
 } from "lucide-react";
 
 const benefits = [
@@ -37,6 +39,11 @@ const benefits = [
     icon: Shield,
     title: "Red de Proveedores",
     description: "Accedé a una red de proveedores verificados para mantenimientos. Cotizá, aprobá y seguí todo en un solo lugar."
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Valor Agregado Continuo",
+    description: "No solo gestiones propiedades con contratos activos. Administrá gastos mensuales (expensas, impuestos, servicios) y mantenimientos incluso cuando están desocupadas. Fidelizá propietarios ofreciendo servicio integral."
   }
 ];
 
@@ -136,6 +143,100 @@ export default function InmobiliariasAdmin() {
             </div>
           </div>
         </section>
+
+        {/* Diferenciador: Administración Sin Pausas */}
+        <section className="py-16 px-4 bg-gradient-to-r from-primary/10 to-secondary/10">
+          <div className="container max-w-5xl">
+            <div className="text-center mb-8">
+              <Badge className="mb-4" variant="outline">
+                Diferenciador Clave
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Administrá Propiedades Desocupadas
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Ofrecé valor agregado continuo a tus propietarios, no solo cuando hay contratos activos.
+              </p>
+            </div>
+
+            <Card className="border-primary/30">
+              <CardContent className="pt-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold flex items-center gap-2">
+                      <Home className="h-6 w-6 text-primary" />
+                      El Problema Tradicional
+                    </h3>
+                    <ul className="space-y-2 text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="text-destructive mt-1">✗</span>
+                        <span>Software que solo funciona con contratos activos</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-destructive mt-1">✗</span>
+                        <span>Propiedades vacías = pérdida de visibilidad y control</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-destructive mt-1">✗</span>
+                        <span>Gastos mensuales dispersos en planillas o emails</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-destructive mt-1">✗</span>
+                        <span>Propietarios sin reportes durante vacancia</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold flex items-center gap-2">
+                      <TrendingUp className="h-6 w-6 text-primary" />
+                      La Solución Granada
+                    </h3>
+                    <ul className="space-y-2">
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Administrá propiedades sin contrato</p>
+                          <p className="text-sm text-muted-foreground">Registrá gastos mensuales (expensas, impuestos, servicios)</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Gestioná mantenimientos y reparaciones</p>
+                          <p className="text-sm text-muted-foreground">Con aprobación de propietarios y seguimiento</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Reportes mensuales automáticos</p>
+                          <p className="text-sm text-muted-foreground">Incluso durante períodos de vacancia</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Búsqueda de inquilinos en paralelo</p>
+                          <p className="text-sm text-muted-foreground">Mientras administrás los gastos de la propiedad</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-8 p-6 bg-primary/5 rounded-lg border border-primary/20">
+                  <p className="text-center text-lg font-medium">
+                    <strong>Resultado:</strong> Fidelizás propietarios con servicio integral continuo, 
+                    no solo cuando hay alquiler activo. Te diferenciás de la competencia.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Módulos de la Plataforma */}
 
         {/* Módulos Destacados */}
         <section className="py-20 px-4 bg-muted/30">
