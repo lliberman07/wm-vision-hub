@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Building2, User, CheckCircle2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
+import { LocationSelector } from "./LocationSelector";
 
 const formSchema = z.object({
   applicant_type: z.enum(["inmobiliaria", "administrador_independiente", "propietario"]),
@@ -23,8 +24,9 @@ const formSchema = z.object({
   email: z.string().email("Email inválido"),
   phone: z.string().optional(),
   cuit_cuil: z.string().optional(),
-  province: z.string().optional(),
-  city: z.string().optional(),
+  province: z.string().min(1, "Selecciona una provincia"),
+  city: z.string().min(1, "Selecciona una ciudad"),
+  neighborhood: z.string().optional(),
   requested_plan_id: z.string().min(1, "Debe seleccionar un plan"),
   billing_cycle: z.enum(["monthly", "annual"]),
   estimated_properties: z.coerce.number().optional(),
@@ -73,6 +75,9 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
       applicant_type: "inmobiliaria",
       billing_cycle: "monthly",
       requested_plan_id: preselectedPlanId || "",
+      province: "",
+      city: "",
+      neighborhood: "",
     },
   });
 
@@ -99,6 +104,7 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
           country: "Argentina",
           province: data.province,
           city: data.city,
+          neighborhood: data.neighborhood,
           requested_plan_id: data.requested_plan_id,
           billing_cycle: data.billing_cycle,
           estimated_properties: data.estimated_properties,
