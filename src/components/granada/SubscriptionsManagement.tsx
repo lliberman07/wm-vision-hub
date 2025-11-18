@@ -51,8 +51,9 @@ interface Subscription {
   };
   plan: {
     name: string;
-    price: number;
-    currency: string;
+    price_monthly?: number;
+    price_yearly?: number;
+    currency?: string;
   };
 }
 
@@ -370,7 +371,7 @@ export function SubscriptionsManagement() {
                         <SelectContent>
                           {plans.map((plan) => (
                             <SelectItem key={plan.id} value={plan.id}>
-                              {plan.name} - {plan.currency} ${plan.price.toLocaleString()}
+                              {plan.name} - {plan.currency || 'ARS'} ${(plan.price || 0).toLocaleString()}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -495,7 +496,7 @@ export function SubscriptionsManagement() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {subscription.plan.currency} ${subscription.plan.price.toLocaleString()}/{subscription.billing_cycle === 'monthly' ? 'mes' : subscription.billing_cycle === 'quarterly' ? 'trim' : 'año'}
+                    {subscription.plan.currency || 'ARS'} ${((subscription.billing_cycle === 'monthly' ? subscription.plan.price_monthly : subscription.plan.price_yearly) || 0).toLocaleString()}/{subscription.billing_cycle === 'monthly' ? 'mes' : subscription.billing_cycle === 'quarterly' ? 'trim' : 'año'}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
