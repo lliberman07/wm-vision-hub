@@ -125,8 +125,15 @@ export default function InmobiliariasAdmin() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {benefits.map((benefit) => (
-                <Card key={benefit.title} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              {benefits.map((benefit, index) => (
+                <Card 
+                  key={benefit.title} 
+                  className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${
+                    index === benefits.length - 1 && benefits.length % 2 !== 0 
+                      ? 'md:col-span-2 md:max-w-2xl md:mx-auto' 
+                      : ''
+                  }`}
+                >
                   <CardHeader>
                     <div className="mb-4 p-3 bg-primary/10 rounded-lg w-fit">
                       <benefit.icon className="h-8 w-8 text-primary" />
