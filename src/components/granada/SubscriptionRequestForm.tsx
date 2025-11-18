@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -15,6 +15,7 @@ import { Building2, User, CheckCircle2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { LocationSelector } from "./LocationSelector";
+import { useSearchParams } from "react-router-dom";
 
 const formSchema = z.object({
   applicant_type: z.enum(["inmobiliaria", "administrador_independiente", "propietario"]),
@@ -54,6 +55,7 @@ interface SubscriptionRequestFormProps {
 export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: SubscriptionRequestFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchParams] = useSearchParams();
 
   const { data: plans, isLoading: plansLoading } = useQuery({
     queryKey: ["subscription-plans"],
@@ -86,6 +88,20 @@ export function SubscriptionRequestForm({ preselectedPlanId, onSuccess }: Subscr
   const billingCycle = form.watch("billing_cycle");
 
   const selectedPlan = plans?.find(p => p.id === selectedPlanId);
+
+  // Pre-seleccionar plan desde query parameter
+  useEffect(() => {
+    const planSlug = searchParams.get('plan');
+    if (planSlug && plans) {
+      const matchingPlan = plans.find(p => 
+        p.name.toLowerCase() === planSlug.toLowerCase() ||
+        p.name.toLowerCase().includes(planSlug.toLowerCase())
+      );
+      if (matchingPlan && !form.getValues('requested_plan_id')) {
+        form.setValue('requested_plan_id', matchingPlan.id);
+      }
+    }
+  }, [searchParams, plans, form]);
 
   const onSubmit = async (data: FormData) => {
     try {
