@@ -112,17 +112,17 @@ export function PaymentsManagement() {
       if (subsError) throw subsError;
       setSubscriptions(subsData as any || []);
 
-      // Fetch payments
+      // Fetch payments/invoices
       const { data: paymentsData, error: paymentsError } = await supabase
-        .from('subscription_payments' as any)
+        .from('subscription_invoices' as any)
         .select(`
           id,
           subscription_id,
-          amount,
+          amount_due,
           currency,
-          payment_date,
+          due_date,
           payment_method,
-          proof_url,
+          paid_at,
           notes,
           status,
           created_at,
@@ -135,10 +135,26 @@ export function PaymentsManagement() {
             )
           )
         `)
-        .order('payment_date', { ascending: false });
+        .order('due_date', { ascending: false });
 
       if (paymentsError) throw paymentsError;
-      setPayments(paymentsData as any || []);
+      
+      // Map to Payment interface
+      const mappedPayments = (paymentsData as any || []).map((invoice: any) => ({
+        id: invoice.id,
+        subscription_id: invoice.subscription_id,
+        amount: invoice.amount_due,
+        currency: invoice.currency || 'ARS',
+        payment_date: invoice.paid_at || invoice.due_date,
+        payment_method: invoice.payment_method || 'pendiente',
+        proof_url: null,
+        notes: invoice.notes,
+        status: invoice.status,
+        created_at: invoice.created_at,
+        subscription: invoice.subscription
+      }));
+      
+      setPayments(mappedPayments);
     } catch (error: any) {
       console.error('Error fetching data:', error);
       toast({
