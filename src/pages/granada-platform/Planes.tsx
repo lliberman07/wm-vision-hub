@@ -256,7 +256,7 @@ export default function Planes() {
                       variant={plan.highlighted ? "default" : "outline"}
                       size="lg"
                     >
-                      <Link to="/granada-platform/contacto">{plan.cta}</Link>
+                      <Link to={`/subscription-request?plan=${plan.slug}`}>{plan.cta}</Link>
                     </Button>
                   </CardContent>
                 </Card>
