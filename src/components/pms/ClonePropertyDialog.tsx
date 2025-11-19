@@ -159,13 +159,13 @@ export const ClonePropertyDialog = ({ open, onOpenChange, property, onSuccess }:
         base_property_code: baseCode,
         is_clone: true,
         parent_property_id: property.id,
-        status: 'available',
+        status: 'inactive' as const,
         photos: originalProperty.photos || []
       };
       
       const { data: newProperty, error: propertyError } = await supabase
         .from('pms_properties')
-        .insert(clonePayload)
+        .insert([clonePayload])
         .select()
         .single();
       
