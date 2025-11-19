@@ -74,3 +74,6 @@ verify_jwt = true
 
 [functions.auto-create-inquilino-user]
 verify_jwt = true
+
+[functions.create-granada-platform-user]
+verify_jwt = true

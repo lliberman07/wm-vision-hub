@@ -88,43 +88,17 @@ export function PlatformUsersManagement() {
     setSubmitting(true);
 
     try {
-      // Create auth user
-      const tempPassword = Math.random().toString(36).slice(-12) + 'Aa1!';
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          role: formData.role,
-        },
-      });
-
-      if (authError) throw authError;
-
-      // Create platform user record
-      const { error: platformUserError } = await supabase
-        .from('granada_platform_users')
-        .insert({
-          user_id: authData.user.id,
-          email: formData.email,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          role: formData.role,
-          is_active: true,
-        });
-
-      if (platformUserError) throw platformUserError;
-
-      // Send welcome email
-      await supabase.functions.invoke('send-welcome-email', {
+      // Llamar al edge function para crear el usuario
+      const { data, error } = await supabase.functions.invoke('create-granada-platform-user', {
         body: {
           email: formData.email,
           first_name: formData.first_name,
-          password: tempPassword,
+          last_name: formData.last_name,
+          role: formData.role,
         },
       });
+
+      if (error) throw error;
 
       toast({
         title: 'Usuario creado',
