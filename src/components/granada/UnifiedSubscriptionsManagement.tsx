@@ -128,7 +128,14 @@ export function UnifiedSubscriptionsManagement() {
   
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newSubscription, setNewSubscription] = useState({
+  const [newSubscription, setNewSubscription] = useState<{
+    tenant_id: string;
+    plan_id: string;
+    billing_cycle: 'monthly' | 'yearly';
+    start_date: string;
+    trial_days: number;
+    auto_renew: boolean;
+  }>({
     tenant_id: '',
     plan_id: '',
     billing_cycle: 'monthly',
@@ -599,7 +606,7 @@ export function UnifiedSubscriptionsManagement() {
                 <Label>Ciclo de facturación</Label>
                 <Select
                   value={newSubscription.billing_cycle}
-                  onValueChange={(value) =>
+                  onValueChange={(value: 'monthly' | 'yearly') =>
                     setNewSubscription({ ...newSubscription, billing_cycle: value })
                   }
                 >
