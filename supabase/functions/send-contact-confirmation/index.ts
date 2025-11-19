@@ -22,7 +22,7 @@ interface ContactConfirmationRequest {
 const brandingConfig = {
   wm: {
     fromName: 'WM Management',
-    fromEmail: 'noreply@wmglobal.co',
+    fromEmail: 'noreply@granadaplatform.com',
     websiteUrl: 'https://wmglobal.co',
     supportEmail: 'contacto@wmglobal.co',
   },

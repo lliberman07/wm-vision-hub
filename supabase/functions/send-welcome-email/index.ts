@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
     const template = templates[platform];
 
     const emailResponse = await resend.emails.send({
-      from: "WM Real Estate <onboarding@resend.dev>",
+      from: "Granada Platform <noreply@granadaplatform.com>",
       to: [email],
       subject: template.subject,
       html: `

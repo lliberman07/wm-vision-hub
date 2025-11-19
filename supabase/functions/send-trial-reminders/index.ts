@@ -71,7 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         await resend.emails.send({
-          from: "WM Property Management <onboarding@resend.dev>",
+          from: "Granada Platform <notifications@granadaplatform.com>",
           to: [user.email],
           subject: `⏰ Tu período de prueba finaliza en ${daysRemaining} días - WM PMS`,
           html: `... (email HTML content) ...`

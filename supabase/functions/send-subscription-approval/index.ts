@@ -37,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
     }: ApprovalEmailRequest = await req.json();
 
     const emailResponse = await resend.emails.send({
-      from: "WM Property Management <onboarding@resend.dev>",
+      from: "Granada Platform <noreply@granadaplatform.com>",
       to: [email],
       subject: "¡Tu suscripción ha sido aprobada! - WM PMS",
       html: `
