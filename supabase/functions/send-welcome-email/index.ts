@@ -13,6 +13,8 @@ interface WelcomeEmailRequest {
   email: string;
   first_name: string;
   password: string;
+  is_reset?: boolean;
+  platform?: 'pms' | 'granada';
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,37 +23,74 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, first_name, password }: WelcomeEmailRequest = await req.json();
+    const { email, first_name, password, is_reset = false, platform = 'pms' }: WelcomeEmailRequest = await req.json();
+
+    const templates = {
+      pms: {
+        subject: is_reset ? "Contraseña restablecida - Sistema PMS WM Real Estate" : "¡Bienvenido al Sistema PMS de WM Real Estate!",
+        heading: is_reset ? `Contraseña restablecida, ${first_name}` : `¡Bienvenido al PMS, ${first_name}!`,
+        intro: is_reset 
+          ? "Tu contraseña del Sistema PMS ha sido restablecida exitosamente." 
+          : "Tu solicitud de acceso al Sistema de Gestión de Propiedades (PMS) ha sido aprobada.",
+        loginUrl: "https://wm-real-estate.lovable.app/pms/login"
+      },
+      granada: {
+        subject: is_reset ? "Contraseña restablecida - Granada Platform" : "¡Bienvenido a Granada Platform!",
+        heading: is_reset ? `Contraseña restablecida, ${first_name}` : `¡Bienvenido a Granada Platform, ${first_name}!`,
+        intro: is_reset
+          ? "Tu contraseña de Granada Platform ha sido restablecida exitosamente."
+          : "Tu cuenta de administrador en Granada Platform ha sido creada exitosamente.",
+        loginUrl: "https://wm-real-estate.lovable.app/granada-admin/login"
+      }
+    };
+
+    const template = templates[platform];
 
     const emailResponse = await resend.emails.send({
       from: "WM Real Estate <onboarding@resend.dev>",
       to: [email],
-      subject: "¡Bienvenido al Sistema PMS de WM Real Estate!",
+      subject: template.subject,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #2563eb;">¡Bienvenido al PMS, ${first_name}!</h1>
-          
-          <p>Tu solicitud de acceso al Sistema de Gestión de Propiedades (PMS) ha sido aprobada.</p>
-          
-          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="margin-top: 0; color: #1f2937;">Tus Credenciales de Acceso</h2>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Contraseña Temporal:</strong> <code style="background-color: #fff; padding: 4px 8px; border-radius: 4px;">${password}</code></p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .credentials { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #4CAF50; border-radius: 5px; }
+            .button { display: inline-block; padding: 12px 30px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${template.heading}</h1>
+            </div>
+            <div class="content">
+              <p>${template.intro}</p>
+              <div class="credentials">
+                <h3>Tus credenciales de acceso:</h3>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Contraseña temporal:</strong> ${password}</p>
+              </div>
+              <p><strong>⚠️ Importante:</strong> Por razones de seguridad, te recomendamos cambiar esta contraseña temporal después de tu primer inicio de sesión.</p>
+              <div style="text-align: center;">
+                <a href="${template.loginUrl}" class="button">Iniciar Sesión</a>
+              </div>
+              <p>Si tienes alguna duda o problema para acceder, no dudes en contactarnos.</p>
+              <p>Saludos cordiales,<br><strong>El equipo de WM Real Estate</strong></p>
+            </div>
+            <div class="footer">
+              <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+            </div>
           </div>
-          
-          <p><strong>⚠️ Importante:</strong> Por tu seguridad, te recomendamos cambiar esta contraseña temporal en tu primer inicio de sesión.</p>
-          
-          <p>Para acceder al sistema:</p>
-          <ol>
-            <li>Visita <a href="https://wm-real-estate.lovable.app/pms/login">https://wm-real-estate.lovable.app/pms/login</a></li>
-            <li>Ingresa con tu email y contraseña temporal</li>
-            <li>Cambia tu contraseña desde el perfil</li>
-          </ol>
-          
-          <p>Si tienes alguna pregunta o problema para acceder, no dudes en contactarnos.</p>
-          
-          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo WM Real Estate</strong></p>
-        </div>
+        </body>
+        </html>
       `,
     });
 

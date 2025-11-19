@@ -45,13 +45,18 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // Send email with new password (reuse send-welcome-email)
+    // Detect if it's a Granada user
+    const isGranadaUser = userData.user.user_metadata?.role && 
+                          (userData.user.user_metadata.role.includes('GRANADA'));
+
+    // Send email with new password
     const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
       body: {
         email,
         first_name: userData.user.user_metadata?.first_name || 'Usuario',
         password: tempPassword,
-        is_reset: true
+        is_reset: true,
+        platform: isGranadaUser ? 'granada' : 'pms'
       }
     });
 
