@@ -62,8 +62,9 @@ interface Subscription {
   };
   plan: {
     name: string;
-    price: number;
-    currency: string;
+    price_monthly?: number;
+    price_yearly?: number;
+    currency?: string;
   };
 }
 
@@ -306,19 +307,19 @@ export function PaymentsManagement() {
                       value={formData.subscription_id}
                       onValueChange={(value) => {
                         const sub = subscriptions.find(s => s.id === value);
+                        const price = sub?.plan.price_monthly || sub?.plan.price_yearly || 0;
                         setFormData({ 
                           ...formData, 
                           subscription_id: value,
-                          amount: sub?.plan.price.toString() || '',
-                          currency: sub?.plan.currency || 'ARS',
+                          amount: price.toString(),
+                          currency: 'ARS',
                         });
                       }}
-                      required
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar suscripción" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-50 bg-background">
                         {subscriptions.map((sub) => (
                           <SelectItem key={sub.id} value={sub.id}>
                             {sub.tenant.name} - {sub.plan.name}
