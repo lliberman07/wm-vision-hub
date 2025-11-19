@@ -26,6 +26,7 @@ import {
   FileCheck,
   MessageSquare,
   Home,
+  Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -170,6 +171,11 @@ export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
                   <DropdownMenuItem onClick={() => navigate('/pms')}>
                     <Home className="h-4 w-4 mr-2" />
                     Acceso al PMS
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/granada-admin/change-password')}>
+                    <Lock className="h-4 w-4 mr-2" />
+                    Cambiar Contraseña
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>

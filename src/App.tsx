@@ -21,6 +21,7 @@ import Planes from "./pages/granada-platform/Planes";
 import Proveedores from "./pages/granada-platform/Proveedores";
 import Contacto from "./pages/granada-platform/Contacto";
 import GranadaAdminLogin from "./pages/GranadaAdminLogin";
+import GranadaChangePassword from "./pages/GranadaChangePassword";
 import PartnersDirectory from "./pages/PartnersDirectory";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -95,6 +96,7 @@ const App = () => (
             <Route path="/granada/contact" element={<GranadaContact />} />
             <Route path="/partners-directory" element={<PartnersDirectory />} />
               <Route path="/granada-admin/login" element={<GranadaAdminLogin />} />
+              <Route path="/granada-admin/change-password" element={<GranadaProtectedRoute><GranadaChangePassword /></GranadaProtectedRoute>} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/services/property-management" element={<PropertyManagement />} />
