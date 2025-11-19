@@ -202,14 +202,38 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       if (authError || !authData.user) {
-        console.error("Error creating auth user:", authError);
-        // Rollback tenant
-        await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
-        throw new Error("Failed to create user account: " + authError?.message);
+        // If email already exists, try to reuse existing user instead of failing
+        const authErr: any = authError;
+        if (authErr && authErr.code === 'email_exists') {
+          console.warn('Email already registered in auth, reusing existing user');
+          const { data: existingByEmail, error: lookupError } = await supabaseAdmin.auth.admin.getUserByEmail(request.email);
+          if (lookupError) {
+            console.error('Error retrieving existing user after email_exists:', lookupError);
+            // Rollback tenant if we cannot safely link the user
+            await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
+            throw new Error('Failed to reuse existing user account: ' + lookupError.message);
+          }
+          if (!existingByEmail?.user) {
+            await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
+            throw new Error('Failed to reuse existing user account: user not found');
+          }
+
+          const existingUserFromCreate = existingByEmail.user;
+          authUserId = existingUserFromCreate.id;
+          isNewUser = false;
+          console.log('Reused existing auth user after email_exists:', authUserId);
+        } else {
+          console.error("Error creating auth user:", authError);
+          // Rollback tenant
+          await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
+          throw new Error("Failed to create user account: " + authError?.message);
+        }
       }
 
-      authUserId = authData.user.id;
-      console.log("New auth user created:", authUserId);
+      if (isNewUser && authData?.user) {
+        authUserId = authData.user.id;
+        console.log("New auth user created:", authUserId);
+      }
     }
 
     // 4. Create or update CLIENT_ADMIN record
