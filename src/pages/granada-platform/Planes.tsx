@@ -15,6 +15,7 @@ import {
 const plans = [
   {
     name: "Básico",
+    color: "text-[hsl(var(--granada-red))]",
     slug: "basic",
     description: "Plan ideal para pequeños propietarios o administradores individuales",
     priceMonthly: 15000,
@@ -39,6 +40,7 @@ const plans = [
   },
   {
     name: "Profesional",
+    color: "text-[hsl(var(--granada-navy))]",
     slug: "professional",
     description: "Para inmobiliarias o administradoras medianas con múltiples propiedades",
     priceMonthly: 50000,
@@ -65,6 +67,7 @@ const plans = [
   },
   {
     name: "Enterprise",
+    color: "text-[hsl(var(--granada-gold))]",
     slug: "enterprise",
     description: "Solución completa para grandes inmobiliarias y corporativos",
     priceMonthly: 120000,
@@ -192,13 +195,13 @@ export default function Planes() {
                 return (
                 <Card 
                   key={plan.name} 
-                  className="hover:shadow-xl transition-all duration-300 hover:scale-105 border-2"
+                  className="hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 flex flex-col h-full"
                 >
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
+                    <CardTitle className={`text-2xl mb-2 ${plan.color}`}>{plan.name}</CardTitle>
                     <div className="mt-2">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold">
+                        <span className={`text-3xl font-bold ${plan.color}`}>
                           ${displayPrice.toLocaleString('es-AR')}
                         </span>
                         <span className="text-sm text-muted-foreground">
@@ -215,8 +218,8 @@ export default function Planes() {
                       {plan.description}
                     </p>
                   </CardHeader>
-                  <CardContent className="space-y-4 pt-0">
-                    <ul className="space-y-2">
+                  <CardContent className="space-y-4 pt-0 flex-1 flex flex-col">
+                    <ul className="space-y-2 flex-1">
                       {plan.features.map((feature, index) => (
                         <li key={index} className="flex items-start gap-2">
                           {feature.included ? (
@@ -232,7 +235,7 @@ export default function Planes() {
                     </ul>
                     <Button 
                       asChild 
-                      className="w-full" 
+                      className="w-full mt-auto" 
                       variant="outline"
                       size="lg"
                     >
