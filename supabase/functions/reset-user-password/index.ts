@@ -54,14 +54,19 @@ serve(async (req) => {
 
     const isGranadaUser = !!granadaUser;
 
+    // Get frontend URL from environment or construct from Supabase URL
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const projectId = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || '';
+    const frontendUrl = `https://${projectId}.lovableproject.com`;
+    
     // Generate password reset link
     const { data: resetData, error: resetLinkError } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
       options: {
         redirectTo: isGranadaUser 
-          ? `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com')}/granada-admin/reset-password`
-          : `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com')}/pms/reset-password`
+          ? `${frontendUrl}/granada-admin/reset-password`
+          : `${frontendUrl}/pms/reset-password`
       }
     });
 
