@@ -88,10 +88,20 @@ export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
     } catch (error) {
       console.warn('Error inesperado al cerrar sesión:', error);
     } finally {
-      // SIEMPRE limpiar y redirigir, incluso si signOut falla
+      // Limpiar tokens locales de Supabase por si el servidor devuelve session_not_found
+      try {
+        for (const key of Object.keys(localStorage)) {
+          if (key.startsWith('sb-')) {
+            localStorage.removeItem(key);
+          }
+        }
+        localStorage.removeItem('supabase.auth.token');
+      } catch (storageError) {
+        console.warn('Error limpiando storage de Supabase:', storageError);
+      }
+
+      // Redirigir y forzar recarga
       navigate('/pms/login', { replace: true });
-      
-      // Forzar recarga para limpiar todo el estado
       setTimeout(() => {
         window.location.href = '/pms/login';
       }, 100);
