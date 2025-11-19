@@ -14,7 +14,7 @@ const ctaCards = [
   {
     title: "Soy Propietario",
     description: "Dejá que profesionales gestionen tus propiedades con total transparencia",
-    buttonText: "Quiero que mis propiedades se gestionen en Granada",
+    buttonText: "Quiero Gestionar con Granada",
     buttonLink: "/granada-platform/propietarios",
     icon: User,
   },
