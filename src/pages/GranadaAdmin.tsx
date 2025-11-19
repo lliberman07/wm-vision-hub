@@ -9,13 +9,12 @@ import { GranadaAdminLayout } from '@/components/granada/GranadaAdminLayout';
 import { ClientsManagement } from '@/components/granada/ClientsManagement';
 import { ClientUsersManagement } from '@/components/granada/ClientUsersManagement';
 import { PlatformUsersManagement } from '@/components/granada/PlatformUsersManagement';
-import { SubscriptionsManagement } from '@/components/granada/SubscriptionsManagement';
+import { UnifiedSubscriptionsManagement } from '@/components/granada/UnifiedSubscriptionsManagement';
 import { PaymentsManagement } from '@/components/granada/PaymentsManagement';
 import { PaymentReceiptsVerification } from '@/components/granada/PaymentReceiptsVerification';
 import { SubscriptionPlansManagement } from '@/components/granada/SubscriptionPlansManagement';
 import { GranadaSubscriptionAnalyticsDashboard } from '@/components/granada/GranadaSubscriptionAnalyticsDashboard';
 import { GranadaContactsManagement } from '@/components/granada/GranadaContactsManagement';
-import { SubscriptionRequests } from '@/components/granada/SubscriptionRequests';
 import { SubscriptionRequestsManagement } from '@/components/granada/SubscriptionRequestsManagement';
 import {
   Building2,
@@ -62,13 +61,6 @@ function GranadaDashboard() {
       iconColor: granadaColors[2],
     },
     {
-      title: 'Cambios de Plan y Trials',
-      description: 'Gestionar upgrades, downgrades y suscripciones en trial',
-      icon: ArrowLeftRight,
-      path: '/granada-admin/subscription-changes',
-      iconColor: granadaColors[3],
-    },
-    {
       title: 'Clientes Suscriptores',
       description: 'Gestionar inmobiliarias, administradores y propietarios',
       icon: Building2,
@@ -98,7 +90,7 @@ function GranadaDashboard() {
     },
     {
       title: 'Suscripciones',
-      description: 'Administrar suscripciones de clientes',
+      description: 'Gestión integral de suscripciones, trials y cambios',
       icon: CreditCard,
       path: '/granada-admin/subscriptions',
       iconColor: granadaColors[3],
