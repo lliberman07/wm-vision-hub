@@ -71,7 +71,26 @@ export function SubscriptionRequestsManagement() {
       const { data, error } = await supabase
         .from("subscription_requests")
         .select(`
-          *,
+          id,
+          applicant_type,
+          company_name,
+          first_name,
+          last_name,
+          email,
+          phone,
+          cuit_cuil,
+          province,
+          city,
+          requested_plan_id,
+          billing_cycle,
+          estimated_properties,
+          current_system,
+          comments,
+          status,
+          created_at,
+          reviewed_at,
+          review_notes,
+          rejection_reason,
           plan:subscription_plans!subscription_requests_requested_plan_id_fkey(id, name, price_monthly, price_yearly)
         `)
         .order("created_at", { ascending: false });
@@ -79,7 +98,7 @@ export function SubscriptionRequestsManagement() {
       if (error) throw error;
       return data as any as SubscriptionRequest[];
     },
-    staleTime: 30000, // Cache por 30 segundos
+    staleTime: 30000,
   });
 
   // Timeout warning después de 3 segundos
