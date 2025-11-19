@@ -66,7 +66,7 @@ const menuItems = [
     path: '/client-admin/reports',
   },
   {
-    title: 'Configuración',
+    title: 'Datos de la Organización',
     icon: Settings,
     path: '/client-admin/settings',
   },
