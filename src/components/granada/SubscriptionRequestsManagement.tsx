@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Clock, Building2, User, Mail, Phone } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Clock, Building2, User, Mail, Phone, AlertTriangle, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -61,10 +61,11 @@ export function SubscriptionRequestsManagement() {
   const [activationType, setActivationType] = useState<'trial' | 'direct' | 'scheduled'>("direct");
   const [trialDays, setTrialDays] = useState("14");
   const [activationDate, setActivationDate] = useState("");
+  const [showLoadingWarning, setShowLoadingWarning] = useState(false);
   
   const queryClient = useQueryClient();
 
-  const { data: requests, isLoading } = useQuery({
+  const { data: requests, isLoading, isError, error } = useQuery({
     queryKey: ["subscription-requests"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -78,7 +79,20 @@ export function SubscriptionRequestsManagement() {
       if (error) throw error;
       return data as any as SubscriptionRequest[];
     },
+    staleTime: 30000, // Cache por 30 segundos
   });
+
+  // Timeout warning después de 3 segundos
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        setShowLoadingWarning(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowLoadingWarning(false);
+    }
+  }, [isLoading]);
 
   const processRequestMutation = useMutation({
     mutationFn: async (params: {
@@ -170,10 +184,80 @@ export function SubscriptionRequestsManagement() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-96 w-full" />
+      <div className="space-y-6">
+        {/* Loading Header */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <div>
+                <CardTitle>Cargando solicitudes...</CardTitle>
+                {showLoadingWarning && (
+                  <CardDescription className="flex items-center gap-2 text-amber-600 mt-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    La carga está tomando más tiempo de lo esperado. Verificando datos...
+                  </CardDescription>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Summary Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-8 w-12" />
+                  </div>
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Table Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-96 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-12 flex-1" />
+                  <Skeleton className="h-12 w-32" />
+                  <Skeleton className="h-12 w-24" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-12">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive" />
+            <h3 className="text-lg font-semibold mb-2">Error al cargar solicitudes</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {error instanceof Error ? error.message : 'Error desconocido'}
+            </p>
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["subscription-requests"] })}>
+              Reintentar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
