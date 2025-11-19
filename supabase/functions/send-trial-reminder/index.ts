@@ -77,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         // Send reminder email
         const emailResponse = await resend.emails.send({
-          from: "Granada PMS <onboarding@resend.dev>",
+          from: "Granada Platform <notifications@granadaplatform.com>",
           to: [adminEmail],
           subject: "Su período de prueba está por vencer - Granada PMS",
           html: `

@@ -139,7 +139,7 @@ serve(async (req) => {
 
         try {
           const { data: emailResult, error: emailError } = await resend.emails.send({
-            from: 'PMS Alertas <notifications@resend.dev>',
+            from: 'Granada Alertas <notifications@granadaplatform.com>',
             to: [staffEmail],
             subject,
             html: htmlBody,

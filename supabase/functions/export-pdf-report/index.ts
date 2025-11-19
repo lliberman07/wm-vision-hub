@@ -434,7 +434,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email with PDF report
     try {
       const emailResponse = await resend.emails.send({
-        from: 'WM Management <onboarding@resend.dev>',
+        from: 'Granada Reports <reports@granadaplatform.com>',
         to: [email],
         subject: language === 'es' 
           ? `Reporte de Simulación de Inversión - ${referenceNumber}`

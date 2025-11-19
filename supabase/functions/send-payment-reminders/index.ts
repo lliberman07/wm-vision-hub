@@ -161,7 +161,7 @@ serve(async (req) => {
         // 8. Enviar email
         try {
           const { data: emailResult, error: emailError } = await resend.emails.send({
-            from: 'PMS Notificaciones <notifications@resend.dev>',
+            from: 'Granada Notificaciones <notifications@granadaplatform.com>',
             to: [tenant.email],
             subject,
             html: htmlBody,

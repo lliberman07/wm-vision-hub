@@ -244,7 +244,7 @@ serve(async (req: Request) => {
     if (send_email) {
       try {
         await resend.emails.send({
-          from: "WM Property Management <onboarding@resend.dev>",
+          from: "Granada Reports <reports@granadaplatform.com>",
           to: [owner.email],
           subject: `Informe Mensual - ${periodText} - ${contract.pms_properties.code}`,
           html: emailHtml,

@@ -253,7 +253,7 @@ const handler = async (req: Request): Promise<Response> => {
             `;
 
           await resend.emails.send({
-            from: "WM Real Estate <noreply@wmglobal.co>",
+            from: "Granada Support <support@granadaplatform.com>",
             to: [owner.email],
             subject: emailSubject,
             html: emailHtml,
@@ -421,7 +421,7 @@ const handler = async (req: Request): Promise<Response> => {
           `;
 
         await resend.emails.send({
-          from: "WM Real Estate <noreply@wmglobal.co>",
+          from: "Granada Support <support@granadaplatform.com>",
           to: [tenant.email],
           subject: emailSubject,
           html: emailHtml,
@@ -444,7 +444,7 @@ const handler = async (req: Request): Promise<Response> => {
         const ownersList = owners?.map(op => op.owner?.full_name).filter(Boolean).join(", ") || "N/A";
 
         await resend.emails.send({
-          from: "WM Real Estate <noreply@wmglobal.co>",
+          from: "Granada Support <support@granadaplatform.com>",
           to: [tenantUser.users.email],
           subject: `📊 Registro: Contrato ${contractData.contract_number} Activado`,
           html: `
@@ -502,7 +502,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         await resend.emails.send({
-          from: "WM Real Estate <noreply@wmglobal.co>",
+          from: "Granada Support <support@granadaplatform.com>",
           to: [superadmin.users.email],
           subject: `🔔 Sistema: Contrato ${contractData.contract_number} Activado`,
           html: `

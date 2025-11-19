@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     const roleName = roleNames[role] || role;
 
     const emailResponse = await resend.emails.send({
-      from: "WM Real Estate <onboarding@resend.dev>",
+      from: "Granada Platform <noreply@granadaplatform.com>",
       to: [email],
       subject: language === 'en' ? "Your PMS Access Has Been Approved!" : "¡Tu acceso al PMS fue aprobado!",
       html: language === 'en' ? `

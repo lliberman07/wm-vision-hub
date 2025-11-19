@@ -141,7 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
         const emailHtml = generateEmailHTML(receiptData, recipient, formatCurrency, formatDate);
 
         const emailResponse = await resend.emails.send({
-          from: "WM Property Management <onboarding@resend.dev>",
+          from: "Granada Reports <reports@granadaplatform.com>",
           to: [recipient.email],
           subject: emailSubject,
           html: emailHtml,

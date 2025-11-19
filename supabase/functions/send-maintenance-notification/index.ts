@@ -51,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Email to staff when property has active contract
     if (action === 'created_with_contract' && recipient_email) {
       const emailResponse = await resend.emails.send({
-        from: "WM Propiedades <onboarding@resend.dev>",
+        from: "Granada Mantenimiento <notifications@granadaplatform.com>",
         to: [recipient_email],
         subject: `🔧 Nueva Solicitud de Mantenimiento - ${maintenance_title}`,
         html: `
@@ -83,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Email to owners when property has NO active contract
     if (action === 'created_without_contract' && recipient_email) {
       const emailResponse = await resend.emails.send({
-        from: "WM Propiedades <onboarding@resend.dev>",
+        from: "Granada Mantenimiento <notifications@granadaplatform.com>",
         to: [recipient_email],
         subject: `🏠 Solicitud de Mantenimiento para su Propiedad - ${maintenance_title}`,
         html: `
