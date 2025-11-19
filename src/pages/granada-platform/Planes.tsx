@@ -108,20 +108,20 @@ const faqs = [
     answer: "Sí, podés upgradear o downgradear tu plan cuando quieras. Los cambios se aplican en el siguiente período de facturación."
   },
   {
-    question: "¿Qué pasa cuando termine mi prueba gratuita?",
-    answer: "Al finalizar los 15 días, podés elegir el plan que más se adapte a tus necesidades. No te cobramos automáticamente sin tu confirmación."
+    question: "¿Qué incluye cada plan?",
+    answer: "Plan Básico: ideal para pequeños propietarios con hasta 1 propiedad y 2 contratos. Plan Profesional: para inmobiliarias medianas con hasta 5 propiedades, 10 contratos y funcionalidades avanzadas. Plan Enterprise: solución completa con hasta 15 propiedades, 30 contratos y soporte prioritario 24/7."
   },
   {
     question: "¿Los precios incluyen IVA?",
-    answer: "Los precios mostrados son más IVA. Se factura mensualmente con todos los comprobantes fiscales correspondientes."
+    answer: "No, los precios mostrados no incluyen IVA. Se factura mensualmente con todos los comprobantes fiscales correspondientes."
   },
   {
-    question: "¿Qué pasa si supero el límite de propiedades?",
-    answer: "Te avisamos cuando te acerques al límite. Podés upgradear tu plan en cualquier momento para seguir agregando propiedades sin interrupciones."
+    question: "¿Qué pasa si supero el límite de propiedades o contratos?",
+    answer: "Te avisamos cuando te acerques al límite. Podés upgradear tu plan en cualquier momento para seguir agregando propiedades y contratos sin interrupciones."
   },
   {
-    question: "¿Hay costos de implementación?",
-    answer: "No. La configuración inicial y la carga de datos están incluidas. Te acompañamos en el proceso de migración sin costos adicionales."
+    question: "¿Cómo funciona el soporte técnico?",
+    answer: "Plan Básico: soporte por email. Plan Profesional: soporte por email con prioridad. Plan Enterprise: soporte prioritario 24/7 con atención personalizada."
   }
 ];
 
