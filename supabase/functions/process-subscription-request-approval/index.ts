@@ -161,9 +161,12 @@ const handler = async (req: Request): Promise<Response> => {
     let tempPassword = '';
     let isNewUser = false;
 
-    // First, check if user already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users.find(u => u.email === request.email);
+    // First, check if user already exists (reliable by email)
+    const { data: existingUserData, error: existingUserLookupError } = await supabaseAdmin.auth.admin.getUserByEmail(request.email);
+    if (existingUserLookupError && existingUserLookupError.status !== 404) {
+      console.error("Error looking up existing user by email:", existingUserLookupError);
+    }
+    const existingUser = existingUserData?.user;
 
     if (existingUser) {
       console.log("User already exists, using existing user:", existingUser.id);
@@ -287,8 +290,10 @@ const handler = async (req: Request): Promise<Response> => {
     if (subscriptionError || !newSubscription) {
       console.error("Error creating subscription:", subscriptionError);
       // Rollback
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      await supabaseAdmin.from("pms_client_users").delete().eq("user_id", authData.user.id);
+      if (isNewUser && authUserId) {
+        await supabaseAdmin.auth.admin.deleteUser(authUserId);
+      }
+      await supabaseAdmin.from("pms_client_users").delete().eq("user_id", authUserId);
       await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
       throw new Error("Failed to create subscription: " + subscriptionError?.message);
     }
