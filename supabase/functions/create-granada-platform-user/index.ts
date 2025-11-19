@@ -39,66 +39,132 @@ const handler = async (req: Request): Promise<Response> => {
     // Generar contraseña temporal segura
     const tempPassword = crypto.randomUUID().substring(0, 12) + 'Aa1!';
 
-    // Crear usuario en auth.users
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: {
-        first_name,
-        last_name,
-        role,
-      }
-    });
-
-    if (authError) {
-      console.error("Error creating auth user:", authError);
-      throw new Error('No se pudo crear la cuenta de usuario: ' + authError.message);
-    }
-
-    console.log("Auth user created successfully:", authData.user.id);
-
-    // Crear registro en granada_platform_users
-    const { error: platformUserError } = await supabaseAdmin
-      .from('granada_platform_users')
-      .insert({
-        user_id: authData.user.id,
-        email: email,
-        first_name: first_name,
-        last_name: last_name,
-        role: role,
-        is_active: true,
+    // Primero verificar si el usuario ya existe en auth.users
+    const { data: { users: existingUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    const existingUser = existingUsers?.find(u => u.email === email);
+    let userId: string;
+    let isNewUser = false;
+    
+    if (existingUser) {
+      console.log("User already exists in auth.users:", existingUser.id);
+      userId = existingUser.id;
+      
+      // Actualizar metadata del usuario existente
+      await supabaseAdmin.auth.admin.updateUserById(userId, {
+        user_metadata: {
+          first_name,
+          last_name,
+          role,
+        }
+      });
+      
+      console.log("Updated existing user metadata");
+    } else {
+      // Crear nuevo usuario en auth.users
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          first_name,
+          last_name,
+          role,
+        }
       });
 
-    if (platformUserError) {
-      console.error("Error creating platform user record:", platformUserError);
-      throw new Error('No se pudo crear el registro de usuario: ' + platformUserError.message);
+      if (authError) {
+        console.error("Error creating auth user:", authError);
+        throw new Error('No se pudo crear la cuenta de usuario: ' + authError.message);
+      }
+
+      userId = authData.user.id;
+      isNewUser = true;
+      console.log("Auth user created successfully:", userId);
     }
 
-    console.log("Platform user record created successfully");
+    // Verificar si ya existe en granada_platform_users
+    const { data: existingPlatformUser } = await supabaseAdmin
+      .from('granada_platform_users')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
 
-    // Enviar email de bienvenida con credenciales
-    const { error: emailError } = await supabaseAdmin.functions.invoke('send-welcome-email', {
-      body: {
-        email: email,
-        first_name: first_name,
-        password: tempPassword,
-        platform: 'granada'
-      },
-    });
+    if (existingPlatformUser) {
+      // Si ya existe, actualizar el registro
+      const { error: updateError } = await supabaseAdmin
+        .from('granada_platform_users')
+        .update({
+          first_name: first_name,
+          last_name: last_name,
+          role: role,
+          is_active: true,
+        })
+        .eq('user_id', userId);
 
-    if (emailError) {
-      console.error("Error sending welcome email:", emailError);
-      // No lanzar error aquí, el usuario ya fue creado exitosamente
+      if (updateError) {
+        console.error("Error updating platform user record:", updateError);
+        throw new Error('No se pudo actualizar el registro de usuario: ' + updateError.message);
+      }
+
+      console.log("Platform user record updated successfully");
     } else {
-      console.log("Welcome email sent successfully");
+      // Crear nuevo registro en granada_platform_users
+      const { error: platformUserError } = await supabaseAdmin
+        .from('granada_platform_users')
+        .insert({
+          user_id: userId,
+          email: email,
+          first_name: first_name,
+          last_name: last_name,
+          role: role,
+          is_active: true,
+        });
+
+      if (platformUserError) {
+        console.error("Error creating platform user record:", platformUserError);
+        throw new Error('No se pudo crear el registro de usuario: ' + platformUserError.message);
+      }
+
+      console.log("Platform user record created successfully");
+    }
+
+    // Enviar email de bienvenida con credenciales solo si es usuario nuevo
+    if (isNewUser) {
+      const { error: emailError } = await supabaseAdmin.functions.invoke('send-welcome-email', {
+        body: {
+          email: email,
+          first_name: first_name,
+          password: tempPassword,
+          platform: 'granada'
+        },
+      });
+
+      if (emailError) {
+        console.error("Error sending welcome email:", emailError);
+        // No lanzar error aquí, el usuario ya fue creado exitosamente
+      } else {
+        console.log("Welcome email sent successfully");
+      }
+    } else {
+      // Para usuarios existentes, enviar email de reseteo de contraseña
+      console.log("User already existed, sending password reset email");
+      const { error: resetError } = await supabaseAdmin.functions.invoke('reset-user-password', {
+        body: {
+          user_id: userId
+        }
+      });
+
+      if (resetError) {
+        console.error("Error sending password reset:", resetError);
+      }
     }
 
     return new Response(
       JSON.stringify({ 
-        user_id: authData.user.id,
-        temp_password: tempPassword,
-        message: 'Usuario creado exitosamente'
+        user_id: userId,
+        temp_password: isNewUser ? tempPassword : null,
+        message: isNewUser ? 'Usuario creado exitosamente' : 'Usuario reactivado y contraseña reseteada'
       }),
       {
         status: 200,
