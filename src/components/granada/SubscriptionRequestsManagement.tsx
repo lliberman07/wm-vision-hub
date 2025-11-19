@@ -112,7 +112,19 @@ export function SubscriptionRequestsManagement() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // La función puede devolver success=false con un código de error controlado
+      if (data && data.success === false) {
+        if (data.code === "EMAIL_ALREADY_REGISTERED") {
+          toast.error(data.message || "Este email ya está registrado en otra cuenta. Por favor usa otro email para el administrador.");
+        } else {
+          toast.error("No se pudo procesar la solicitud", {
+            description: data.message || "Ocurrió un error inesperado al procesar la suscripción.",
+          });
+        }
+        return; // No refrescamos lista ni cerramos el diálogo
+      }
+
       queryClient.invalidateQueries({ queryKey: ["subscription-requests"] });
       toast.success("Solicitud procesada exitosamente");
       handleCloseDialog();
