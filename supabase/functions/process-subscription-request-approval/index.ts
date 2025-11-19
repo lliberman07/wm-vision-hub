@@ -127,13 +127,24 @@ const handler = async (req: Request): Promise<Response> => {
         name: request.company_name || `${request.first_name} ${request.last_name}`,
         slug: tenantSlug,
         tenant_type: request.applicant_type === 'propietario' ? 'propietario' : 'inmobiliaria',
-        contact_email: request.email,
-        contact_phone: request.phone,
-        country: request.country,
-        province: request.province,
-        city: request.city,
-        cuit: request.cuit_cuil,
+        admin_email: request.email,
         is_active: false, // Will be activated after payment
+        settings: {
+          contact_info: {
+            email: request.email,
+            phone: request.phone,
+            country: request.country,
+            province: request.province,
+            city: request.city,
+            cuit_cuil: request.cuit_cuil,
+            neighborhood: request.neighborhood
+          },
+          onboarding: {
+            estimated_properties: request.estimated_properties,
+            current_system: request.current_system,
+            subscription_request_id: request_id
+          }
+        }
       })
       .select()
       .single();
