@@ -19,7 +19,10 @@ import { usePropertyStatus } from '@/hooks/usePropertyStatus';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Bot, Wrench, Loader2, AlertCircle, DollarSign, Info } from 'lucide-react';
+import { PropertyStatusSelector } from './PropertyStatusSelector';
+import { SubscriptionLimitAlert } from './SubscriptionLimitAlert';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { Loader2, AlertCircle, DollarSign, Info } from 'lucide-react';
 
 const formSchema = z.object({
   code: z.string().min(1, 'Código requerido'),
@@ -31,7 +34,7 @@ const formSchema = z.object({
   state: z.string().optional(),
   postal_code: z.string().optional(),
   property_type: z.string().min(1, 'Tipo requerido'),
-  status: z.string().min(1, 'Estado requerido'),
+  status: z.enum(['inactive', 'active', 'rented', 'maintenance']).default('active'),
   habitaciones: z.number().int().min(0).optional(),
   bedrooms: z.number().int().min(0).optional(),
   bathrooms: z.number().min(0).optional(),
@@ -70,6 +73,8 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
   const [photos, setPhotos] = useState<string[]>(property?.photos || []);
   const [forceMaintenanceMode, setForceMaintenanceMode] = useState(false);
   const { status: autoStatus, contract, isAutomatic } = usePropertyStatus(property?.id);
+  const { checkLimit } = useSubscriptionLimits();
+  const [limitWarning, setLimitWarning] = useState<{ show: boolean; currentCount: number; limit: number } | null>(null);
   
   // FASE 2: Validación de códigos únicos
   const [codeValidation, setCodeValidation] = useState<{
@@ -94,7 +99,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
       state: '',
       postal_code: '',
       property_type: 'apartment',
-      status: 'available',
+      status: 'active' as const,
       habitaciones: undefined,
       bedrooms: undefined,
       bathrooms: undefined,
@@ -248,7 +253,7 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
         state: '',
         postal_code: '',
         property_type: 'apartment',
-        status: 'available',
+        status: 'active' as const,
         habitaciones: 0,
         bedrooms: 0,
         bathrooms: 0,
@@ -801,72 +806,29 @@ export function PropertyForm({ open, onOpenChange, onSuccess, property }: Proper
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex items-center justify-between mb-2">
-                    <FormLabel>Estado</FormLabel>
-                    {property && (
-                      <Badge variant={isAutomatic ? "default" : "secondary"} className="text-xs">
-                        {isAutomatic ? (
-                          <>
-                            <Bot className="h-3 w-3 mr-1" />
-                            Automático
-                          </>
-                        ) : (
-                          <>
-                            <Wrench className="h-3 w-3 mr-1" />
-                            Manual
-                          </>
-                        )}
-                      </Badge>
-                    )}
-                  </div>
-                  <Select 
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      if (value === 'maintenance') {
-                        setForceMaintenanceMode(true);
-                      } else {
-                        setForceMaintenanceMode(false);
-                      }
-                    }} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar estado" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="available">Disponible</SelectItem>
-                      <SelectItem value="rented" disabled={!contract}>
-                        Alquilada {!contract && '(solo automático)'}
-                      </SelectItem>
-                      <SelectItem value="maintenance">Mantenimiento</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Estado de la Propiedad</FormLabel>
+                  <FormControl>
+                    <PropertyStatusSelector
+                      currentStatus={field.value as any}
+                      propertyId={property?.id}
+                      tenantId={currentTenant?.id || ''}
+                      hasActiveContract={!!contract}
+                      onStatusChange={async (newStatus) => {
+                        field.onChange(newStatus);
+                        if (newStatus === 'maintenance') {
+                          setForceMaintenanceMode(true);
+                        } else {
+                          setForceMaintenanceMode(false);
+                        }
+                      }}
+                      disabled={isFieldDisabled('status')}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Estados que consumen límite: Activa, Alquilada, Mantenimiento.
+                    Estado "No Activa" no consume límite.
+                  </FormDescription>
                   <FormMessage />
-                  
-                  {property && !contract && (
-                    <div className="flex items-center space-x-2 mt-2">
-                      <Checkbox
-                        id="forceMaintenanceMode"
-                        checked={forceMaintenanceMode}
-                        onCheckedChange={(checked) => {
-                          setForceMaintenanceMode(checked as boolean);
-                          if (checked) {
-                            form.setValue('status', 'maintenance');
-                          } else {
-                            form.setValue('status', 'available');
-                          }
-                        }}
-                      />
-                      <label
-                        htmlFor="forceMaintenanceMode"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                      >
-                        Forzar Mantenimiento Manual
-                      </label>
-                    </div>
-                  )}
                 </FormItem>
               )}
             />

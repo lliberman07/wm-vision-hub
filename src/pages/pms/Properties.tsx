@@ -16,6 +16,9 @@ import { PMSLayout } from '@/components/pms/PMSLayout';
 import { FilterBar } from '@/components/pms/FilterBar';
 import { EmptyState } from '@/components/pms/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { SubscriptionLimitAlert } from '@/components/pms/SubscriptionLimitAlert';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Property {
   id: string;
@@ -49,6 +52,7 @@ const Properties = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentTenant, hasPMSAccess, loading: pmsLoading } = usePMS();
+  const { checkLimit } = useSubscriptionLimits();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,6 +62,8 @@ const Properties = () => {
   const [detailsProperty, setDetailsProperty] = useState<Property | null>(null);
   const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
   const [propertyToClone, setPropertyToClone] = useState<Property | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [limitInfo, setLimitInfo] = useState<{ current: number; limit: number } | null>(null);
 
   useEffect(() => {
     if (pmsLoading) return;
@@ -67,7 +73,17 @@ const Properties = () => {
       return;
     }
     fetchProperties();
+    loadLimitInfo();
   }, [pmsLoading, user?.id, hasPMSAccess, navigate]);
+
+  const loadLimitInfo = async () => {
+    if (!currentTenant) return;
+    const result = await checkLimit('property');
+    setLimitInfo({
+      current: result.current_count,
+      limit: result.limit || 999999
+    });
+  };
 
   const fetchProperties = async () => {
     try {
@@ -90,19 +106,31 @@ const Properties = () => {
     }
   };
 
-  const filteredProperties = properties.filter(property =>
-    property.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.city.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProperties = properties.filter(property => {
+    const matchesSearch = property.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      property.city.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = statusFilter === 'all' ? true :
+      statusFilter === 'active' ? ['active', 'rented', 'maintenance'].includes(property.status) :
+      property.status === 'inactive';
+    
+    return matchesSearch && matchesFilter;
+  });
+
+  const activePropertiesCount = properties.filter(p => 
+    ['active', 'rented', 'maintenance'].includes(p.status)
+  ).length;
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      available: 'default',
-      rented: 'secondary',
-      maintenance: 'destructive',
+    const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline', label: string }> = {
+      inactive: { variant: 'outline', label: 'No Activa' },
+      active: { variant: 'default', label: 'Activa' },
+      rented: { variant: 'secondary', label: 'Alquilada' },
+      maintenance: { variant: 'destructive', label: 'Mantenimiento' },
     };
-    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
+    const statusConfig = config[status] || config.active;
+    return <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>;
   };
 
   const canCloneProperty = (property: any): boolean => {
@@ -113,29 +141,49 @@ const Properties = () => {
 
   return (
     <PMSLayout>
-      <div className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Propiedades</h1>
-              <p className="text-muted-foreground mt-1">
-                {filteredProperties.length} {filteredProperties.length === 1 ? 'inmueble registrado' : 'inmuebles registrados'}
-              </p>
-            </div>
-            <Button onClick={() => { setSelectedProperty(undefined); setIsFormOpen(true); }} size="lg">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Propiedades</h1>
+            <p className="text-muted-foreground">Gestiona el portafolio</p>
+          </div>
+          <div className="flex items-center gap-4">
+            {limitInfo && (
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                <Badge variant={activePropertiesCount >= limitInfo.limit ? 'destructive' : 'default'}>
+                  {activePropertiesCount}/{limitInfo.limit}
+                </Badge>
+              </div>
+            )}
+            <Button onClick={() => setIsFormOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nueva Propiedad
             </Button>
           </div>
         </div>
 
-        {/* Filter Bar */}
-        <div className="mb-6">
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
+        {limitInfo && (
+          <SubscriptionLimitAlert
+            limitType="property"
+            currentCount={limitInfo.current}
+            limit={limitInfo.limit}
+            onViewResources={() => setStatusFilter('active')}
+            onUpgradePlan={() => navigate('/client-admin/subscription')}
           />
+        )}
+
+        <div className="flex gap-4">
+          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+            <TabsList>
+              <TabsTrigger value="all">Todas</TabsTrigger>
+              <TabsTrigger value="active">Activas</TabsTrigger>
+              <TabsTrigger value="inactive">No Activas</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="flex-1">
+            <FilterBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+          </div>
         </div>
 
         {/* Content */}

@@ -46,8 +46,32 @@ export function useSubscriptionLimits() {
     }
   };
 
+  const getActiveProperties = async () => {
+    if (!currentTenant) return [];
+    
+    try {
+      const { data, error } = await supabase.rpc('get_tenant_active_properties', {
+        p_tenant_id: currentTenant.id
+      });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting active properties:', error);
+      return [];
+    }
+  };
+
+  const getUsagePercentage = async (resourceType: 'user' | 'property' | 'contract' | 'branch'): Promise<number> => {
+    const result = await checkLimit(resourceType);
+    if (!result.limit || result.limit === 0) return 0;
+    return (result.current_count / result.limit) * 100;
+  };
+
   return {
     checkLimit,
+    getActiveProperties,
+    getUsagePercentage,
     loading
   };
 }

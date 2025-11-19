@@ -273,6 +273,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contact_submissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       conversations: {
@@ -990,6 +997,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_cashflow_property_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_client_users: {
@@ -1069,6 +1083,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_client_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_contract_activation_logs: {
@@ -1128,6 +1149,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_activation_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -1198,6 +1226,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_contract_adjustments_tenant_id_fkey1"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_contract_adjustments_backup: {
@@ -1255,6 +1290,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_contract_adjustments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_contract_current: {
@@ -1305,6 +1347,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_current_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -1372,6 +1421,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_contract_monthly_projections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_contract_parties: {
@@ -1413,6 +1469,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_parties_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -1464,6 +1527,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_contract_payment_methods_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -1635,6 +1705,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pms_contracts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
+          {
             foreignKeyName: "pms_contracts_tenant_renter_id_fkey"
             columns: ["tenant_renter_id"]
             isOneToOne: false
@@ -1690,6 +1767,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -1774,6 +1858,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_email_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_exchange_rates: {
@@ -1820,6 +1911,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_exchange_rates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -1935,6 +2033,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_expenses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_maintenance_requests: {
@@ -2032,6 +2137,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_maintenance_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_notification_logs: {
@@ -2111,6 +2223,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_notification_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -2201,6 +2320,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_notification_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_owner_properties: {
@@ -2258,6 +2384,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_owner_properties_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -2338,6 +2471,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_owner_report_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -2425,6 +2565,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_owners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_payment_distributions: {
@@ -2499,6 +2646,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_payment_distributions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_payment_receipts: {
@@ -2565,6 +2719,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_receipts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -2679,6 +2840,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_payment_schedule_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_payment_submissions: {
@@ -2760,6 +2928,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payment_submissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -2857,6 +3032,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3020,6 +3202,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_properties_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_receipt_email_logs: {
@@ -3071,6 +3260,13 @@ export type Database = {
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pms_receipt_email_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
         ]
       }
       pms_role_audit: {
@@ -3117,6 +3313,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_role_audit_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3195,6 +3398,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_tenants_parent_tenant_id_fkey"
+            columns: ["parent_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3293,6 +3503,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_tenants_renters_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3441,11 +3658,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "subscription_change_history_new_plan_id_fkey"
+            columns: ["new_plan_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["plan_id"]
+          },
+          {
             foreignKeyName: "subscription_change_history_old_plan_id_fkey"
             columns: ["old_plan_id"]
             isOneToOne: false
             referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_change_history_old_plan_id_fkey"
+            columns: ["old_plan_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["plan_id"]
           },
           {
             foreignKeyName: "subscription_change_history_subscription_id_fkey"
@@ -3460,6 +3691,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_change_history_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3515,6 +3753,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "subscription_change_requests_current_plan_id_fkey"
+            columns: ["current_plan_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["plan_id"]
+          },
+          {
             foreignKeyName: "subscription_change_requests_requested_plan_id_fkey"
             columns: ["requested_plan_id"]
             isOneToOne: false
@@ -3522,11 +3767,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "subscription_change_requests_requested_plan_id_fkey"
+            columns: ["requested_plan_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["plan_id"]
+          },
+          {
             foreignKeyName: "subscription_change_requests_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_change_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3635,6 +3894,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_invoices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3788,6 +4054,13 @@ export type Database = {
             referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "subscription_requests_requested_plan_id_fkey"
+            columns: ["requested_plan_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["plan_id"]
+          },
         ]
       }
       subscription_usage_logs: {
@@ -3838,6 +4111,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_usage_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3902,11 +4182,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tenant_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["plan_id"]
+          },
+          {
             foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -3948,6 +4242,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
           {
             foreignKeyName: "user_roles_user_id_fkey"
@@ -4024,6 +4325,24 @@ export type Database = {
         }
         Relationships: []
       }
+      tenants_exceeding_limits: {
+        Row: {
+          active_contracts: number | null
+          active_properties: number | null
+          active_users: number | null
+          contract_exceeds_by: number | null
+          contract_limit: number | null
+          plan_id: string | null
+          plan_name: string | null
+          property_exceeds_by: number | null
+          property_limit: number | null
+          tenant_id: string | null
+          tenant_name: string | null
+          user_exceeds_by: number | null
+          user_limit: number | null
+        }
+        Relationships: []
+      }
       v_current_user_tenants: {
         Row: {
           name: string | null
@@ -4054,6 +4373,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
           },
           {
             foreignKeyName: "user_roles_user_id_fkey"
@@ -4282,6 +4608,16 @@ export type Database = {
           reason: string
           subscription_id: string
           tenant_name: string
+        }[]
+      }
+      get_tenant_active_properties: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          address: string
+          code: string
+          has_active_contract: boolean
+          id: string
+          status: string
         }[]
       }
       get_tenant_admin_user_count: {

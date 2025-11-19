@@ -50,8 +50,8 @@ export const usePropertyStatus = (propertyId: string | undefined) => {
       // Si hay contrato activo y el status es 'rented', es automático
       const isAutoRented = contract && property?.status === 'rented';
       
-      // Si no hay contrato y el status es 'available', es automático
-      const isAutoAvailable = !contract && property?.status === 'available';
+      // Si no hay contrato y el status es 'active', es automático
+      const isAutoAvailable = !contract && property?.status === 'active';
 
       const isAutomatic = !isManualMaintenance && (isAutoRented || isAutoAvailable);
 
