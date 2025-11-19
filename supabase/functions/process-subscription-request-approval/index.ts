@@ -369,7 +369,6 @@ const handler = async (req: Request): Promise<Response> => {
         });
         console.log("Welcome email sent");
       } catch (emailError) {
-      } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
         // Don't fail the whole process if email fails
       }
