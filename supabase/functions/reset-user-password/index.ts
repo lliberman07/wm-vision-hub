@@ -45,18 +45,39 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // Detect if it's a Granada user
-    const isGranadaUser = userData.user.user_metadata?.role && 
-                          (userData.user.user_metadata.role.includes('GRANADA'));
+    // Check if it's a Granada user
+    const { data: granadaUser } = await supabase
+      .from('granada_platform_users')
+      .select('role')
+      .eq('user_id', user_id)
+      .single();
 
-    // Send email with new password
+    const isGranadaUser = !!granadaUser;
+
+    // Generate password reset link
+    const { data: resetData, error: resetLinkError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email: email,
+      options: {
+        redirectTo: isGranadaUser 
+          ? `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com')}/granada-admin/reset-password`
+          : `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com')}/pms/reset-password`
+      }
+    });
+
+    if (resetLinkError) {
+      console.error('Error generating reset link:', resetLinkError);
+    }
+
+    // Send email with new temporary password AND reset link
     const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
       body: {
         email,
         first_name: userData.user.user_metadata?.first_name || 'Usuario',
         password: tempPassword,
         is_reset: true,
-        platform: isGranadaUser ? 'granada' : 'pms'
+        platform: isGranadaUser ? 'granada' : 'pms',
+        reset_link: resetData?.properties?.action_link
       }
     });
 

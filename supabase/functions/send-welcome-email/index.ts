@@ -15,6 +15,7 @@ interface WelcomeEmailRequest {
   password: string;
   is_reset?: boolean;
   platform?: 'pms' | 'granada';
+  reset_link?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,7 +24,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, first_name, password, is_reset = false, platform = 'pms' }: WelcomeEmailRequest = await req.json();
+    const { email, first_name, password, is_reset = false, platform = 'pms', reset_link }: WelcomeEmailRequest = await req.json();
 
     const templates = {
       pms: {
@@ -78,10 +79,19 @@ const handler = async (req: Request): Promise<Response> => {
                 <p><strong>Email:</strong> ${email}</p>
                 <p><strong>Contraseña temporal:</strong> ${password}</p>
               </div>
+              ${reset_link ? `
+              <p><strong>🔗 Link directo para cambiar contraseña:</strong></p>
+              <div style="text-align: center;">
+                <a href="${reset_link}" class="button" style="background: #2196F3;">Cambiar Contraseña Ahora</a>
+              </div>
+              <p style="font-size: 12px; color: #666;">O también puedes iniciar sesión con las credenciales temporales y cambiar tu contraseña desde el menú de usuario.</p>
+              ` : ''}
               <p><strong>⚠️ Importante:</strong> Por razones de seguridad, te recomendamos cambiar esta contraseña temporal después de tu primer inicio de sesión.</p>
+              ${!reset_link ? `
               <div style="text-align: center;">
                 <a href="${template.loginUrl}" class="button">Iniciar Sesión</a>
               </div>
+              ` : ''}
               <p>Si tienes alguna duda o problema para acceder, no dudes en contactarnos.</p>
               <p>Saludos cordiales,<br><strong>El equipo de WM Real Estate</strong></p>
             </div>
