@@ -10,8 +10,8 @@ import { ClientsManagement } from '@/components/granada/ClientsManagement';
 import { ClientUsersManagement } from '@/components/granada/ClientUsersManagement';
 import { PlatformUsersManagement } from '@/components/granada/PlatformUsersManagement';
 import { SubscriptionsManagement } from '@/components/granada/SubscriptionsManagement';
-
 import { PaymentsManagement } from '@/components/granada/PaymentsManagement';
+import { PaymentReceiptsVerification } from '@/components/granada/PaymentReceiptsVerification';
 import { SubscriptionPlansManagement } from '@/components/granada/SubscriptionPlansManagement';
 import { GranadaSubscriptionAnalyticsDashboard } from '@/components/granada/GranadaSubscriptionAnalyticsDashboard';
 import { GranadaContactsManagement } from '@/components/granada/GranadaContactsManagement';
@@ -25,6 +25,7 @@ import {
   ArrowLeftRight,
   MessageSquare,
   FileCheck,
+  Receipt,
 } from 'lucide-react';
 
 function GranadaDashboard() {
@@ -101,6 +102,13 @@ function GranadaDashboard() {
       icon: CreditCard,
       path: '/granada-admin/payments',
       iconColor: granadaColors[0],
+    },
+    {
+      title: 'Verificar Comprobantes',
+      description: 'Revisar y verificar comprobantes de pago',
+      icon: Receipt,
+      path: '/granada-admin/payment-receipts',
+      iconColor: granadaColors[1],
     },
     {
       title: 'Reportes Globales',
@@ -243,6 +251,7 @@ export default function GranadaAdmin() {
         <Route path="/subscription-plans" element={<SubscriptionPlansManagement />} />
         <Route path="/subscriptions" element={<SubscriptionsManagement />} />
         <Route path="/payments" element={<PaymentsManagement />} />
+        <Route path="/payment-receipts" element={<PaymentReceiptsVerification />} />
         <Route path="/reports" element={<div className="p-4">Reportes (próximamente)</div>} />
         <Route path="/transfers" element={<div className="p-4">Transferencias (próximamente)</div>} />
         <Route path="/settings" element={<div className="p-4">Configuración (próximamente)</div>} />
