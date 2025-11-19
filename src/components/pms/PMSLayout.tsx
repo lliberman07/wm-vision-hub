@@ -38,9 +38,23 @@ export function PMSLayout({ children }: PMSLayoutProps) {
   useContractMaintenanceCheck();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast.success('Sesión cerrada correctamente');
-    navigate('/pms/login');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.warn('Error al cerrar sesión en servidor:', error.message);
+      }
+      toast.success('Sesión cerrada correctamente');
+    } catch (error) {
+      console.warn('Error inesperado al cerrar sesión:', error);
+    } finally {
+      // SIEMPRE limpiar y redirigir, incluso si signOut falla
+      navigate('/pms/login', { replace: true });
+      
+      // Forzar recarga para limpiar todo el estado
+      setTimeout(() => {
+        window.location.href = '/pms/login';
+      }, 100);
+    }
   };
 
   return (
