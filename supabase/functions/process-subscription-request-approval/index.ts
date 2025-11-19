@@ -161,12 +161,10 @@ const handler = async (req: Request): Promise<Response> => {
     let tempPassword = '';
     let isNewUser = false;
 
-    // First, check if user already exists (reliable by email)
-    const { data: existingUserData, error: existingUserLookupError } = await supabaseAdmin.auth.admin.getUserByEmail(request.email);
-    if (existingUserLookupError && existingUserLookupError.status !== 404) {
-      console.error("Error looking up existing user by email:", existingUserLookupError);
-    }
-    const existingUser = existingUserData?.user;
+    // For this project we don't reliably search auth by email here
+    // We will attempt to create the user, and if Supabase returns
+    // email_exists we handle it in the error branch below.
+    const existingUser = null;
 
     if (existingUser) {
       console.log("User already exists, using existing user:", existingUser.id);
@@ -202,38 +200,23 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       if (authError || !authData.user) {
-        // If email already exists, try to reuse existing user instead of failing
         const authErr: any = authError;
+        // If email already exists in Supabase Auth, rollback and return
+        // a clear error so the admin can choose otro email.
         if (authErr && authErr.code === 'email_exists') {
-          console.warn('Email already registered in auth, reusing existing user');
-          const { data: existingByEmail, error: lookupError } = await supabaseAdmin.auth.admin.getUserByEmail(request.email);
-          if (lookupError) {
-            console.error('Error retrieving existing user after email_exists:', lookupError);
-            // Rollback tenant if we cannot safely link the user
-            await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
-            throw new Error('Failed to reuse existing user account: ' + lookupError.message);
-          }
-          if (!existingByEmail?.user) {
-            await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
-            throw new Error('Failed to reuse existing user account: user not found');
-          }
-
-          const existingUserFromCreate = existingByEmail.user;
-          authUserId = existingUserFromCreate.id;
-          isNewUser = false;
-          console.log('Reused existing auth user after email_exists:', authUserId);
-        } else {
-          console.error("Error creating auth user:", authError);
-          // Rollback tenant
+          console.error('Auth user already exists with this email, cannot create new one');
           await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
-          throw new Error("Failed to create user account: " + authError?.message);
+          throw new Error('Este email ya está registrado en otra cuenta. Por favor use otro email para el administrador.');
         }
+
+        console.error("Error creating auth user:", authError);
+        // Rollback tenant
+        await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
+        throw new Error("Failed to create user account: " + authError?.message);
       }
 
-      if (isNewUser && authData?.user) {
-        authUserId = authData.user.id;
-        console.log("New auth user created:", authUserId);
-      }
+      authUserId = authData.user.id;
+      console.log("New auth user created:", authUserId);
     }
 
     // 4. Create or update CLIENT_ADMIN record
