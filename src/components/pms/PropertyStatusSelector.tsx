@@ -146,6 +146,12 @@ export function PropertyStatusSelector({
                   Cancele el contrato primero.
                 </p>
               )}
+              {currentStatus === 'inactive' && (
+                <p className="text-sm text-blue-600 mt-2">
+                  💡 Para activar esta propiedad, verifica que no hayas alcanzado el límite de tu plan.
+                  Las propiedades inactivas no pueden tener contratos ni gastos.
+                </p>
+              )}
             </div>
           </TooltipContent>
         </Tooltip>

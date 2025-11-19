@@ -109,8 +109,9 @@ export function ExpenseForm({ open, onOpenChange, onSuccess, expense, tenantId }
   const fetchProperties = async () => {
     const { data } = await supabase
       .from('pms_properties')
-      .select('id, code, address')
+      .select('id, code, address, status')
       .eq('tenant_id', tenantId)
+      .neq('status', 'inactive') // Solo propiedades activas, en alquiler o mantenimiento
       .order('code');
     
     if (data) setProperties(data);
