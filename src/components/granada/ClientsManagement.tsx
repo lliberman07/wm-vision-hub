@@ -273,14 +273,14 @@ export function ClientsManagement() {
                   <div className="grid gap-2">
                     <Label htmlFor="parent_tenant_id">Cliente Padre (Opcional)</Label>
                     <Select
-                      value={formData.parent_tenant_id}
-                      onValueChange={(value) => setFormData({ ...formData, parent_tenant_id: value })}
+                      value={formData.parent_tenant_id || "none"}
+                      onValueChange={(value) => setFormData({ ...formData, parent_tenant_id: value === "none" ? null : value })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Sin cliente padre" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sin cliente padre</SelectItem>
+                        <SelectItem value="none">Sin cliente padre</SelectItem>
                         {clients
                           .filter((c) => c.client_type === 'INMOBILIARIA')
                           .map((client) => (
