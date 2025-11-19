@@ -73,11 +73,11 @@ export function ClientSettings() {
 
       if (error) throw error;
 
-      toast.success('Configuración guardada exitosamente');
+      toast.success('Información guardada exitosamente');
       refreshClientData();
     } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error('Error al guardar configuración');
+      toast.error('Error al guardar información');
     } finally {
       setSaving(false);
     }
@@ -88,7 +88,7 @@ export function ClientSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold">Configuración</h2>
+        <h2 className="text-3xl font-bold">Datos de la Organización</h2>
         <p className="text-muted-foreground">Gestiona la información de tu organización</p>
       </div>
 
@@ -227,7 +227,7 @@ export function ClientSettings() {
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving}>
           <Save className="h-4 w-4 mr-2" />
-          {saving ? 'Guardando...' : 'Guardar Configuración'}
+          {saving ? 'Guardando...' : 'Guardar Información'}
         </Button>
       </div>
     </div>
