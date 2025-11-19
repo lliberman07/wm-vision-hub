@@ -242,14 +242,12 @@ export default function GranadaAdmin() {
         <Route path="/" element={<GranadaDashboard />} />
         <Route path="/analytics" element={<GranadaSubscriptionAnalyticsDashboard />} />
         <Route path="/subscription-requests" element={<SubscriptionRequestsManagement />} />
-        <Route path="/subscription-changes" element={<SubscriptionRequests />} />
-        <Route path="/contacts" element={<GranadaContactsManagement />} />
         <Route path="/contacts" element={<GranadaContactsManagement />} />
         <Route path="/clients" element={<ClientsManagement />} />
         <Route path="/client-users" element={<ClientUsersManagement />} />
         <Route path="/platform-users" element={<PlatformUsersManagement />} />
         <Route path="/subscription-plans" element={<SubscriptionPlansManagement />} />
-        <Route path="/subscriptions" element={<SubscriptionsManagement />} />
+        <Route path="/subscriptions" element={<UnifiedSubscriptionsManagement />} />
         <Route path="/payments" element={<PaymentsManagement />} />
         <Route path="/payment-receipts" element={<PaymentReceiptsVerification />} />
         <Route path="/reports" element={<div className="p-4">Reportes (próximamente)</div>} />
