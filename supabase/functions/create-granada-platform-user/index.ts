@@ -39,45 +39,52 @@ const handler = async (req: Request): Promise<Response> => {
     // Generar contraseña temporal segura
     const tempPassword = crypto.randomUUID().substring(0, 12) + 'Aa1!';
 
-    // Primero verificar si el usuario ya existe en auth.users
-    const { data: { users: existingUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    
-    const existingUser = existingUsers?.find(u => u.email === email);
     let userId: string;
     let isNewUser = false;
     
-    if (existingUser) {
-      console.log("User already exists in auth.users:", existingUser.id);
-      userId = existingUser.id;
-      
-      // Actualizar metadata del usuario existente
-      await supabaseAdmin.auth.admin.updateUserById(userId, {
-        user_metadata: {
-          first_name,
-          last_name,
-          role,
-        }
-      });
-      
-      console.log("Updated existing user metadata");
-    } else {
-      // Crear nuevo usuario en auth.users
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          first_name,
-          last_name,
-          role,
-        }
-      });
+    // Intentar crear el usuario primero
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
+        first_name,
+        last_name,
+        role,
+      }
+    });
 
-      if (authError) {
+    if (authError) {
+      // Si el error es que el usuario ya existe, obtenerlo
+      if (authError.message.includes('already been registered') || authError.message.includes('email_exists')) {
+        console.log("User already exists, fetching existing user for email:", email);
+        
+        // Buscar el usuario por email
+        const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        const existingUser = users?.find(u => u.email === email);
+        
+        if (!existingUser) {
+          throw new Error('Usuario ya existe pero no se pudo encontrar');
+        }
+        
+        userId = existingUser.id;
+        console.log("Found existing user:", userId);
+        
+        // Actualizar metadata del usuario existente
+        await supabaseAdmin.auth.admin.updateUserById(userId, {
+          user_metadata: {
+            first_name,
+            last_name,
+            role,
+          }
+        });
+        
+        console.log("Updated existing user metadata");
+      } else {
         console.error("Error creating auth user:", authError);
         throw new Error('No se pudo crear la cuenta de usuario: ' + authError.message);
       }
-
+    } else {
       userId = authData.user.id;
       isNewUser = true;
       console.log("Auth user created successfully:", userId);
