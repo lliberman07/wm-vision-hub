@@ -35,7 +35,6 @@ const plans = [
       { text: "API access", included: false },
       { text: "Operaciones masivas", included: false },
     ],
-    highlighted: false,
     cta: "Solicitar Plan Básico"
   },
   {
@@ -62,7 +61,6 @@ const plans = [
       { text: "Notificaciones personalizadas", included: true },
       { text: "Soporte prioritario", included: false },
     ],
-    highlighted: true,
     cta: "Solicitar Plan Profesional"
   },
   {
@@ -90,7 +88,6 @@ const plans = [
       { text: "Soporte prioritario 24/7", included: true },
       { text: "Whitelabel (sin marca Granada)", included: true },
     ],
-    highlighted: false,
     cta: "Solicitar Plan Enterprise"
   }
 ];
@@ -183,9 +180,8 @@ export default function Planes() {
         {/* Comparador de Planes */}
         <section className="py-20 px-4">
           <div className="container max-w-7xl">
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-6">
               {plans.map((plan) => {
-                const savings = calculateYearlySavings(plan.priceMonthly);
                 const displayPrice = billingPeriod === "monthly" 
                   ? plan.priceMonthly 
                   : plan.priceYearly;
@@ -196,53 +192,37 @@ export default function Planes() {
                 return (
                 <Card 
                   key={plan.name} 
-                  className={`hover:shadow-xl transition-all duration-300 ${
-                    plan.highlighted 
-                      ? 'border-primary border-2 shadow-lg scale-105' 
-                      : 'hover:-translate-y-1'
-                  }`}
+                  className="hover:shadow-xl transition-all duration-300 hover:scale-105 border-2"
                 >
-                  <CardHeader>
-                    {plan.highlighted && (
-                      <Badge className="w-fit mb-2" variant="default">
-                        Más Popular
-                      </Badge>
-                    )}
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <div className="mt-4">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold">
-                          ${(displayPrice / 1000).toFixed(0)}k
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
+                    <div className="mt-2">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold">
+                          ${displayPrice.toLocaleString('es-AR')}
                         </span>
-                        <span className="text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                           /{billingPeriod === "monthly" ? "mes" : "año"}
                         </span>
                       </div>
-                      {billingPeriod === "yearly" && yearlyEquivalent && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          ${(yearlyEquivalent / 1000).toFixed(1)}k/mes facturado anualmente
+                      {yearlyEquivalent && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Equivalente a ${yearlyEquivalent.toLocaleString('es-AR')}/mes
                         </p>
-                      )}
-                      {billingPeriod === "yearly" && (
-                        <div className="mt-2 text-sm">
-                          <span className="text-primary font-semibold">
-                            Ahorrás ${(savings.discountAmount / 1000).toFixed(0)}k/año
-                          </span>
-                        </div>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-3">
                       {plan.description}
                     </p>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <ul className="space-y-3">
+                  <CardContent className="space-y-4 pt-0">
+                    <ul className="space-y-2">
                       {plan.features.map((feature, index) => (
                         <li key={index} className="flex items-start gap-2">
                           {feature.included ? (
-                            <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                            <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                           ) : (
-                            <X className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                            <X className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                           )}
                           <span className={`text-sm ${!feature.included && 'text-muted-foreground'}`}>
                             {feature.text}
@@ -253,7 +233,7 @@ export default function Planes() {
                     <Button 
                       asChild 
                       className="w-full" 
-                      variant={plan.highlighted ? "default" : "outline"}
+                      variant="outline"
                       size="lg"
                     >
                       <Link to={`/subscription-request?plan=${plan.slug}`}>{plan.cta}</Link>
@@ -263,6 +243,9 @@ export default function Planes() {
               );
             })}
             </div>
+            <p className="text-center text-sm text-muted-foreground mt-8">
+              Los valores expresados no incluyen IVA
+            </p>
           </div>
         </section>
 
