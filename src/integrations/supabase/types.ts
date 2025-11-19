@@ -2899,7 +2899,7 @@ export type Database = {
           postal_code: string | null
           property_type: string
           state: string | null
-          status: string | null
+          status: Database["public"]["Enums"]["property_status"]
           street_name: string | null
           street_number: string | null
           surface_covered: number | null
@@ -2947,7 +2947,7 @@ export type Database = {
           postal_code?: string | null
           property_type: string
           state?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["property_status"]
           street_name?: string | null
           street_number?: string | null
           surface_covered?: number | null
@@ -2995,7 +2995,7 @@ export type Database = {
           postal_code?: string | null
           property_type?: string
           state?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["property_status"]
           street_name?: string | null
           street_number?: string | null
           surface_covered?: number | null
@@ -4576,6 +4576,7 @@ export type Database = {
         | "proveedor_servicios"
         | "sistema"
         | "gestor"
+      property_status: "inactive" | "active" | "rented" | "maintenance"
       request_status: "pending" | "approved" | "denied"
       subscription_status:
         | "trial"
@@ -4773,6 +4774,7 @@ export const Constants = {
         "sistema",
         "gestor",
       ],
+      property_status: ["inactive", "active", "rented", "maintenance"],
       request_status: ["pending", "approved", "denied"],
       subscription_status: [
         "trial",
