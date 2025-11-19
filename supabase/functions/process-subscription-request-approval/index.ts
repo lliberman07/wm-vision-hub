@@ -156,55 +156,97 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Tenant created:", newTenant.id);
 
-    // 3. Create auth user (CLIENT_ADMIN)
-    const tempPassword = crypto.randomUUID().substring(0, 12);
-    
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: request.email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: {
-        first_name: request.first_name,
-        last_name: request.last_name,
-        entity_type: request.company_name ? 'empresa' : 'persona',
-        company_name: request.company_name,
+    // 3. Check if user already exists or create new one
+    let authUserId: string;
+    let tempPassword = '';
+    let isNewUser = false;
+
+    // First, check if user already exists
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users.find(u => u.email === request.email);
+
+    if (existingUser) {
+      console.log("User already exists, using existing user:", existingUser.id);
+      authUserId = existingUser.id;
+      
+      // Check if this user is already assigned to another tenant
+      const { data: existingClientUser } = await supabaseAdmin
+        .from("pms_client_users")
+        .select("tenant_id")
+        .eq("user_id", existingUser.id)
+        .single();
+      
+      if (existingClientUser && existingClientUser.tenant_id !== newTenant.id) {
+        // Rollback tenant
+        await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
+        throw new Error(`Este email ya está registrado en otra cuenta. Por favor contacte al usuario o use otro email.`);
       }
-    });
-
-    if (authError || !authData.user) {
-      console.error("Error creating auth user:", authError);
-      // Rollback tenant
-      await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
-      throw new Error("Failed to create user account: " + authError?.message);
-    }
-
-    console.log("Auth user created:", authData.user.id);
-
-    // 4. Create CLIENT_ADMIN record
-    const { error: clientUserError } = await supabaseAdmin
-      .from("pms_client_users")
-      .insert({
-        user_id: authData.user.id,
-        tenant_id: newTenant.id,
-        user_type: 'CLIENT_ADMIN',
+    } else {
+      // Create new auth user
+      tempPassword = crypto.randomUUID().substring(0, 12);
+      isNewUser = true;
+      
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: request.email,
-        first_name: request.first_name,
-        last_name: request.last_name,
-        phone: request.phone,
-        cuit_cuil: request.cuit_cuil,
-        is_active: true,
-        created_by: user.id,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          first_name: request.first_name,
+          last_name: request.last_name,
+          entity_type: request.company_name ? 'empresa' : 'persona',
+          company_name: request.company_name,
+        }
       });
 
-    if (clientUserError) {
-      console.error("Error creating client user:", clientUserError);
-      // Rollback
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
-      throw new Error("Failed to create client user: " + clientUserError.message);
+      if (authError || !authData.user) {
+        console.error("Error creating auth user:", authError);
+        // Rollback tenant
+        await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
+        throw new Error("Failed to create user account: " + authError?.message);
+      }
+
+      authUserId = authData.user.id;
+      console.log("New auth user created:", authUserId);
     }
 
-    console.log("Client user created");
+    // 4. Create or update CLIENT_ADMIN record
+    const { data: existingClientUser } = await supabaseAdmin
+      .from("pms_client_users")
+      .select("*")
+      .eq("user_id", authUserId)
+      .eq("tenant_id", newTenant.id)
+      .single();
+
+    if (!existingClientUser) {
+      const { error: clientUserError } = await supabaseAdmin
+        .from("pms_client_users")
+        .insert({
+          user_id: authUserId,
+          tenant_id: newTenant.id,
+          user_type: 'CLIENT_ADMIN',
+          email: request.email,
+          first_name: request.first_name,
+          last_name: request.last_name,
+          phone: request.phone,
+          cuit_cuil: request.cuit_cuil,
+          is_active: true,
+          created_by: user.id,
+        });
+
+      if (clientUserError) {
+        console.error("Error creating client user:", clientUserError);
+        // Rollback only if we created a new user
+        if (isNewUser) {
+          await supabaseAdmin.auth.admin.deleteUser(authUserId);
+        }
+        await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
+        throw new Error("Failed to create client user: " + clientUserError.message);
+      }
+
+      console.log("Client user created");
+    } else {
+      console.log("Client user already exists, using existing record");
+    }
 
     // 5. Calculate subscription dates
     const now = new Date();
@@ -310,19 +352,24 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error updating request:", updateError);
     }
 
-    // 9. Send welcome email with credentials
-    try {
-      await supabaseAdmin.functions.invoke('send-welcome-email', {
-        body: {
-          email: request.email,
-          first_name: request.first_name,
-          password: tempPassword,
-        }
-      });
-      console.log("Welcome email sent");
-    } catch (emailError) {
-      console.error("Error sending welcome email:", emailError);
-      // Don't fail the whole process if email fails
+    // 9. Send welcome email with credentials (only if new user)
+    if (isNewUser && tempPassword) {
+      try {
+        await supabaseAdmin.functions.invoke('send-welcome-email', {
+          body: {
+            email: request.email,
+            first_name: request.first_name,
+            password: tempPassword,
+          }
+        });
+        console.log("Welcome email sent");
+      } catch (emailError) {
+      } catch (emailError) {
+        console.error("Error sending welcome email:", emailError);
+        // Don't fail the whole process if email fails
+      }
+    } else {
+      console.log("Skipping welcome email - user already exists");
     }
 
     return new Response(
