@@ -5,10 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CreditCard, Calendar, AlertCircle, TrendingUp, FileText, Upload } from 'lucide-react';
+import { CreditCard, Calendar, AlertCircle, TrendingUp, FileText, Upload, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { SubscriptionChangeDialog } from './SubscriptionChangeDialog';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface UsageLimits {
   users: { current: number; limit: number | null };
@@ -28,11 +31,23 @@ interface Invoice {
   payment_reference?: string | null;
 }
 
+interface ChangeRequest {
+  id: string;
+  requested_plan_name: string;
+  current_plan_name: string;
+  status: string;
+  requested_at: string;
+  reviewed_at: string | null;
+  reason: string | null;
+}
+
 export function ClientSubscriptionPanel() {
   const { clientData, subscription } = useClient();
   const [usageLimits, setUsageLimits] = useState<UsageLimits | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [changeDialogOpen, setChangeDialogOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -74,6 +89,30 @@ export function ClientSubscriptionPanel() {
       if (!invoicesError && invoicesData) {
         setInvoices(invoicesData as any[]);
       }
+
+      // Load change requests
+      const { data: requestsData, error: requestsError } = await supabase
+        .from('subscription_change_requests')
+        .select(`
+          *,
+          current_plan:subscription_plans!subscription_change_requests_current_plan_id_fkey(name),
+          requested_plan:subscription_plans!subscription_change_requests_requested_plan_id_fkey(name)
+        `)
+        .eq('tenant_id', clientData.id)
+        .order('requested_at', { ascending: false })
+        .limit(5);
+
+      if (!requestsError && requestsData) {
+        setChangeRequests(requestsData.map((req: any) => ({
+          id: req.id,
+          requested_plan_name: req.requested_plan?.name || 'N/A',
+          current_plan_name: req.current_plan?.name || 'N/A',
+          status: req.status,
+          requested_at: req.requested_at,
+          reviewed_at: req.reviewed_at,
+          reason: req.reason
+        })));
+      }
     } catch (error) {
       console.error('Error loading subscription data:', error);
     } finally {
@@ -105,8 +144,17 @@ export function ClientSubscriptionPanel() {
     return 'text-primary';
   };
 
-  const requestPlanChange = async () => {
-    toast.info('Funcionalidad próximamente disponible');
+  const getChangeStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" /> Pendiente</Badge>;
+      case 'approved':
+        return <Badge className="gap-1 bg-green-600"><CheckCircle className="h-3 w-3" /> Aprobada</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" /> Rechazada</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
   if (!subscription) {
@@ -173,11 +221,6 @@ export function ClientSubscriptionPanel() {
               </div>
             </div>
           )}
-
-          <Button onClick={requestPlanChange} className="w-full">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Solicitar Cambio de Plan
-          </Button>
         </CardContent>
       </Card>
 
@@ -261,6 +304,64 @@ export function ClientSubscriptionPanel() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Change Requests History */}
+      {changeRequests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Solicitudes de Cambio de Plan</CardTitle>
+            <CardDescription>Historial de solicitudes de cambio de suscripción</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Plan Actual</TableHead>
+                  <TableHead>Plan Solicitado</TableHead>
+                  <TableHead>Motivo</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Revisado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {changeRequests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell>
+                      {format(new Date(request.requested_at), "dd/MM/yyyy", { locale: es })}
+                    </TableCell>
+                    <TableCell>{request.current_plan_name}</TableCell>
+                    <TableCell className="font-medium">{request.requested_plan_name}</TableCell>
+                    <TableCell className="max-w-xs truncate" title={request.reason || ''}>
+                      {request.reason || '-'}
+                    </TableCell>
+                    <TableCell>{getChangeStatusBadge(request.status)}</TableCell>
+                    <TableCell>
+                      {request.reviewed_at 
+                        ? format(new Date(request.reviewed_at), "dd/MM/yyyy", { locale: es })
+                        : '-'
+                      }
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Subscription Change Dialog */}
+      {subscription && clientData && (
+        <SubscriptionChangeDialog
+          open={changeDialogOpen}
+          onOpenChange={setChangeDialogOpen}
+          currentPlanId={subscription.plan_id}
+          currentPlanName={subscription.plan_name}
+          tenantId={clientData.id}
+          billingCycle="monthly"
+          onSuccess={loadData}
+        />
+      )}
     </div>
   );
 }
