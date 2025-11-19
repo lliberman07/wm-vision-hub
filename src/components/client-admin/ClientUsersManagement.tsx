@@ -144,7 +144,23 @@ export function ClientUsersManagement() {
 
       if (insertError) throw insertError;
 
-      toast.success('Usuario administrativo creado exitosamente');
+      // Send welcome email with temporary password
+      const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+        body: {
+          email: formData.email,
+          name: `${formData.first_name} ${formData.last_name}`,
+          password: data.temp_password,
+          platform: 'pms',
+        },
+      });
+
+      if (emailError) {
+        console.error('Error sending welcome email:', emailError);
+        toast.warning('Usuario creado pero no se pudo enviar el email de bienvenida');
+      } else {
+        toast.success('Usuario administrativo creado. Se envió un email con las credenciales.');
+      }
+
       setCreateDialogOpen(false);
       setFormData({
         email: '',
