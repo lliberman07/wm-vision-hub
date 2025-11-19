@@ -19,13 +19,24 @@ export default function GranadaResetPassword() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check if this is a valid recovery link
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const type = hashParams.get('type');
-    
+
     if (type !== 'recovery') {
       setError('Link de recuperación inválido. Por favor, solicita uno nuevo.');
+      return;
     }
+
+    const processRecovery = async () => {
+      const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true });
+
+      if (error || !data.session) {
+        console.error('Error processing recovery link:', error);
+        setError('El enlace de recuperación no es válido o ha expirado. Por favor, solicita uno nuevo.');
+      }
+    };
+
+    processRecovery();
   }, []);
 
   const validatePasswords = () => {
