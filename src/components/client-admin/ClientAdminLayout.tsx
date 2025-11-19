@@ -46,7 +46,7 @@ const menuItems = [
     path: '/client-admin/analytics',
   },
   {
-    title: 'Usuarios',
+    title: 'Equipo Administrativo',
     icon: Users,
     path: '/client-admin/users',
   },
