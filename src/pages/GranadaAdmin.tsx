@@ -62,6 +62,13 @@ function GranadaDashboard() {
       iconColor: granadaColors[2],
     },
     {
+      title: 'Cambios de Plan y Trials',
+      description: 'Gestionar upgrades, downgrades y suscripciones en trial',
+      icon: ArrowLeftRight,
+      path: '/granada-admin/subscription-changes',
+      iconColor: granadaColors[3],
+    },
+    {
       title: 'Clientes Suscriptores',
       description: 'Gestionar inmobiliarias, administradores y propietarios',
       icon: Building2,
@@ -243,6 +250,7 @@ export default function GranadaAdmin() {
         <Route path="/" element={<GranadaDashboard />} />
         <Route path="/analytics" element={<GranadaSubscriptionAnalyticsDashboard />} />
         <Route path="/subscription-requests" element={<SubscriptionRequestsManagement />} />
+        <Route path="/subscription-changes" element={<SubscriptionRequests />} />
         <Route path="/contacts" element={<GranadaContactsManagement />} />
         <Route path="/contacts" element={<GranadaContactsManagement />} />
         <Route path="/clients" element={<ClientsManagement />} />
