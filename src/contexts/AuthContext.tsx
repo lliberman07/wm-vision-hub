@@ -83,9 +83,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.warn('Error inesperado al cerrar sesión:', error);
     } finally {
-      // SIEMPRE limpiar estado local, incluso si signOut falla
+      // SIEMPRE limpiar estado local y almacenamiento, incluso si signOut falla
       setSession(null);
       setUser(null);
+
+      try {
+        // El cliente de Supabase guarda el token en claves que empiezan con "sb-"
+        for (const key of Object.keys(localStorage)) {
+          if (key.startsWith('sb-')) {
+            localStorage.removeItem(key);
+          }
+        }
+        localStorage.removeItem('supabase.auth.token');
+      } catch (storageError) {
+        console.warn('Error limpiando storage de Supabase:', storageError);
+      }
     }
   };
 
