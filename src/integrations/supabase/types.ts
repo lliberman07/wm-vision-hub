@@ -3843,6 +3843,7 @@ export type Database = {
       }
       tenant_subscriptions: {
         Row: {
+          activation_reminder_sent_at: string | null
           billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           cancel_at_period_end: boolean
           cancelled_at: string | null
@@ -3855,9 +3856,11 @@ export type Database = {
           status: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
           trial_end_date: string | null
+          trial_reminder_sent_at: string | null
           updated_at: string
         }
         Insert: {
+          activation_reminder_sent_at?: string | null
           billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           cancel_at_period_end?: boolean
           cancelled_at?: string | null
@@ -3870,9 +3873,11 @@ export type Database = {
           status?: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
           trial_end_date?: string | null
+          trial_reminder_sent_at?: string | null
           updated_at?: string
         }
         Update: {
+          activation_reminder_sent_at?: string | null
           billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           cancel_at_period_end?: boolean
           cancelled_at?: string | null
@@ -3885,6 +3890,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["subscription_status"]
           tenant_id?: string
           trial_end_date?: string | null
+          trial_reminder_sent_at?: string | null
           updated_at?: string
         }
         Relationships: [
