@@ -144,10 +144,7 @@ export function GranadaContactsManagement() {
     try {
       const { data, error } = await supabase
         .from('contact_submissions')
-        .select(`
-          *,
-          assigned_profile:profiles!contact_submissions_assigned_to_fkey(first_name, last_name)
-        `)
+        .select('*')
         .in('source', ['granada', 'website', 'platform'])
         .order('created_at', { ascending: false });
 
