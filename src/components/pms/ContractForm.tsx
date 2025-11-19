@@ -251,7 +251,11 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
 
   const fetchData = async () => {
     const [propsRes, tenantsRes] = await Promise.all([
-      supabase.from('pms_properties').select('id, code, address'),
+      supabase
+        .from('pms_properties')
+        .select('id, code, address, status')
+        .neq('status', 'inactive') // Solo propiedades activas, en alquiler o mantenimiento
+        .order('code'),
       supabase.from('pms_tenants_renters').select('id, full_name'),
     ]);
 

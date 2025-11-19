@@ -33,6 +33,21 @@ export function ActivateContractDialog({
   const handleActivate = async () => {
     setIsActivating(true);
     try {
+      // Pre-validar que la propiedad no esté inactive
+      const { data: contract } = await supabase
+        .from('pms_contracts')
+        .select('property_id, pms_properties!inner(status)')
+        .eq('id', contractId)
+        .single();
+      
+      if (contract?.pms_properties?.status === 'inactive') {
+        toast.error('No se puede activar el contrato', {
+          description: 'La propiedad está inactiva. Active la propiedad primero.',
+        });
+        setIsActivating(false);
+        return;
+      }
+
       const { error } = await supabase.rpc('activate_contract', {
         contract_id_param: contractId,
       });
@@ -44,7 +59,15 @@ export function ActivateContractDialog({
       onSuccess();
     } catch (error: any) {
       console.error('Error activating contract:', error);
-      toast.error(error.message || 'Error al activar contrato');
+      
+      // Mensajes de error mejorados
+      if (error.message?.includes('inactive') || error.message?.includes('inactiva')) {
+        toast.error('Propiedad Inactiva', {
+          description: 'Esta propiedad está inactiva. Para activarla, verifica el límite de tu suscripción o actualiza tu plan.',
+        });
+      } else {
+        toast.error(error.message || 'Error al activar contrato');
+      }
     } finally {
       setIsActivating(false);
     }
