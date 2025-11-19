@@ -547,6 +547,15 @@ export function SubscriptionRequestsManagement() {
                       <span className="text-muted-foreground">Sistema actual:</span>
                       <p className="font-medium">{selectedRequest.current_system || '-'}</p>
                     </div>
+                    <div className="col-span-2">
+                      <span className="text-muted-foreground">Ciclo de facturación solicitado:</span>
+                      <p className="font-medium">
+                        {selectedRequest.billing_cycle === 'annual' ? 'Anual' : 'Mensual'}
+                        {' '}(${selectedRequest.billing_cycle === 'annual' 
+                          ? selectedRequest.plan.price_yearly 
+                          : selectedRequest.plan.price_monthly})
+                      </p>
+                    </div>
                   </div>
                   {selectedRequest.comments && (
                     <div>
