@@ -93,8 +93,22 @@ export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
   const { isClientAdmin } = useClient();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/granada-platform');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.warn('Error al cerrar sesión en servidor:', error.message);
+      }
+    } catch (error) {
+      console.warn('Error inesperado al cerrar sesión:', error);
+    } finally {
+      // SIEMPRE limpiar y redirigir, incluso si signOut falla
+      navigate('/granada-platform', { replace: true });
+      
+      // Forzar recarga para limpiar todo el estado
+      setTimeout(() => {
+        window.location.href = '/granada-platform';
+      }, 100);
+    }
   };
 
   return (
