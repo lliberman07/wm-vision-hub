@@ -209,7 +209,7 @@ export default function Planes() {
                         </span>
                       </div>
                       {yearlyEquivalent && (
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-muted-foreground mt-1 font-bold">
                           Equivalente a ${yearlyEquivalent.toLocaleString('es-AR')}/mes
                         </p>
                       )}
@@ -246,7 +246,7 @@ export default function Planes() {
               );
             })}
             </div>
-            <p className="text-center text-sm text-muted-foreground mt-8">
+            <p className="text-center text-sm text-muted-foreground mt-8 font-bold">
               Los valores expresados no incluyen IVA
             </p>
           </div>
