@@ -50,6 +50,11 @@ const menuItems = [
     path: '/granada-admin/subscription-requests',
   },
   {
+    title: 'Cambios y Trials',
+    icon: Shield,
+    path: '/granada-admin/subscription-changes',
+  },
+  {
     title: 'Contactos',
     icon: MessageSquare,
     path: '/granada-admin/contacts',
