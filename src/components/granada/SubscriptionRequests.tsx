@@ -166,7 +166,17 @@ export function SubscriptionRequests() {
 
       if (error) throw error;
 
-      toast.success('Solicitud de cambio aprobada');
+      // Send notification
+      try {
+        await supabase.functions.invoke('send-subscription-change-notification', {
+          body: { request_id: requestId, action: 'approved' }
+        });
+      } catch (emailError) {
+        console.error('Error sending notification email:', emailError);
+        // Don't fail the approval if email fails
+      }
+
+      toast.success('Solicitud de cambio aprobada y notificación enviada');
       fetchChangeRequests();
     } catch (error: any) {
       console.error('Error approving change:', error);
@@ -189,7 +199,17 @@ export function SubscriptionRequests() {
 
       if (error) throw error;
 
-      toast.success('Solicitud de cambio rechazada');
+      // Send notification
+      try {
+        await supabase.functions.invoke('send-subscription-change-notification', {
+          body: { request_id: requestId, action: 'rejected' }
+        });
+      } catch (emailError) {
+        console.error('Error sending notification email:', emailError);
+        // Don't fail the rejection if email fails
+      }
+
+      toast.success('Solicitud rechazada y notificación enviada');
       fetchChangeRequests();
     } catch (error: any) {
       console.error('Error rejecting change:', error);
