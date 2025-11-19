@@ -57,13 +57,11 @@ export function ClientUsersManagement() {
   const [creatingUser, setCreatingUser] = useState(false);
 
   // Form states
-  const [userType, setUserType] = useState<'PROPIETARIO' | 'INQUILINO'>('PROPIETARIO');
   const [formData, setFormData] = useState({
     email: '',
     first_name: '',
     last_name: '',
     phone: '',
-    cuit_cuil: '',
   });
 
   useEffect(() => {
@@ -82,7 +80,7 @@ export function ClientUsersManagement() {
         .from('pms_client_users')
         .select('*')
         .eq('tenant_id', clientData.id)
-        .in('user_type', ['PROPIETARIO', 'INQUILINO'])
+        .eq('user_type', 'CLIENT_ADMIN')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
