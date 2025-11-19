@@ -40,7 +40,7 @@ interface SubscriptionRequest {
   cuit_cuil?: string;
   province?: string;
   city?: string;
-  requested_plan_id: SubscriptionPlan;
+  plan: SubscriptionPlan;
   billing_cycle: string;
   estimated_properties?: number;
   current_system?: string;
@@ -71,7 +71,7 @@ export function SubscriptionRequestsManagement() {
         .from("subscription_requests")
         .select(`
           *,
-          requested_plan_id:subscription_plans!requested_plan_id(id, name, price_monthly, price_yearly)
+          plan:subscription_plans!subscription_requests_requested_plan_id_fkey(id, name, price_monthly, price_yearly)
         `)
         .order("created_at", { ascending: false });
 
@@ -296,11 +296,11 @@ export function SubscriptionRequestsManagement() {
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{request.requested_plan_id.name}</p>
+                            <p className="font-medium">{request.plan.name}</p>
                             <p className="text-sm text-muted-foreground">
                               ${request.billing_cycle === 'annual' 
-                                ? request.requested_plan_id.price_yearly 
-                                : request.requested_plan_id.price_monthly}
+                                ? request.plan.price_yearly 
+                                : request.plan.price_monthly}
                               /{request.billing_cycle === 'annual' ? 'año' : 'mes'}
                             </p>
                           </div>
@@ -389,7 +389,7 @@ export function SubscriptionRequestsManagement() {
                             <p className="text-sm text-muted-foreground">{request.email}</p>
                           </div>
                         </TableCell>
-                        <TableCell>{request.requested_plan_id.name}</TableCell>
+                        <TableCell>{request.plan.name}</TableCell>
                         <TableCell>
                           {new Date(request.created_at).toLocaleDateString()}
                         </TableCell>
