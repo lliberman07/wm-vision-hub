@@ -118,11 +118,16 @@ export function CommissionTrackingDashboard() {
           p_tenant_id: clientData.id
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading commission data:', error);
+        // Silenciosamente setear data vacía - el módulo necesita configuración
+        setData([]);
+        return;
+      }
       setData((result || []) as CommissionData[]);
     } catch (error) {
       console.error('Error loading commission data:', error);
-      toast.error('Error al cargar datos de comisiones');
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -137,10 +142,15 @@ export function CommissionTrackingDashboard() {
         p_months_back: monthsToShow
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error loading historical data:", error);
+        setHistoricalData([]);
+        return;
+      }
       setHistoricalData(data || []);
     } catch (error) {
       console.error("Error loading historical data:", error);
+      setHistoricalData([]);
     }
   };
 
@@ -152,12 +162,17 @@ export function CommissionTrackingDashboard() {
         p_tenant_id: clientData.id
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error loading annual projection:", error);
+        setAnnualProjection(null);
+        return;
+      }
       if (data && data.length > 0) {
         setAnnualProjection(data[0]);
       }
     } catch (error) {
       console.error("Error loading annual projection:", error);
+      setAnnualProjection(null);
     }
   };
 
