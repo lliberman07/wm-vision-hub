@@ -46,11 +46,18 @@ interface Invoice {
   id: string;
   invoice_number: string;
   amount: number;
+  currency: string;
   status: string;
   issue_date: string;
   due_date: string;
+  paid_date: string | null;
   billing_period_start: string;
   billing_period_end: string;
+  payment_receipts?: {
+    id: string;
+    receipt_url: string;
+    verification_status: string;
+  }[];
 }
 
 interface UsageLimits {
@@ -98,7 +105,7 @@ export default function MySubscription() {
       if (subError) throw subError;
       setSubscription(subData as any);
 
-      // Cargar facturas
+      // Cargar facturas (sin join payment_receipts por ahora)
       const { data: invoicesData, error: invError } = await supabase
         .from('subscription_invoices')
         .select('*')
@@ -107,7 +114,23 @@ export default function MySubscription() {
         .limit(12);
 
       if (invError) throw invError;
-      setInvoices(invoicesData || []);
+      
+      // Cargar comprobantes de pago para cada factura
+      const invoicesWithReceipts = await Promise.all(
+        (invoicesData || []).map(async (invoice: any) => {
+          const { data: receipts } = await supabase
+            .from('payment_receipts')
+            .select('id, receipt_url, verification_status')
+            .eq('invoice_id', invoice.id);
+          
+          return {
+            ...invoice,
+            payment_receipts: receipts || []
+          };
+        })
+      );
+      
+      setInvoices(invoicesWithReceipts as any);
 
       // Cargar límites de uso
       const { data: limitsData } = await supabase.rpc('check_tenant_limits', {
@@ -301,6 +324,7 @@ export default function MySubscription() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>N° Factura</TableHead>
                     <TableHead>Período</TableHead>
                     <TableHead>Monto</TableHead>
                     <TableHead>Estado</TableHead>
@@ -309,49 +333,74 @@ export default function MySubscription() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoices.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                      <TableCell>
-                        {format(new Date(invoice.billing_period_start), 'dd MMM', { locale: es })} -{' '}
-                        {format(new Date(invoice.billing_period_end), 'dd MMM yyyy', { locale: es })}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        ${invoice.amount.toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        {invoice.status === 'paid' ? (
-                          <Badge variant="default" className="gap-1">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Pagado
-                          </Badge>
-                        ) : invoice.status === 'pending' ? (
-                          <Badge variant="secondary" className="gap-1">
-                            <Clock className="h-3 w-3" />
-                            Pendiente
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive">Vencido</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(invoice.due_date), 'dd/MM/yyyy', { locale: es })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {invoice.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            onClick={() => setUploadingInvoiceId(invoice.id)}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Subir Comprobante
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {invoices.map((invoice) => {
+                    const hasReceipt = invoice.payment_receipts && invoice.payment_receipts.length > 0;
+                    const receiptStatus = hasReceipt ? invoice.payment_receipts[0].verification_status : null;
+                    
+                    return (
+                      <TableRow key={invoice.id}>
+                        <TableCell className="font-mono text-sm">
+                          {invoice.invoice_number}
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(invoice.billing_period_start), 'dd MMM', { locale: es })} -{' '}
+                          {format(new Date(invoice.billing_period_end), 'dd MMM yyyy', { locale: es })}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {invoice.currency} ${invoice.amount.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          {invoice.status === 'paid' ? (
+                            <Badge variant="default" className="gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Pagado
+                            </Badge>
+                          ) : hasReceipt ? (
+                            receiptStatus === 'verified' ? (
+                              <Badge variant="default" className="gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Verificado
+                              </Badge>
+                            ) : receiptStatus === 'rejected' ? (
+                              <Badge variant="destructive" className="gap-1">
+                                Rechazado
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="gap-1">
+                                <Clock className="h-3 w-3" />
+                                En revisión
+                              </Badge>
+                            )
+                          ) : (
+                            <Badge variant="secondary" className="gap-1">
+                              <Clock className="h-3 w-3" />
+                              Pendiente
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(invoice.due_date), 'dd/MM/yyyy', { locale: es })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {invoice.status === 'pending' && !hasReceipt && (
+                            <Button
+                              size="sm"
+                              onClick={() => setUploadingInvoiceId(invoice.id)}
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Subir Comprobante
+                            </Button>
+                          )}
+                          {hasReceipt && receiptStatus === 'pending' && (
+                            <Badge variant="outline">Comprobante enviado</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                   {invoices.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center text-muted-foreground">
                         No hay facturas registradas
                       </TableCell>
                     </TableRow>
