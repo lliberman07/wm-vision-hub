@@ -39,11 +39,11 @@ interface Subscription {
   tenant_id: string;
   plan_id: string;
   status: string;
-  start_date: string;
-  end_date: string | null;
+  current_period_start: string;
+  current_period_end: string;
   trial_end_date: string | null;
   billing_cycle: string;
-  auto_renew: boolean;
+  cancel_at_period_end: boolean;
   created_at: string;
   tenant: {
     name: string;
@@ -90,9 +90,9 @@ export function SubscriptionsManagement() {
     tenant_id: '',
     plan_id: '',
     billing_cycle: 'monthly',
-    start_date: new Date().toISOString().split('T')[0],
+    current_period_start: new Date().toISOString().split('T')[0],
     trial_days: '0',
-    auto_renew: true,
+    cancel_at_period_end: false,
   });
 
   useEffect(() => {
@@ -167,7 +167,7 @@ export function SubscriptionsManagement() {
     setSubmitting(true);
 
     try {
-      const startDate = new Date(formData.start_date);
+      const startDate = new Date(formData.current_period_start);
       const trialDays = parseInt(formData.trial_days);
       
       let trialEndDate = null;
@@ -177,16 +177,27 @@ export function SubscriptionsManagement() {
         trialEndDate = trialEnd.toISOString().split('T')[0];
       }
 
+      // Calculate period end based on billing cycle
+      const periodEnd = new Date(startDate);
+      if (formData.billing_cycle === 'monthly') {
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+      } else if (formData.billing_cycle === 'quarterly') {
+        periodEnd.setMonth(periodEnd.getMonth() + 3);
+      } else if (formData.billing_cycle === 'yearly') {
+        periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      }
+
       const { error } = await supabase
-        .from('pms_tenant_subscriptions' as any)
+        .from('tenant_subscriptions' as any)
         .insert({
           tenant_id: formData.tenant_id,
           plan_id: formData.plan_id,
           status: trialDays > 0 ? 'trial' : 'active',
-          start_date: formData.start_date,
+          current_period_start: formData.current_period_start,
+          current_period_end: periodEnd.toISOString().split('T')[0],
           trial_end_date: trialEndDate,
           billing_cycle: formData.billing_cycle,
-          auto_renew: formData.auto_renew,
+          cancel_at_period_end: formData.cancel_at_period_end,
         });
 
       if (error) throw error;
@@ -201,9 +212,9 @@ export function SubscriptionsManagement() {
         tenant_id: '',
         plan_id: '',
         billing_cycle: 'monthly',
-        start_date: new Date().toISOString().split('T')[0],
+        current_period_start: new Date().toISOString().split('T')[0],
         trial_days: '0',
-        auto_renew: true,
+        cancel_at_period_end: false,
       });
       fetchData();
     } catch (error: any) {
@@ -250,11 +261,11 @@ export function SubscriptionsManagement() {
 
     try {
       const { error } = await supabase
-        .from('pms_tenant_subscriptions' as any)
+        .from('tenant_subscriptions' as any)
         .update({ 
           status: 'cancelled',
           cancelled_at: new Date().toISOString(),
-          end_date: new Date().toISOString().split('T')[0],
+          cancel_at_period_end: true,
         })
         .eq('id', subId);
 
@@ -399,8 +410,8 @@ export function SubscriptionsManagement() {
                       <Input
                         id="start_date"
                         type="date"
-                        value={formData.start_date}
-                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                        value={formData.current_period_start}
+                        onChange={(e) => setFormData({ ...formData, current_period_start: e.target.value })}
                         required
                       />
                     </div>
@@ -421,8 +432,8 @@ export function SubscriptionsManagement() {
                       <input
                         type="checkbox"
                         id="auto_renew"
-                        checked={formData.auto_renew}
-                        onChange={(e) => setFormData({ ...formData, auto_renew: e.target.checked })}
+                        checked={!formData.cancel_at_period_end}
+                        onChange={(e) => setFormData({ ...formData, cancel_at_period_end: !e.target.checked })}
                         className="h-4 w-4"
                       />
                       <Label htmlFor="auto_renew" className="cursor-pointer">
@@ -481,7 +492,7 @@ export function SubscriptionsManagement() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {format(new Date(subscription.start_date), 'dd/MM/yyyy')}
+                    {format(new Date(subscription.current_period_start), 'dd/MM/yyyy')}
                   </TableCell>
                   <TableCell>
                     {subscription.trial_end_date
@@ -489,7 +500,7 @@ export function SubscriptionsManagement() {
                       : '-'}
                   </TableCell>
                   <TableCell>
-                    {subscription.auto_renew ? (
+                    {!subscription.cancel_at_period_end ? (
                       <CheckCircle className="h-4 w-4 text-green-600" />
                     ) : (
                       <XCircle className="h-4 w-4 text-muted-foreground" />
