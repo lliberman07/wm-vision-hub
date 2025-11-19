@@ -11,32 +11,32 @@ const faqs = [
     answer: "No, Granada Platform es 100% cloud. Solo necesitas un navegador web moderno y conexión a internet. Funciona en computadoras, tablets y celulares.",
   },
   {
-    question: "¿Cómo migro mis datos actuales?",
-    answer: "Ofrecemos un servicio de migración asistida sin costo en todos los planes Professional y Enterprise. Nuestro equipo te ayuda a importar tus propiedades, propietarios, inquilinos y contratos existentes.",
-  },
-  {
     question: "¿Puedo cancelar en cualquier momento?",
-    answer: "Sí, no hay contratos de permanencia. Puedes cancelar tu suscripción en cualquier momento desde tu panel de configuración. Si cancelas, tendrás acceso hasta el final del período pagado.",
-  },
-  {
-    question: "¿Ofrecen capacitación?",
-    answer: "Sí, incluimos onboarding y capacitación para todo tu equipo. Además tenemos una extensa documentación, videos tutoriales y un centro de ayuda disponible 24/7.",
+    answer: "Sí, no hay contratos de permanencia. Podés cancelar tu suscripción en cualquier momento desde tu panel de configuración. Si cancelás, tendrás acceso hasta el final del período pagado.",
   },
   {
     question: "¿Cómo es el soporte técnico?",
-    answer: "Plan Starter: Soporte por email con respuesta en 24hs. Plan Professional: Soporte prioritario en 4hs. Plan Enterprise: Soporte dedicado 24/7 con Slack/WhatsApp directo.",
+    answer: "Plan Básico: Soporte por email. Plan Profesional: Soporte por email con prioridad. Plan Enterprise: Soporte prioritario 24/7 con atención personalizada.",
   },
   {
     question: "¿Mis datos están seguros?",
-    answer: "Absolutamente. Usamos encriptación AES-256 (nivel bancario), backups automáticos diarios, servidores en múltiples regiones y cumplimos con normativas internacionales de protección de datos. Cada cliente tiene aislamiento total de datos (multi-tenancy).",
+    answer: "Absolutamente. Usamos encriptación de nivel bancario, backups automáticos diarios, servidores en múltiples regiones y cumplimos con normativas internacionales de protección de datos. Cada cliente tiene aislamiento total de datos.",
   },
   {
-    question: "¿Puedo probar antes de contratar?",
-    answer: "Sí, ofrecemos 14 días de prueba gratuita sin necesidad de tarjeta de crédito. Tendrás acceso completo a todas las funcionalidades del plan que elijas.",
+    question: "¿Qué incluye cada plan?",
+    answer: "Plan Básico: hasta 1 propiedad, 2 contratos y 2 usuarios. Plan Profesional: hasta 5 propiedades, 10 contratos, 5 usuarios y 2 sucursales con reportes avanzados. Plan Enterprise: hasta 15 propiedades, 30 contratos, 5 usuarios y 10 sucursales con soporte 24/7.",
   },
   {
-    question: "¿Hay costos de setup o implementación?",
-    answer: "No, no hay costos ocultos. Los planes Starter y Professional no tienen cargo de setup. En el plan Enterprise podemos incluir desarrollo de integraciones personalizadas que se presupuestan aparte.",
+    question: "¿Los precios incluyen IVA?",
+    answer: "No, los precios mostrados no incluyen IVA. Se factura mensualmente con todos los comprobantes fiscales correspondientes.",
+  },
+  {
+    question: "¿Hay costos de implementación?",
+    answer: "No, no hay costos adicionales de implementación. La configuración inicial está incluida en todos los planes.",
+  },
+  {
+    question: "¿Puedo cambiar de plan después?",
+    answer: "Sí, podés upgradear o downgradear tu plan en cualquier momento. Los cambios se aplican en el siguiente período de facturación.",
   },
 ];
 
