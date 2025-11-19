@@ -181,7 +181,7 @@ export default function Planes() {
         </section>
 
         {/* Comparador de Planes */}
-        <section className="pt-0 pb-20 px-4">
+        <section className="-mt-8 pb-20 px-4">
           <div className="container max-w-7xl">
             <div className="grid md:grid-cols-3 gap-6">
               {plans.map((plan) => {
