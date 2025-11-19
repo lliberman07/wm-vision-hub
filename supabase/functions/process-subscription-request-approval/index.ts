@@ -206,7 +206,18 @@ const handler = async (req: Request): Promise<Response> => {
         if (authErr && authErr.code === 'email_exists') {
           console.error('Auth user already exists with this email, cannot create new one');
           await supabaseAdmin.from("pms_tenants").delete().eq("id", newTenant.id);
-          throw new Error('Este email ya está registrado en otra cuenta. Por favor use otro email para el administrador.');
+
+          // Return 400 so frontend pueda mostrar mensaje amigable
+          return new Response(
+            JSON.stringify({
+              error: 'Este email ya está registrado en otra cuenta. Por favor use otro email para el administrador.',
+              code: 'EMAIL_ALREADY_REGISTERED'
+            }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            }
+          );
         }
 
         console.error("Error creating auth user:", authError);
