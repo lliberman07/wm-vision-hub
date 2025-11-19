@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Shield, Ban } from 'lucide-react';
+import { Loader2, Plus, Shield, Ban, Mail } from 'lucide-react';
 import { 
   Select,
   SelectContent,
@@ -35,6 +35,7 @@ import { format } from 'date-fns';
 
 interface PlatformUser {
   id: string;
+  user_id: string;
   email: string;
   first_name: string;
   last_name: string;
@@ -145,6 +146,30 @@ export function PlatformUsersManagement() {
       toast({
         title: 'Error',
         description: 'No se pudo actualizar el estado del usuario',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleResendCredentials = async (user: PlatformUser) => {
+    if (!confirm(`¿Reenviar credenciales a ${user.email}?`)) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('reset-user-password', {
+        body: { user_id: user.user_id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Credenciales reenviadas',
+        description: `Se envió un correo con nuevas credenciales a ${user.email}`,
+      });
+    } catch (error: any) {
+      console.error('Error resending credentials:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'No se pudo reenviar las credenciales',
         variant: 'destructive',
       });
     }
@@ -284,13 +309,33 @@ export function PlatformUsersManagement() {
                 </TableCell>
                 <TableCell>{format(new Date(user.created_at), 'dd/MM/yyyy')}</TableCell>
                 <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleToggleActive(user.id, user.is_active)}
-                  >
-                    <Ban className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleResendCredentials(user)}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Reenviar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={user.is_active ? 'destructive' : 'default'}
+                      onClick={() => handleToggleActive(user.id, user.is_active)}
+                    >
+                      {user.is_active ? (
+                        <>
+                          <Ban className="h-4 w-4 mr-2" />
+                          Desactivar
+                        </>
+                      ) : (
+                        <>
+                          <Shield className="h-4 w-4 mr-2" />
+                          Activar
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

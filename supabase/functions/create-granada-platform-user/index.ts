@@ -83,6 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
         email: email,
         first_name: first_name,
         password: tempPassword,
+        platform: 'granada'
       },
     });
 
