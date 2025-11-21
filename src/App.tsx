@@ -80,7 +80,7 @@ const App = () => (
                 <BrowserRouter>
                 <ScrollToTop />
               <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<GranadaHome />} />
             
             {/* Granada Platform - Nuevo sitio multi-página */}
             <Route path="/granada-platform" element={<GranadaHome />} />
