@@ -81,6 +81,7 @@ const App = () => (
                 <ScrollToTop />
               <Routes>
               <Route path="/" element={<GranadaHome />} />
+              <Route path="/wm" element={<Index />} />
             
             {/* Granada Platform - Nuevo sitio multi-página */}
             <Route path="/granada-platform" element={<GranadaHome />} />
