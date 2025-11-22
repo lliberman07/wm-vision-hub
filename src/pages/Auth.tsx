@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LogIn, UserPlus, Shield } from "lucide-react";
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -83,16 +84,32 @@ const Auth = () => {
     setLoading(true);
     setError("");
 
-    const { error } = await resetPassword(email);
-    
-    if (error) {
-      setError(error.message);
-    } else {
-      toast({
-        title: t("Success"),
-        description: t("Password reset email sent! Please check your inbox."),
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error: functionError } = await supabase.functions.invoke('reset-user-password', {
+        body: { user_id: user?.id, email }
       });
-      setShowResetPassword(false);
+
+      if (functionError) {
+        setError(functionError.message);
+        toast({
+          title: t("Error"),
+          description: functionError.message,
+        });
+      } else {
+        toast({
+          title: t("Success"),
+          description: t("Password reset email sent! Please check your inbox."),
+        });
+        setShowResetPassword(false);
+      }
+    } catch (error: any) {
+      setError(error.message);
+      toast({
+        title: t("Error"),
+        description: error.message,
+      });
     }
     
     setLoading(false);
@@ -156,7 +173,7 @@ const Auth = () => {
                       onClick={() => setShowResetPassword(true)}
                       className="text-sm text-primary hover:underline"
                     >
-                      {t('Forgot your password?')}
+                      {t('¿Olvidaste tu contraseña?')}
                     </button>
                     <div>
                       <Link 

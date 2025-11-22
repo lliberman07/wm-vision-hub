@@ -15,6 +15,7 @@ const GranadaAdminLogin = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -107,6 +108,53 @@ const GranadaAdminLogin = () => {
     setLoading(false);
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      // Buscar el user_id basado en el email
+      const { data: userData, error: userError } = await supabase
+        .from('granada_platform_users')
+        .select('user_id')
+        .eq('email', email)
+        .single();
+
+      if (userError || !userData) {
+        setError("No se encontró un usuario con ese email");
+        toast.error("Error", {
+          description: "No se encontró un usuario con ese email",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const { data, error: functionError } = await supabase.functions.invoke('reset-user-password', {
+        body: { user_id: userData.user_id }
+      });
+
+      if (functionError) {
+        setError(functionError.message);
+        toast.error("Error", {
+          description: functionError.message,
+        });
+      } else {
+        toast.success("Email enviado", {
+          description: "Revisa tu correo para restablecer tu contraseña",
+        });
+        setShowResetPassword(false);
+      }
+    } catch (error: any) {
+      setError(error.message);
+      toast.error("Error", {
+        description: error.message,
+      });
+    }
+
+    setLoading(false);
+  };
+
   return (
     <div className="granada-theme min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <div className="w-full max-w-md space-y-2">
@@ -133,47 +181,102 @@ const GranadaAdminLogin = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSignIn} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+            {showResetPassword ? (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@granadaplatform.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="admin@granadaplatform.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full"
                   disabled={loading}
-                />
-              </div>
+                >
+                  {loading ? "Enviando..." : "Enviar Instrucciones"}
+                </Button>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowResetPassword(false);
+                    setError("");
+                  }}
+                  className="w-full"
                   disabled={loading}
-                />
-              </div>
+                >
+                  Volver al inicio de sesión
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleSignIn} className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={loading}
-              >
-                {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-              </Button>
-            </form>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="admin@granadaplatform.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="flex items-center justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPassword(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading}
+                >
+                  {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
 
