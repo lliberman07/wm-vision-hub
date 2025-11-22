@@ -9,9 +9,9 @@ const corsHeaders = {
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Rate limiting constants
-const MAX_ATTEMPTS_PER_EMAIL_PER_HOUR = 3;
-const MAX_ATTEMPTS_PER_IP_PER_HOUR = 10;
+// Rate limiting constants (más razonables para producción)
+const MAX_ATTEMPTS_PER_EMAIL_PER_HOUR = 5;
+const MAX_ATTEMPTS_PER_IP_PER_HOUR = 15;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -62,12 +62,14 @@ serve(async (req) => {
         const foundUser = authUsers.users.find(u => u.email === userEmail);
         if (foundUser) {
           userId = foundUser.id;
+        } else {
+          throw new Error('No se encontró ningún usuario con ese email');
         }
       }
     }
 
     if (!userId) {
-      throw new Error('user_id o email es requerido');
+      throw new Error('Usuario no encontrado');
     }
 
     // Get user data to validate
@@ -110,7 +112,8 @@ serve(async (req) => {
     if (emailAttemptsError) {
       console.error('Error checking email rate limit:', emailAttemptsError);
     } else if (emailAttempts && emailAttempts.length >= MAX_ATTEMPTS_PER_EMAIL_PER_HOUR) {
-      throw new Error(`Demasiados intentos para este email. Por favor, intenta en 1 hora.`);
+      const minutesLeft = Math.ceil((new Date(emailAttempts[0].attempted_at).getTime() + 60 * 60 * 1000 - Date.now()) / 60000);
+      throw new Error(`Demasiados intentos para este email. Intenta nuevamente en ${minutesLeft} minutos.`);
     }
 
     // RATE LIMITING: Check attempts by IP
@@ -123,32 +126,9 @@ serve(async (req) => {
     if (ipAttemptsError) {
       console.error('Error checking IP rate limit:', ipAttemptsError);
     } else if (ipAttempts && ipAttempts.length >= MAX_ATTEMPTS_PER_IP_PER_HOUR) {
-      throw new Error(`Demasiados intentos desde esta dirección IP. Por favor, intenta en 1 hora.`);
+      const minutesLeft = Math.ceil((new Date(ipAttempts[0].attempted_at).getTime() + 60 * 60 * 1000 - Date.now()) / 60000);
+      throw new Error(`Demasiados intentos desde esta IP. Intenta nuevamente en ${minutesLeft} minutos.`);
     }
-
-    // Generate cryptographically secure temporary password
-    const randomBytes = crypto.getRandomValues(new Uint8Array(16));
-    const base64Password = btoa(String.fromCharCode(...randomBytes))
-      .replace(/\+/g, 'A')
-      .replace(/\//g, 'B')
-      .replace(/=/g, '')
-      .slice(0, 12);
-    const tempPassword = base64Password + 'Aa1!';
-
-    console.log(`Generating secure temporary password for user: ${userId}`);
-
-    // Update user password
-    const { error: updateError } = await supabase.auth.admin.updateUserById(
-      userId,
-      { password: tempPassword }
-    );
-
-    if (updateError) {
-      console.error('Error updating password:', updateError);
-      throw new Error('Error al actualizar la contraseña');
-    }
-
-    console.log(`Password updated successfully for user: ${userId}`);
 
     // Check if it's a Granada user
     const { data: granadaUser } = await supabase
@@ -173,30 +153,53 @@ serve(async (req) => {
 
     auditLog.tenant_id = tenantId;
 
-    console.log(`Sending temporary password email to: ${userEmail}, isGranada: ${isGranadaUser}`);
+    console.log(`Generating magic link for: ${userEmail}, isGranada: ${isGranadaUser}`);
 
-    // Send email with ONLY temporary password (no recovery link)
+    // Get FRONTEND_URL from environment
+    const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://jrzeabjpxkhccopxfwqa.lovableproject.com';
+    
+    // Determine redirect path based on platform
+    const redirectPath = isGranadaUser 
+      ? '/granada-admin/reset-password'
+      : '/pms/reset-password';
+
+    // Generate magic link using Supabase's built-in method
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email: userEmail,
+      options: {
+        redirectTo: `${frontendUrl}${redirectPath}`,
+      }
+    });
+
+    if (linkError || !linkData) {
+      console.error('Error generating magic link:', linkError);
+      throw new Error('Error al generar el link de recuperación');
+    }
+
+    console.log(`Magic link generated successfully for user: ${userId}`);
+
+    // Send email with magic link
     const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
       body: {
         email: userEmail,
         first_name: userData.user.user_metadata?.first_name || 'Usuario',
-        password: tempPassword,
         is_reset: true,
         platform: isGranadaUser ? 'granada' : 'pms',
-        // NO recovery link - user must login with temp password
+        magic_link: linkData.properties.action_link, // This is the magic link
       }
     });
 
     if (emailError) {
       console.error('Error sending email:', emailError);
-      throw new Error('Error al enviar el email de confirmación');
+      throw new Error('Error al enviar el email de recuperación');
     }
 
     // Record successful attempt
     auditLog.success = true;
     
     const duration = Date.now() - startTime;
-    console.log(`Password reset successful for ${userEmail} in ${duration}ms`);
+    console.log(`Password reset magic link sent to ${userEmail} in ${duration}ms`);
 
     // Log the attempt
     await supabase.from('password_reset_attempts').insert({
@@ -213,7 +216,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: 'Contraseña temporal generada y enviada por email'
+        message: 'Link de recuperación enviado por email. Revisa tu bandeja de entrada.'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

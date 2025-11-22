@@ -12,10 +12,10 @@ const corsHeaders = {
 interface WelcomeEmailRequest {
   email: string;
   first_name: string;
-  password: string;
+  password?: string; // Optional, only for new user creation
   is_reset?: boolean;
   platform?: 'pms' | 'granada';
-  reset_link?: string;
+  magic_link?: string; // For password recovery
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,47 +24,58 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, first_name, password, is_reset = false, platform = 'pms', reset_link }: WelcomeEmailRequest = await req.json();
+    const { email, first_name, password, is_reset = false, platform = 'pms', magic_link }: WelcomeEmailRequest = await req.json();
+
+    // Get frontend URL from environment
+    const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://jrzeabjpxkhccopxfwqa.lovableproject.com';
 
     const templates = {
       pms: {
-        subject: is_reset ? "Contraseña restablecida - Sistema PMS WM Real Estate" : "¡Bienvenido al Sistema PMS de WM Real Estate!",
-        heading: is_reset ? `Contraseña restablecida, ${first_name}` : `¡Bienvenido al PMS, ${first_name}!`,
+        subject: is_reset ? "Recuperación de Contraseña - Sistema PMS" : "¡Bienvenido al Sistema PMS de WM Real Estate!",
+        heading: is_reset ? `Recupera tu contraseña, ${first_name}` : `¡Bienvenido al PMS, ${first_name}!`,
         intro: is_reset 
-          ? "Tu contraseña del Sistema PMS ha sido restablecida exitosamente." 
+          ? "Recibimos tu solicitud para recuperar tu contraseña del Sistema PMS." 
           : "Tu solicitud de acceso al Sistema de Gestión de Propiedades (PMS) ha sido aprobada.",
-        loginUrl: "https://jrzeabjpxkhccopxfwqa.lovableproject.com/pms/login"
+        loginUrl: `${frontendUrl}/pms/login`,
+        resetUrl: `${frontendUrl}/pms/reset-password`
       },
       granada: {
-        subject: is_reset ? "Contraseña restablecida - Granada Platform" : "¡Bienvenido a Granada Platform!",
-        heading: is_reset ? `Contraseña restablecida, ${first_name}` : `¡Bienvenido a Granada Platform, ${first_name}!`,
+        subject: is_reset ? "Recuperación de Contraseña - Granada Platform" : "¡Bienvenido a Granada Platform!",
+        heading: is_reset ? `Recupera tu contraseña, ${first_name}` : `¡Bienvenido a Granada Platform, ${first_name}!`,
         intro: is_reset
-          ? "Tu contraseña de Granada Platform ha sido restablecida exitosamente."
+          ? "Recibimos tu solicitud para recuperar tu contraseña de Granada Platform."
           : "Tu cuenta de administrador en Granada Platform ha sido creada exitosamente.",
-        loginUrl: "https://jrzeabjpxkhccopxfwqa.lovableproject.com/granada-admin/login"
+        loginUrl: `${frontendUrl}/granada-admin/login`,
+        resetUrl: `${frontendUrl}/granada-admin/reset-password`
       }
     };
 
     const template = templates[platform];
 
-    const emailResponse = await resend.emails.send({
-      from: "Granada Platform <noreply@granadaplatform.com>",
-      to: [email],
-      subject: template.subject,
-      html: `
+    // Email HTML content - different for magic link vs new user
+    let emailHtml;
+
+    if (is_reset && magic_link) {
+      // Password recovery email with magic link
+      emailHtml = `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-            .credentials { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #4CAF50; border-radius: 5px; }
-            .button { display: inline-block; padding: 12px 30px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #ffffff; padding: 40px 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .button { display: inline-block; padding: 16px 40px; background: #4CAF50; color: white !important; text-decoration: none; border-radius: 8px; margin: 25px 0; font-weight: 600; font-size: 16px; }
+            .button:hover { background: #45a049; }
+            .info-box { background: #f5f5f5; padding: 20px; margin: 25px 0; border-left: 4px solid #4CAF50; border-radius: 4px; }
+            .warning-box { background: #fff9e6; padding: 20px; margin: 25px 0; border-left: 4px solid #ffa000; border-radius: 4px; }
+            .footer { text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 13px; border-top: 1px solid #e0e0e0; }
+            .link-text { word-break: break-all; color: #666; font-size: 13px; padding: 15px; background: #f9f9f9; border-radius: 4px; margin-top: 15px; }
+            h1 { margin: 0; font-size: 28px; }
+            .emoji { font-size: 20px; }
           </style>
         </head>
         <body>
@@ -73,27 +84,87 @@ const handler = async (req: Request): Promise<Response> => {
               <h1>${template.heading}</h1>
             </div>
             <div class="content">
-              <p>${template.intro}</p>
-              <div class="credentials">
-                <h3>Tus credenciales de acceso:</h3>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Contraseña temporal:</strong> ${password}</p>
+              <p style="font-size: 16px;">${template.intro}</p>
+              
+              <div class="info-box">
+                <p style="margin: 0;"><strong>Haz clic en el siguiente botón para crear una nueva contraseña:</strong></p>
               </div>
-              ${reset_link ? `
-              <p><strong>🔗 Link directo para cambiar contraseña:</strong></p>
+              
               <div style="text-align: center;">
-                <a href="${reset_link}" class="button" style="background: #2196F3;">Cambiar Contraseña Ahora</a>
+                <a href="${magic_link}" class="button">✨ Crear Nueva Contraseña</a>
               </div>
-              <p style="font-size: 12px; color: #666;">O también puedes iniciar sesión con las credenciales temporales y cambiar tu contraseña desde el menú de usuario.</p>
-              ` : ''}
-              <p><strong>⚠️ Importante:</strong> Por razones de seguridad, te recomendamos cambiar esta contraseña temporal después de tu primer inicio de sesión.</p>
-              ${!reset_link ? `
+              
+              <div class="warning-box">
+                <p style="margin: 0;"><span class="emoji">⏱️</span> <strong>Este link es válido por 1 hora</strong></p>
+                <p style="margin: 10px 0 0 0; font-size: 14px;">Después de 1 hora deberás solicitar un nuevo link de recuperación.</p>
+              </div>
+              
+              <p style="font-size: 14px; color: #666;">Si el botón no funciona, copia y pega el siguiente link en tu navegador:</p>
+              <div class="link-text">${magic_link}</div>
+              
+              <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #e0e0e0;">
+                <p style="font-size: 14px;"><strong>🔒 Seguridad:</strong></p>
+                <p style="font-size: 14px; color: #666; margin: 5px 0;">Si no solicitaste este cambio de contraseña, ignora este email. Tu cuenta está segura.</p>
+              </div>
+              
+              <p style="margin-top: 30px;">Saludos cordiales,<br><strong>El equipo de WM Real Estate</strong></p>
+            </div>
+            <div class="footer">
+              <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+              <p style="margin-top: 10px;">¿Necesitas ayuda? Contáctanos a través de nuestro sitio web.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+    } else if (password) {
+      // New user welcome email with temporary password
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #ffffff; padding: 40px 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .credentials { background: #f5f5f5; padding: 25px; margin: 25px 0; border-left: 4px solid #4CAF50; border-radius: 4px; }
+            .button { display: inline-block; padding: 16px 40px; background: #4CAF50; color: white !important; text-decoration: none; border-radius: 8px; margin: 25px 0; font-weight: 600; font-size: 16px; }
+            .button:hover { background: #45a049; }
+            .warning-box { background: #fff9e6; padding: 20px; margin: 25px 0; border-left: 4px solid #ffa000; border-radius: 4px; }
+            .footer { text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 13px; border-top: 1px solid #e0e0e0; }
+            h1 { margin: 0; font-size: 28px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${template.heading}</h1>
+            </div>
+            <div class="content">
+              <p style="font-size: 16px;">${template.intro}</p>
+              
+              <div class="credentials">
+                <h3 style="margin: 0 0 15px 0;">Tus credenciales de acceso:</h3>
+                <p style="margin: 8px 0;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 8px 0;"><strong>Contraseña temporal:</strong> <code style="background: white; padding: 4px 8px; border-radius: 3px; font-size: 14px;">${password}</code></p>
+              </div>
+              
+              <div class="warning-box">
+                <p style="margin: 0;"><strong>⚠️ Importante:</strong> Por seguridad, te recomendamos cambiar esta contraseña temporal después de tu primer inicio de sesión.</p>
+              </div>
+              
               <div style="text-align: center;">
                 <a href="${template.loginUrl}" class="button">Iniciar Sesión</a>
               </div>
-              ` : ''}
-              <p>Si tienes alguna duda o problema para acceder, no dudes en contactarnos.</p>
-              <p>Saludos cordiales,<br><strong>El equipo de WM Real Estate</strong></p>
+              
+              <p style="font-size: 14px; color: #666; margin-top: 25px;">Si el botón no funciona, accede directamente a:</p>
+              <p style="font-size: 13px; color: #666; word-break: break-all; background: #f9f9f9; padding: 10px; border-radius: 4px;">${template.loginUrl}</p>
+              
+              <p style="margin-top: 30px;">Si tienes alguna duda o problema para acceder, no dudes en contactarnos.</p>
+              <p style="margin-top: 20px;">Saludos cordiales,<br><strong>El equipo de WM Real Estate</strong></p>
             </div>
             <div class="footer">
               <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
@@ -101,8 +172,19 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </body>
         </html>
-      `,
+      `;
+    } else {
+      throw new Error('Se requiere magic_link (para recovery) o password (para nuevos usuarios)');
+    }
+
+    const emailResponse = await resend.emails.send({
+      from: "Granada Platform <noreply@granadaplatform.com>",
+      to: [email],
+      subject: template.subject,
+      html: emailHtml,
     });
+
+    console.log("Email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
