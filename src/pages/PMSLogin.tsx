@@ -62,17 +62,26 @@ const PMSLogin = () => {
       });
 
       if (functionError) {
-        // Extract the actual error message from the backend
-        const errorMessage = data?.error || functionError.message;
+        let backendMessage = "";
+        try {
+          const httpError: any = functionError;
+          if (httpError.context?.json) {
+            const body = await httpError.context.json();
+            backendMessage = body?.error || "";
+          }
+        } catch (parseError) {
+          console.error("Error parsing edge function error:", parseError);
+        }
+
+        const errorMessage = backendMessage || (data as any)?.error || functionError.message;
         setError(errorMessage);
         toast.error("Error al enviar email de recuperación", {
           description: errorMessage,
         });
-      } else if (data?.error) {
-        // Handle backend errors that come in the data object
-        setError(data.error);
+      } else if ((data as any)?.error) {
+        setError((data as any).error);
         toast.error("Error", {
-          description: data.error,
+          description: (data as any).error,
         });
       } else {
         toast.success("Email enviado exitosamente", {

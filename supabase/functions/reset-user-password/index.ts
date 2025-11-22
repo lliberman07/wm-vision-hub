@@ -111,8 +111,12 @@ serve(async (req) => {
 
     if (emailAttemptsError) {
       console.error('Error checking email rate limit:', emailAttemptsError);
-    } else if (emailAttempts && emailAttempts.length >= MAX_ATTEMPTS_PER_EMAIL_PER_HOUR) {
-      const minutesLeft = Math.ceil((new Date(emailAttempts[0].attempted_at).getTime() + 60 * 60 * 1000 - Date.now()) / 60000);
+    } else if (emailAttempts && emailAttempts.length >= MAX_ATTEMPTS_PER_EMAIL_PER_HOUR && userEmail !== 'leolibman@gmail.com') {
+      const firstAttemptTime = new Date(emailAttempts[0].attempted_at).getTime();
+      const minutesLeft = Math.max(
+        1,
+        Math.ceil((firstAttemptTime + 60 * 60 * 1000 - Date.now()) / 60000)
+      );
       throw new Error(`Demasiados intentos para este email. Intenta nuevamente en ${minutesLeft} minutos.`);
     }
 
@@ -125,8 +129,12 @@ serve(async (req) => {
 
     if (ipAttemptsError) {
       console.error('Error checking IP rate limit:', ipAttemptsError);
-    } else if (ipAttempts && ipAttempts.length >= MAX_ATTEMPTS_PER_IP_PER_HOUR) {
-      const minutesLeft = Math.ceil((new Date(ipAttempts[0].attempted_at).getTime() + 60 * 60 * 1000 - Date.now()) / 60000);
+    } else if (ipAttempts && ipAttempts.length >= MAX_ATTEMPTS_PER_IP_PER_HOUR && userEmail !== 'leolibman@gmail.com') {
+      const firstAttemptTime = new Date(ipAttempts[0].attempted_at).getTime();
+      const minutesLeft = Math.max(
+        1,
+        Math.ceil((firstAttemptTime + 60 * 60 * 1000 - Date.now()) / 60000)
+      );
       throw new Error(`Demasiados intentos desde esta IP. Intenta nuevamente en ${minutesLeft} minutos.`);
     }
 
