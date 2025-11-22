@@ -840,6 +840,78 @@ export type Database = {
           },
         ]
       }
+      password_reset_attempts: {
+        Row: {
+          attempted_at: string
+          email: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          success: boolean
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          attempted_at?: string
+          email: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          attempted_at?: string
+          email?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      password_reset_audit_log: {
+        Row: {
+          created_at: string
+          email: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          requested_by: string | null
+          success: boolean
+          tenant_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          requested_by?: string | null
+          success?: boolean
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          requested_by?: string | null
+          success?: boolean
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payment_receipts: {
         Row: {
           amount: number
@@ -4455,6 +4527,7 @@ export type Database = {
         Args: { p_cuit_cuil?: string; p_email: string }
         Returns: Json
       }
+      cleanup_old_password_reset_attempts: { Args: never; Returns: undefined }
       cleanup_orphan_payments: {
         Args: never
         Returns: {

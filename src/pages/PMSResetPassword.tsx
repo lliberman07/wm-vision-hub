@@ -20,12 +20,20 @@ export default function PMSResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verificar si hay un hash de recuperación en la URL
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const type = hashParams.get('type');
+    const errorCode = hashParams.get('error_code');
     
-    if (type !== 'recovery') {
-      setError("Link de recuperación inválido o expirado");
+    if (errorCode === 'otp_expired' || errorCode === 'access_denied') {
+      setError(
+        'Este link de recuperación ha expirado. Por favor, usa la contraseña temporal que te enviamos por email para iniciar sesión. ' +
+        'Si no recibiste el email, solicita un nuevo reset de contraseña desde la página de login.'
+      );
+    } else if (type !== 'recovery' && !errorCode) {
+      setError(
+        'Link de recuperación inválido. Por favor, usa la contraseña temporal que te enviamos por email para iniciar sesión. ' +
+        'Si necesitas generar una nueva contraseña, solicita un reset desde la página de login.'
+      );
     }
   }, []);
 
