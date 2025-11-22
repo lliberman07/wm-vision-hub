@@ -62,9 +62,17 @@ const PMSLogin = () => {
       });
 
       if (functionError) {
-        setError(functionError.message);
+        // Extract the actual error message from the backend
+        const errorMessage = data?.error || functionError.message;
+        setError(errorMessage);
         toast.error("Error al enviar email de recuperación", {
-          description: functionError.message,
+          description: errorMessage,
+        });
+      } else if (data?.error) {
+        // Handle backend errors that come in the data object
+        setError(data.error);
+        toast.error("Error", {
+          description: data.error,
         });
       } else {
         toast.success("Email enviado", {
