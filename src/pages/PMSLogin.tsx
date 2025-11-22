@@ -56,11 +56,9 @@ const PMSLogin = () => {
     setError("");
 
     try {
-      // Buscar el user_id basado en el email
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      
+      // Pasar el email directamente a la edge function
       const { data, error: functionError } = await supabase.functions.invoke('reset-user-password', {
-        body: { user_id: currentUser?.id, email }
+        body: { email }
       });
 
       if (functionError) {

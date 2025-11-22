@@ -85,10 +85,9 @@ const Auth = () => {
     setError("");
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      // Pasar el email directamente a la edge function
       const { data, error: functionError } = await supabase.functions.invoke('reset-user-password', {
-        body: { user_id: user?.id, email }
+        body: { email }
       });
 
       if (functionError) {
