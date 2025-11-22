@@ -36,14 +36,14 @@ serve(async (req) => {
       throw new Error('user_id or email is required');
     }
 
-    // Get user email
+    // Get user data to validate
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
     
     if (userError || !userData.user) {
       throw new Error('Usuario no encontrado');
     }
 
-    const email = userData.user.email;
+    // Use the email from request body (already declared at line 20)
 
     // Generate new temporary password
     const tempPassword = Math.random().toString(36).slice(-12) + 'Aa1!';
