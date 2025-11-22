@@ -100,9 +100,7 @@ serve(async (req) => {
       throw new Error('La cuenta de usuario no está activa');
     }
 
-    // RATE LIMITING: Check attempts by email
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    
+    // RATE LIMITING: Check attempts by email (solo para logging, sin bloquear por ahora)
     const { data: emailAttempts, error: emailAttemptsError } = await supabase
       .from('password_reset_attempts')
       .select('*')
@@ -111,16 +109,11 @@ serve(async (req) => {
 
     if (emailAttemptsError) {
       console.error('Error checking email rate limit:', emailAttemptsError);
-    } else if (emailAttempts && emailAttempts.length >= MAX_ATTEMPTS_PER_EMAIL_PER_HOUR && userEmail !== 'leolibman@gmail.com') {
-      const firstAttemptTime = new Date(emailAttempts[0].attempted_at).getTime();
-      const minutesLeft = Math.max(
-        1,
-        Math.ceil((firstAttemptTime + 60 * 60 * 1000 - Date.now()) / 60000)
-      );
-      throw new Error(`Demasiados intentos para este email. Intenta nuevamente en ${minutesLeft} minutos.`);
+    } else if (emailAttempts) {
+      console.log(`Password reset attempts for ${userEmail} in last hour:`, emailAttempts.length);
     }
 
-    // RATE LIMITING: Check attempts by IP
+    // RATE LIMITING: Check attempts by IP (solo para logging, sin bloquear por ahora)
     const { data: ipAttempts, error: ipAttemptsError } = await supabase
       .from('password_reset_attempts')
       .select('*')
@@ -129,13 +122,8 @@ serve(async (req) => {
 
     if (ipAttemptsError) {
       console.error('Error checking IP rate limit:', ipAttemptsError);
-    } else if (ipAttempts && ipAttempts.length >= MAX_ATTEMPTS_PER_IP_PER_HOUR && userEmail !== 'leolibman@gmail.com') {
-      const firstAttemptTime = new Date(ipAttempts[0].attempted_at).getTime();
-      const minutesLeft = Math.max(
-        1,
-        Math.ceil((firstAttemptTime + 60 * 60 * 1000 - Date.now()) / 60000)
-      );
-      throw new Error(`Demasiados intentos desde esta IP. Intenta nuevamente en ${minutesLeft} minutos.`);
+    } else if (ipAttempts) {
+      console.log(`Password reset attempts from IP ${ipAddress} in last hour:`, ipAttempts.length);
     }
 
     // Check if it's a Granada user
