@@ -75,10 +75,11 @@ const PMSLogin = () => {
           description: data.error,
         });
       } else {
-        toast.success("Email enviado", {
-          description: "Revisa tu correo para restablecer tu contraseña",
+        toast.success("Email enviado exitosamente", {
+          description: "Revisa tu correo. Te enviamos un link para crear una nueva contraseña (válido por 1 hora).",
         });
         setShowResetPassword(false);
+        setEmail(""); // Clear email field
       }
     } catch (error: any) {
       setError(error.message);
@@ -133,10 +134,16 @@ const PMSLogin = () => {
                     type="email"
                     placeholder="correo@ejemplo.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError(""); // Clear errors when typing
+                    }}
                     required
                     disabled={loading}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Te enviaremos un link seguro para crear una nueva contraseña
+                  </p>
                 </div>
 
                 <Button
@@ -144,7 +151,7 @@ const PMSLogin = () => {
                   className="w-full"
                   disabled={loading}
                 >
-                  {loading ? "Enviando..." : "Enviar Instrucciones"}
+                  {loading ? "Enviando link..." : "Enviar Link de Recuperación"}
                 </Button>
 
                 <Button

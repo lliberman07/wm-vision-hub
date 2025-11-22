@@ -24,15 +24,19 @@ export default function PMSResetPassword() {
     const type = hashParams.get('type');
     const errorCode = hashParams.get('error_code');
     
-    if (errorCode === 'otp_expired' || errorCode === 'access_denied') {
+    if (errorCode === 'otp_expired') {
       setError(
-        'Este link de recuperación ha expirado. Por favor, usa la contraseña temporal que te enviamos por email para iniciar sesión. ' +
-        'Si no recibiste el email, solicita un nuevo reset de contraseña desde la página de login.'
+        'Este link de recuperación ha expirado (válido por 1 hora). ' +
+        'Por favor, solicita un nuevo link de recuperación desde la página de login.'
+      );
+    } else if (errorCode === 'access_denied') {
+      setError(
+        'Link de recuperación inválido o ya utilizado. ' +
+        'Solicita un nuevo link de recuperación desde la página de login.'
       );
     } else if (type !== 'recovery' && !errorCode) {
       setError(
-        'Link de recuperación inválido. Por favor, usa la contraseña temporal que te enviamos por email para iniciar sesión. ' +
-        'Si necesitas generar una nueva contraseña, solicita un reset desde la página de login.'
+        'Link de recuperación inválido. Solicita un nuevo link desde la página de login.'
       );
     }
   }, []);
@@ -85,9 +89,9 @@ export default function PMSResetPassword() {
               <Lock className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Cambiar Contraseña</CardTitle>
+          <CardTitle className="text-2xl text-center">Crear Nueva Contraseña</CardTitle>
           <CardDescription className="text-center">
-            Ingresa tu nueva contraseña
+            Ingresa tu nueva contraseña segura
           </CardDescription>
         </CardHeader>
         <CardContent>

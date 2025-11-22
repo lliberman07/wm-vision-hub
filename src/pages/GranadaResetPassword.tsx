@@ -1,91 +1,97 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Lock } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
+import { Eye, EyeOff, Lock } from "lucide-react";
 
 export default function GranadaResetPassword() {
-  const navigate = useNavigate();
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { updatePassword } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const type = hashParams.get('type');
     const errorCode = hashParams.get('error_code');
     
-    if (errorCode === 'otp_expired' || errorCode === 'access_denied') {
+    if (errorCode === 'otp_expired') {
       setError(
-        'Este link de recuperación ha expirado. Por favor, usa la contraseña temporal que te enviamos por email para iniciar sesión. ' +
-        'Si no recibiste el email o necesitas ayuda, contacta al administrador.'
+        'Este link de recuperación ha expirado (válido por 1 hora). ' +
+        'Por favor, solicita un nuevo link de recuperación desde la página de login.'
+      );
+    } else if (errorCode === 'access_denied') {
+      setError(
+        'Link de recuperación inválido o ya utilizado. ' +
+        'Solicita un nuevo link de recuperación desde la página de login.'
       );
     } else if (type !== 'recovery' && !errorCode) {
       setError(
-        'Link de recuperación inválido. Por favor, usa la contraseña temporal que te enviamos por email para iniciar sesión. ' +
-        'Si necesitas generar una nueva contraseña, contacta al administrador.'
+        'Link de recuperación inválido. Solicita un nuevo link desde la página de login.'
       );
     }
   }, []);
 
   const validatePasswords = () => {
-    if (newPassword.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    if (newPassword.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres");
       return false;
     }
     if (newPassword !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      setError("Las contraseñas no coinciden");
       return false;
     }
-    setError('');
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setError("");
+
     if (!validatePasswords()) {
       return;
     }
 
     setLoading(true);
-    
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
+
+    const { error } = await updatePassword(newPassword);
+
+    if (error) {
+      setError(error.message);
+      toast.error("Error al cambiar contraseña", {
+        description: error.message,
       });
-
-      if (error) throw error;
-
-      toast.success('Contraseña actualizada exitosamente');
-      navigate('/granada-admin/login');
-    } catch (error: any) {
-      console.error('Error updating password:', error);
-      setError(error.message || 'Error al actualizar la contraseña');
-      toast.error('Error al actualizar la contraseña');
-    } finally {
-      setLoading(false);
+    } else {
+      toast.success("Contraseña actualizada", {
+        description: "Ya puedes iniciar sesión con tu nueva contraseña",
+      });
+      navigate("/granada-admin/login");
     }
+
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="granada-theme min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <Lock className="h-12 w-12 text-primary" />
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Lock className="h-6 w-6 text-primary" />
+            </div>
           </div>
-          <CardTitle className="text-2xl text-center">Restablecer Contraseña</CardTitle>
+          <CardTitle className="text-2xl text-center">Crear Nueva Contraseña</CardTitle>
           <CardDescription className="text-center">
-            Ingresa tu nueva contraseña para Granada Platform
+            Ingresa tu nueva contraseña segura para Granada Platform
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,20 +107,29 @@ export default function GranadaResetPassword() {
               <div className="relative">
                 <Input
                   id="newPassword"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showNewPassword ? "text" : "password"}
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Ingresa tu nueva contraseña"
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="Mínimo 8 caracteres"
                   required
                   disabled={loading}
                 />
-                <button
+                <Button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
               </div>
             </div>
 
@@ -123,36 +138,46 @@ export default function GranadaResetPassword() {
               <div className="relative">
                 <Input
                   id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirma tu nueva contraseña"
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="Repite la contraseña"
                   required
                   disabled={loading}
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
               </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
+              {loading ? "Cambiando contraseña..." : "Cambiar Contraseña"}
             </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate('/granada-admin/login')}
-              disabled={loading}
-            >
-              Volver al Login
-            </Button>
+            <div className="text-center mt-4">
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => navigate("/granada-admin/login")}
+                className="text-sm"
+              >
+                Volver al inicio de sesión
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
