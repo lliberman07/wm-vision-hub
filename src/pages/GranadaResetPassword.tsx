@@ -19,12 +19,20 @@ export default function GranadaResetPassword() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check if this is a valid recovery link
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const type = hashParams.get('type');
+    const errorCode = hashParams.get('error_code');
     
-    if (type !== 'recovery') {
-      setError('Link de recuperación inválido. Por favor, solicita uno nuevo.');
+    if (errorCode === 'otp_expired' || errorCode === 'access_denied') {
+      setError(
+        'Este link de recuperación ha expirado. Por favor, usa la contraseña temporal que te enviamos por email para iniciar sesión. ' +
+        'Si no recibiste el email o necesitas ayuda, contacta al administrador.'
+      );
+    } else if (type !== 'recovery' && !errorCode) {
+      setError(
+        'Link de recuperación inválido. Por favor, usa la contraseña temporal que te enviamos por email para iniciar sesión. ' +
+        'Si necesitas generar una nueva contraseña, contacta al administrador.'
+      );
     }
   }, []);
 
