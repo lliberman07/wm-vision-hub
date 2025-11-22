@@ -114,24 +114,9 @@ const GranadaAdminLogin = () => {
     setError("");
 
     try {
-      // Buscar el user_id basado en el email
-      const { data: userData, error: userError } = await supabase
-        .from('granada_platform_users')
-        .select('user_id')
-        .eq('email', email)
-        .single();
-
-      if (userError || !userData) {
-        setError("No se encontró un usuario con ese email");
-        toast.error("Error", {
-          description: "No se encontró un usuario con ese email",
-        });
-        setLoading(false);
-        return;
-      }
-
+      // Pasar el email directamente a la edge function
       const { data, error: functionError } = await supabase.functions.invoke('reset-user-password', {
-        body: { user_id: userData.user_id }
+        body: { email }
       });
 
       if (functionError) {
