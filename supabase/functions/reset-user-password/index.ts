@@ -17,14 +17,27 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { user_id } = await req.json();
+    const { user_id, email } = await req.json();
+    
+    let userId = user_id;
 
-    if (!user_id) {
-      throw new Error('user_id is required');
+    // Si no se proporciona user_id pero sí email, buscar el user_id
+    if (!userId && email) {
+      const { data: authUsers, error: searchError } = await supabase.auth.admin.listUsers();
+      if (!searchError && authUsers) {
+        const foundUser = authUsers.users.find(u => u.email === email);
+        if (foundUser) {
+          userId = foundUser.id;
+        }
+      }
+    }
+
+    if (!userId) {
+      throw new Error('user_id or email is required');
     }
 
     // Get user email
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(user_id);
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
     
     if (userError || !userData.user) {
       throw new Error('Usuario no encontrado');
@@ -37,7 +50,7 @@ serve(async (req) => {
 
     // Update user password
     const { error: updateError } = await supabase.auth.admin.updateUserById(
-      user_id,
+      userId,
       { password: tempPassword }
     );
 
@@ -49,7 +62,7 @@ serve(async (req) => {
     const { data: granadaUser } = await supabase
       .from('granada_platform_users')
       .select('role')
-      .eq('user_id', user_id)
+      .eq('user_id', userId)
       .single();
 
     const isGranadaUser = !!granadaUser;
@@ -59,14 +72,16 @@ serve(async (req) => {
     const projectId = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || '';
     const frontendUrl = `https://${projectId}.lovableproject.com`;
     
-    // Generate password reset link
+    // Generate password reset link with 7 days expiry
     const { data: resetData, error: resetLinkError } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
       options: {
         redirectTo: isGranadaUser 
           ? `${frontendUrl}/granada-admin/reset-password`
-          : `${frontendUrl}/pms/reset-password`
+          : `${frontendUrl}/pms/reset-password`,
+        // Link expires in 7 days (604800 seconds)
+        expiresIn: 604800
       }
     });
 

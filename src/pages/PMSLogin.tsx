@@ -9,6 +9,7 @@ import { AlertCircle, Home } from "lucide-react";
 import granadaLogo from "@/assets/granada-logo-full.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const PMSLogin = () => {
   const [email, setEmail] = useState("");
@@ -54,18 +55,30 @@ const PMSLogin = () => {
     setLoading(true);
     setError("");
 
-    const { error } = await resetPassword(email);
+    try {
+      // Buscar el user_id basado en el email
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      const { data, error: functionError } = await supabase.functions.invoke('reset-user-password', {
+        body: { user_id: currentUser?.id, email }
+      });
 
-    if (error) {
+      if (functionError) {
+        setError(functionError.message);
+        toast.error("Error al enviar email de recuperación", {
+          description: functionError.message,
+        });
+      } else {
+        toast.success("Email enviado", {
+          description: "Revisa tu correo para restablecer tu contraseña",
+        });
+        setShowResetPassword(false);
+      }
+    } catch (error: any) {
       setError(error.message);
-      toast.error("Error al enviar email de recuperación", {
+      toast.error("Error", {
         description: error.message,
       });
-    } else {
-      toast.success("Email enviado", {
-        description: "Revisa tu correo para restablecer tu contraseña",
-      });
-      setShowResetPassword(false);
     }
 
     setLoading(false);
