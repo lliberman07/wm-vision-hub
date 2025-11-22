@@ -33,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
         intro: is_reset 
           ? "Tu contraseña del Sistema PMS ha sido restablecida exitosamente." 
           : "Tu solicitud de acceso al Sistema de Gestión de Propiedades (PMS) ha sido aprobada.",
-        loginUrl: "https://wm-real-estate.lovable.app/pms/login"
+        loginUrl: "https://jrzeabjpxkhccopxfwqa.lovableproject.com/pms/login"
       },
       granada: {
         subject: is_reset ? "Contraseña restablecida - Granada Platform" : "¡Bienvenido a Granada Platform!",
@@ -41,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
         intro: is_reset
           ? "Tu contraseña de Granada Platform ha sido restablecida exitosamente."
           : "Tu cuenta de administrador en Granada Platform ha sido creada exitosamente.",
-        loginUrl: "https://wm-real-estate.lovable.app/granada-admin/login"
+        loginUrl: "https://jrzeabjpxkhccopxfwqa.lovableproject.com/granada-admin/login"
       }
     };
 
