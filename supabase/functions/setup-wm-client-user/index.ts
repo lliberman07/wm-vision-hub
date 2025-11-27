@@ -13,6 +13,45 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // ✅ SECURITY: Verificar autenticación
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization required' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Verificar que el usuario es GRANADA_SUPERADMIN
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Verificar rol de GRANADA_SUPERADMIN
+    const { data: granadaUser } = await supabaseClient
+      .from('granada_platform_users')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single();
+    
+    if (!granadaUser || granadaUser.role !== 'GRANADA_SUPERADMIN') {
+      return new Response(
+        JSON.stringify({ error: 'Only GRANADA_SUPERADMIN can execute this function' }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Create Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -27,7 +66,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     const WM_TENANT_ID = "8c5b46df-6090-4383-8995-a201ce7e5f9e";
     const CLIENT_EMAIL = "wmclient@wmglobal.co";
-    const CLIENT_PASSWORD = "WMClient2024!";
+    
+    // ✅ SECURITY: Generar password aleatorio en lugar de hardcodear
+    const CLIENT_PASSWORD = crypto.randomUUID().substring(0, 16);
 
     // Check if user already exists
     const { data: existingAuthUser } = await supabaseAdmin.auth.admin.listUsers();
@@ -92,6 +133,13 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("CLIENT_ADMIN record already exists");
     }
 
+    // ✅ SECURITY: NO retornar credenciales en la respuesta
+    // En su lugar, logging seguro en los logs del servidor
+    console.log(`✅ WM Client user configured: ${CLIENT_EMAIL}`);
+    if (!userExists) {
+      console.log(`⚠️ TEMPORARY PASSWORD (store securely): ${CLIENT_PASSWORD}`);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true,
@@ -99,11 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
         email: CLIENT_EMAIL,
         message: userExists 
           ? "User already existed, verified CLIENT_ADMIN role" 
-          : "Created new user with CLIENT_ADMIN role",
-        credentials: {
-          email: CLIENT_EMAIL,
-          password: CLIENT_PASSWORD
-        }
+          : "Created new user with CLIENT_ADMIN role. Check server logs for temporary password.",
       }),
       {
         status: 200,

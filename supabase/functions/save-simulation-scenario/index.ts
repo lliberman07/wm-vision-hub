@@ -1,10 +1,24 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// ✅ SECURITY: Validación de input con Zod
+const SimulationSchema = z.object({
+  email: z.string().email().max(255),
+  simulationData: z.record(z.unknown()).refine(
+    (data) => JSON.stringify(data).length < 100000, // 100KB limit
+    { message: "Simulation data too large" }
+  ),
+  analysisResults: z.record(z.unknown()).refine(
+    (data) => JSON.stringify(data).length < 100000, // 100KB limit
+    { message: "Analysis results too large" }
+  ),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,7 +30,25 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { email, simulationData, analysisResults } = await req.json();
+    // ✅ SECURITY: Validar input
+    const body = await req.json();
+    const validationResult = SimulationSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input data',
+          details: validationResult.error.errors 
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const { email, simulationData, analysisResults } = validationResult.data;
 
     console.log('Saving simulation for email:', email);
 
@@ -59,9 +91,6 @@ serve(async (req) => {
 
     console.log('Simulation saved successfully:', data.id);
 
-    // TODO: Send email with reference number using Resend
-    // For now, we'll return success
-
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -76,7 +105,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in save-simulation-scenario function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Internal server error' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
