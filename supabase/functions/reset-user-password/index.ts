@@ -101,6 +101,8 @@ serve(async (req) => {
     }
 
     // RATE LIMITING: Check attempts by email (solo para logging, sin bloquear por ahora)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    
     const { data: emailAttempts, error: emailAttemptsError } = await supabase
       .from('password_reset_attempts')
       .select('*')
