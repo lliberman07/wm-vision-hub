@@ -13,6 +13,43 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // ✅ SECURITY: Verificar que el usuario es GRANADA_SUPERADMIN
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization required' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Verificar que es GRANADA_SUPERADMIN
+    const { data: granadaUser } = await supabaseClient
+      .from('granada_platform_users')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single();
+    
+    if (!granadaUser || granadaUser.role !== 'GRANADA_SUPERADMIN') {
+      return new Response(
+        JSON.stringify({ error: 'Only GRANADA_SUPERADMIN can execute this function' }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     // Create Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
