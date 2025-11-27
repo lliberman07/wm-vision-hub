@@ -153,14 +153,15 @@ serve(async (req) => {
 
     console.log(`Generating magic link for: ${userEmail}, isGranada: ${isGranadaUser}`);
 
-    // Get FRONTEND_URL from environment
-    const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://jrzeabjpxkhccopxfwqa.lovableproject.com';
+    // Get FRONTEND_URL from environment and normalize (remove trailing slashes)
+    const rawFrontendUrl = Deno.env.get('FRONTEND_URL') || 'https://jrzeabjpxkhccopxfwqa.lovableproject.com';
+    const frontendUrl = rawFrontendUrl.replace(/\/+$/, '');
     
     // Determine redirect path based on platform
     const redirectPath = isGranadaUser 
       ? '/granada-admin/reset-password'
       : '/pms/reset-password';
-
+ 
     // Generate magic link using Supabase's built-in method
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'recovery',
