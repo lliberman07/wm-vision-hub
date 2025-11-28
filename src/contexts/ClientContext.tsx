@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './AuthContext';
+import { useUserProfile } from './UserProfileContext';
 
 interface ClientData {
   id: string;
@@ -49,7 +49,7 @@ export const useClient = () => {
 };
 
 export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, granadaUser, loading: profileLoading } = useUserProfile();
   const [isClientAdmin, setIsClientAdmin] = useState(false);
   const [clientData, setClientData] = useState<ClientData | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
@@ -64,17 +64,14 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    try {
-      // FIRST: Check if user is GRANADA_SUPERADMIN or GRANADA_ADMIN
-      const { data: granadaUser } = await supabase
-        .from('granada_platform_users')
-        .select('role, is_active')
-        .eq('user_id', user.id)
-        .single();
+    // Wait for profile to load
+    if (profileLoading) {
+      return;
+    }
 
-      // If Granada Platform user, NOT a ClientAdmin
-      if (granadaUser?.is_active && 
-          (granadaUser.role === 'GRANADA_SUPERADMIN' || granadaUser.role === 'GRANADA_ADMIN')) {
+    try {
+      // If Granada Platform user, NOT a ClientAdmin (use shared data)
+      if (granadaUser?.is_active) {
         setIsClientAdmin(false);
         setClientData(null);
         setSubscription(null);
@@ -82,40 +79,35 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return;
       }
 
-      // Check if user has INMOBILIARIA or GESTOR role via v_current_user_tenants
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('v_current_user_tenants')
-        .select('*')
-        .eq('user_id', user.id);
+      // Parallelize independent queries
+      const [rolesResult, clientUserResult] = await Promise.all([
+        supabase
+          .from('v_current_user_tenants')
+          .select('*')
+          .eq('user_id', user.id),
+        supabase
+          .from('pms_client_users')
+          .select('tenant_id, user_type, is_active')
+          .eq('user_id', user.id)
+          .eq('user_type', 'CLIENT_ADMIN')
+          .eq('is_active', true)
+          .maybeSingle()
+      ]);
 
-      if (rolesError) {
-        console.error('Error fetching user roles:', rolesError);
+      if (rolesResult.error) {
+        console.error('Error fetching user roles:', rolesResult.error);
       }
 
       // Check if any tenant has INMOBILIARIA or GESTOR role
-      // INMOBILIARIA users are owners/admins of their own tenant
-      const adminTenant = rolesData?.find((row: any) => {
+      const adminTenant = rolesResult.data?.find((row: any) => {
         const roles = row.roles || [];
-        const hasInmobiliariaRole = roles.some((role: string) => 
-          role.toUpperCase() === 'INMOBILIARIA'
+        return roles.some((role: string) => 
+          role.toUpperCase() === 'INMOBILIARIA' || role.toUpperCase() === 'GESTOR'
         );
-        const hasGestorRole = roles.some((role: string) => 
-          role.toUpperCase() === 'GESTOR'
-        );
-        return hasInmobiliariaRole || hasGestorRole;
       });
 
-      // Also check for CLIENT_ADMIN in pms_client_users
-      const { data: clientUserData } = await supabase
-        .from('pms_client_users')
-        .select('tenant_id, user_type, is_active')
-        .eq('user_id', user.id)
-        .eq('user_type', 'CLIENT_ADMIN')
-        .eq('is_active', true)
-        .maybeSingle();
-
-      const tenantId = adminTenant?.tenant_id || clientUserData?.tenant_id;
-      const hasAdminAccess = !!(adminTenant || clientUserData);
+      const tenantId = adminTenant?.tenant_id || clientUserResult.data?.tenant_id;
+      const hasAdminAccess = !!(adminTenant || clientUserResult.data);
 
       if (!hasAdminAccess || !tenantId) {
         setIsClientAdmin(false);
@@ -127,52 +119,55 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       setIsClientAdmin(true);
 
-      // Get client (tenant) data
-      const { data: tenantData, error: tenantError } = await supabase
-        .from('pms_tenants')
-        .select('*')
-        .eq('id', tenantId)
-        .single();
+      // Parallelize tenant and subscription queries
+      const [tenantResult, subscriptionResult] = await Promise.all([
+        supabase
+          .from('pms_tenants')
+          .select('*')
+          .eq('id', tenantId)
+          .single(),
+        supabase
+          .from('tenant_subscriptions')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+      ]);
 
-      if (tenantError) {
-        console.error('Error fetching client data:', tenantError);
+      if (tenantResult.error) {
+        console.error('Error fetching client data:', tenantResult.error);
         setLoading(false);
         return;
       }
 
-      setClientData(tenantData as ClientData);
+      setClientData(tenantResult.data as ClientData);
 
-      // Get subscription data
-      const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from('tenant_subscriptions')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (!subscriptionError && subscriptionData) {
-        // Get plan name separately
+      if (!subscriptionResult.error && subscriptionResult.data) {
         const { data: planData } = await supabase
           .from('subscription_plans')
           .select('name')
-          .eq('id', subscriptionData.plan_id)
+          .eq('id', subscriptionResult.data.plan_id)
           .single();
 
-        const currentPeriodEnd = subscriptionData.current_period_end ? new Date(subscriptionData.current_period_end) : null;
+        const currentPeriodEnd = subscriptionResult.data.current_period_end 
+          ? new Date(subscriptionResult.data.current_period_end) 
+          : null;
         const now = new Date();
-        const isTrial = currentPeriodEnd ? currentPeriodEnd > now && subscriptionData.status === 'trial' : false;
+        const isTrial = currentPeriodEnd 
+          ? currentPeriodEnd > now && subscriptionResult.data.status === 'trial' 
+          : false;
 
         setSubscription({
-          id: subscriptionData.id,
-          plan_id: subscriptionData.plan_id,
+          id: subscriptionResult.data.id,
+          plan_id: subscriptionResult.data.plan_id,
           plan_name: planData?.name || 'Plan Desconocido',
-          status: subscriptionData.status,
-          start_date: subscriptionData.created_at || '',
-          end_date: subscriptionData.current_period_end,
-          trial_end_date: isTrial ? subscriptionData.current_period_end : null,
+          status: subscriptionResult.data.status,
+          start_date: subscriptionResult.data.created_at || '',
+          end_date: subscriptionResult.data.current_period_end,
+          trial_end_date: isTrial ? subscriptionResult.data.current_period_end : null,
           is_trial: isTrial,
-          auto_renew: !subscriptionData.cancel_at_period_end,
+          auto_renew: !subscriptionResult.data.cancel_at_period_end,
         });
       }
 
@@ -184,8 +179,10 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   useEffect(() => {
-    refreshClientData();
-  }, [user]);
+    if (!profileLoading) {
+      refreshClientData();
+    }
+  }, [user, profileLoading, granadaUser]);
 
   const value = {
     isClientAdmin,
