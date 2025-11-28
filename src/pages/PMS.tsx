@@ -46,7 +46,7 @@ const PMS = () => {
     }
   }, [isClientAdmin, hasPMSAccess, authLoading, pmsLoading, clientLoading, user, navigate]);
 
-  if (authLoading) {
+  if (authLoading || pmsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -66,7 +66,7 @@ const PMS = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/pms/request-access')} className="w-full">
+            <Button onClick={() => navigate('/granada-platform/contacto')} className="w-full">
               Solicitar Acceso
             </Button>
           </CardContent>
