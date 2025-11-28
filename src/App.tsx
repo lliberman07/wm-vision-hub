@@ -48,7 +48,6 @@ import ClientAdmin from "./pages/ClientAdmin";
 import PMS from "./pages/PMS";
 import PMSLogin from "./pages/PMSLogin";
 import PMSResetPassword from "./pages/PMSResetPassword";
-import PMSRequestAccess from "./pages/PMSRequestAccess";
 import Properties from "./pages/pms/Properties";
 import Owners from "./pages/pms/Owners";
 import Tenants from "./pages/pms/Tenants";
@@ -78,98 +77,90 @@ const App = () => (
             <GranadaAuthProvider>
               <PMSProvider>
                 <ClientProvider>
-                  <Toaster />
-                  <Sonner />
-                  <BrowserRouter>
-                    <ScrollToTop />
-                    <Routes>
-                      <Route path="/" element={<GranadaHome />} />
-                      <Route path="/wm" element={<Index />} />
-
-                      {/* Granada Platform - Nuevo sitio multi-página */}
-                      <Route path="/granada-platform" element={<GranadaHome />} />
-                      <Route path="/granada-platform/inmobiliarias-admin" element={<InmobiliariasAdmin />} />
-                      <Route path="/granada-platform/propietarios" element={<Propietarios />} />
-                      <Route path="/granada-platform/planes" element={<Planes />} />
-                      <Route path="/granada-platform/proveedores" element={<Proveedores />} />
-                      <Route path="/granada-platform/contacto" element={<Contacto />} />
-
-                      {/* Granada Platform - Rutas legacy (mantener por compatibilidad) */}
-                      <Route path="/granada-platform-old" element={<GranadaPlatformHome />} />
-                      <Route path="/subscription-request" element={<SubscriptionRequest />} />
-                      <Route path="/granada-platform/contact" element={<GranadaContact />} />
-                      <Route path="/granada/contact" element={<GranadaContact />} />
-                      <Route path="/partners-directory" element={<PartnersDirectory />} />
-                      <Route path="/granada-admin/login" element={<GranadaAdminLogin />} />
-                      <Route path="/granada-admin/reset-password" element={<GranadaResetPassword />} />
-                      <Route
-                        path="/granada-admin/change-password"
-                        element={
-                          <GranadaProtectedRoute>
-                            <GranadaChangePassword />
-                          </GranadaProtectedRoute>
-                        }
-                      />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/services" element={<Services />} />
-                      <Route path="/services/property-management" element={<PropertyManagement />} />
-                      <Route path="/services/brokerage" element={<RealEstateBrokerage />} />
-                      <Route path="/services/consulting" element={<Consulting />} />
-                      <Route path="/services/development" element={<RealEstateDevelopment />} />
-                      <Route path="/services/investments" element={<InvestmentServices />} />
-                      <Route path="/industries" element={<Industries />} />
-                      <Route path="/financing" element={<Financing />} />
-                      <Route path="/financing/apply" element={<FinancingApplication />} />
-                      <Route path="/financing/simulator" element={<Financing />} />
-                      <Route path="/credit-simulator" element={<CreditSimulator />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/faq" element={<FAQ />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route
-                        path="/admin/*"
-                        element={
-                          <ProtectedRoute>
-                            <Admin />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route path="/pms" element={<PMS />} />
-                      <Route path="/pms/login" element={<PMSLogin />} />
-                      <Route path="/pms/reset-password" element={<PMSResetPassword />} />
-                      <Route path="/pms/request-access" element={<PMSRequestAccess />} />
-                      <Route path="/pms/properties" element={<Properties />} />
-                      <Route path="/pms/owners" element={<Owners />} />
-                      <Route path="/pms/tenants" element={<Tenants />} />
-                      <Route path="/pms/contracts" element={<Contracts />} />
-                      <Route path="/pms/payments" element={<Payments />} />
-                      <Route path="/pms/receipts" element={<Receipts />} />
-                      <Route path="/pms/maintenance" element={<Maintenance />} />
-                      <Route path="/pms/reports" element={<Reports />} />
-                      <Route path="/pms/expenses" element={<Expenses />} />
-                      <Route path="/pms/indices" element={<Indices />} />
-                      <Route path="/pms/exchange-rates" element={<ExchangeRates />} />
-                      <Route path="/pms/mi-contrato" element={<MyContract />} />
-                      <Route path="/pms/help" element={<Help />} />
-                      <Route path="/pms/my-subscription" element={<MySubscription />} />
-                      <Route path="/client-admin/*" element={<ClientAdmin />} />
-                      <Route
-                        path="/granada-admin/*"
-                        element={
-                          <GranadaProtectedRoute>
-                            <GranadaAdmin />
-                          </GranadaProtectedRoute>
-                        }
-                      />
-                      <Route path="/terms-of-service" element={<TermsOfService />} />
-                      <Route path="/privacy" element={<PrivacyPolicy />} />
-                      <Route path="/privacy-policy" element={<GranadaPrivacyPolicy />} />
-                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </BrowserRouter>
-                </ClientProvider>
-              </PMSProvider>
-            </GranadaAuthProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                <ScrollToTop />
+              <Routes>
+              <Route path="/" element={<GranadaHome />} />
+              <Route path="/wm" element={<Index />} />
+            
+            {/* Granada Platform - Nuevo sitio multi-página */}
+            <Route path="/granada-platform" element={<GranadaHome />} />
+            <Route path="/granada-platform/inmobiliarias-admin" element={<InmobiliariasAdmin />} />
+            <Route path="/granada-platform/propietarios" element={<Propietarios />} />
+            <Route path="/granada-platform/planes" element={<Planes />} />
+            <Route path="/granada-platform/proveedores" element={<Proveedores />} />
+            <Route path="/granada-platform/contacto" element={<Contacto />} />
+            
+            {/* Granada Platform - Rutas legacy (mantener por compatibilidad) */}
+            <Route path="/granada-platform-old" element={<GranadaPlatformHome />} />
+            <Route path="/subscription-request" element={<SubscriptionRequest />} />
+            <Route path="/granada-platform/contact" element={<GranadaContact />} />
+            <Route path="/granada/contact" element={<GranadaContact />} />
+            <Route path="/partners-directory" element={<PartnersDirectory />} />
+              <Route path="/granada-admin/login" element={<GranadaAdminLogin />} />
+              <Route path="/granada-admin/reset-password" element={<GranadaResetPassword />} />
+              <Route path="/granada-admin/change-password" element={<GranadaProtectedRoute><GranadaChangePassword /></GranadaProtectedRoute>} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/services/property-management" element={<PropertyManagement />} />
+              <Route path="/services/brokerage" element={<RealEstateBrokerage />} />
+              <Route path="/services/consulting" element={<Consulting />} />
+              <Route path="/services/development" element={<RealEstateDevelopment />} />
+              <Route path="/services/investments" element={<InvestmentServices />} />
+              <Route path="/industries" element={<Industries />} />
+        <Route path="/financing" element={<Financing />} />
+        <Route path="/financing/apply" element={<FinancingApplication />} />
+              <Route path="/financing/simulator" element={<Financing />} />
+              <Route path="/credit-simulator" element={<CreditSimulator />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route 
+                path="/admin/*" 
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/pms" element={<PMS />} />
+              <Route path="/pms/login" element={<PMSLogin />} />
+              <Route path="/pms/reset-password" element={<PMSResetPassword />} />
+              <Route path="/pms/properties" element={<Properties />} />
+              <Route path="/pms/owners" element={<Owners />} />
+              <Route path="/pms/tenants" element={<Tenants />} />
+              <Route path="/pms/contracts" element={<Contracts />} />
+              <Route path="/pms/payments" element={<Payments />} />
+              <Route path="/pms/receipts" element={<Receipts />} />
+              <Route path="/pms/maintenance" element={<Maintenance />} />
+              <Route path="/pms/reports" element={<Reports />} />
+              <Route path="/pms/expenses" element={<Expenses />} />
+              <Route path="/pms/indices" element={<Indices />} />
+              <Route path="/pms/exchange-rates" element={<ExchangeRates />} />
+              <Route path="/pms/mi-contrato" element={<MyContract />} />
+              <Route path="/pms/help" element={<Help />} />
+              <Route path="/pms/my-subscription" element={<MySubscription />} />
+              <Route path="/client-admin/*" element={<ClientAdmin />} />
+              <Route 
+                path="/granada-admin/*" 
+                element={
+                  <GranadaProtectedRoute>
+                    <GranadaAdmin />
+                  </GranadaProtectedRoute>
+                } 
+              />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/privacy-policy" element={<GranadaPrivacyPolicy />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+              </ClientProvider>
+            </PMSProvider>
+          </GranadaAuthProvider>
           </UserProfileProvider>
         </AuthProvider>
       </LanguageProvider>
