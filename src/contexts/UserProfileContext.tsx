@@ -63,6 +63,7 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
+      console.log('[UserProfile] Initial session', { hasSession: !!session, hasUser: !!currentUser });
       setUser(currentUser);
       
       if (currentUser) {
@@ -74,14 +75,17 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user ?? null;
+      console.log('[UserProfile] Auth state change', { event: _event, hasUser: !!currentUser });
       setUser(currentUser);
       
       if (currentUser) {
         setLoading(true);
-        await fetchGranadaUser(currentUser.id);
-        setLoading(false);
+        // Defer Supabase calls to avoid deadlocks inside the auth callback
+        setTimeout(() => {
+          fetchGranadaUser(currentUser.id).finally(() => setLoading(false));
+        }, 0);
       } else {
         setGranadaUser(null);
         setLoading(false);
