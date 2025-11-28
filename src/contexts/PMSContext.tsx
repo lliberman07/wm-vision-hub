@@ -230,7 +230,9 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   useEffect(() => {
-    if (!profileLoading) {
+    if (profileLoading) {
+      setLoading(true);
+    } else {
       checkPMSAccess();
     }
   }, [user, profileLoading, granadaUser]);
