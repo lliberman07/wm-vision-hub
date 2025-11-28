@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './AuthContext';
+import { useUserProfile } from './UserProfileContext';
 
 type PMSRole = 'SUPERADMIN' | 'INMOBILIARIA' | 'GESTOR' | 'PROPIETARIO' | 'INQUILINO' | 'PROVEEDOR';
 
@@ -40,7 +40,7 @@ export const usePMS = () => {
 };
 
 export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, granadaUser, loading: profileLoading } = useUserProfile();
   const [hasPMSAccess, setHasPMSAccess] = useState(false);
   const [pmsRoles, setPMSRoles] = useState<PMSRole[]>([]);
   const [allRoleContexts, setAllRoleContexts] = useState<PMSRoleContext[]>([]);
@@ -62,13 +62,7 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     try {
-      // Check if user is GRANADA_SUPERADMIN first
-      const { data: granadaUser } = await supabase
-        .from('granada_platform_users')
-        .select('role, is_active')
-        .eq('user_id', user.id)
-        .single();
-
+      // Use shared granadaUser data
       if (granadaUser?.role === 'GRANADA_SUPERADMIN' && granadaUser.is_active) {
         // Get all active tenants for Granada SuperAdmin
         const { data: allTenants } = await supabase
@@ -236,8 +230,10 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   useEffect(() => {
-    checkPMSAccess();
-  }, [user]);
+    if (!profileLoading) {
+      checkPMSAccess();
+    }
+  }, [user, profileLoading, granadaUser]);
 
   const value = {
     hasPMSAccess,

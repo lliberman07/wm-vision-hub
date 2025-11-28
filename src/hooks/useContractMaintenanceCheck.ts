@@ -9,7 +9,7 @@ export function useContractMaintenanceCheck() {
   const { currentTenant } = usePMS();
 
   useEffect(() => {
-    const runMaintenance = async () => {
+    const runMaintenance = () => {
       if (!currentTenant) return;
 
       const lastCheck = localStorage.getItem(MAINTENANCE_KEY);
@@ -20,21 +20,31 @@ export function useContractMaintenanceCheck() {
         return;
       }
 
-      try {
-        console.log('Running contract maintenance tasks...');
-        
-        // Check expired contracts
-        await supabase.rpc('check_expired_contracts');
-        
-        // Update overdue payment items
-        await supabase.rpc('update_overdue_payment_items');
-        
-        // Store last check timestamp
-        localStorage.setItem(MAINTENANCE_KEY, now.toString());
-        
-        console.log('Contract maintenance completed successfully');
-      } catch (error) {
-        console.error('Error running contract maintenance:', error);
+      // Run maintenance after initial render using requestIdleCallback
+      const callback = async () => {
+        try {
+          console.log('Running contract maintenance tasks...');
+          
+          // Parallelize both RPC calls
+          await Promise.all([
+            supabase.rpc('check_expired_contracts'),
+            supabase.rpc('update_overdue_payment_items')
+          ]);
+          
+          // Store last check timestamp
+          localStorage.setItem(MAINTENANCE_KEY, now.toString());
+          
+          console.log('Contract maintenance completed successfully');
+        } catch (error) {
+          console.error('Error running contract maintenance:', error);
+        }
+      };
+
+      // Use requestIdleCallback if available, otherwise setTimeout
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => callback());
+      } else {
+        setTimeout(() => callback(), 1000);
       }
     };
 

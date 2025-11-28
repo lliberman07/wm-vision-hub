@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { UserProfileProvider } from "@/contexts/UserProfileContext";
 import { PMSProvider } from "@/contexts/PMSContext";
 import { ClientProvider } from "@/contexts/ClientContext";
 import { GranadaAuthProvider } from "@/contexts/GranadaAuthContext";
@@ -72,9 +73,10 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <AuthProvider>
-          <GranadaAuthProvider>
-            <PMSProvider>
-              <ClientProvider>
+          <UserProfileProvider>
+            <GranadaAuthProvider>
+              <PMSProvider>
+                <ClientProvider>
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
@@ -159,6 +161,7 @@ const App = () => (
               </ClientProvider>
             </PMSProvider>
           </GranadaAuthProvider>
+          </UserProfileProvider>
         </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>

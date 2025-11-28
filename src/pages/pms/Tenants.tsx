@@ -63,7 +63,7 @@ const Tenants = () => {
 
   const fetchTenants = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('pms_tenants_renters')
         .select(`
           *,
@@ -74,8 +74,14 @@ const Tenants = () => {
             start_date,
             end_date
           )
-        `)
-        .order('created_at', { ascending: false });
+        `);
+
+      // Filter by tenant_id for non-superadmin users
+      if (currentTenant?.id) {
+        query = query.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       
