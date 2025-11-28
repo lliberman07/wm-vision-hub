@@ -179,7 +179,9 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   useEffect(() => {
-    if (!profileLoading) {
+    if (profileLoading) {
+      setLoading(true);
+    } else {
       refreshClientData();
     }
   }, [user, profileLoading, granadaUser]);
