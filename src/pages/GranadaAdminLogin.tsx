@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -301,7 +301,7 @@ const GranadaAdminLogin = () => {
           </Button>
           
           <div className="text-sm text-muted-foreground">
-            <p>¿Eres cliente? <a href="/pms/login" className="text-primary hover:underline">Accede al PMS aquí</a></p>
+            <p>¿Eres cliente? <Link to="/pms/login" className="text-primary hover:underline">Accede al PMS aquí</Link></p>
           </div>
         </div>
       </div>

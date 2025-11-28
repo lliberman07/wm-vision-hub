@@ -103,10 +103,12 @@ export function CommissionTrackingDashboard() {
   const [monthsToShow, setMonthsToShow] = useState<number>(6);
 
   useEffect(() => {
+    if (!clientData?.id) return;
+    
     loadCommissionData();
     loadHistoricalData();
     loadAnnualProjection();
-  }, [clientData, monthsToShow]);
+  }, [clientData?.id, monthsToShow]);
 
   const loadCommissionData = async () => {
     if (!clientData?.id) return;

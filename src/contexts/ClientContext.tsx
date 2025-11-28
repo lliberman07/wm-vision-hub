@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from './UserProfileContext';
 
@@ -186,13 +186,13 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [user, profileLoading, granadaUser]);
 
-  const value = {
+  const value = useMemo(() => ({
     isClientAdmin,
     clientData,
     subscription,
     loading,
     refreshClientData,
-  };
+  }), [isClientAdmin, clientData, subscription, loading]);
 
   return (
     <ClientContext.Provider value={value}>
