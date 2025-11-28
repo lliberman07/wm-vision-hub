@@ -27,6 +27,35 @@ serve(async (req) => {
 
     console.log('Creating INQUILINO user for contract:', contract_id);
 
+    // Helper function for logging
+    const logEvent = async (
+      eventType: string,
+      eventStatus: string,
+      targetEmail: string,
+      targetUserId: string | null = null,
+      existingTenants: any[] = [],
+      errorMessage: string | null = null
+    ) => {
+      try {
+        await supabase.rpc('log_user_linking_event', {
+          p_event_type: eventType,
+          p_event_status: eventStatus,
+          p_target_email: targetEmail,
+          p_target_user_id: targetUserId,
+          p_target_user_type: 'INQUILINO',
+          p_target_tenant_id: tenant_id,
+          p_is_cross_tenant_link: existingTenants.length > 0,
+          p_existing_tenants: existingTenants,
+          p_contract_id: contract_id,
+          p_tenant_renter_id: tenant_renter_id,
+          p_request_source: 'contract_activation',
+          p_error_message: errorMessage
+        });
+      } catch (logError) {
+        console.error('Failed to log event:', logError);
+      }
+    };
+
     // Get tenant renter info
     const { data: tenantRenter, error: renterError } = await supabase
       .from('pms_tenants_renters')
@@ -35,10 +64,25 @@ serve(async (req) => {
       .single();
 
     if (renterError || !tenantRenter) {
+      await logEvent('user_creation', 'failed', '', null, [], 'Tenant renter not found');
       throw new Error('Tenant renter not found');
     }
 
     let authUserId = tenantRenter.user_id;
+
+    // Check if user exists in other tenants
+    const { data: otherTenants } = await supabase
+      .from('pms_client_users')
+      .select('tenant_id, user_type, pms_tenants(name)')
+      .eq('email', tenantRenter.email)
+      .neq('tenant_id', tenant_id)
+      .eq('is_active', true);
+
+    const existingTenants = otherTenants?.map(t => ({
+      tenant_id: t.tenant_id,
+      tenant_name: (t as any).pms_tenants?.name || 'Unknown',
+      user_type: t.user_type
+    })) || [];
 
     // Check if user already exists in auth.users
     if (!authUserId) {
@@ -47,12 +91,17 @@ serve(async (req) => {
 
       if (authUser) {
         authUserId = authUser.id;
+        await logEvent('user_linking', 'success', tenantRenter.email, authUserId, existingTenants);
         
         // Update tenant renter with user_id
         await supabase
           .from('pms_tenants_renters')
           .update({ user_id: authUserId })
           .eq('id', tenant_renter_id);
+
+        if (existingTenants.length > 0) {
+          await logEvent('cross_tenant_detected', 'warning', tenantRenter.email, authUserId, existingTenants);
+        }
       } else {
         // Create auth user
         const tempPassword = Math.random().toString(36).slice(-12) + 'Aa1!';
@@ -69,11 +118,13 @@ serve(async (req) => {
 
         if (authError) {
           console.error('Error creating auth user:', authError);
+          await logEvent('user_creation', 'failed', tenantRenter.email, null, [], authError.message);
           throw authError;
         }
 
         authUserId = newUser.user.id;
         console.log('Created new auth user:', authUserId);
+        await logEvent('user_creation', 'success', tenantRenter.email, authUserId, existingTenants);
 
         // Update tenant renter with user_id
         await supabase
@@ -115,8 +166,22 @@ serve(async (req) => {
           .eq('id', existingClientUser.id);
         
         console.log('INQUILINO user reactivated');
+        await logEvent('user_reactivation', 'success', tenantRenter.email, authUserId, existingTenants);
       } else {
         console.log('INQUILINO user already exists and is active');
+      }
+
+      // Notify if cross-tenant and send notification
+      if (existingTenants.length > 0) {
+        await supabase.functions.invoke('send-user-linked-notification', {
+          body: {
+            target_email: tenantRenter.email,
+            target_tenant_id: tenant_id,
+            event_type: 'user_linking',
+            existing_tenants: existingTenants,
+            contract_id
+          }
+        });
       }
       
       return new Response(
@@ -147,10 +212,25 @@ serve(async (req) => {
 
     if (clientUserError) {
       console.error('Error creating client user:', clientUserError);
+      await logEvent('user_linking', 'failed', tenantRenter.email, authUserId, existingTenants, clientUserError.message);
       throw clientUserError;
     }
 
     console.log('INQUILINO user created successfully');
+    await logEvent('user_linking', 'success', tenantRenter.email, authUserId, existingTenants);
+
+    // Send notification if cross-tenant
+    if (existingTenants.length > 0) {
+      await supabase.functions.invoke('send-user-linked-notification', {
+        body: {
+          target_email: tenantRenter.email,
+          target_tenant_id: tenant_id,
+          event_type: 'user_linking',
+          existing_tenants: existingTenants,
+          contract_id
+        }
+      });
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -163,6 +243,25 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in auto-create-inquilino-user:', error);
+    
+    // Try to log error
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      await supabase.rpc('log_user_linking_event', {
+        p_event_type: 'user_creation',
+        p_event_status: 'failed',
+        p_target_email: '',
+        p_target_user_type: 'INQUILINO',
+        p_request_source: 'contract_activation',
+        p_error_message: error.message
+      });
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
