@@ -3585,6 +3585,134 @@ export type Database = {
           },
         ]
       }
+      pms_user_linking_audit: {
+        Row: {
+          action_by: string | null
+          action_by_email: string | null
+          action_by_tenant_id: string | null
+          action_by_tenant_name: string | null
+          contract_id: string | null
+          created_at: string | null
+          error_message: string | null
+          event_status: string
+          event_type: string
+          existing_tenants: Json | null
+          id: string
+          ip_address: string | null
+          is_cross_tenant_link: boolean | null
+          metadata: Json | null
+          owner_id: string | null
+          request_source: string | null
+          target_email: string
+          target_tenant_id: string | null
+          target_tenant_name: string | null
+          target_user_id: string | null
+          target_user_type: string | null
+          tenant_renter_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_by?: string | null
+          action_by_email?: string | null
+          action_by_tenant_id?: string | null
+          action_by_tenant_name?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          event_status: string
+          event_type: string
+          existing_tenants?: Json | null
+          id?: string
+          ip_address?: string | null
+          is_cross_tenant_link?: boolean | null
+          metadata?: Json | null
+          owner_id?: string | null
+          request_source?: string | null
+          target_email: string
+          target_tenant_id?: string | null
+          target_tenant_name?: string | null
+          target_user_id?: string | null
+          target_user_type?: string | null
+          tenant_renter_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_by?: string | null
+          action_by_email?: string | null
+          action_by_tenant_id?: string | null
+          action_by_tenant_name?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          event_status?: string
+          event_type?: string
+          existing_tenants?: Json | null
+          id?: string
+          ip_address?: string | null
+          is_cross_tenant_link?: boolean | null
+          metadata?: Json | null
+          owner_id?: string | null
+          request_source?: string | null
+          target_email?: string
+          target_tenant_id?: string | null
+          target_tenant_name?: string | null
+          target_user_id?: string | null
+          target_user_type?: string | null
+          tenant_renter_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pms_user_linking_audit_action_by_tenant_id_fkey"
+            columns: ["action_by_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_user_linking_audit_action_by_tenant_id_fkey"
+            columns: ["action_by_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "pms_user_linking_audit_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "pms_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_user_linking_audit_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "pms_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_user_linking_audit_target_tenant_id_fkey"
+            columns: ["target_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_user_linking_audit_target_tenant_id_fkey"
+            columns: ["target_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "pms_user_linking_audit_tenant_renter_id_fkey"
+            columns: ["tenant_renter_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants_renters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           approved_at: string | null
@@ -4462,6 +4590,24 @@ export type Database = {
           },
         ]
       }
+      v_user_linking_audit_report: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          event_status: string | null
+          event_type: string | null
+          id: string | null
+          is_cross_tenant_link: boolean | null
+          other_tenants_count: number | null
+          request_source: string | null
+          severity: string | null
+          target_email: string | null
+          target_tenant_name: string | null
+          target_tenant_slug: string | null
+          target_user_type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_contract: {
@@ -4495,6 +4641,21 @@ export type Database = {
           contract_id_param: string
         }
         Returns: undefined
+      }
+      check_email_exists_globally: {
+        Args: {
+          p_action_by?: string
+          p_current_tenant_id: string
+          p_email: string
+          p_request_source?: string
+        }
+        Returns: {
+          auth_user_id: string
+          current_tenant_roles: string[]
+          exists_in_auth: boolean
+          exists_in_current_tenant: boolean
+          other_tenants: Json
+        }[]
       }
       check_expired_contracts: { Args: never; Returns: undefined }
       check_property_code_uniqueness: {
@@ -4867,6 +5028,26 @@ export type Database = {
         Returns: undefined
       }
       log_daily_usage: { Args: never; Returns: undefined }
+      log_user_linking_event: {
+        Args: {
+          p_action_by?: string
+          p_contract_id?: string
+          p_error_message?: string
+          p_event_status: string
+          p_event_type: string
+          p_existing_tenants?: Json
+          p_is_cross_tenant_link?: boolean
+          p_metadata?: Json
+          p_owner_id?: string
+          p_request_source?: string
+          p_target_email: string
+          p_target_tenant_id?: string
+          p_target_user_id?: string
+          p_target_user_type?: string
+          p_tenant_renter_id?: string
+        }
+        Returns: string
+      }
       pms_index_factor: {
         Args: { indice_tipo: string; month_from: string; month_to: string }
         Returns: number
