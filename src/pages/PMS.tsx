@@ -19,6 +19,19 @@ const PMS = () => {
   const { isClientAdmin, loading: clientLoading } = useClient();
   const { isGranadaSuperAdmin } = useGranadaAuth();
 
+  console.log('[PMS Page Debug]', {
+    user: !!user,
+    authLoading,
+    hasPMSAccess,
+    pmsRoles,
+    currentTenant,
+    pmsLoading,
+    isClientAdmin,
+    clientLoading,
+    allRoleContexts,
+    activeRoleContext,
+  });
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
