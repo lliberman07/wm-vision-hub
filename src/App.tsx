@@ -68,7 +68,10 @@ import SubscriptionRequest from "./pages/SubscriptionRequest";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  console.log('[App] Mounting...', new Date().toISOString());
+  
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LanguageProvider>
@@ -166,6 +169,7 @@ const App = () => (
       </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

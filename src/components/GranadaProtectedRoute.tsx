@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,13 +48,13 @@ const GranadaProtectedRoute = ({ children }: GranadaProtectedRouteProps) => {
               Solo administradores de Granada Platform pueden acceder a esta sección.
             </p>
             <div className="flex gap-2">
-              <a href="/granada-platform" className="text-sm text-primary hover:underline">
+              <Link to="/granada-platform" className="text-sm text-primary hover:underline">
                 Volver a Granada Platform
-              </a>
+              </Link>
               <span className="text-sm text-muted-foreground">|</span>
-              <a href="/pms" className="text-sm text-primary hover:underline">
+              <Link to="/pms" className="text-sm text-primary hover:underline">
                 Ir al PMS
-              </a>
+              </Link>
             </div>
           </CardContent>
         </Card>
