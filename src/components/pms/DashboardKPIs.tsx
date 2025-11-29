@@ -116,10 +116,10 @@ export function DashboardKPIs() {
           pendingByCurrency[currency as 'ARS' | 'USD'] += item.expected_amount || 0;
         });
 
-        // Ingresos del mes por moneda
+        // Ingresos del mes por moneda - usando amount_in_contract_currency para conversiones
         let revenueQuery = supabase
           .from('pms_payments')
-          .select('paid_amount, contract_id')
+          .select('paid_amount, currency, amount_in_contract_currency, contract_currency, contract_id')
           .eq('status', 'paid')
           .gte('paid_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
         
@@ -131,8 +131,14 @@ export function DashboardKPIs() {
 
         const revenueByCurrency = { ARS: 0, USD: 0 };
         revenue.data?.forEach(p => {
-          const currency = contractCurrencyMap.get(p.contract_id) || 'ARS';
-          revenueByCurrency[currency as 'ARS' | 'USD'] += p.paid_amount || 0;
+          // Si el pago tiene conversión de moneda, usar amount_in_contract_currency
+          if (p.amount_in_contract_currency && p.contract_currency && p.currency !== p.contract_currency) {
+            revenueByCurrency[p.contract_currency as 'ARS' | 'USD'] += p.amount_in_contract_currency;
+          } else {
+            // Si no hay conversión, usar la moneda del pago
+            const currency = p.currency || contractCurrencyMap.get(p.contract_id) || 'ARS';
+            revenueByCurrency[currency as 'ARS' | 'USD'] += p.paid_amount || 0;
+          }
         });
 
         setData({
