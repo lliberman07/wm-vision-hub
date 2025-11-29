@@ -55,13 +55,13 @@ export function PaymentsDashboard() {
 
       const isSuperAdmin = userRole === 'SUPERADMIN';
 
-      // Total cobrado este mes - usando schedule items como fuente única
+      // Total cobrado este mes - usando pagos con conversión de moneda correcta
       let paidQuery = supabase
-        .from('pms_payment_schedule_items')
-        .select('expected_amount, currency')
+        .from('pms_payments')
+        .select('paid_amount, currency, amount_in_contract_currency, contract_currency')
         .eq('status', 'paid')
-        .gte('period_date', `${currentMonth}-01`)
-        .lt('period_date', `${nextMonth}-01`);
+        .gte('paid_date', `${currentMonth}-01`)
+        .lt('paid_date', `${nextMonth}-01`);
       
       if (!isSuperAdmin && currentTenant?.id) {
         paidQuery = paidQuery.eq('tenant_id', currentTenant.id);
@@ -74,8 +74,14 @@ export function PaymentsDashboard() {
       }
 
       const collectedThisMonth = paidData?.reduce((acc, p) => {
-        const currency = p.currency || 'ARS';
-        acc[currency] = (acc[currency] || 0) + (p.expected_amount || 0);
+        // Si el pago tiene conversión de moneda, usar amount_in_contract_currency
+        if (p.amount_in_contract_currency && p.contract_currency && p.currency !== p.contract_currency) {
+          acc[p.contract_currency as 'ARS' | 'USD'] += p.amount_in_contract_currency;
+        } else {
+          // Si no hay conversión, usar la moneda del pago
+          const currency = p.currency || 'ARS';
+          acc[currency as 'ARS' | 'USD'] += p.paid_amount || 0;
+        }
         return acc;
       }, { ARS: 0, USD: 0 } as CurrencyAmount) || { ARS: 0, USD: 0 };
       console.log('Total cobrado este mes:', collectedThisMonth, 'Records:', paidData?.length);

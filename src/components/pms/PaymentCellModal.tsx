@@ -51,9 +51,9 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [contractCurrency, setContractCurrency] = useState<string>('ARS');
 
-  const pendingAmount = scheduleItem?.expected_amount || 0;
   const originalAmount = scheduleItem?.original_amount || scheduleItem?.expected_amount || 0;
   const accumulatedPaid = scheduleItem?.accumulated_paid_amount || 0;
+  const pendingAmount = Math.max(0, (scheduleItem?.expected_amount || 0) - accumulatedPaid);
   const isFullyPaid = pendingAmount <= 0.01;
   const shouldShowForm = !readOnly && !isFullyPaid;
 
@@ -343,7 +343,12 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
                     {formatDateDisplay(payment.paid_date)}
                   </span>
                   <span className="font-medium">
-                    {formatCurrency(payment.paid_amount, 'es', contractCurrency as 'ARS' | 'USD')}
+                    {formatCurrency(payment.paid_amount, 'es', (payment.currency || contractCurrency) as 'ARS' | 'USD')}
+                    {payment.currency !== contractCurrency && payment.amount_in_contract_currency && (
+                      <span className="text-muted-foreground ml-1">
+                        ({formatCurrency(payment.amount_in_contract_currency, 'es', contractCurrency as 'ARS' | 'USD')})
+                      </span>
+                    )}
                   </span>
                 </div>
               ))}
@@ -351,14 +356,6 @@ export function PaymentCellModal({ open, onOpenChange, scheduleItem, onSuccess, 
           </div>
         )}
 
-        {readOnly && !isFullyPaid && (
-          <Alert className="border-blue-200 bg-blue-50 mb-4">
-            <AlertCircle className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-sm text-blue-800">
-              Para registrar este pago, dirígete a la sección <strong>Pagos</strong> del menú principal.
-            </AlertDescription>
-          </Alert>
-        )}
 
         {shouldShowForm && (
         <Form {...form}>

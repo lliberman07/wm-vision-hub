@@ -258,7 +258,7 @@ export function PaymentScheduleView({ contractId }: PaymentScheduleViewProps) {
                         {items.map((item) => {
                           const originalAmount = item.original_amount || item.expected_amount;
                           const accumulatedPaid = item.accumulated_paid_amount || 0;
-                          const pendingAmount = item.expected_amount || 0;
+                          const pendingAmount = Math.max(0, (item.expected_amount || 0) - accumulatedPaid);
                           
                           return (
                             <TableRow key={item.id}>
