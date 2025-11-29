@@ -67,11 +67,7 @@ export const uploadContractDocument = async (
 
     if (error) throw error;
 
-    // Guardar metadata en pms_documents
-    const { data: { publicUrl } } = supabase.storage
-      .from('contract-documents')
-      .getPublicUrl(fileName);
-
+    // Guardar metadata en pms_documents con el path relativo
     const { data: docData, error: docError } = await supabase
       .from('pms_documents')
       .insert({
@@ -80,7 +76,7 @@ export const uploadContractDocument = async (
         entity_id: contractId,
         document_type: category,
         file_name: file.name,
-        file_url: publicUrl,
+        file_url: fileName, // Guardar path relativo en lugar de URL público
         file_size: file.size,
         mime_type: file.type,
       })
@@ -89,10 +85,33 @@ export const uploadContractDocument = async (
 
     if (docError) throw docError;
 
-    return publicUrl;
+    return fileName;
   } catch (error) {
     console.error('Error uploading contract document:', error);
     throw error;
+  }
+};
+
+export const getDocumentSignedUrl = async (
+  filePath: string
+): Promise<string | null> => {
+  try {
+    // Si ya es un path relativo, usarlo directamente
+    const path = filePath.includes('/contract-documents/') 
+      ? filePath.split('/contract-documents/').pop() 
+      : filePath;
+    
+    if (!path) return null;
+
+    const { data, error } = await supabase.storage
+      .from('contract-documents')
+      .createSignedUrl(path, 3600); // 1 hora de validez
+
+    if (error) throw error;
+    return data?.signedUrl || null;
+  } catch (error) {
+    console.error('Error creating signed URL:', error);
+    return null;
   }
 };
 
@@ -101,8 +120,10 @@ export const deleteContractDocument = async (
   fileUrl: string
 ): Promise<boolean> => {
   try {
-    // Extraer path del URL
-    const path = fileUrl.split('/contract-documents/').pop();
+    // Extraer path - puede ser URL completo o path relativo
+    const path = fileUrl.includes('/contract-documents/') 
+      ? fileUrl.split('/contract-documents/').pop() 
+      : fileUrl;
     if (!path) return false;
 
     // Eliminar de storage

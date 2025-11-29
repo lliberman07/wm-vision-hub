@@ -6,6 +6,7 @@ import { FileText, Shield, User, Users, FileCheck, FolderOpen, Eye, Download, Lo
 import { useToast } from '@/hooks/use-toast';
 import {
   getContractDocuments,
+  getDocumentSignedUrl,
   DOCUMENT_CATEGORIES,
   type DocumentCategory,
   type ContractDocument,
@@ -30,6 +31,8 @@ export function ContractDocumentsViewer({ contractId }: ContractDocumentsViewerP
   const [documents, setDocuments] = useState<ContractDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [previewDoc, setPreviewDoc] = useState<ContractDocument | null>(null);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [loadingSignedUrl, setLoadingSignedUrl] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,8 +60,54 @@ export function ContractDocumentsViewer({ contractId }: ContractDocumentsViewerP
     return documents.filter((doc) => doc.category === category);
   };
 
-  const handleDownload = (doc: ContractDocument) => {
-    window.open(doc.file_url, '_blank');
+  const handlePreview = async (doc: ContractDocument) => {
+    try {
+      setLoadingSignedUrl(true);
+      const url = await getDocumentSignedUrl(doc.file_url);
+      
+      if (!url) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'No se pudo generar el enlace de previsualización',
+        });
+        return;
+      }
+      
+      setSignedUrl(url);
+      setPreviewDoc(doc);
+    } catch (error) {
+      console.error('Error generating signed URL:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Error al generar el enlace del documento',
+      });
+    } finally {
+      setLoadingSignedUrl(false);
+    }
+  };
+
+  const handleDownload = async (doc: ContractDocument) => {
+    try {
+      const url = await getDocumentSignedUrl(doc.file_url);
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'No se pudo generar el enlace de descarga',
+        });
+      }
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Error al descargar el documento',
+      });
+    }
   };
 
   if (isLoading) {
@@ -127,9 +176,14 @@ export function ContractDocumentsViewer({ contractId }: ContractDocumentsViewerP
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setPreviewDoc(doc)}
+                          onClick={() => handlePreview(doc)}
+                          disabled={loadingSignedUrl}
                         >
-                          <Eye className="h-4 w-4" />
+                          {loadingSignedUrl ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </Button>
                         <Button
                           variant="ghost"
@@ -148,11 +202,16 @@ export function ContractDocumentsViewer({ contractId }: ContractDocumentsViewerP
         })}
       </Accordion>
 
-      {previewDoc && (
+      {previewDoc && signedUrl && (
         <DocumentPreviewModal
           open={!!previewDoc}
-          onOpenChange={(open) => !open && setPreviewDoc(null)}
-          fileUrl={previewDoc.file_url}
+          onOpenChange={(open) => {
+            if (!open) {
+              setPreviewDoc(null);
+              setSignedUrl(null);
+            }
+          }}
+          fileUrl={signedUrl}
           fileName={previewDoc.file_name}
           mimeType={previewDoc.mime_type}
         />
