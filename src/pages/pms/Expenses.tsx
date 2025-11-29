@@ -34,7 +34,7 @@ interface Expense {
 export default function Expenses() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { hasPMSAccess, currentTenant, loading: pmsLoading } = usePMS();
+  const { hasPMSAccess, currentTenant, loading: pmsLoading, userRole } = usePMS();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,17 +52,22 @@ export default function Expenses() {
   }, [pmsLoading, user?.id, hasPMSAccess, navigate]);
 
   const fetchExpenses = async () => {
-    if (!currentTenant?.id) return;
-
     setLoading(true);
-    const { data, error } = await supabase
+    
+    const isSuperAdmin = userRole === 'SUPERADMIN';
+    let query = supabase
       .from('pms_expenses')
       .select(`
         *,
         pms_properties!inner(code, address)
-      `)
-      .eq('tenant_id', currentTenant.id)
-      .order('expense_date', { ascending: false });
+      `);
+
+    // Filter by tenant_id only if NOT SUPERADMIN
+    if (!isSuperAdmin && currentTenant?.id) {
+      query = query.eq('tenant_id', currentTenant.id);
+    }
+
+    const { data, error } = await query.order('expense_date', { ascending: false });
 
     if (!error && data) {
       setExpenses(data as any);

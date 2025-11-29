@@ -20,7 +20,7 @@ interface DashboardMetrics {
 }
 
 export function PaymentsDashboard() {
-  const { currentTenant } = usePMS();
+  const { currentTenant, userRole } = usePMS();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     collectedThisMonth: { ARS: 0, USD: 0 },
@@ -53,14 +53,21 @@ export function PaymentsDashboard() {
       const today = now.toISOString().split('T')[0];
       const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
+      const isSuperAdmin = userRole === 'SUPERADMIN';
+
       // Total cobrado este mes - usando schedule items como fuente única
-      const { data: paidData, error: paidError } = await supabase
+      let paidQuery = supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount, currency')
-        .eq('tenant_id', currentTenant.id)
         .eq('status', 'paid')
         .gte('period_date', `${currentMonth}-01`)
         .lt('period_date', `${nextMonth}-01`);
+      
+      if (!isSuperAdmin && currentTenant?.id) {
+        paidQuery = paidQuery.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data: paidData, error: paidError } = await paidQuery;
 
       if (paidError) {
         console.error('Error fetching paid data:', paidError);
@@ -74,12 +81,17 @@ export function PaymentsDashboard() {
       console.log('Total cobrado este mes:', collectedThisMonth, 'Records:', paidData?.length);
 
       // Pendiente de cobro (vencidos sin pagar)
-      const { data: overdueData, error: overdueError } = await supabase
+      let overdueQuery = supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount, currency')
-        .eq('tenant_id', currentTenant.id)
         .in('status', ['pending', 'partial', 'overdue'])
         .lte('period_date', today);
+      
+      if (!isSuperAdmin && currentTenant?.id) {
+        overdueQuery = overdueQuery.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data: overdueData, error: overdueError } = await overdueQuery;
 
       if (overdueError) {
         console.error('Error fetching overdue data:', overdueError);
@@ -95,11 +107,16 @@ export function PaymentsDashboard() {
       // Total por Devengar: Suma de cuotas futuras (desde próximo mes)
       const firstDayNextMonth = `${nextMonth}-01`;
 
-      const { data: toAccrueData, error: toAccrueError } = await supabase
+      let toAccrueQuery = supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount, currency')
-        .eq('tenant_id', currentTenant.id)
         .gte('period_date', firstDayNextMonth);
+      
+      if (!isSuperAdmin && currentTenant?.id) {
+        toAccrueQuery = toAccrueQuery.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data: toAccrueData, error: toAccrueError } = await toAccrueQuery;
 
       if (toAccrueError) {
         console.error('Error fetching to accrue data:', toAccrueError);
@@ -113,14 +130,19 @@ export function PaymentsDashboard() {
       console.log('Total por devengar:', totalToAccrue, 'Records:', toAccrueData?.length);
 
       // Pagos informados pendientes - COUNT y MONTO
-      const { data: submissionsData, error: submissionsError } = await supabase
+      let submissionsQuery = supabase
         .from('pms_payment_submissions')
         .select(`
           paid_amount,
           pms_payment_schedule_items!inner(currency)
         `)
-        .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending');
+      
+      if (!isSuperAdmin && currentTenant?.id) {
+        submissionsQuery = submissionsQuery.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data: submissionsData, error: submissionsError } = await submissionsQuery;
 
       if (submissionsError) {
         console.error('Error fetching submissions data:', submissionsError);
@@ -135,13 +157,18 @@ export function PaymentsDashboard() {
       console.log('Pagos informados pendientes:', pendingSubmissionsCount, 'Total:', pendingSubmissionsAmount);
 
       // Próximos vencimientos (30 días)
-      const { data: upcomingData, error: upcomingError } = await supabase
+      let upcomingQuery = supabase
         .from('pms_payment_schedule_items')
         .select('expected_amount, currency')
-        .eq('tenant_id', currentTenant.id)
         .eq('status', 'pending')
         .gt('period_date', today)
         .lte('period_date', thirtyDaysFromNow);
+      
+      if (!isSuperAdmin && currentTenant?.id) {
+        upcomingQuery = upcomingQuery.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data: upcomingData, error: upcomingError } = await upcomingQuery;
 
       if (upcomingError) {
         console.error('Error fetching upcoming data:', upcomingError);

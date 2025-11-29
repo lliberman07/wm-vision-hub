@@ -44,7 +44,7 @@ interface Receipt {
 }
 
 export function ReceiptsManagement() {
-  const { currentTenant } = usePMS();
+  const { currentTenant, userRole } = usePMS();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +62,9 @@ export function ReceiptsManagement() {
   const fetchReceipts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      const isSuperAdmin = userRole === 'SUPERADMIN';
+      let query = supabase
         .from('pms_payment_receipts' as any)
         .select(`
           *,
@@ -75,9 +77,14 @@ export function ReceiptsManagement() {
               )
             )
           )
-        `)
-        .eq('tenant_id', currentTenant.id)
-        .order('receipt_date', { ascending: false });
+        `);
+
+      // Filter by tenant_id only if NOT SUPERADMIN
+      if (!isSuperAdmin && currentTenant?.id) {
+        query = query.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data, error } = await query.order('receipt_date', { ascending: false });
 
       if (error) throw error;
 
