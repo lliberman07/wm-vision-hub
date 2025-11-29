@@ -32,7 +32,7 @@ interface MonthlyStats {
 }
 
 export function ExchangeRatesAnalytics() {
-  const { currentTenant } = usePMS();
+  const { currentTenant, userRole } = usePMS();
   const [monthlyData, setMonthlyData] = useState<MonthlyStats[]>([]);
   const [currentRate, setCurrentRate] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,13 +92,19 @@ export function ExchangeRatesAnalytics() {
     setLoading(true);
     try {
       // Obtener datos de los últimos 6 meses
-      const { data: rates, error } = await supabase
+      const isSuperAdmin = userRole === 'SUPERADMIN';
+      let query = supabase
         .from('pms_exchange_rates')
         .select('date, buy_rate, sell_rate, source_type')
-        .eq('tenant_id', currentTenant.id)
         .eq('source_type', 'oficial')
-        .gte('date', new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-        .order('date', { ascending: false });
+        .gte('date', new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+
+      // Filter by tenant_id only if NOT SUPERADMIN
+      if (!isSuperAdmin && currentTenant?.id) {
+        query = query.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data: rates, error } = await query.order('date', { ascending: false });
 
       if (error) throw error;
 

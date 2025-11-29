@@ -42,7 +42,7 @@ interface Tenant {
 const Tenants = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentTenant, hasPMSAccess, loading: pmsLoading } = usePMS();
+  const { currentTenant, hasPMSAccess, loading: pmsLoading, userRole } = usePMS();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,8 +76,9 @@ const Tenants = () => {
           )
         `);
 
-      // Filter by tenant_id for non-superadmin users
-      if (currentTenant?.id) {
+      // Filter by tenant_id only if NOT SUPERADMIN
+      const isSuperAdmin = userRole === 'SUPERADMIN';
+      if (!isSuperAdmin && currentTenant?.id) {
         query = query.eq('tenant_id', currentTenant.id);
       }
 

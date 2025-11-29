@@ -52,7 +52,7 @@ interface PaymentSubmission {
 }
 
 export function PaymentSubmissionsTable() {
-  const { currentTenant } = usePMS();
+  const { currentTenant, userRole } = usePMS();
   const [submissions, setSubmissions] = useState<PaymentSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<PaymentSubmission | null>(null);
@@ -67,11 +67,11 @@ export function PaymentSubmissionsTable() {
   }, [currentTenant]);
 
   const fetchSubmissions = async () => {
-    if (!currentTenant) return;
-
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      const isSuperAdmin = userRole === 'SUPERADMIN';
+      let query = supabase
         .from('pms_payment_submissions')
         .select(`
           *,
@@ -84,9 +84,14 @@ export function PaymentSubmissionsTable() {
             expected_amount,
             owner:pms_owners(full_name)
           )
-        `)
-        .eq('tenant_id', currentTenant.id)
-        .order('created_at', { ascending: false });
+        `);
+
+      // Filter by tenant_id only if NOT SUPERADMIN
+      if (!isSuperAdmin && currentTenant?.id) {
+        query = query.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       setSubmissions(data as any);

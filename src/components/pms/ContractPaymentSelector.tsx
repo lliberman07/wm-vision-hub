@@ -39,7 +39,7 @@ export function ContractPaymentSelector({
   onContractSelect,
   selectedContractId,
 }: ContractPaymentSelectorProps) {
-  const { currentTenant } = usePMS();
+  const { currentTenant, userRole } = usePMS();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
@@ -60,11 +60,11 @@ export function ContractPaymentSelector({
   }, [selectedContractId, contracts]);
 
   const fetchContracts = async () => {
-    if (!currentTenant) return;
-
     try {
-      setLoading(false);
-      const { data, error } = await supabase
+      setLoading(true);
+      
+      const isSuperAdmin = userRole === 'SUPERADMIN';
+      let query = supabase
         .from('pms_contracts')
         .select(`
           id,
@@ -77,9 +77,14 @@ export function ContractPaymentSelector({
           property:pms_properties(address, code),
           tenant_renter:pms_tenants_renters(full_name)
         `)
-        .eq('tenant_id', currentTenant.id)
-        .in('status', ['active', 'expired'])
-        .order('start_date', { ascending: false });
+        .in('status', ['active', 'expired']);
+
+      // Filter by tenant_id only if NOT SUPERADMIN
+      if (!isSuperAdmin && currentTenant?.id) {
+        query = query.eq('tenant_id', currentTenant.id);
+      }
+
+      const { data, error } = await query.order('start_date', { ascending: false });
 
       if (error) throw error;
       setContracts(data as any);
