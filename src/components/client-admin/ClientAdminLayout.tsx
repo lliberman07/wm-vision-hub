@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import granadaLogo from '@/assets/granada-logo.jpg';
 
 interface ClientAdminLayoutProps {
   children: ReactNode;
@@ -127,38 +128,49 @@ export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64 border-r bg-card">
         <div className="p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="h-8 w-8 text-primary" />
+          {/* Logo de Granada */}
+          <div className="flex justify-center mb-6">
+            <img 
+              src={granadaLogo} 
+              alt="Granada Logo" 
+              className="h-32 w-auto animate-fade-in hover-scale"
+            />
+          </div>
+          
+          {/* Información de la empresa */}
+          <div className="flex items-center gap-2 mb-4">
+            <Building2 className="h-6 w-6 text-primary" />
             <div>
-              <h1 className="text-xl font-bold">{clientData?.name || 'Mi Organización'}</h1>
+              <h1 className="text-lg font-bold">{clientData?.name || 'Mi Organización'}</h1>
               <p className="text-xs text-muted-foreground">Panel de Administración</p>
             </div>
           </div>
           
           {subscription && (
-            <div className="mb-6 mt-2">
+            <div className="mb-6">
               {getStatusBadge()}
             </div>
           )}
 
-          <nav className="space-y-2">
+          <nav className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               
               return (
-                <Button
+                <button
                   key={item.path}
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={cn(
-                    'w-full justify-start',
-                    isActive && 'bg-primary text-primary-foreground'
-                  )}
                   onClick={() => navigate(item.path)}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                    isActive 
+                      ? 'bg-primary text-primary-foreground shadow-sm' 
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  )}
                 >
-                  <Icon className="h-4 w-4 mr-2" />
-                  {item.title}
-                </Button>
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span>{item.title}</span>
+                </button>
               );
             })}
           </nav>
