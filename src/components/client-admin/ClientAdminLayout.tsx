@@ -133,7 +133,7 @@ export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
             <img 
               src={granadaLogo} 
               alt="Granada Logo" 
-              className="h-32 w-auto animate-fade-in hover-scale"
+              className="h-40 w-auto animate-fade-in hover-scale"
             />
           </div>
           
@@ -162,14 +162,14 @@ export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
                   key={item.path}
                   onClick={() => navigate(item.path)}
                   className={cn(
-                    'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                    'w-full flex items-center gap-2 p-2 h-8 rounded-md text-sm transition-all duration-200',
                     isActive 
-                      ? 'bg-primary text-primary-foreground shadow-sm' 
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' 
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span>{item.title}</span>
+                  <span className="truncate">{item.title}</span>
                 </button>
               );
             })}
