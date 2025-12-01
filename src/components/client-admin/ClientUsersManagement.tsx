@@ -26,6 +26,22 @@ import {
 import { Plus, Search, ToggleLeft, ToggleRight, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ClientUser {
   id: string;
@@ -47,6 +63,16 @@ export function ClientUsersManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [creatingUser, setCreatingUser] = useState(false);
+  
+  // Alert dialog states
+  const [toggleAlert, setToggleAlert] = useState<{ open: boolean; user: ClientUser | null }>({ 
+    open: false, 
+    user: null 
+  });
+  const [resetPasswordAlert, setResetPasswordAlert] = useState<{ open: boolean; user: ClientUser | null }>({ 
+    open: false, 
+    user: null 
+  });
 
   // Form states
   const [formData, setFormData] = useState({
@@ -177,11 +203,21 @@ export function ClientUsersManagement() {
     }
   };
 
+  const confirmToggleUserStatus = () => {
+    if (!toggleAlert.user) return;
+    toggleUserStatus(toggleAlert.user.id, toggleAlert.user.is_active);
+    setToggleAlert({ open: false, user: null });
+  };
+
   const toggleUserStatus = async (userId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
         .from('pms_client_users')
-        .update({ is_active: !currentStatus })
+        .update({ 
+          is_active: !currentStatus,
+          deactivated_at: !currentStatus ? null : new Date().toISOString(),
+          deactivated_by: !currentStatus ? null : (await supabase.auth.getUser()).data.user?.id
+        })
         .eq('id', userId);
 
       if (error) throw error;
@@ -192,6 +228,12 @@ export function ClientUsersManagement() {
       console.error('Error toggling user status:', error);
       toast.error('Error al cambiar estado del usuario');
     }
+  };
+
+  const confirmResetPassword = () => {
+    if (!resetPasswordAlert.user) return;
+    resetPassword(resetPasswordAlert.user.email);
+    setResetPasswordAlert({ open: false, user: null });
   };
 
   const resetPassword = async (email: string) => {
@@ -218,8 +260,9 @@ export function ClientUsersManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <TooltipProvider>
+      <div className="space-y-6">
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Equipo Administrativo</span>
@@ -340,7 +383,10 @@ export function ClientUsersManagement() {
                   </TableRow>
                 ) : (
                   filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow 
+                      key={user.id}
+                      className={!user.is_active ? 'bg-muted/30' : ''}
+                    >
                       <TableCell className="font-medium">
                         {user.first_name} {user.last_name}
                       </TableCell>
@@ -349,30 +395,45 @@ export function ClientUsersManagement() {
                         {new Date(user.created_at).toLocaleDateString('es-AR')}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.is_active ? 'default' : 'destructive'}>
+                        <Badge variant={user.is_active ? 'default' : 'secondary'}>
                           {user.is_active ? 'Activo' : 'Inactivo'}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleUserStatus(user.id, user.is_active)}
-                          >
-                            {user.is_active ? (
-                              <ToggleRight className="h-4 w-4" />
-                            ) : (
-                              <ToggleLeft className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => resetPassword(user.email)}
-                          >
-                            <Key className="h-4 w-4" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setToggleAlert({ open: true, user })}
+                              >
+                                {user.is_active ? (
+                                  <ToggleRight className="h-4 w-4" />
+                                ) : (
+                                  <ToggleLeft className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{user.is_active ? 'Desactivar usuario' : 'Activar usuario'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setResetPasswordAlert({ open: true, user })}
+                              >
+                                <Key className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Resetear contraseña</p>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -383,6 +444,69 @@ export function ClientUsersManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Alert Dialog - Toggle User Status */}
+      <AlertDialog open={toggleAlert.open} onOpenChange={(open) => !open && setToggleAlert({ open: false, user: null })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              ⚠️ ¿Confirmar cambio de estado?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {toggleAlert.user && (
+                <>
+                  ¿Estás seguro de que querés{' '}
+                  <span className="font-semibold">
+                    {toggleAlert.user.is_active ? 'desactivar' : 'activar'}
+                  </span>{' '}
+                  al usuario{' '}
+                  <span className="font-semibold">
+                    {toggleAlert.user.first_name} {toggleAlert.user.last_name}
+                  </span>
+                  ?
+                  {toggleAlert.user.is_active && (
+                    <span className="block mt-2 text-destructive">
+                      El usuario no podrá acceder al sistema hasta ser reactivado.
+                    </span>
+                  )}
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmToggleUserStatus}>
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Alert Dialog - Reset Password */}
+      <AlertDialog open={resetPasswordAlert.open} onOpenChange={(open) => !open && setResetPasswordAlert({ open: false, user: null })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              🔑 ¿Resetear contraseña?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {resetPasswordAlert.user && (
+                <>
+                  Se generará una nueva contraseña temporal y se enviará por email a{' '}
+                  <span className="font-semibold">{resetPasswordAlert.user.email}</span>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmResetPassword}>
+              Resetear Contraseña
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+    </TooltipProvider>
   );
 }
