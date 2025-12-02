@@ -65,6 +65,96 @@ export type Database = {
           },
         ]
       }
+      addon_requests: {
+        Row: {
+          admin_notes: string | null
+          billing_cycle: string
+          contacted_at: string | null
+          contacted_by: string | null
+          created_at: string | null
+          id: string
+          processed_at: string | null
+          processed_by: string | null
+          reason: string | null
+          requested_by: string
+          requested_plan_id: string
+          resulting_subscription_id: string | null
+          status: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          billing_cycle: string
+          contacted_at?: string | null
+          contacted_by?: string | null
+          created_at?: string | null
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reason?: string | null
+          requested_by: string
+          requested_plan_id: string
+          resulting_subscription_id?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          billing_cycle?: string
+          contacted_at?: string | null
+          contacted_by?: string | null
+          created_at?: string | null
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reason?: string | null
+          requested_by?: string
+          requested_plan_id?: string
+          resulting_subscription_id?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "addon_requests_requested_plan_id_fkey"
+            columns: ["requested_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "addon_requests_requested_plan_id_fkey"
+            columns: ["requested_plan_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["plan_id"]
+          },
+          {
+            foreignKeyName: "addon_requests_resulting_subscription_id_fkey"
+            columns: ["resulting_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "addon_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "pms_tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "addon_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_exceeding_limits"
+            referencedColumns: ["tenant_id"]
+          },
+        ]
+      }
       applicants: {
         Row: {
           application_id: string
@@ -3145,6 +3235,7 @@ export type Database = {
           is_clone: boolean | null
           latitude: number | null
           longitude: number | null
+          management_status: string | null
           monto_alquiler: number | null
           operacion: string | null
           parent_property_id: string | null
@@ -3193,6 +3284,7 @@ export type Database = {
           is_clone?: boolean | null
           latitude?: number | null
           longitude?: number | null
+          management_status?: string | null
           monto_alquiler?: number | null
           operacion?: string | null
           parent_property_id?: string | null
@@ -3241,6 +3333,7 @@ export type Database = {
           is_clone?: boolean | null
           latitude?: number | null
           longitude?: number | null
+          management_status?: string | null
           monto_alquiler?: number | null
           operacion?: string | null
           parent_property_id?: string | null
@@ -4326,12 +4419,16 @@ export type Database = {
           activation_reminder_sent_at: string | null
           billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           cancel_at_period_end: boolean
+          cancel_scheduled_at: string | null
           cancelled_at: string | null
           cancelled_reason: string | null
           created_at: string
           current_period_end: string
           current_period_start: string
+          display_order: number | null
           id: string
+          is_addon: boolean | null
+          parent_subscription_id: string | null
           plan_id: string
           status: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
@@ -4343,12 +4440,16 @@ export type Database = {
           activation_reminder_sent_at?: string | null
           billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           cancel_at_period_end?: boolean
+          cancel_scheduled_at?: string | null
           cancelled_at?: string | null
           cancelled_reason?: string | null
           created_at?: string
           current_period_end: string
           current_period_start: string
+          display_order?: number | null
           id?: string
+          is_addon?: boolean | null
+          parent_subscription_id?: string | null
           plan_id: string
           status?: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
@@ -4360,12 +4461,16 @@ export type Database = {
           activation_reminder_sent_at?: string | null
           billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           cancel_at_period_end?: boolean
+          cancel_scheduled_at?: string | null
           cancelled_at?: string | null
           cancelled_reason?: string | null
           created_at?: string
           current_period_end?: string
           current_period_start?: string
+          display_order?: number | null
           id?: string
+          is_addon?: boolean | null
+          parent_subscription_id?: string | null
           plan_id?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           tenant_id?: string
@@ -4374,6 +4479,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_parent_subscription_id_fkey"
+            columns: ["parent_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tenant_subscriptions_plan_id_fkey"
             columns: ["plan_id"]
@@ -4391,14 +4503,14 @@ export type Database = {
           {
             foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
             columns: ["tenant_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "pms_tenants"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
             columns: ["tenant_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "tenants_exceeding_limits"
             referencedColumns: ["tenant_id"]
           },
@@ -4857,6 +4969,19 @@ export type Database = {
       get_tenant_admin_user_count: {
         Args: { tenant_id_param: string }
         Returns: number
+      }
+      get_tenant_aggregated_limits: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          active_subscriptions_count: number
+          all_features: Json
+          primary_plan_id: string
+          primary_plan_name: string
+          total_max_branches: number
+          total_max_contracts: number
+          total_max_properties: number
+          total_max_users: number
+        }[]
       }
       get_tenant_annual_commission_projection: {
         Args: { p_tenant_id: string }
