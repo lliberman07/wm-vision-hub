@@ -41,6 +41,16 @@ const AVAILABLE_ROLES = [
   { value: 'GESTOR', label: 'Admin', description: 'Puede gestionar propiedades, contratos y pagos de tu cuenta' },
 ];
 
+// Timeout helper para evitar operaciones colgadas
+const withTimeout = <T,>(promise: Promise<T>, ms: number, operation: string): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => 
+      setTimeout(() => reject(new Error(`${operation} tardó demasiado. Intenta de nuevo.`)), ms)
+    )
+  ]);
+};
+
 export function InviteCollaboratorDialog({
   open,
   onOpenChange,
@@ -48,6 +58,7 @@ export function InviteCollaboratorDialog({
   tenantId,
 }: InviteCollaboratorDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [progressMessage, setProgressMessage] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     first_name: '',
@@ -79,18 +90,27 @@ export function InviteCollaboratorDialog({
     }
 
     setLoading(true);
+    setProgressMessage('Verificando disponibilidad...');
 
     try {
-      // 1. Verificar límites del tenant
-      const { data: limitData, error: limitError } = await supabase
-        .rpc('check_tenant_limits', {
-          p_tenant_id: tenantId,
-          p_resource_type: 'user'
-        });
+      // 1. Verificar límites Y usuario existente EN PARALELO
+      const [limitResult, existingUserResult] = await withTimeout(
+        Promise.all([
+          supabase.rpc('check_tenant_limits', {
+            p_tenant_id: tenantId,
+            p_resource_type: 'user'
+          }),
+          supabase.rpc('get_user_by_email', {
+            email_param: formData.email
+          })
+        ]),
+        15000,
+        'Verificación inicial'
+      );
 
-      if (limitError) throw limitError;
+      if (limitResult.error) throw limitResult.error;
 
-      const limitCheck = limitData as unknown as LimitResult;
+      const limitCheck = limitResult.data as unknown as LimitResult;
 
       if (!limitCheck?.allowed) {
         toast({
@@ -101,24 +121,27 @@ export function InviteCollaboratorDialog({
         return;
       }
 
-      // 2. Verificar si el usuario ya existe
-      const { data: existingUser } = await supabase.rpc('get_user_by_email', {
-        email_param: formData.email
-      });
-
+      const existingUser = existingUserResult.data;
       let userId: string;
 
-      if (existingUser && existingUser.length > 0) {
+      if (existingUser && Array.isArray(existingUser) && existingUser.length > 0) {
         userId = existingUser[0].user_id;
+        setProgressMessage('Verificando permisos existentes...');
 
         // Verificar si ya tiene rol en este tenant
-        const { data: existingRole } = await supabase
-          .from('user_roles')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('tenant_id', tenantId)
-          .eq('module', 'PMS')
-          .maybeSingle();
+        const { data: existingRole } = await withTimeout(
+          Promise.resolve(
+            supabase
+              .from('user_roles')
+              .select('id')
+              .eq('user_id', userId)
+              .eq('tenant_id', tenantId)
+              .eq('module', 'PMS')
+              .maybeSingle()
+          ),
+          10000,
+          'Verificación de roles'
+        );
 
         if (existingRole) {
           toast({
@@ -129,24 +152,31 @@ export function InviteCollaboratorDialog({
           return;
         }
 
-        // Enviar email de notificación
-        await supabase.functions.invoke('send-approval-confirmation', {
+        // Enviar email de notificación EN BACKGROUND (sin await)
+        supabase.functions.invoke('send-approval-confirmation', {
           body: {
             email: formData.email,
             first_name: formData.first_name,
             role: formData.role,
             language: 'es'
           }
-        });
+        }).catch(err => console.error('Error enviando email de confirmación:', err));
+
       } else {
         // 3. Crear nuevo usuario
-        const { data: userData, error: createError } = await supabase.functions.invoke('create-pms-user', {
-          body: {
-            email: formData.email,
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-          }
-        });
+        setProgressMessage('Creando cuenta de usuario...');
+        
+        const { data: userData, error: createError } = await withTimeout(
+          supabase.functions.invoke('create-pms-user', {
+            body: {
+              email: formData.email,
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+            }
+          }),
+          20000,
+          'Creación de usuario'
+        );
 
         if (createError || !userData) {
           throw new Error(createError?.message || 'No se pudo crear el usuario');
@@ -154,27 +184,35 @@ export function InviteCollaboratorDialog({
 
         userId = userData.user_id;
 
-        // 4. Enviar email de bienvenida
-        await supabase.functions.invoke('send-welcome-email', {
+        // 4. Enviar email de bienvenida EN BACKGROUND (sin await)
+        supabase.functions.invoke('send-welcome-email', {
           body: {
             email: formData.email,
             first_name: formData.first_name,
             password: userData.temp_password,
           }
-        });
+        }).catch(err => console.error('Error enviando email de bienvenida:', err));
       }
 
       // 5. Crear rol
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([{
-          user_id: userId,
-          role: formData.role as any,
-          module: 'PMS',
-          tenant_id: tenantId,
-          status: 'approved',
-          approved_at: new Date().toISOString(),
-        }]);
+      setProgressMessage('Asignando permisos...');
+      
+      const { error: roleError } = await withTimeout(
+        Promise.resolve(
+          supabase
+            .from('user_roles')
+            .insert([{
+              user_id: userId,
+              role: formData.role as any,
+              module: 'PMS',
+              tenant_id: tenantId,
+              status: 'approved',
+              approved_at: new Date().toISOString(),
+            }])
+        ),
+        10000,
+        'Asignación de rol'
+      );
 
       if (roleError) throw roleError;
 
@@ -186,18 +224,31 @@ export function InviteCollaboratorDialog({
         role: 'GESTOR',
       });
 
+      toast({
+        title: 'Invitación enviada',
+        description: 'El colaborador recibirá un email con sus credenciales',
+      });
+
       onSuccess();
       onOpenChange(false);
 
     } catch (error: any) {
       console.error('Error inviting collaborator:', error);
+      
+      const isTimeout = error.message?.includes('tardó demasiado') || 
+                        error.message?.includes('timed out') ||
+                        error.message?.includes('timeout');
+      
       toast({
-        title: 'Error',
-        description: error.message || 'No se pudo invitar al colaborador',
+        title: isTimeout ? 'Conexión lenta' : 'Error',
+        description: isTimeout 
+          ? 'El servidor tardó en responder. Verifica la lista de usuarios antes de reintentar.'
+          : (error.message || 'No se pudo invitar al colaborador'),
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
+      setProgressMessage('');
     }
   };
 
@@ -230,6 +281,7 @@ export function InviteCollaboratorDialog({
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               placeholder="colaborador@ejemplo.com"
               required
+              disabled={loading}
             />
           </div>
 
@@ -244,6 +296,7 @@ export function InviteCollaboratorDialog({
                 onChange={e => setFormData({ ...formData, first_name: e.target.value })}
                 placeholder="Juan"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -257,6 +310,7 @@ export function InviteCollaboratorDialog({
                 onChange={e => setFormData({ ...formData, last_name: e.target.value })}
                 placeholder="Pérez"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -266,6 +320,7 @@ export function InviteCollaboratorDialog({
             <Select
               value={formData.role}
               onValueChange={value => setFormData({ ...formData, role: value })}
+              disabled={loading}
             >
               <SelectTrigger id="role">
                 <SelectValue />
@@ -292,9 +347,15 @@ export function InviteCollaboratorDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Enviar Invitación
+            <Button type="submit" disabled={loading} className="min-w-[140px]">
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <span className="text-xs">{progressMessage || 'Procesando...'}</span>
+                </>
+              ) : (
+                'Enviar Invitación'
+              )}
             </Button>
           </DialogFooter>
         </form>
