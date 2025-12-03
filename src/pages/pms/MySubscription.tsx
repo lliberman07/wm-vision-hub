@@ -85,7 +85,7 @@ export default function MySubscription() {
     if (!currentTenant) return;
 
     try {
-      // Cargar suscripción
+      // Cargar suscripción - usar maybeSingle para manejar múltiples suscripciones (add-ons)
       const { data: subData, error: subError } = await supabase
         .from('tenant_subscriptions')
         .select(`
@@ -100,9 +100,17 @@ export default function MySubscription() {
           )
         `)
         .eq('tenant_id', currentTenant.id)
-        .single();
+        .eq('is_addon', false)
+        .in('status', ['active', 'trial', 'past_due'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (subError) throw subError;
+      if (subError) {
+        console.error('Error fetching subscription:', subError);
+        throw subError;
+      }
+      
       setSubscription(subData as any);
 
       // Cargar facturas (sin join payment_receipts por ahora)

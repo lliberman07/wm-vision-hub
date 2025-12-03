@@ -1,4 +1,4 @@
-import { Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt, TrendingUp, BookOpen, Settings } from 'lucide-react';
+import { Building2, Users, FileText, Wrench, DollarSign, BarChart3, UserSquare2, Receipt, TrendingUp, BookOpen, Settings, CreditCard } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -52,6 +52,12 @@ const menuItems = [
     ]
   },
   {
+    group: 'Cuenta',
+    items: [
+      { title: 'Mi Suscripción', url: '/pms/my-subscription', icon: CreditCard },
+    ]
+  },
+  {
     group: 'Soporte',
     items: [
       { title: 'Ayuda', url: '/pms/help', icon: BookOpen },
@@ -73,9 +79,9 @@ export function PMSSidebar() {
   // Define which modules each role can see
   const modulesByRole: Record<string, string[]> = {
     SUPERADMIN: ['all'],
-    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'help'],
-    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'help'],
-    PROPIETARIO: ['properties', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'exchange-rates', 'help'],
+    INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'my-subscription', 'help'],
+    GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'my-subscription', 'help'],
+    PROPIETARIO: ['properties', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'exchange-rates', 'my-subscription', 'help'],
     INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance', 'exchange-rates', 'help'],
     PROVEEDOR: ['maintenance', 'help']
   };
