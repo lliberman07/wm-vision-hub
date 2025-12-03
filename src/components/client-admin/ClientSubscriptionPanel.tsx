@@ -183,10 +183,26 @@ export function ClientSubscriptionPanel() {
               <CardTitle>{subscription.plan_name}</CardTitle>
               <CardDescription>Plan actual</CardDescription>
             </div>
-            <Badge variant={getStatusBadge(subscription.status).variant}>
-              {getStatusBadge(subscription.status).label}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={getStatusBadge(subscription.status).variant}>
+                {getStatusBadge(subscription.status).label}
+              </Badge>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setChangeDialogOpen(true)}
+                disabled={changeRequests.some(r => r.status === 'pending')}
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Cambiar Plan
+              </Button>
+            </div>
           </div>
+          {changeRequests.some(r => r.status === 'pending') && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Ya tienes una solicitud de cambio de plan pendiente de revisión.
+            </p>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
