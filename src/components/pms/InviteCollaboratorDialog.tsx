@@ -38,7 +38,7 @@ interface LimitResult {
 
 // Roles disponibles para invitar como colaborador (limitado)
 const AVAILABLE_ROLES = [
-  { value: 'GESTOR', label: 'Gestor', description: 'Puede gestionar propiedades, contratos y pagos' },
+  { value: 'GESTOR', label: 'Admin', description: 'Puede gestionar propiedades, contratos y pagos de tu cuenta' },
 ];
 
 export function InviteCollaboratorDialog({
@@ -205,9 +205,9 @@ export function InviteCollaboratorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle>Invitar Colaborador</DialogTitle>
+          <DialogTitle>Invitar Admin</DialogTitle>
           <DialogDescription>
-            Invita a un colaborador para que te ayude a gestionar tus propiedades.
+            Invita a un administrador para que te ayude a gestionar tus propiedades.
           </DialogDescription>
         </DialogHeader>
 
