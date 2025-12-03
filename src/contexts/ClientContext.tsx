@@ -21,12 +21,27 @@ interface SubscriptionData {
   trial_end_date: string | null;
   is_trial: boolean;
   auto_renew: boolean;
+  is_addon?: boolean;
+  display_order?: number;
+}
+
+interface AggregatedSubscriptionData {
+  subscriptions: SubscriptionData[];
+  primary_subscription: SubscriptionData | null;
+  aggregated_limits: {
+    max_users: number;
+    max_properties: number | null;
+    max_contracts: number | null;
+    max_branches: number;
+  };
+  aggregated_features: Record<string, boolean>;
 }
 
 interface ClientContextType {
   isClientAdmin: boolean;
   clientData: ClientData | null;
-  subscription: SubscriptionData | null;
+  subscription: SubscriptionData | null; // Primary subscription (legacy compatibility)
+  subscriptionData: AggregatedSubscriptionData | null; // Full aggregated data
   loading: boolean;
   refreshClientData: () => Promise<void>;
 }
@@ -41,6 +56,7 @@ export const useClient = () => {
       isClientAdmin: false,
       clientData: null,
       subscription: null,
+      subscriptionData: null,
       loading: false,
       refreshClientData: async () => {},
     };
@@ -53,6 +69,7 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isClientAdmin, setIsClientAdmin] = useState(false);
   const [clientData, setClientData] = useState<ClientData | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [subscriptionData, setSubscriptionData] = useState<AggregatedSubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshClientData = async () => {
@@ -60,6 +77,7 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setIsClientAdmin(false);
       setClientData(null);
       setSubscription(null);
+      setSubscriptionData(null);
       setLoading(false);
       return;
     }
@@ -75,6 +93,7 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setIsClientAdmin(false);
         setClientData(null);
         setSubscription(null);
+        setSubscriptionData(null);
         setLoading(false);
         return;
       }
@@ -113,26 +132,23 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setIsClientAdmin(false);
         setClientData(null);
         setSubscription(null);
+        setSubscriptionData(null);
         setLoading(false);
         return;
       }
 
       setIsClientAdmin(true);
 
-      // Parallelize tenant and subscription queries
-      const [tenantResult, subscriptionResult] = await Promise.all([
+      // Parallelize tenant and subscription status queries
+      const [tenantResult, subscriptionStatusResult] = await Promise.all([
         supabase
           .from('pms_tenants')
           .select('*')
           .eq('id', tenantId)
           .single(),
-        supabase
-          .from('tenant_subscriptions')
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single()
+        supabase.rpc('get_tenant_subscription_status', {
+          p_tenant_id: tenantId
+        })
       ]);
 
       if (tenantResult.error) {
@@ -143,32 +159,53 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       setClientData(tenantResult.data as ClientData);
 
-      if (!subscriptionResult.error && subscriptionResult.data) {
-        const { data: planData } = await supabase
-          .from('subscription_plans')
-          .select('name')
-          .eq('id', subscriptionResult.data.plan_id)
-          .single();
+      if (!subscriptionStatusResult.error && subscriptionStatusResult.data) {
+        const rawData = subscriptionStatusResult.data as any;
+        
+        // Build subscriptions array with plan names
+        const subscriptions: SubscriptionData[] = (rawData.subscriptions || []).map((sub: any) => {
+          const currentPeriodEnd = sub.current_period_end 
+            ? new Date(sub.current_period_end) 
+            : null;
+          const now = new Date();
+          const isTrial = currentPeriodEnd 
+            ? currentPeriodEnd > now && sub.status === 'trial' 
+            : false;
 
-        const currentPeriodEnd = subscriptionResult.data.current_period_end 
-          ? new Date(subscriptionResult.data.current_period_end) 
-          : null;
-        const now = new Date();
-        const isTrial = currentPeriodEnd 
-          ? currentPeriodEnd > now && subscriptionResult.data.status === 'trial' 
-          : false;
-
-        setSubscription({
-          id: subscriptionResult.data.id,
-          plan_id: subscriptionResult.data.plan_id,
-          plan_name: planData?.name || 'Plan Desconocido',
-          status: subscriptionResult.data.status,
-          start_date: subscriptionResult.data.created_at || '',
-          end_date: subscriptionResult.data.current_period_end,
-          trial_end_date: isTrial ? subscriptionResult.data.current_period_end : null,
-          is_trial: isTrial,
-          auto_renew: !subscriptionResult.data.cancel_at_period_end,
+          return {
+            id: sub.id,
+            plan_id: sub.plan_id,
+            plan_name: sub.plan_name || 'Plan Desconocido',
+            status: sub.status,
+            start_date: sub.current_period_start || '',
+            end_date: sub.current_period_end,
+            trial_end_date: isTrial ? sub.current_period_end : null,
+            is_trial: isTrial,
+            auto_renew: !sub.cancel_at_period_end,
+            is_addon: sub.is_addon || false,
+            display_order: sub.display_order || 0,
+          };
         });
+
+        // Set aggregated subscription data
+        setSubscriptionData({
+          subscriptions,
+          primary_subscription: subscriptions.find(s => !s.is_addon) || subscriptions[0] || null,
+          aggregated_limits: rawData.aggregated_limits || {
+            max_users: 0,
+            max_properties: 0,
+            max_contracts: 0,
+            max_branches: 0,
+          },
+          aggregated_features: rawData.aggregated_features || {},
+        });
+
+        // Set primary subscription for legacy compatibility
+        const primary = subscriptions.find(s => !s.is_addon) || subscriptions[0];
+        setSubscription(primary || null);
+      } else {
+        setSubscription(null);
+        setSubscriptionData(null);
       }
 
     } catch (error) {
@@ -190,9 +227,10 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     isClientAdmin,
     clientData,
     subscription,
+    subscriptionData,
     loading,
     refreshClientData,
-  }), [isClientAdmin, clientData, subscription, loading]);
+  }), [isClientAdmin, clientData, subscription, subscriptionData, loading]);
 
   return (
     <ClientContext.Provider value={value}>
