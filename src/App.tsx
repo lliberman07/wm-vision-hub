@@ -62,6 +62,7 @@ import MyContract from "./pages/pms/MyContract";
 import Receipts from "./pages/pms/Receipts";
 import Help from "./pages/pms/Help";
 import MySubscription from "./pages/pms/MySubscription";
+import Users from "./pages/pms/Users";
 
 import GranadaContact from "./pages/GranadaContact";
 import SubscriptionRequest from "./pages/SubscriptionRequest";
@@ -145,6 +146,7 @@ const App = () => {
               <Route path="/pms/mi-contrato" element={<MyContract />} />
               <Route path="/pms/help" element={<Help />} />
               <Route path="/pms/my-subscription" element={<MySubscription />} />
+              <Route path="/pms/users" element={<Users />} />
               <Route path="/client-admin/*" element={<ClientAdmin />} />
               <Route 
                 path="/granada-admin/*" 

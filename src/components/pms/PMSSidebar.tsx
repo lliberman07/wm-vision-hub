@@ -26,6 +26,7 @@ const menuItems = [
       { title: 'Propiedades', url: '/pms/properties', icon: Building2 },
       { title: 'Propietarios', url: '/pms/owners', icon: UserSquare2 },
       { title: 'Inquilinos', url: '/pms/tenants', icon: Users },
+      { title: 'Usuarios', url: '/pms/users', icon: Users },
     ]
   },
   {
@@ -81,7 +82,7 @@ export function PMSSidebar() {
     SUPERADMIN: ['all'],
     INMOBILIARIA: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'my-subscription', 'help'],
     GESTOR: ['properties', 'owners', 'tenants', 'contracts', 'payments', 'expenses', 'receipts', 'maintenance', 'reports', 'indices', 'exchange-rates', 'my-subscription', 'help'],
-    PROPIETARIO: ['properties', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'exchange-rates', 'my-subscription', 'help'],
+    PROPIETARIO: ['properties', 'contracts', 'payments', 'expenses', 'receipts', 'reports', 'exchange-rates', 'my-subscription', 'users', 'help'],
     INQUILINO: ['contracts', 'payments', 'expenses', 'maintenance', 'exchange-rates', 'help'],
     PROVEEDOR: ['maintenance', 'help']
   };
