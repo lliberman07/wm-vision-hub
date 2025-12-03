@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePMS } from '@/contexts/PMSContext';
 
@@ -9,9 +9,35 @@ interface LimitCheck {
   limit: number | null;
 }
 
+interface AggregatedLimits {
+  max_users: number;
+  max_properties: number | null;
+  max_contracts: number | null;
+  max_branches: number;
+  features: Record<string, boolean>;
+  additional_limits: Record<string, number | null>;
+  active_subscriptions_count: number;
+}
+
 export function useSubscriptionLimits() {
   const { currentTenant } = usePMS();
   const [loading, setLoading] = useState(false);
+
+  const getAggregatedLimits = async (): Promise<AggregatedLimits | null> => {
+    if (!currentTenant) return null;
+
+    try {
+      const { data, error } = await supabase.rpc('get_tenant_aggregated_limits', {
+        p_tenant_id: currentTenant.id
+      });
+
+      if (error) throw error;
+      return data as unknown as AggregatedLimits;
+    } catch (error) {
+      console.error('Error getting aggregated limits:', error);
+      return null;
+    }
+  };
 
   const checkLimit = async (resourceType: 'user' | 'property' | 'contract' | 'branch'): Promise<LimitCheck> => {
     if (!currentTenant) {
@@ -25,6 +51,7 @@ export function useSubscriptionLimits() {
 
     setLoading(true);
     try {
+      // Uses the updated check_tenant_limits that now uses aggregated limits
       const { data, error } = await supabase.rpc('check_tenant_limits', {
         p_tenant_id: currentTenant.id,
         p_resource_type: resourceType
@@ -70,6 +97,7 @@ export function useSubscriptionLimits() {
 
   return {
     checkLimit,
+    getAggregatedLimits,
     getActiveProperties,
     getUsagePercentage,
     loading
