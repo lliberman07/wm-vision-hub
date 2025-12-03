@@ -169,7 +169,7 @@ export function InviteCollaboratorDialog({
         .from('user_roles')
         .insert([{
           user_id: userId,
-          role: formData.role.toLowerCase() as any,
+          role: formData.role as any,
           module: 'PMS',
           tenant_id: tenantId,
           status: 'approved',
