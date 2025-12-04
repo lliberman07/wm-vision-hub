@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { PMSSidebar } from './PMSSidebar';
 import { PMSBreadcrumbs } from './PMSBreadcrumbs';
 import { Button } from '@/components/ui/button';
-import { Bell, Settings, LogOut, User, Building2, Shield } from 'lucide-react';
+import { Bell, Settings, LogOut, User, Building2, Shield, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePMS } from '@/contexts/PMSContext';
 import { useClient } from '@/contexts/ClientContext';
@@ -180,6 +180,11 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                             Granada Admin
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/granada-admin/change-password')}>
+                          <Lock className="mr-2 h-4 w-4" />
+                          Cambiar Contraseña
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleSignOut}>
                           <LogOut className="mr-2 h-4 w-4" />
