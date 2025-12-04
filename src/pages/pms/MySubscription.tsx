@@ -11,15 +11,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePMS } from '@/contexts/PMSContext';
 import { useToast } from '@/hooks/use-toast';
 import { PaymentReceiptUpload } from '@/components/subscription/PaymentReceiptUpload';
+import { SubscriptionChangeDialog } from '@/components/client-admin/SubscriptionChangeDialog';
+import { RemovePackDialog } from '@/components/subscription/RemovePackDialog';
 import { 
   Calendar, 
-  CreditCard, 
   AlertTriangle, 
   CheckCircle2, 
   Clock,
-  ArrowUpCircle,
-  Download,
-  Upload
+  Upload,
+  Building2,
+  Users,
+  FileText,
+  Package,
+  TrendingUp,
+  Trash2
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -32,13 +37,15 @@ interface SubscriptionData {
   current_period_start: string;
   current_period_end: string;
   billing_cycle: string;
+  is_addon: boolean;
   subscription_plans: {
     name: string;
     price_monthly: number;
     price_yearly: number;
-    max_users: number;
-    max_properties: number;
-    max_contracts: number;
+    max_users: number | null;
+    max_properties: number | null;
+    max_contracts: number | null;
+    max_branches: number | null;
   };
 }
 
@@ -64,16 +71,28 @@ interface UsageLimits {
   users: { current: number; limit: number };
   properties: { current: number; limit: number };
   contracts: { current: number; limit: number };
+  branches: { current: number; limit: number };
 }
 
 export default function MySubscription() {
   const { currentTenant } = usePMS();
   const { toast } = useToast();
-  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionData[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [usageLimits, setUsageLimits] = useState<UsageLimits | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploadingInvoiceId, setUploadingInvoiceId] = useState<string | null>(null);
+  
+  // Dialog states
+  const [changeDialogOpen, setChangeDialogOpen] = useState(false);
+  const [changeDialogMode, setChangeDialogMode] = useState<'replacement' | 'addon'>('replacement');
+  const [removePackDialog, setRemovePackDialog] = useState<{
+    open: boolean;
+    subscription: SubscriptionData | null;
+  }>({ open: false, subscription: null });
+
+  const baseSubscription = subscriptions.find(s => !s.is_addon);
+  const addonSubscriptions = subscriptions.filter(s => s.is_addon);
 
   useEffect(() => {
     if (currentTenant) {
@@ -85,7 +104,7 @@ export default function MySubscription() {
     if (!currentTenant) return;
 
     try {
-      // Cargar suscripción - usar maybeSingle para manejar múltiples suscripciones (add-ons)
+      // Cargar TODAS las suscripciones (base + addons)
       const { data: subData, error: subError } = await supabase
         .from('tenant_subscriptions')
         .select(`
@@ -96,24 +115,23 @@ export default function MySubscription() {
             price_yearly,
             max_users,
             max_properties,
-            max_contracts
+            max_contracts,
+            max_branches
           )
         `)
         .eq('tenant_id', currentTenant.id)
-        .eq('is_addon', false)
         .in('status', ['active', 'trial', 'past_due'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .order('is_addon', { ascending: true })
+        .order('created_at', { ascending: true });
 
       if (subError) {
-        console.error('Error fetching subscription:', subError);
+        console.error('Error fetching subscriptions:', subError);
         throw subError;
       }
       
-      setSubscription(subData as any);
+      setSubscriptions((subData || []) as any);
 
-      // Cargar facturas (sin join payment_receipts por ahora)
+      // Cargar facturas
       const { data: invoicesData, error: invError } = await supabase
         .from('subscription_invoices')
         .select('*')
@@ -140,26 +158,19 @@ export default function MySubscription() {
       
       setInvoices(invoicesWithReceipts as any);
 
-      // Cargar límites de uso
-      const { data: limitsData } = await supabase.rpc('check_tenant_limits', {
-        p_tenant_id: currentTenant.id,
-        p_resource_type: 'user'
-      });
-
-      const { data: propsData } = await supabase.rpc('check_tenant_limits', {
-        p_tenant_id: currentTenant.id,
-        p_resource_type: 'property'
-      });
-
-      const { data: contractsData } = await supabase.rpc('check_tenant_limits', {
-        p_tenant_id: currentTenant.id,
-        p_resource_type: 'contract'
-      });
+      // Cargar límites de uso agregados
+      const [usersRes, propsRes, contractsRes, branchesRes] = await Promise.all([
+        supabase.rpc('check_tenant_limits', { p_tenant_id: currentTenant.id, p_resource_type: 'user' }),
+        supabase.rpc('check_tenant_limits', { p_tenant_id: currentTenant.id, p_resource_type: 'property' }),
+        supabase.rpc('check_tenant_limits', { p_tenant_id: currentTenant.id, p_resource_type: 'contract' }),
+        supabase.rpc('check_tenant_limits', { p_tenant_id: currentTenant.id, p_resource_type: 'branch' }),
+      ]);
 
       setUsageLimits({
-        users: { current: (limitsData as any)?.current_count || 0, limit: (limitsData as any)?.limit || 0 },
-        properties: { current: (propsData as any)?.current_count || 0, limit: (propsData as any)?.limit || 0 },
-        contracts: { current: (contractsData as any)?.current_count || 0, limit: (contractsData as any)?.limit || 0 },
+        users: { current: (usersRes.data as any)?.current_count || 0, limit: (usersRes.data as any)?.limit || 0 },
+        properties: { current: (propsRes.data as any)?.current_count || 0, limit: (propsRes.data as any)?.limit || 0 },
+        contracts: { current: (contractsRes.data as any)?.current_count || 0, limit: (contractsRes.data as any)?.limit || 0 },
+        branches: { current: (branchesRes.data as any)?.current_count || 0, limit: (branchesRes.data as any)?.limit || 0 },
       });
 
     } catch (error) {
@@ -186,8 +197,18 @@ export default function MySubscription() {
   };
 
   const getUsagePercentage = (current: number, limit: number) => {
-    if (limit === 0) return 0;
+    if (limit === 0 || limit >= 9999) return 0;
     return Math.min((current / limit) * 100, 100);
+  };
+
+  const formatLimit = (limit: number | null) => {
+    if (limit === null || limit >= 9999) return 'Ilimitado';
+    return limit.toString();
+  };
+
+  const openChangeDialog = (mode: 'replacement' | 'addon') => {
+    setChangeDialogMode(mode);
+    setChangeDialogOpen(true);
   };
 
   if (loading) {
@@ -205,7 +226,7 @@ export default function MySubscription() {
     );
   }
 
-  if (!subscription) {
+  if (!baseSubscription) {
     return (
       <PMSPageWrapper>
         <PMSLayout>
@@ -219,8 +240,8 @@ export default function MySubscription() {
     );
   }
 
-  const daysRemaining = subscription.trial_end 
-    ? differenceInDays(new Date(subscription.trial_end), new Date())
+  const daysRemaining = baseSubscription.trial_end 
+    ? differenceInDays(new Date(baseSubscription.trial_end), new Date())
     : null;
 
   const isTrialExpiringSoon = daysRemaining !== null && daysRemaining <= 3 && daysRemaining >= 0;
@@ -229,9 +250,20 @@ export default function MySubscription() {
     <PMSPageWrapper>
       <PMSLayout>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">Mi Suscripción</h1>
-            <p className="text-muted-foreground">Gestiona tu plan y facturación</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Mi Suscripción</h1>
+              <p className="text-muted-foreground">Gestiona tu plan y facturación</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => openChangeDialog('replacement')}>
+                Cambiar Plan Base
+              </Button>
+              <Button onClick={() => openChangeDialog('addon')}>
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Agregar Capacidad
+              </Button>
+            </div>
           </div>
 
           {/* Alert de Trial Expirando */}
@@ -246,21 +278,135 @@ export default function MySubscription() {
             </Alert>
           )}
 
-          {/* Estado Actual */}
+          {/* Capacidad Actual Agregada */}
+          {usageLimits && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Tu Capacidad Actual
+                </CardTitle>
+                <CardDescription>
+                  Límites agregados de tu plan base + packs adicionales
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Propiedades Activas', key: 'properties' as const, icon: Building2 },
+                    { label: 'Contratos Activos', key: 'contracts' as const, icon: FileText },
+                    { label: 'Usuarios', key: 'users' as const, icon: Users },
+                    { label: 'Sucursales', key: 'branches' as const, icon: Building2 },
+                  ].map(({ label, key, icon: Icon }) => {
+                    const usage = usageLimits[key];
+                    const percentage = getUsagePercentage(usage.current, usage.limit);
+                    const isNearLimit = percentage > 80;
+                    const isAtLimit = percentage >= 100;
+
+                    return (
+                      <div key={key} className="p-4 border rounded-lg space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{label}</span>
+                        </div>
+                        <div className="text-2xl font-bold">
+                          {usage.current} / {formatLimit(usage.limit)}
+                        </div>
+                        <Progress 
+                          value={percentage} 
+                          className={isAtLimit ? '[&>div]:bg-destructive' : isNearLimit ? '[&>div]:bg-yellow-500' : ''} 
+                        />
+                        {isAtLimit && (
+                          <p className="text-xs text-destructive">Límite alcanzado</p>
+                        )}
+                        {isNearLimit && !isAtLimit && (
+                          <p className="text-xs text-yellow-600">Cerca del límite</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Planes y Packs Activos */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Planes y Packs Activos</CardTitle>
+              <CardDescription>
+                Detalle de tu plan base y packs adicionales
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Propiedades</TableHead>
+                    <TableHead>Contratos</TableHead>
+                    <TableHead>Usuarios</TableHead>
+                    <TableHead>Precio</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {subscriptions.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell className="font-medium">
+                        {sub.subscription_plans.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={sub.is_addon ? 'secondary' : 'default'}>
+                          {sub.is_addon ? 'Pack adicional' : 'Plan base'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(sub.status)}</TableCell>
+                      <TableCell>{formatLimit(sub.subscription_plans.max_properties)}</TableCell>
+                      <TableCell>{formatLimit(sub.subscription_plans.max_contracts)}</TableCell>
+                      <TableCell>{formatLimit(sub.subscription_plans.max_users)}</TableCell>
+                      <TableCell>
+                        ${sub.billing_cycle === 'monthly' 
+                          ? sub.subscription_plans.price_monthly.toLocaleString()
+                          : sub.subscription_plans.price_yearly.toLocaleString()}
+                        /{sub.billing_cycle === 'monthly' ? 'mes' : 'año'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {sub.is_addon && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setRemovePackDialog({ open: true, subscription: sub })}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Estado de la Suscripción Base */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Estado de la Suscripción</span>
-                {getStatusBadge(subscription.status)}
+                <span>Estado del Plan Base</span>
+                {getStatusBadge(baseSubscription.status)}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Plan Actual</p>
-                  <p className="text-xl font-bold">{subscription.subscription_plans.name}</p>
+                  <p className="text-xl font-bold">{baseSubscription.subscription_plans.name}</p>
                 </div>
-                {subscription.trial_end && subscription.status === 'trial' && (
+                {baseSubscription.trial_end && baseSubscription.status === 'trial' && (
                   <div>
                     <p className="text-sm text-muted-foreground">Trial termina</p>
                     <p className="text-xl font-bold">
@@ -273,59 +419,19 @@ export default function MySubscription() {
                 <div>
                   <p className="text-sm text-muted-foreground">Próxima Renovación</p>
                   <p className="text-xl font-bold">
-                    {format(new Date(subscription.current_period_end), 'dd/MM/yyyy', { locale: es })}
+                    {format(new Date(baseSubscription.current_period_end), 'dd/MM/yyyy', { locale: es })}
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Uso de Recursos */}
-          {usageLimits && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Uso de Recursos</CardTitle>
-                <CardDescription>Límites de tu plan actual</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {[
-                  { label: 'Usuarios', key: 'users' as const, icon: '👥' },
-                  { label: 'Propiedades', key: 'properties' as const, icon: '🏢' },
-                  { label: 'Contratos', key: 'contracts' as const, icon: '📄' },
-                ].map(({ label, key, icon }) => {
-                  const usage = usageLimits[key];
-                  const percentage = getUsagePercentage(usage.current, usage.limit);
-                  const isNearLimit = percentage > 80;
-
-                  return (
-                    <div key={key} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">
-                          {icon} {label}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {usage.current} / {usage.limit}
-                        </span>
-                      </div>
-                      <Progress value={percentage} className={isNearLimit ? 'bg-destructive' : ''} />
-                      {isNearLimit && (
-                        <p className="text-xs text-destructive">
-                          ⚠️ Te estás acercando al límite. Considera un upgrade.
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          )}
-
           {/* Historial de Pagos */}
           <Card>
             <CardHeader>
               <CardTitle>Historial de Pagos</CardTitle>
               <CardDescription>
-                {subscription.billing_cycle === 'monthly' ? 'Facturación mensual' : 'Facturación anual'}
+                {baseSubscription.billing_cycle === 'monthly' ? 'Facturación mensual' : 'Facturación anual'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -443,6 +549,38 @@ export default function MySubscription() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Change Plan Dialog */}
+          {baseSubscription && (
+            <SubscriptionChangeDialog
+              open={changeDialogOpen}
+              onOpenChange={setChangeDialogOpen}
+              currentPlanId={baseSubscription.plan_id}
+              currentPlanName={baseSubscription.subscription_plans.name}
+              tenantId={currentTenant!.id}
+              billingCycle={baseSubscription.billing_cycle as 'monthly' | 'yearly'}
+              initialChangeType={changeDialogMode}
+              onSuccess={loadSubscriptionData}
+            />
+          )}
+
+          {/* Remove Pack Dialog */}
+          {removePackDialog.subscription && (
+            <RemovePackDialog
+              open={removePackDialog.open}
+              onOpenChange={(open) => setRemovePackDialog({ ...removePackDialog, open })}
+              subscriptionId={removePackDialog.subscription.id}
+              planName={removePackDialog.subscription.subscription_plans.name}
+              planLimits={{
+                max_properties: removePackDialog.subscription.subscription_plans.max_properties,
+                max_contracts: removePackDialog.subscription.subscription_plans.max_contracts,
+                max_users: removePackDialog.subscription.subscription_plans.max_users,
+                max_branches: removePackDialog.subscription.subscription_plans.max_branches,
+              }}
+              tenantId={currentTenant!.id}
+              onSuccess={loadSubscriptionData}
+            />
           )}
         </div>
       </PMSLayout>

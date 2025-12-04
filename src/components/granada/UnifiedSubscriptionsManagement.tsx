@@ -76,8 +76,10 @@ interface Subscription {
 interface ChangeRequest {
   id: string;
   tenant_id: string;
-  current_plan_id: string;
-  requested_plan_id: string;
+  current_plan_id: string | null;
+  requested_plan_id: string | null;
+  change_type: 'replacement' | 'addon' | 'remove_addon';
+  addon_subscription_id: string | null;
   reason: string;
   status: string;
   requested_by: string;
@@ -89,11 +91,11 @@ interface ChangeRequest {
   current_plan: {
     name: string;
     price_monthly: number;
-  };
+  } | null;
   requested_plan: {
     name: string;
     price_monthly: number;
-  };
+  } | null;
 }
 
 interface Plan {
@@ -202,7 +204,7 @@ export function UnifiedSubscriptionsManagement() {
       return;
     }
 
-    setChangeRequests(data || []);
+    setChangeRequests((data || []) as unknown as ChangeRequest[]);
   };
 
   const fetchPlans = async () => {
@@ -395,18 +397,62 @@ export function UnifiedSubscriptionsManagement() {
     if (!user) return;
 
     try {
-      // 1. Actualizar la suscripción del tenant
-      const { error: updateError } = await supabase
-        .from('tenant_subscriptions')
-        .update({
-          plan_id: request.requested_plan_id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('tenant_id', request.tenant_id);
+      // Handle different change types
+      if (request.change_type === 'addon') {
+        // Get base subscription to inherit billing cycle
+        const { data: baseSub } = await supabase
+          .from('tenant_subscriptions')
+          .select('id, billing_cycle, current_period_end')
+          .eq('tenant_id', request.tenant_id)
+          .eq('is_addon', false)
+          .in('status', ['active', 'trial'])
+          .limit(1)
+          .single();
 
-      if (updateError) throw updateError;
+        // INSERT new subscription with is_addon = true
+        const startDate = new Date();
+        const endDate = new Date(baseSub?.current_period_end || startDate);
+        
+        const { error: insertError } = await supabase
+          .from('tenant_subscriptions')
+          .insert({
+            tenant_id: request.tenant_id,
+            plan_id: request.requested_plan_id,
+            is_addon: true,
+            parent_subscription_id: baseSub?.id,
+            status: 'active',
+            billing_cycle: baseSub?.billing_cycle || 'monthly',
+            current_period_start: startDate.toISOString(),
+            current_period_end: endDate.toISOString(),
+          });
 
-      // 2. Actualizar el estado de la solicitud
+        if (insertError) throw insertError;
+      } else if (request.change_type === 'remove_addon') {
+        // CANCEL the addon subscription
+        const { error: cancelError } = await supabase
+          .from('tenant_subscriptions')
+          .update({ 
+            status: 'cancelled', 
+            cancelled_at: new Date().toISOString() 
+          })
+          .eq('id', request.addon_subscription_id);
+
+        if (cancelError) throw cancelError;
+      } else {
+        // REPLACEMENT: UPDATE plan_id of existing base subscription
+        const { error: updateError } = await supabase
+          .from('tenant_subscriptions')
+          .update({
+            plan_id: request.requested_plan_id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('tenant_id', request.tenant_id)
+          .eq('is_addon', false);
+
+        if (updateError) throw updateError;
+      }
+
+      // 2. Update request status
       const { error: requestError } = await supabase
         .from('subscription_change_requests')
         .update({
@@ -418,7 +464,7 @@ export function UnifiedSubscriptionsManagement() {
 
       if (requestError) throw requestError;
 
-      // 3. Enviar notificación al cliente
+      // 3. Send notification
       const { error: notifError } = await supabase.functions.invoke(
         'send-subscription-change-notification',
         {
@@ -433,7 +479,13 @@ export function UnifiedSubscriptionsManagement() {
         console.error('Error sending notification:', notifError);
       }
 
-      toast.success('Cambio de plan aprobado exitosamente');
+      const successMsg = request.change_type === 'addon' 
+        ? 'Pack adicional agregado exitosamente'
+        : request.change_type === 'remove_addon'
+        ? 'Pack eliminado exitosamente'
+        : 'Cambio de plan aprobado exitosamente';
+      
+      toast.success(successMsg);
       fetchAllData();
     } catch (error) {
       console.error('Error:', error);
@@ -501,7 +553,8 @@ export function UnifiedSubscriptionsManagement() {
     return { days, color: 'text-green-600' };
   };
 
-  const getChangeBadge = (currentPrice: number, requestedPrice: number) => {
+  const getChangeBadge = (currentPrice: number | null, requestedPrice: number | null) => {
+    if (currentPrice === null || requestedPrice === null) return null;
     if (requestedPrice > currentPrice) {
       return (
         <Badge variant="default" className="bg-green-600">
@@ -516,6 +569,17 @@ export function UnifiedSubscriptionsManagement() {
         Downgrade
       </Badge>
     );
+  };
+
+  const getChangeTypeBadge = (changeType: string) => {
+    switch (changeType) {
+      case 'addon':
+        return <Badge variant="default" className="bg-blue-600">➕ Agregar pack</Badge>;
+      case 'remove_addon':
+        return <Badge variant="destructive">➖ Eliminar pack</Badge>;
+      default:
+        return <Badge variant="outline">🔄 Cambiar plan</Badge>;
+    }
   };
 
   const activeSubscriptions = subscriptions.filter((s) => ['active', 'trial'].includes(s.status));
@@ -963,18 +1027,27 @@ export function UnifiedSubscriptionsManagement() {
                       <TableRow key={request.id}>
                         <TableCell className="font-medium">{request.tenant.name}</TableCell>
                         <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <span className="text-sm">{request.current_plan.name}</span>
-                            <span className="text-xs text-muted-foreground">↓</span>
-                            <span className="text-sm font-medium">
-                              {request.requested_plan.name}
-                            </span>
-                          </div>
+                          {request.change_type === 'remove_addon' ? (
+                            <span className="text-sm text-muted-foreground">Pack a eliminar</span>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm">{request.current_plan?.name || '-'}</span>
+                              <span className="text-xs text-muted-foreground">↓</span>
+                              <span className="text-sm font-medium">
+                                {request.requested_plan?.name || '-'}
+                              </span>
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
-                          {getChangeBadge(
-                            request.current_plan.price_monthly,
-                            request.requested_plan.price_monthly
+                          {getChangeTypeBadge(request.change_type)}
+                          {request.change_type === 'replacement' && request.current_plan && request.requested_plan && (
+                            <div className="mt-1">
+                              {getChangeBadge(
+                                request.current_plan.price_monthly,
+                                request.requested_plan.price_monthly
+                              )}
+                            </div>
                           )}
                         </TableCell>
                         <TableCell>
