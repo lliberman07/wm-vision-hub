@@ -3996,6 +3996,8 @@ export type Database = {
       }
       subscription_change_requests: {
         Row: {
+          addon_subscription_id: string | null
+          change_type: string | null
           created_at: string | null
           current_plan_id: string | null
           id: string
@@ -4010,6 +4012,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          addon_subscription_id?: string | null
+          change_type?: string | null
           created_at?: string | null
           current_plan_id?: string | null
           id?: string
@@ -4024,6 +4028,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          addon_subscription_id?: string | null
+          change_type?: string | null
           created_at?: string | null
           current_plan_id?: string | null
           id?: string
@@ -4038,6 +4044,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "subscription_change_requests_addon_subscription_id_fkey"
+            columns: ["addon_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscription_change_requests_current_plan_id_fkey"
             columns: ["current_plan_id"]
@@ -5214,6 +5227,15 @@ export type Database = {
       rpc_apply_contract_adjustment: {
         Args: { p_asof?: string; p_contract_id: string }
         Returns: Json
+      }
+      simulate_limits_without_subscription: {
+        Args: { p_subscription_id: string; p_tenant_id: string }
+        Returns: {
+          total_max_branches: number
+          total_max_contracts: number
+          total_max_properties: number
+          total_max_users: number
+        }[]
       }
       update_contract_projections_with_indices: {
         Args: never
