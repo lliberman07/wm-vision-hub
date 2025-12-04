@@ -57,6 +57,7 @@ interface Payment {
 
 interface Subscription {
   id: string;
+  tenant_id: string;
   tenant: {
     name: string;
   };
@@ -98,6 +99,7 @@ export function PaymentsManagement() {
         .from('tenant_subscriptions' as any)
         .select(`
           id,
+          tenant_id,
           tenant:tenant_id (
             name
           ),
@@ -173,16 +175,25 @@ export function PaymentsManagement() {
     setSubmitting(true);
 
     try {
+      const subscription = subscriptions.find(s => s.id === formData.subscription_id);
+      if (!subscription) throw new Error('Suscripción no encontrada');
+
+      const invoiceNumber = `INV-${Date.now()}`;
+
       const { error } = await supabase
-        .from('pms_subscription_payments' as any)
+        .from('subscription_invoices' as any)
         .insert({
           subscription_id: formData.subscription_id,
+          tenant_id: subscription.tenant_id,
+          invoice_number: invoiceNumber,
           amount: parseFloat(formData.amount),
           currency: formData.currency,
-          payment_date: formData.payment_date,
+          status: 'paid',
+          issue_date: formData.payment_date,
+          due_date: formData.payment_date,
+          paid_date: formData.payment_date,
           payment_method: formData.payment_method,
           notes: formData.notes || null,
-          status: 'confirmed',
         });
 
       if (error) throw error;
@@ -217,10 +228,10 @@ export function PaymentsManagement() {
   const handleUpdateStatus = async (paymentId: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('pms_subscription_payments' as any)
+        .from('subscription_invoices' as any)
         .update({ 
-          status: newStatus,
-          reviewed_at: new Date().toISOString(),
+          status: newStatus === 'confirmed' ? 'paid' : 'cancelled',
+          paid_date: newStatus === 'confirmed' ? new Date().toISOString().split('T')[0] : null,
         })
         .eq('id', paymentId);
 
@@ -244,10 +255,12 @@ export function PaymentsManagement() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'paid':
       case 'confirmed':
         return 'default';
       case 'pending':
         return 'secondary';
+      case 'cancelled':
       case 'rejected':
         return 'destructive';
       default:
@@ -257,8 +270,10 @@ export function PaymentsManagement() {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
+      paid: 'Pagado',
       confirmed: 'Confirmado',
       pending: 'Pendiente',
+      cancelled: 'Cancelado',
       rejected: 'Rechazado',
     };
     return labels[status] || status;
