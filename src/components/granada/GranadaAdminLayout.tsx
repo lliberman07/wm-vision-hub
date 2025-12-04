@@ -170,21 +170,26 @@ export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
             <div className="flex items-center gap-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <UserCircle className="h-5 w-5" />
+                  <Button variant="ghost" className="gap-2">
+                    <UserCircle className="h-4 w-4" />
+                    <span className="hidden lg:inline">
+                      {user?.email?.split('@')[0] || 'Usuario'}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
-                    {user?.email}
-                    <div className="text-xs text-muted-foreground font-normal">
-                      {granadaRole}
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{user?.email}</p>
+                      <p className="text-xs font-semibold text-destructive uppercase">
+                        {granadaRole}
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/granada-platform')}>
-                    <Building2 className="h-4 w-4 mr-2" />
-                    Inicio Granada
+                  <DropdownMenuItem onClick={() => navigate('/pms')}>
+                    <Home className="h-4 w-4 mr-2" />
+                    Dashboard PMS
                   </DropdownMenuItem>
                   {isClientAdmin && (
                     <DropdownMenuItem onClick={() => navigate('/client-admin')}>
@@ -192,10 +197,6 @@ export function GranadaAdminLayout({ children }: GranadaAdminLayoutProps) {
                       Panel de Cliente
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => navigate('/pms')}>
-                    <Home className="h-4 w-4 mr-2" />
-                    Acceso al PMS
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/granada-admin/change-password')}>
                     <Lock className="h-4 w-4 mr-2" />
