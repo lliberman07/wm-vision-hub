@@ -592,6 +592,57 @@ export function UnifiedSubscriptionsManagement() {
     ...changeRequests.filter((r) => r.status !== 'pending'),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+  // Filtros por ciclo de facturación
+  const monthlySubscriptions = subscriptions.filter(
+    (s) => s.billing_cycle === 'monthly' && ['active', 'trial'].includes(s.status)
+  );
+  const yearlySubscriptions = subscriptions.filter(
+    (s) => s.billing_cycle === 'yearly' && ['active', 'trial'].includes(s.status)
+  );
+
+  // Helper para calcular días hasta vencimiento
+  const getDaysUntilEnd = (endDate: string) => {
+    const days = differenceInDays(new Date(endDate), new Date());
+    if (days < 0) return { days: 0, color: 'text-destructive', label: 'Vencida' };
+    if (days === 0) return { days: 0, color: 'text-destructive', label: 'Vence hoy' };
+    if (days <= 7) return { days, color: 'text-destructive', label: `${days} días` };
+    if (days <= 15) return { days, color: 'text-yellow-600', label: `${days} días` };
+    return { days, color: 'text-green-600', label: `${days} días` };
+  };
+
+  // Extender período de suscripción al verificar pago
+  const handleExtendPeriod = async (subscriptionId: string, billingCycle: string) => {
+    try {
+      const subscription = subscriptions.find(s => s.id === subscriptionId);
+      if (!subscription) return;
+
+      const newPeriodStart = new Date();
+      const newPeriodEnd = new Date();
+      if (billingCycle === 'monthly') {
+        newPeriodEnd.setDate(newPeriodEnd.getDate() + 30);
+      } else {
+        newPeriodEnd.setDate(newPeriodEnd.getDate() + 365);
+      }
+
+      const { error } = await supabase
+        .from('tenant_subscriptions')
+        .update({
+          status: 'active',
+          current_period_start: newPeriodStart.toISOString(),
+          current_period_end: newPeriodEnd.toISOString(),
+        })
+        .eq('id', subscriptionId);
+
+      if (error) throw error;
+
+      toast.success(`Suscripción renovada por ${billingCycle === 'monthly' ? '30 días' : '1 año'}`);
+      fetchAllData();
+    } catch (error) {
+      console.error('Error extending period:', error);
+      toast.error('Error al renovar la suscripción');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -797,6 +848,7 @@ export function UnifiedSubscriptionsManagement() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="active">Suscripciones Activas</TabsTrigger>
+          <TabsTrigger value="billing">Por Ciclo</TabsTrigger>
           <TabsTrigger value="trials">Trials Activos</TabsTrigger>
           <TabsTrigger value="changes">
             Cambios Pendientes
@@ -892,6 +944,215 @@ export function UnifiedSubscriptionsManagement() {
                         </TableCell>
                       </TableRow>
                     ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Por Ciclo de Facturación */}
+        <TabsContent value="billing" className="space-y-6">
+          {/* Suscriptores Mensuales */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-orange-500" />
+                    Suscriptores Mensuales
+                  </CardTitle>
+                  <CardDescription>
+                    {monthlySubscriptions.length} suscripciones con renovación cada 30 días
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary" className="text-lg px-3 py-1">
+                  {monthlySubscriptions.length}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Fecha Inicio</TableHead>
+                    <TableHead>Fecha Fin</TableHead>
+                    <TableHead>Días Restantes</TableHead>
+                    <TableHead>Monto/Mes</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {monthlySubscriptions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        No hay suscriptores mensuales activos
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    monthlySubscriptions
+                      .sort((a, b) => new Date(a.current_period_end).getTime() - new Date(b.current_period_end).getTime())
+                      .map((sub) => {
+                        const endInfo = getDaysUntilEnd(sub.current_period_end);
+                        return (
+                          <TableRow key={sub.id} className={endInfo.days <= 7 ? 'bg-destructive/5' : ''}>
+                            <TableCell className="font-medium">{sub.tenant.name}</TableCell>
+                            <TableCell>{sub.plan.name}</TableCell>
+                            <TableCell>{getStatusBadge(sub.status)}</TableCell>
+                            <TableCell>{format(new Date(sub.current_period_start), 'dd/MM/yyyy')}</TableCell>
+                            <TableCell className="font-medium">
+                              {format(new Date(sub.current_period_end), 'dd/MM/yyyy')}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`font-bold ${endInfo.color}`}>
+                                {endInfo.label}
+                              </span>
+                              {endInfo.days <= 7 && endInfo.days > 0 && (
+                                <Badge variant="destructive" className="ml-2">
+                                  <AlertCircle className="h-3 w-3 mr-1" />
+                                  Próximo a vencer
+                                </Badge>
+                              )}
+                              {endInfo.days <= 0 && (
+                                <Badge variant="destructive" className="ml-2">
+                                  Requiere pago
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>${sub.plan.price_monthly}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                {sub.status === 'suspended' || endInfo.days <= 0 ? (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => handleExtendPeriod(sub.id, 'monthly')}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Reactivar (+30 días)
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleToggleStatus(sub.id, sub.status)}
+                                  >
+                                    <Ban className="h-4 w-4 mr-1" />
+                                    Suspender
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Suscriptores Anuales */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-green-500" />
+                    Suscriptores Anuales
+                  </CardTitle>
+                  <CardDescription>
+                    {yearlySubscriptions.length} suscripciones con renovación cada 365 días
+                  </CardDescription>
+                </div>
+                <Badge variant="default" className="text-lg px-3 py-1 bg-green-600">
+                  {yearlySubscriptions.length}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Fecha Inicio</TableHead>
+                    <TableHead>Fecha Fin</TableHead>
+                    <TableHead>Días Restantes</TableHead>
+                    <TableHead>Monto/Año</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {yearlySubscriptions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        No hay suscriptores anuales activos
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    yearlySubscriptions
+                      .sort((a, b) => new Date(a.current_period_end).getTime() - new Date(b.current_period_end).getTime())
+                      .map((sub) => {
+                        const endInfo = getDaysUntilEnd(sub.current_period_end);
+                        return (
+                          <TableRow key={sub.id} className={endInfo.days <= 30 ? 'bg-yellow-500/5' : ''}>
+                            <TableCell className="font-medium">{sub.tenant.name}</TableCell>
+                            <TableCell>{sub.plan.name}</TableCell>
+                            <TableCell>{getStatusBadge(sub.status)}</TableCell>
+                            <TableCell>{format(new Date(sub.current_period_start), 'dd/MM/yyyy')}</TableCell>
+                            <TableCell className="font-medium">
+                              {format(new Date(sub.current_period_end), 'dd/MM/yyyy')}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`font-bold ${endInfo.days <= 30 ? 'text-yellow-600' : 'text-green-600'}`}>
+                                {endInfo.days} días
+                              </span>
+                              {endInfo.days <= 30 && endInfo.days > 0 && (
+                                <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800">
+                                  <AlertCircle className="h-3 w-3 mr-1" />
+                                  Próximo a vencer
+                                </Badge>
+                              )}
+                              {endInfo.days <= 0 && (
+                                <Badge variant="destructive" className="ml-2">
+                                  Requiere pago
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>${sub.plan.price_yearly}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                {sub.status === 'suspended' || endInfo.days <= 0 ? (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => handleExtendPeriod(sub.id, 'yearly')}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Reactivar (+1 año)
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleToggleStatus(sub.id, sub.status)}
+                                  >
+                                    <Ban className="h-4 w-4 mr-1" />
+                                    Suspender
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                   )}
                 </TableBody>
               </Table>
