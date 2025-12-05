@@ -401,10 +401,16 @@ export default function MySubscription() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Plan Actual</p>
                   <p className="text-xl font-bold">{baseSubscription.subscription_plans.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Ciclo de Facturación</p>
+                  <p className="text-xl font-bold">
+                    {baseSubscription.billing_cycle === 'yearly' ? 'Anual' : 'Mensual'}
+                  </p>
                 </div>
                 {baseSubscription.trial_end && baseSubscription.status === 'trial' && (
                   <div>
@@ -417,9 +423,9 @@ export default function MySubscription() {
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-muted-foreground">Próxima Renovación</p>
-                  <p className="text-xl font-bold">
-                    {format(new Date(baseSubscription.current_period_end), 'dd/MM/yyyy', { locale: es })}
+                  <p className="text-sm text-muted-foreground">Período Vigente</p>
+                  <p className="text-lg font-medium">
+                    {format(new Date(baseSubscription.current_period_start), 'dd/MM/yyyy', { locale: es })} - {format(new Date(baseSubscription.current_period_end), 'dd/MM/yyyy', { locale: es })}
                   </p>
                 </div>
               </div>
@@ -457,8 +463,14 @@ export default function MySubscription() {
                           {invoice.invoice_number}
                         </TableCell>
                         <TableCell>
-                          {format(new Date(invoice.billing_period_start), 'dd MMM', { locale: es })} -{' '}
-                          {format(new Date(invoice.billing_period_end), 'dd MMM yyyy', { locale: es })}
+                          {invoice.billing_period_start && invoice.billing_period_end ? (
+                            <>
+                              {format(new Date(invoice.billing_period_start), 'dd MMM', { locale: es })} -{' '}
+                              {format(new Date(invoice.billing_period_end), 'dd MMM yyyy', { locale: es })}
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell className="font-medium">
                           {invoice.currency} ${invoice.amount.toLocaleString()}

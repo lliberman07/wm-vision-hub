@@ -58,6 +58,9 @@ interface Payment {
 interface Subscription {
   id: string;
   tenant_id: string;
+  billing_cycle: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
   tenant: {
     name: string;
   };
@@ -100,6 +103,9 @@ export function PaymentsManagement() {
         .select(`
           id,
           tenant_id,
+          billing_cycle,
+          current_period_start,
+          current_period_end,
           tenant:tenant_id (
             name
           ),
@@ -180,6 +186,16 @@ export function PaymentsManagement() {
 
       const invoiceNumber = `INV-${Date.now()}`;
 
+      // Calculate billing period based on billing_cycle
+      const periodStart = new Date(formData.payment_date);
+      const periodEnd = new Date(periodStart);
+      if (subscription.billing_cycle === 'yearly') {
+        periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      } else {
+        // Default to monthly
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+      }
+
       const { error } = await supabase
         .from('subscription_invoices' as any)
         .insert({
@@ -194,6 +210,8 @@ export function PaymentsManagement() {
           paid_date: formData.payment_date,
           payment_method: formData.payment_method,
           notes: formData.notes || null,
+          billing_period_start: periodStart.toISOString().split('T')[0],
+          billing_period_end: periodEnd.toISOString().split('T')[0],
         });
 
       if (error) throw error;
@@ -322,7 +340,9 @@ export function PaymentsManagement() {
                       value={formData.subscription_id}
                       onValueChange={(value) => {
                         const sub = subscriptions.find(s => s.id === value);
-                        const price = sub?.plan.price_monthly || sub?.plan.price_yearly || 0;
+                        const price = sub?.billing_cycle === 'yearly' 
+                          ? (sub?.plan.price_yearly || 0) 
+                          : (sub?.plan.price_monthly || 0);
                         setFormData({ 
                           ...formData, 
                           subscription_id: value,
@@ -337,11 +357,16 @@ export function PaymentsManagement() {
                       <SelectContent className="z-50 bg-background">
                         {subscriptions.map((sub) => (
                           <SelectItem key={sub.id} value={sub.id}>
-                            {sub.tenant.name} - {sub.plan.name}
+                            {sub.tenant.name} - {sub.plan.name} ({sub.billing_cycle === 'yearly' ? 'Anual' : 'Mensual'})
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {formData.subscription_id && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Ciclo: {subscriptions.find(s => s.id === formData.subscription_id)?.billing_cycle === 'yearly' ? 'Anual (365 días)' : 'Mensual (30 días)'}
+                      </p>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
