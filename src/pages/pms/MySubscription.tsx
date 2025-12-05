@@ -252,19 +252,36 @@ export default function MySubscription() {
     <PMSPageWrapper>
       <PMSLayout>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Mi Suscripción</h1>
-              <p className="text-muted-foreground">Gestiona tu plan y facturación</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => openChangeDialog('replacement')}>
-                Cambiar Plan Base
-              </Button>
-              <Button onClick={() => openChangeDialog('addon')}>
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Agregar Capacidad
-              </Button>
+          {/* Header con diseño mejorado */}
+          <div className="relative bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-xl p-6 mb-2">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-1 bg-primary rounded-full" />
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Mi Suscripción</h1>
+                    <p className="text-muted-foreground text-sm md:text-base">
+                      Gestiona tu plan y facturación
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 md:gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => openChangeDialog('replacement')}
+                  className="shadow-sm hover:shadow-md transition-shadow"
+                >
+                  Cambiar Plan Base
+                </Button>
+                <Button 
+                  onClick={() => openChangeDialog('addon')}
+                  className="shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Agregar Capacidad
+                </Button>
+              </div>
             </div>
           </div>
 
