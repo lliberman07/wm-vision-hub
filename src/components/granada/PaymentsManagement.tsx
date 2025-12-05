@@ -59,6 +59,7 @@ interface Subscription {
   id: string;
   tenant_id: string;
   billing_cycle: string;
+  subscription_code: string | null;
   current_period_start: string | null;
   current_period_end: string | null;
   tenant: {
@@ -104,6 +105,7 @@ export function PaymentsManagement() {
           id,
           tenant_id,
           billing_cycle,
+          subscription_code,
           current_period_start,
           current_period_end,
           tenant:tenant_id (
@@ -183,6 +185,21 @@ export function PaymentsManagement() {
     try {
       const subscription = subscriptions.find(s => s.id === formData.subscription_id);
       if (!subscription) throw new Error('Suscripción no encontrada');
+
+      // Validación estricta: el monto debe ser exacto, no se permiten pagos parciales
+      const expectedPrice = subscription.billing_cycle === 'yearly' 
+        ? (subscription.plan.price_yearly || 0) 
+        : (subscription.plan.price_monthly || 0);
+      
+      if (parseFloat(formData.amount) !== expectedPrice) {
+        toast({
+          title: 'Monto incorrecto',
+          description: `El pago ${subscription.billing_cycle === 'yearly' ? 'anual' : 'mensual'} debe ser exactamente $${expectedPrice.toLocaleString()}. No se permiten pagos parciales.`,
+          variant: 'destructive',
+        });
+        setSubmitting(false);
+        return;
+      }
 
       const invoiceNumber = `INV-${Date.now()}`;
 
@@ -357,16 +374,28 @@ export function PaymentsManagement() {
                       <SelectContent className="z-50 bg-background">
                         {subscriptions.map((sub) => (
                           <SelectItem key={sub.id} value={sub.id}>
+                            <span className="font-mono text-xs mr-2">{sub.subscription_code || 'N/A'}</span>
                             {sub.tenant.name} - {sub.plan.name} ({sub.billing_cycle === 'yearly' ? 'Anual' : 'Mensual'})
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {formData.subscription_id && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Ciclo: {subscriptions.find(s => s.id === formData.subscription_id)?.billing_cycle === 'yearly' ? 'Anual (365 días)' : 'Mensual (30 días)'}
-                      </p>
-                    )}
+                    {formData.subscription_id && (() => {
+                      const selectedSub = subscriptions.find(s => s.id === formData.subscription_id);
+                      const expectedPrice = selectedSub?.billing_cycle === 'yearly' 
+                        ? (selectedSub?.plan.price_yearly || 0) 
+                        : (selectedSub?.plan.price_monthly || 0);
+                      return (
+                        <div className="mt-1 space-y-1">
+                          <p className="text-xs text-muted-foreground">
+                            Ciclo: {selectedSub?.billing_cycle === 'yearly' ? 'Anual (365 días)' : 'Mensual (30 días)'}
+                          </p>
+                          <p className="text-xs font-medium text-green-600">
+                            💰 Monto del plan: ${expectedPrice.toLocaleString()} ARS
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -376,9 +405,13 @@ export function PaymentsManagement() {
                         type="number"
                         step="0.01"
                         value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                        readOnly
+                        className="bg-muted cursor-not-allowed"
                         required
                       />
+                      <p className="text-xs text-muted-foreground">
+                        El monto se fija automáticamente según el plan. No se permiten pagos parciales.
+                      </p>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="currency">Moneda *</Label>
@@ -458,6 +491,7 @@ export function PaymentsManagement() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Código</TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Monto</TableHead>
@@ -470,6 +504,9 @@ export function PaymentsManagement() {
           <TableBody>
             {payments.map((payment) => (
               <TableRow key={payment.id}>
+                <TableCell className="font-mono text-xs">
+                  {subscriptions.find(s => s.id === payment.subscription_id)?.subscription_code || 'N/A'}
+                </TableCell>
                 <TableCell className="font-medium">
                   {payment.subscription?.tenant?.name || 'N/A'}
                 </TableCell>

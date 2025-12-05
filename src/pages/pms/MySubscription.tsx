@@ -38,6 +38,7 @@ interface SubscriptionData {
   current_period_end: string;
   billing_cycle: string;
   is_addon: boolean;
+  subscription_code: string | null;
   subscription_plans: {
     name: string;
     price_monthly: number;
@@ -109,6 +110,7 @@ export default function MySubscription() {
         .from('tenant_subscriptions')
         .select(`
           *,
+          subscription_code,
           subscription_plans (
             name,
             price_monthly,
@@ -401,7 +403,13 @@ export default function MySubscription() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Código de Suscripción</p>
+                  <p className="text-xl font-bold font-mono tracking-wider text-primary">
+                    {baseSubscription.subscription_code || 'N/A'}
+                  </p>
+                </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Plan Actual</p>
                   <p className="text-xl font-bold">{baseSubscription.subscription_plans.name}</p>
