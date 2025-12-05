@@ -89,7 +89,7 @@ export function ClientSubscriptionPanel() {
       setUsageLimits(limits);
 
       // Load invoices with payment receipts
-      const { data: invoicesData, error: invoicesError } = await supabase
+      const { data: invoicesWithReceipts, error: joinError } = await supabase
         .from('subscription_invoices')
         .select(`
           *,
@@ -104,8 +104,23 @@ export function ClientSubscriptionPanel() {
         .order('issue_date', { ascending: false })
         .limit(10);
 
-      if (!invoicesError && invoicesData) {
-        setInvoices(invoicesData as any[]);
+      if (!joinError && invoicesWithReceipts) {
+        setInvoices(invoicesWithReceipts as any[]);
+      } else if (joinError) {
+        // Fallback: try to get invoices without receipts join
+        console.warn('Error loading invoices with receipts, trying fallback:', joinError);
+        const { data: simpleInvoices, error: simpleError } = await supabase
+          .from('subscription_invoices')
+          .select('*')
+          .eq('tenant_id', clientData.id)
+          .order('issue_date', { ascending: false })
+          .limit(10);
+        
+        if (!simpleError && simpleInvoices) {
+          setInvoices(simpleInvoices.map(inv => ({ ...inv, payment_receipts: [] })) as any[]);
+        } else {
+          console.error('Error loading invoices:', simpleError);
+        }
       }
 
       // Load change requests
