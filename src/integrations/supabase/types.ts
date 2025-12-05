@@ -4452,6 +4452,7 @@ export type Database = {
           parent_subscription_id: string | null
           plan_id: string
           status: Database["public"]["Enums"]["subscription_status"]
+          subscription_code: string | null
           tenant_id: string
           trial_end_date: string | null
           trial_reminder_sent_at: string | null
@@ -4473,6 +4474,7 @@ export type Database = {
           parent_subscription_id?: string | null
           plan_id: string
           status?: Database["public"]["Enums"]["subscription_status"]
+          subscription_code?: string | null
           tenant_id: string
           trial_end_date?: string | null
           trial_reminder_sent_at?: string | null
@@ -4494,6 +4496,7 @@ export type Database = {
           parent_subscription_id?: string | null
           plan_id?: string
           status?: Database["public"]["Enums"]["subscription_status"]
+          subscription_code?: string | null
           tenant_id?: string
           trial_end_date?: string | null
           trial_reminder_sent_at?: string | null
