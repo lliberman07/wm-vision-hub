@@ -239,7 +239,7 @@ export default function MySubscription() {
     return <PMSPageWrapper>
         <PMSLayout>
           <div className="flex items-center justify-center h-96">
-            <div className="text-center">
+            <div className="text-center shadow-none bg-secondary-foreground opacity-100">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-muted-foreground">Cargando suscripción...</p>
             </div>
