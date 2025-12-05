@@ -267,16 +267,16 @@ export default function MySubscription() {
           <div className="mb-2">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Mi Suscripción</h1>
-                <p className="text-muted-foreground text-sm md:text-base">
+                <h1 className="text-2xl font-bold tracking-tight md:text-2xl">Mi Suscripción</h1>
+                <p className="text-muted-foreground text-sm md:text-base text-justify font-sans mx-[20px]">
                   Gestiona tu plan y facturación
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 md:gap-3">
-                <Button variant="outline" onClick={() => openChangeDialog('replacement')} className="shadow-sm hover:shadow-md transition-shadow">
+                <Button variant="outline" onClick={() => openChangeDialog('replacement')} className="shadow-sm hover:shadow-md transition-shadow my-0">
                   Cambiar Plan Base
                 </Button>
-                <Button onClick={() => openChangeDialog('addon')} className="shadow-sm hover:shadow-md transition-shadow">
+                <Button onClick={() => openChangeDialog('addon')} className="shadow-sm hover:shadow-md transition-shadow my-0">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Agregar Capacidad
                 </Button>
