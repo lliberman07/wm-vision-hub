@@ -267,8 +267,8 @@ export default function MySubscription() {
           <div className="mb-2">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight md:text-2xl">Mi Suscripción</h1>
-                <p className="text-muted-foreground text-sm md:text-base text-justify font-sans mx-[20px]">
+                <h1 className="text-2xl font-bold tracking-tight md:text-2xl py-[5px]">Mi Suscripción</h1>
+                <p className="text-muted-foreground text-sm md:text-base text-justify font-sans mx-[20px] py-0 px-0">
                   Gestiona tu plan y facturación
                 </p>
               </div>
