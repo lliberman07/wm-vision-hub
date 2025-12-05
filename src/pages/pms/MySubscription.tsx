@@ -263,19 +263,14 @@ export default function MySubscription() {
   return <PMSPageWrapper>
       <PMSLayout>
         <div className="space-y-6">
-          {/* Header con diseño mejorado */}
-          <div className="relative bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-xl p-6 mb-2">
+          {/* Header */}
+          <div className="mb-2">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-1 bg-primary rounded-none" />
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Mi Suscripción</h1>
-                    <p className="text-muted-foreground text-sm md:text-base">
-                      Gestiona tu plan y facturación
-                    </p>
-                  </div>
-                </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Mi Suscripción</h1>
+                <p className="text-muted-foreground text-sm md:text-base">
+                  Gestiona tu plan y facturación
+                </p>
               </div>
               <div className="flex flex-wrap gap-2 md:gap-3">
                 <Button variant="outline" onClick={() => openChangeDialog('replacement')} className="shadow-sm hover:shadow-md transition-shadow">
