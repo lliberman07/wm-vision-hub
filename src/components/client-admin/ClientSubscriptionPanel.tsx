@@ -5,11 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CreditCard, Calendar, AlertCircle, TrendingUp, FileText, Upload, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { CreditCard, Calendar, AlertCircle, TrendingUp, FileText, Upload, Clock, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { SubscriptionChangeDialog } from './SubscriptionChangeDialog';
+import { PaymentReceiptUpload } from '@/components/subscription/PaymentReceiptUpload';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -26,9 +27,16 @@ interface Invoice {
   issue_date: string;
   due_date: string;
   amount: number;
+  currency: string;
   status: string;
   payment_proof_url?: string | null;
   payment_reference?: string | null;
+  payment_receipts?: {
+    id: string;
+    receipt_url: string;
+    verification_status: string;
+    payment_date: string;
+  }[];
 }
 
 interface ChangeRequest {
@@ -48,6 +56,8 @@ export function ClientSubscriptionPanel() {
   const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [changeDialogOpen, setChangeDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   useEffect(() => {
     loadData();
@@ -78,10 +88,18 @@ export function ClientSubscriptionPanel() {
 
       setUsageLimits(limits);
 
-      // Load invoices
+      // Load invoices with payment receipts
       const { data: invoicesData, error: invoicesError } = await supabase
         .from('subscription_invoices')
-        .select('*')
+        .select(`
+          *,
+          payment_receipts (
+            id,
+            receipt_url,
+            verification_status,
+            payment_date
+          )
+        `)
         .eq('tenant_id', clientData.id)
         .order('issue_date', { ascending: false })
         .limit(10);
@@ -154,6 +172,39 @@ export function ClientSubscriptionPanel() {
         return <Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" /> Rechazada</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const handleUploadClick = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setUploadDialogOpen(true);
+  };
+
+  const handleUploadSuccess = () => {
+    setUploadDialogOpen(false);
+    setSelectedInvoice(null);
+    loadData();
+    toast.success('Comprobante subido correctamente. Será verificado por nuestro equipo.');
+  };
+
+  const getReceiptStatus = (invoice: Invoice) => {
+    if (!invoice.payment_receipts || invoice.payment_receipts.length === 0) {
+      return null;
+    }
+    const latest = invoice.payment_receipts[0];
+    return latest.verification_status;
+  };
+
+  const getReceiptStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="gap-1 text-xs"><Clock className="h-3 w-3" /> En revisión</Badge>;
+      case 'verified':
+        return <Badge className="gap-1 text-xs bg-green-600"><CheckCircle className="h-3 w-3" /> Verificado</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive" className="gap-1 text-xs"><XCircle className="h-3 w-3" /> Rechazado</Badge>;
+      default:
+        return null;
     }
   };
 
@@ -292,30 +343,61 @@ export function ClientSubscriptionPanel() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
-                  <TableCell>{new Date(invoice.issue_date).toLocaleDateString('es-AR')}</TableCell>
-                  <TableCell>{new Date(invoice.due_date).toLocaleDateString('es-AR')}</TableCell>
-                  <TableCell>${invoice.amount.toLocaleString('es-AR')}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadge(invoice.status).variant}>
-                      {getStatusBadge(invoice.status).label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {invoice.payment_proof_url ? (
-                      <Button variant="ghost" size="sm">
-                        <FileText className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button variant="ghost" size="sm">
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    )}
+              {invoices.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    No hay facturas registradas
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                invoices.map((invoice) => {
+                  const receiptStatus = getReceiptStatus(invoice);
+                  const canUpload = invoice.status !== 'paid' && receiptStatus !== 'pending' && receiptStatus !== 'verified';
+                  
+                  return (
+                    <TableRow key={invoice.id}>
+                      <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                      <TableCell>{new Date(invoice.issue_date).toLocaleDateString('es-AR')}</TableCell>
+                      <TableCell>{new Date(invoice.due_date).toLocaleDateString('es-AR')}</TableCell>
+                      <TableCell>${invoice.amount.toLocaleString('es-AR')} {invoice.currency}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadge(invoice.status).variant}>
+                          {getStatusBadge(invoice.status).label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {receiptStatus ? (
+                            <>
+                              {getReceiptStatusBadge(receiptStatus)}
+                              {invoice.payment_receipts?.[0]?.receipt_url && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => window.open(invoice.payment_receipts![0].receipt_url, '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </>
+                          ) : canUpload ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleUploadClick(invoice)}
+                            >
+                              <Upload className="h-4 w-4 mr-1" />
+                              Informar Pago
+                            </Button>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -378,6 +460,30 @@ export function ClientSubscriptionPanel() {
           onSuccess={loadData}
         />
       )}
+
+      {/* Upload Receipt Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Informar Pago</DialogTitle>
+            <DialogDescription>
+              {selectedInvoice && (
+                <>
+                  Factura: {selectedInvoice.invoice_number} - ${selectedInvoice.amount.toLocaleString('es-AR')} {selectedInvoice.currency}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedInvoice && clientData && (
+            <PaymentReceiptUpload
+              invoiceId={selectedInvoice.id}
+              tenantId={clientData.id}
+              amount={selectedInvoice.amount}
+              onSuccess={handleUploadSuccess}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
