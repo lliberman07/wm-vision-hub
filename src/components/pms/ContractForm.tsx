@@ -269,7 +269,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
         .select('id, code, address, status')
         .neq('status', 'inactive') // Solo propiedades activas, en alquiler o mantenimiento
         .order('code'),
-      supabase.from('pms_tenants_renters').select('id, full_name'),
+      supabase.from('pms_tenants_renters').select('id, full_name, first_name, last_name, company_name, tenant_type'),
     ]);
 
     if (propsRes.data) setProperties(propsRes.data);
@@ -793,11 +793,16 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {tenants.map(tenant => (
-                          <SelectItem key={tenant.id} value={tenant.id}>
-                            {tenant.full_name}
-                          </SelectItem>
-                        ))}
+                        {tenants.map(tenant => {
+                          const displayName = tenant.full_name?.trim() 
+                            || (tenant.tenant_type === 'company' ? tenant.company_name : `${tenant.first_name || ''} ${tenant.last_name || ''}`.trim())
+                            || tenant.id;
+                          return (
+                            <SelectItem key={tenant.id} value={tenant.id}>
+                              {displayName}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                     <FormMessage />
