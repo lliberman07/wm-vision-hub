@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Building2, Save } from 'lucide-react';
+import { Save, Star, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export function ClientSettings() {
@@ -167,12 +168,31 @@ export function ClientSettings() {
             </div>
 
             <div className="space-y-2">
-              <Label>Email de Contacto</Label>
+              <Label className="flex items-center gap-2">
+                Email de Contacto
+                {clientData?.settings?.main_contact_user_id && (
+                  <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                )}
+              </Label>
               <Input
                 type="email"
                 value={formData.email}
+                readOnly={!!clientData?.settings?.main_contact_user_id}
+                className={clientData?.settings?.main_contact_user_id ? 'bg-muted cursor-not-allowed' : ''}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
+              {clientData?.settings?.main_contact_user_id && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  Asignado desde{' '}
+                  <Link 
+                    to="/client-admin/users" 
+                    className="text-primary underline hover:no-underline"
+                  >
+                    Equipo Administrativo
+                  </Link>
+                </p>
+              )}
             </div>
           </div>
         </CardContent>

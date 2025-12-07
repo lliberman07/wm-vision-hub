@@ -23,7 +23,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, Search, ToggleLeft, ToggleRight, Key } from 'lucide-react';
+import { Plus, Search, ToggleLeft, ToggleRight, Key, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import {
@@ -55,7 +55,7 @@ interface ClientUser {
 }
 
 export function ClientUsersManagement() {
-  const { clientData } = useClient();
+  const { clientData, refreshClientData } = useClient();
   const { checkLimit } = useSubscriptionLimits();
   const [users, setUsers] = useState<ClientUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<ClientUser[]>([]);
@@ -73,6 +73,11 @@ export function ClientUsersManagement() {
     open: false, 
     user: null 
   });
+  const [mainContactAlert, setMainContactAlert] = useState<{ open: boolean; user: ClientUser | null }>({ 
+    open: false, 
+    user: null 
+  });
+  const [settingMainContact, setSettingMainContact] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -272,6 +277,44 @@ export function ClientUsersManagement() {
     }
   };
 
+  const confirmSetMainContact = () => {
+    if (!mainContactAlert.user) return;
+    setAsMainContact(mainContactAlert.user);
+    setMainContactAlert({ open: false, user: null });
+  };
+
+  const setAsMainContact = async (user: ClientUser) => {
+    if (!clientData) return;
+    
+    setSettingMainContact(true);
+    try {
+      const updatedSettings = {
+        ...(clientData.settings || {}),
+        email: user.email,
+        main_contact_user_id: user.id
+      };
+
+      const { error } = await supabase
+        .from('pms_tenants')
+        .update({ settings: updatedSettings })
+        .eq('id', clientData.id);
+
+      if (error) throw error;
+
+      toast.success(`${user.first_name} ${user.last_name} es ahora el Contacto Principal`);
+      refreshClientData();
+    } catch (error) {
+      console.error('Error setting main contact:', error);
+      toast.error('Error al asignar contacto principal');
+    } finally {
+      setSettingMainContact(false);
+    }
+  };
+
+  const isMainContact = (userId: string) => {
+    return clientData?.settings?.main_contact_user_id === userId;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -388,6 +431,7 @@ export function ClientUsersManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12"></TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Fecha de Creación</TableHead>
@@ -398,7 +442,7 @@ export function ClientUsersManagement() {
               <TableBody>
                 {filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">
                       No se encontraron usuarios
                     </TableCell>
                   </TableRow>
@@ -408,8 +452,33 @@ export function ClientUsersManagement() {
                       key={user.id}
                       className={!user.is_active ? 'bg-muted/30' : ''}
                     >
+                      <TableCell>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => !isMainContact(user.id) && setMainContactAlert({ open: true, user })}
+                              disabled={settingMainContact}
+                              className={isMainContact(user.id) ? 'text-yellow-500' : 'text-muted-foreground hover:text-yellow-500'}
+                            >
+                              <Star className={`h-4 w-4 ${isMainContact(user.id) ? 'fill-current' : ''}`} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{isMainContact(user.id) ? 'Contacto Principal' : 'Marcar como Contacto Principal'}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell className="font-medium">
-                        {user.first_name} {user.last_name}
+                        <div className="flex items-center gap-2">
+                          {user.first_name} {user.last_name}
+                          {isMainContact(user.id) && (
+                            <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
+                              Contacto Principal
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
@@ -523,6 +592,34 @@ export function ClientUsersManagement() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={confirmResetPassword}>
               Resetear Contraseña
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Alert Dialog - Set Main Contact */}
+      <AlertDialog open={mainContactAlert.open} onOpenChange={(open) => !open && setMainContactAlert({ open: false, user: null })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              ⭐ ¿Designar como Contacto Principal?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {mainContactAlert.user && (
+                <>
+                  El email de{' '}
+                  <span className="font-semibold">
+                    {mainContactAlert.user.first_name} {mainContactAlert.user.last_name}
+                  </span>{' '}
+                  ({mainContactAlert.user.email}) se usará como email de contacto de la organización.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSetMainContact}>
+              Confirmar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
