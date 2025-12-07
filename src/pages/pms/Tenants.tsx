@@ -111,11 +111,20 @@ const Tenants = () => {
     }
   };
 
-  const filteredTenants = tenants.filter(tenant =>
-    tenant.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.document_number.includes(searchTerm)
-  );
+  // Helper para obtener nombre a mostrar
+  const getDisplayName = (tenant: Tenant) => {
+    if (tenant.full_name && tenant.full_name.trim()) return tenant.full_name;
+    if (tenant.tenant_type === 'company' && tenant.company_name) return tenant.company_name;
+    const name = `${tenant.first_name || ''} ${tenant.last_name || ''}`.trim();
+    return name || tenant.email;
+  };
+
+  const filteredTenants = tenants.filter(tenant => {
+    const displayName = getDisplayName(tenant).toLowerCase();
+    return displayName.includes(searchTerm.toLowerCase()) ||
+      tenant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tenant.document_number.includes(searchTerm);
+  });
 
   return (
     <PMSLayout>
@@ -179,7 +188,7 @@ const Tenants = () => {
                     <TableRow key={tenant.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                          {tenant.full_name}
+                          {getDisplayName(tenant)}
                           {tenant.active_contract_id && (
                             <Tooltip>
                               <TooltipTrigger asChild>
