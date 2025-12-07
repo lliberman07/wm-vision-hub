@@ -4772,15 +4772,24 @@ export type Database = {
         Returns: boolean
       }
       can_renew_contract: { Args: { contract_id_param: string }; Returns: Json }
-      cancel_contract: {
-        Args: {
-          cancellation_date_param: string
-          cancellation_reason_param: string
-          cancelled_by_param: string
-          contract_id_param: string
-        }
-        Returns: undefined
-      }
+      cancel_contract:
+        | {
+            Args: {
+              p_cancelled_by?: string
+              p_contract_id: string
+              p_reason?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              cancellation_date_param: string
+              cancellation_reason_param: string
+              cancelled_by_param: string
+              contract_id_param: string
+            }
+            Returns: undefined
+          }
       check_email_exists_globally: {
         Args: {
           p_action_by?: string
@@ -4935,7 +4944,7 @@ export type Database = {
       }
       get_property_auto_status: {
         Args: { property_id_param: string }
-        Returns: string
+        Returns: Database["public"]["Enums"]["property_status"]
       }
       get_revenue_by_payment_method: {
         Args: { p_end_date?: string; p_start_date?: string }
