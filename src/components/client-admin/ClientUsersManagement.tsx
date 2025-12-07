@@ -143,7 +143,22 @@ export function ClientUsersManagement() {
     setCreatingUser(true);
 
     try {
-      // Create CLIENT_ADMIN user via edge function
+      // First check if this email already exists as CLIENT_ADMIN for this tenant
+      const { data: existingClientUser } = await supabase
+        .from('pms_client_users')
+        .select('id')
+        .eq('tenant_id', clientData.id)
+        .eq('email', formData.email)
+        .eq('user_type', 'CLIENT_ADMIN')
+        .maybeSingle();
+
+      if (existingClientUser) {
+        toast.error('Este email ya está registrado como usuario administrativo');
+        setCreatingUser(false);
+        return;
+      }
+
+      // Create or get user via edge function
       const { data, error } = await supabase.functions.invoke('create-pms-user', {
         body: {
           email: formData.email,
@@ -170,21 +185,27 @@ export function ClientUsersManagement() {
 
       if (insertError) throw insertError;
 
-      // Send welcome email with temporary password
-      const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
-        body: {
-          email: formData.email,
-          name: `${formData.first_name} ${formData.last_name}`,
-          password: data.temp_password,
-          platform: 'pms',
-        },
-      });
-
-      if (emailError) {
-        console.error('Error sending welcome email:', emailError);
-        toast.warning('Usuario creado pero no se pudo enviar el email de bienvenida');
+      // Send appropriate email based on whether user is new or existing
+      if (data.is_existing) {
+        // User already has an account, send notification email (no credentials)
+        toast.success('Usuario agregado como administrador. Ya tiene cuenta en el sistema.');
       } else {
-        toast.success('Usuario administrativo creado. Se envió un email con las credenciales.');
+        // New user, send welcome email with credentials
+        const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+          body: {
+            email: formData.email,
+            name: `${formData.first_name} ${formData.last_name}`,
+            password: data.temp_password,
+            platform: 'pms',
+          },
+        });
+
+        if (emailError) {
+          console.error('Error sending welcome email:', emailError);
+          toast.warning('Usuario creado pero no se pudo enviar el email de bienvenida');
+        } else {
+          toast.success('Usuario administrativo creado. Se envió un email con las credenciales.');
+        }
       }
 
       setCreateDialogOpen(false);
