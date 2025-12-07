@@ -114,21 +114,16 @@ export const TenantDetailsDialog = ({ open, onOpenChange, tenant }: TenantDetail
             </div>
             
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Tipo de Documento</Label>
-              <p className="font-medium">{tenant.document_type}</p>
+              <Label className="text-muted-foreground">
+                {tenant.tenant_type === 'empresa' ? 'CUIT' : 'CUIT/CUIL'}
+              </Label>
+              <p className="font-medium font-mono">{tenant.document_number || 'No especificado'}</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Número de Documento</Label>
-              <p className="font-medium">{tenant.document_number}</p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Tipo de Inquilino</Label>
-              <p className="font-medium">{tenant.tenant_type}</p>
-            </div>
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Tipo de Inquilino</Label>
+            <p className="font-medium capitalize">{tenant.tenant_type}</p>
           </div>
 
           <div className="space-y-2">

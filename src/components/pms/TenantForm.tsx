@@ -229,13 +229,45 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
                   />
                 </div>
 
+                {/* CUIT/CUIL como identificador principal para personas */}
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="tax_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CUIT/CUIL *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="20-12345678-9" className="font-mono" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="mobile_phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Celular</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="+54 9 11 1234-5678" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* DNI como dato adicional opcional */}
                 <div className="grid grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="document_type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tipo Doc.</FormLabel>
+                        <FormLabel>Otro Doc.</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -244,7 +276,6 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="DNI">DNI</SelectItem>
-                            <SelectItem value="CUIT/CUIL">CUIT/CUIL</SelectItem>
                             <SelectItem value="Pasaporte">Pasaporte</SelectItem>
                           </SelectContent>
                         </Select>
@@ -261,20 +292,6 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
                         <FormLabel>Número</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="12345678" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="mobile_phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Celular</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="+54 9 11 1234-5678" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

@@ -163,14 +163,19 @@ const Tenants = () => {
                     <TableHead>Nombre</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Teléfono</TableHead>
-                    <TableHead>Documento</TableHead>
+                    <TableHead className="min-w-[160px]">CUIT/CUIL</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTenants.map((tenant) => (
+                  {filteredTenants.map((tenant) => {
+                    // Mostrar CUIT para empresas, CUIT/CUIL para personas
+                    const docLabel = tenant.tenant_type === 'empresa' ? 'CUIT' : 'CUIT/CUIL';
+                    const docValue = tenant.tax_id || tenant.document_number || '-';
+                    
+                    return (
                     <TableRow key={tenant.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
@@ -196,8 +201,11 @@ const Tenants = () => {
                       </TableCell>
                       <TableCell>{tenant.email}</TableCell>
                       <TableCell>{tenant.phone || '-'}</TableCell>
-                      <TableCell>{tenant.document_type} {tenant.document_number}</TableCell>
-                      <TableCell>{tenant.tenant_type}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        <span className="text-muted-foreground text-xs mr-1">{docLabel}</span>
+                        {docValue}
+                      </TableCell>
+                      <TableCell className="capitalize">{tenant.tenant_type}</TableCell>
                       <TableCell>
                         <Badge variant={tenant.is_active ? 'default' : 'secondary'}>
                           {tenant.is_active ? 'Activo' : 'Inactivo'}
@@ -219,7 +227,7 @@ const Tenants = () => {
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  );})}
                 </TableBody>
               </Table>
             )}

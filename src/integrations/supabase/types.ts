@@ -3501,6 +3501,7 @@ export type Database = {
           admin_email: string | null
           client_type: Database["public"]["Enums"]["pms_client_type"] | null
           created_at: string | null
+          cuit_cuil: string | null
           current_subscription_id: string | null
           exchange_rate_source: string | null
           has_used_trial: boolean | null
@@ -3521,6 +3522,7 @@ export type Database = {
           admin_email?: string | null
           client_type?: Database["public"]["Enums"]["pms_client_type"] | null
           created_at?: string | null
+          cuit_cuil?: string | null
           current_subscription_id?: string | null
           exchange_rate_source?: string | null
           has_used_trial?: boolean | null
@@ -3541,6 +3543,7 @@ export type Database = {
           admin_email?: string | null
           client_type?: Database["public"]["Enums"]["pms_client_type"] | null
           created_at?: string | null
+          cuit_cuil?: string | null
           current_subscription_id?: string | null
           exchange_rate_source?: string | null
           has_used_trial?: boolean | null

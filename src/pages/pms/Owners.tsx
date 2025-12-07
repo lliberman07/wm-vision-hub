@@ -23,6 +23,7 @@ interface Owner {
   document_number: string;
   owner_type: string;
   is_active: boolean;
+  tax_id?: string;
 }
 
 const Owners = () => {
@@ -116,20 +117,28 @@ const Owners = () => {
                     <TableHead>Nombre</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Teléfono</TableHead>
-                    <TableHead>Documento</TableHead>
+                    <TableHead className="min-w-[160px]">CUIT/CUIL</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOwners.map((owner) => (
+                  {filteredOwners.map((owner) => {
+                    // Mostrar CUIT para empresas, CUIT/CUIL para personas
+                    const docLabel = owner.owner_type === 'empresa' ? 'CUIT' : 'CUIT/CUIL';
+                    const docValue = owner.tax_id || owner.document_number || '-';
+                    
+                    return (
                     <TableRow key={owner.id}>
                       <TableCell className="font-medium">{owner.full_name}</TableCell>
                       <TableCell>{owner.email}</TableCell>
                       <TableCell>{owner.phone || '-'}</TableCell>
-                      <TableCell>{owner.document_type} {owner.document_number}</TableCell>
-                      <TableCell>{owner.owner_type}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        <span className="text-muted-foreground text-xs mr-1">{docLabel}</span>
+                        {docValue}
+                      </TableCell>
+                      <TableCell className="capitalize">{owner.owner_type}</TableCell>
                       <TableCell>
                         <Badge variant={owner.is_active ? 'default' : 'secondary'}>
                           {owner.is_active ? 'Activo' : 'Inactivo'}
@@ -151,7 +160,7 @@ const Owners = () => {
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  );})}
                 </TableBody>
               </Table>
             )}
