@@ -289,7 +289,13 @@ export function ClientUsersManagement() {
   };
 
   const setAsMainContact = async (user: ClientUser) => {
-    if (!clientData) return;
+    if (!clientData) {
+      console.error('No clientData available');
+      toast.error('Error: No hay datos del cliente');
+      return;
+    }
+    
+    console.log('Setting main contact:', { tenantId: clientData.id, userEmail: user.email, userId: user.id });
     
     setSettingMainContact(true);
     try {
@@ -298,11 +304,16 @@ export function ClientUsersManagement() {
         email: user.email,
         main_contact_user_id: user.id
       };
+      
+      console.log('Updating settings to:', updatedSettings);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('pms_tenants')
         .update({ settings: updatedSettings })
-        .eq('id', clientData.id);
+        .eq('id', clientData.id)
+        .select('settings');
+
+      console.log('Update result:', { data, error });
 
       if (error) throw error;
 
@@ -311,11 +322,13 @@ export function ClientUsersManagement() {
       
       toast.success(`${user.first_name} ${user.last_name} es ahora el Contacto Principal`);
       
-      // Forzar actualización del contexto
+      // Forzar actualización del contexto para que ClientSettings reciba el email
       await refreshClientData();
-    } catch (error) {
+      
+      console.log('refreshClientData completed');
+    } catch (error: any) {
       console.error('Error setting main contact:', error);
-      toast.error('Error al asignar contacto principal');
+      toast.error(`Error al asignar contacto principal: ${error?.message || 'Error desconocido'}`);
     } finally {
       setSettingMainContact(false);
     }
