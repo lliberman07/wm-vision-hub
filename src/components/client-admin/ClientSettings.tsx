@@ -30,15 +30,17 @@ export function ClientSettings() {
   useEffect(() => {
     if (clientData) {
       const settings = clientData.settings || {};
+      const contactInfo = settings.contact_info || {};
+      
       setFormData({
         name: clientData.name || '',
-        cuit: settings.tax_id || settings.cuit || '',
-        address: settings.address || '',
-        city: settings.city || '',
-        state: settings.state || '',
-        postal_code: settings.postal_code || '',
-        phone: settings.phone || '',
-        email: settings.email || settings.contact_email || '',
+        cuit: settings.tax_id || settings.cuit || contactInfo.cuit_cuil || '',
+        address: settings.address || contactInfo.address || '',
+        city: settings.city || contactInfo.city || '',
+        state: settings.state || contactInfo.province || '',
+        postal_code: settings.postal_code || contactInfo.postal_code || '',
+        phone: settings.phone || contactInfo.phone || '',
+        email: settings.email || contactInfo.email || '',
         timezone: settings.timezone || 'America/Argentina/Buenos_Aires',
         currency: settings.currency || 'ARS',
         language: settings.language || 'es',
