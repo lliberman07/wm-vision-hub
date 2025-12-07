@@ -672,10 +672,13 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Propiedad</FormLabel>
-                  <Select onValueChange={(value) => {
-                    field.onChange(value);
-                    fetchPropertyOwners(value);
-                  }} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      fetchPropertyOwners(value);
+                    }} 
+                    value={field.value || ""}
+                  >
                     <FormControl>
                     <SelectTrigger disabled={isFieldDisabled('property_id')}>
                       <SelectValue placeholder="Seleccionar propiedad" />
