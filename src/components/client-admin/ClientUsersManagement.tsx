@@ -78,6 +78,11 @@ export function ClientUsersManagement() {
     user: null 
   });
   const [settingMainContact, setSettingMainContact] = useState(false);
+  
+  // Track main contact locally for immediate UI update
+  const [localMainContactId, setLocalMainContactId] = useState<string | null>(
+    clientData?.settings?.main_contact_user_id || null
+  );
 
   // Form states
   const [formData, setFormData] = useState({
@@ -301,8 +306,13 @@ export function ClientUsersManagement() {
 
       if (error) throw error;
 
+      // Actualizar estado local inmediatamente para UI
+      setLocalMainContactId(user.id);
+      
       toast.success(`${user.first_name} ${user.last_name} es ahora el Contacto Principal`);
-      refreshClientData();
+      
+      // Forzar actualización del contexto
+      await refreshClientData();
     } catch (error) {
       console.error('Error setting main contact:', error);
       toast.error('Error al asignar contacto principal');
@@ -311,8 +321,13 @@ export function ClientUsersManagement() {
     }
   };
 
+  // Sync local state with clientData
+  useEffect(() => {
+    setLocalMainContactId(clientData?.settings?.main_contact_user_id || null);
+  }, [clientData?.settings?.main_contact_user_id]);
+
   const isMainContact = (userId: string) => {
-    return clientData?.settings?.main_contact_user_id === userId;
+    return localMainContactId === userId;
   };
 
   if (loading) {
