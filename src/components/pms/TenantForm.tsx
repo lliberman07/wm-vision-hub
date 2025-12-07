@@ -47,7 +47,7 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      tenant_type: 'persona',
+      tenant_type: 'individual',
       first_name: '',
       last_name: '',
       company_name: '',
@@ -70,7 +70,7 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
   useEffect(() => {
     if (open && tenant) {
       form.reset({
-        tenant_type: tenant.tenant_type || 'persona',
+        tenant_type: tenant.tenant_type || 'individual',
         first_name: tenant.first_name || '',
         last_name: tenant.last_name || '',
         company_name: tenant.company_name || '',
@@ -90,7 +90,7 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
       });
     } else if (open && !tenant) {
       form.reset({
-        tenant_type: 'persona',
+        tenant_type: 'individual',
         first_name: '',
         last_name: '',
         company_name: '',
@@ -189,8 +189,8 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="persona">Persona</SelectItem>
-                      <SelectItem value="empresa">Empresa</SelectItem>
+                      <SelectItem value="individual">Persona</SelectItem>
+                      <SelectItem value="company">Empresa</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -199,7 +199,7 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
             />
 
             {/* Campos condicionales según tipo */}
-            {form.watch('tenant_type') === 'persona' ? (
+            {form.watch('tenant_type') === 'individual' ? (
               <>
                 {/* PERSONA */}
                 <div className="grid grid-cols-2 gap-4">
