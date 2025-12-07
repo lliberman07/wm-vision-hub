@@ -113,13 +113,18 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
 
   const onSubmit = async (data: FormValues) => {
     try {
+      // Calcular full_name automáticamente basado en el tipo
+      const computedFullName = data.tenant_type === 'individual'
+        ? `${data.first_name || ''} ${data.last_name || ''}`.trim()
+        : data.company_name || '';
+
       const payload: any = {
         tenant_type: data.tenant_type,
         first_name: data.first_name,
         last_name: data.last_name,
         company_name: data.company_name,
         contact_name: data.contact_name,
-        full_name: data.full_name,
+        full_name: computedFullName,
         email: data.email,
         phone: data.phone,
         mobile_phone: data.mobile_phone,
