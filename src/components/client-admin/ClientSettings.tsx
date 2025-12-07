@@ -28,10 +28,17 @@ export function ClientSettings() {
     language: 'es',
   });
 
+  // Refrescar datos al montar el componente
+  useEffect(() => {
+    refreshClientData();
+  }, []);
+
   useEffect(() => {
     if (clientData) {
       const settings = clientData.settings || {};
       const contactInfo = settings.contact_info || {};
+      
+      console.log('ClientSettings: clientData updated, settings.email =', settings.email);
       
       setFormData({
         name: clientData.name || '',
