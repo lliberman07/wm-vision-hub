@@ -140,14 +140,20 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
         ? data.company_name 
         : `${data.first_name || ''} ${data.last_name || ''}`.trim();
 
+      // Para empresas: usar CUIT como identificador principal
+      // Para personas: usar CUIT/CUIL como identificador principal (mantener DNI como dato adicional)
+      const documentType = data.owner_type === 'empresa' ? 'CUIT' : 'CUIT/CUIL';
+      const documentNumber = data.tax_id || ''; // CUIT/CUIL es el identificador principal
+      
       // Solo enviar campos que existen en la tabla pms_owners
       const payload: any = {
         owner_type: data.owner_type,
         full_name: fullName,
         email: data.email,
         phone: data.phone || data.mobile_phone, // Usar el que tenga valor
-        document_type: data.document_type,
-        document_number: data.document_number,
+        document_type: documentType,
+        document_number: documentNumber,
+        tax_id: data.tax_id, // Guardar también en tax_id para compatibilidad
         tenant_id: currentTenant.id,
         is_active: true,
       };
@@ -292,56 +298,59 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="document_type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo Doc.</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="DNI">DNI</SelectItem>
-                            <SelectItem value="Pasaporte">Pasaporte</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="document_number"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Número</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="12345678" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
+                {/* CUIT/CUIL como identificador principal para personas */}
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="tax_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>CUIT/CUIL</FormLabel>
+                        <FormLabel>CUIT/CUIL *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="20-12345678-9" />
+                          <Input {...field} placeholder="20-12345678-9" className="font-mono" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="document_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo Doc.</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="DNI">DNI</SelectItem>
+                              <SelectItem value="Pasaporte">Pasaporte</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="document_number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Número</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="12345678" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </>
             )}
@@ -426,9 +435,9 @@ export function OwnerForm({ open, onOpenChange, onSuccess, owner }: OwnerFormPro
                   name="tax_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CUIT/CUIL</FormLabel>
+                      <FormLabel>CUIT *</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="30-12345678-9" />
+                        <Input {...field} placeholder="30-12345678-9" className="font-mono" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

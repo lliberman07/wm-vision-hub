@@ -134,20 +134,23 @@ export const OwnerDetailsDialog = ({ open, onOpenChange, owner }: OwnerDetailsDi
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Número de Documento</Label>
-              <p className="font-medium">{owner.document_number}</p>
+              <Label className="text-muted-foreground">
+                {owner.owner_type === 'empresa' ? 'CUIT' : 'CUIT/CUIL'}
+              </Label>
+              <p className="font-medium font-mono">{owner.tax_id || owner.document_number || 'No especificado'}</p>
             </div>
             
             <div className="space-y-2">
               <Label className="text-muted-foreground">Tipo de Propietario</Label>
-              <p className="font-medium">{owner.owner_type}</p>
+              <p className="font-medium capitalize">{owner.owner_type}</p>
             </div>
           </div>
 
-          {owner.tax_id && (
+          {/* DNI adicional para personas (si está disponible y es diferente del CUIT/CUIL) */}
+          {owner.owner_type === 'persona' && owner.document_type === 'DNI' && owner.document_number && owner.document_number !== owner.tax_id && (
             <div className="space-y-2">
-              <Label className="text-muted-foreground">CUIT/CUIL</Label>
-              <p className="font-medium">{owner.tax_id}</p>
+              <Label className="text-muted-foreground">DNI</Label>
+              <p className="font-medium">{owner.document_number}</p>
             </div>
           )}
 
