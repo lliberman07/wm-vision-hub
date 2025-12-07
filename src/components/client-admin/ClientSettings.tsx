@@ -29,18 +29,19 @@ export function ClientSettings() {
 
   useEffect(() => {
     if (clientData) {
+      const settings = clientData.settings || {};
       setFormData({
         name: clientData.name || '',
-        cuit: clientData.settings?.cuit || '',
-        address: clientData.settings?.address || '',
-        city: clientData.settings?.city || '',
-        state: clientData.settings?.state || '',
-        postal_code: clientData.settings?.postal_code || '',
-        phone: clientData.settings?.phone || '',
-        email: clientData.settings?.email || '',
-        timezone: clientData.settings?.timezone || 'America/Argentina/Buenos_Aires',
-        currency: clientData.settings?.currency || 'ARS',
-        language: clientData.settings?.language || 'es',
+        cuit: settings.tax_id || settings.cuit || '',
+        address: settings.address || '',
+        city: settings.city || '',
+        state: settings.state || '',
+        postal_code: settings.postal_code || '',
+        phone: settings.phone || '',
+        email: settings.email || settings.contact_email || '',
+        timezone: settings.timezone || 'America/Argentina/Buenos_Aires',
+        currency: settings.currency || 'ARS',
+        language: settings.language || 'es',
       });
     }
   }, [clientData]);
@@ -51,23 +52,25 @@ export function ClientSettings() {
     setSaving(true);
 
     try {
+      const updatedSettings = {
+        ...(clientData.settings || {}),
+        tax_id: formData.cuit,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        postal_code: formData.postal_code,
+        phone: formData.phone,
+        email: formData.email,
+        timezone: formData.timezone,
+        currency: formData.currency,
+        language: formData.language,
+      };
+
       const { error } = await supabase
         .from('pms_tenants')
         .update({
           name: formData.name,
-          settings: {
-            ...clientData.settings,
-            cuit: formData.cuit,
-            address: formData.address,
-            city: formData.city,
-            state: formData.state,
-            postal_code: formData.postal_code,
-            phone: formData.phone,
-            email: formData.email,
-            timezone: formData.timezone,
-            currency: formData.currency,
-            language: formData.language,
-          }
+          settings: updatedSettings
         })
         .eq('id', clientData.id);
 
