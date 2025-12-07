@@ -34,10 +34,38 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-    // Generar contraseña temporal
+    // Primero verificar si el usuario ya existe
+    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (listError) {
+      console.error("Error listing users:", listError);
+      throw new Error('Error al verificar usuarios existentes: ' + listError.message);
+    }
+
+    const existingUser = existingUsers.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+
+    if (existingUser) {
+      // Usuario ya existe, retornar su ID sin crear nuevo
+      console.log(`User ${email} already exists with ID ${existingUser.id}`);
+      return new Response(
+        JSON.stringify({ 
+          user_id: existingUser.id,
+          is_existing: true,
+          temp_password: null
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    }
+
+    // Usuario no existe, crear nuevo
     const tempPassword = crypto.randomUUID().substring(0, 12);
 
-    // Crear usuario en auth.users
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,
@@ -54,9 +82,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('No se pudo crear la cuenta de usuario: ' + authError.message);
     }
 
+    console.log(`Created new user ${email} with ID ${authData.user.id}`);
+
     return new Response(
       JSON.stringify({ 
         user_id: authData.user.id,
+        is_existing: false,
         temp_password: tempPassword
       }),
       {
