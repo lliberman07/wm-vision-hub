@@ -933,7 +933,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Moneda</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isFieldDisabled('currency')}>
+                    <Select onValueChange={field.onChange} value={field.value || ""} disabled={isFieldDisabled('currency')}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -1000,7 +1000,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Moneda del Depósito</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || "ARS"}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione moneda" />
@@ -1076,7 +1076,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoría de Contrato</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -1099,7 +1099,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de Uso</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -1162,7 +1162,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Forma de Pago Item A</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue />
@@ -1238,7 +1238,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Forma de Pago Item B</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled>
+                        <Select onValueChange={field.onChange} value={field.value || ""} disabled>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
@@ -1286,7 +1286,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                       } else if (value === 'IPC' || value === 'ICL' || value === 'UVA') {
                         form.setValue('adjustment_type', 'annual_index');
                       }
-                    }} defaultValue={field.value}>
+                    }} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccionar índice" />
@@ -1310,7 +1310,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Frecuencia de Ajuste</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccionar" />
@@ -1376,7 +1376,7 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Frecuencia de Factura</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
