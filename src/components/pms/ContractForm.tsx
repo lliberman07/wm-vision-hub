@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { CalendarIcon, AlertCircle } from 'lucide-react';
+import { CalendarIcon, AlertCircle, Plus } from 'lucide-react';
 import { formatDateForDB, parseDateFromDB, formatDateToDisplay } from '@/utils/dateUtils';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -21,6 +21,7 @@ import { usePMS } from '@/contexts/PMSContext';
 import { useState, useEffect } from 'react';
 import { ContractPaymentMethods } from './ContractPaymentMethods';
 import { ContractDocumentsUpload } from './ContractDocumentsUpload';
+import { TenantForm } from './TenantForm';
 import { cn } from '@/lib/utils';
 import { useContractValidation } from '@/hooks/useContractValidation';
 import { formatDateDisplay } from '@/utils/dateUtils';
@@ -97,6 +98,18 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
   const [dateConflict, setDateConflict] = useState<any>(null);
   const [isValidating, setIsValidating] = useState(false);
   const { checkPropertyAvailability } = useContractValidation();
+  
+  // Estado para crear inquilino inline
+  const [showTenantForm, setShowTenantForm] = useState(false);
+  
+  // Handler para cuando se crea un nuevo inquilino
+  const handleTenantCreated = (newTenantId?: string) => {
+    fetchData();
+    if (newTenantId) {
+      form.setValue('tenant_renter_id', newTenantId);
+    }
+    setShowTenantForm(false);
+  };
   
   // Helper para determinar si un campo está deshabilitado
   const isFieldDisabled = (fieldName: string) => {
@@ -759,12 +772,25 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 name="tenant_renter_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Inquilino</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Inquilino</FormLabel>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowTenantForm(true)}
+                        disabled={isFieldDisabled('tenant_renter_id')}
+                        className="h-7 text-xs"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Nuevo
+                      </Button>
+                    </div>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                    <SelectTrigger disabled={isFieldDisabled('tenant_renter_id')}>
-                      <SelectValue placeholder="Seleccionar inquilino" />
-                    </SelectTrigger>
+                        <SelectTrigger disabled={isFieldDisabled('tenant_renter_id')}>
+                          <SelectValue placeholder="Seleccionar inquilino" />
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {tenants.map(tenant => (
@@ -779,6 +805,13 @@ export function ContractForm({ open, onOpenChange, onSuccess, contract }: Contra
                 )}
               />
             </div>
+            
+            {/* Dialog para crear nuevo inquilino */}
+            <TenantForm
+              open={showTenantForm}
+              onOpenChange={setShowTenantForm}
+              onSuccess={handleTenantCreated}
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
