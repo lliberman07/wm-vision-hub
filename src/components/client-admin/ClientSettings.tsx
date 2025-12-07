@@ -164,7 +164,7 @@ export function ClientSettings() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4 items-start">
+          <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Teléfono</Label>
               <Input
@@ -188,20 +188,21 @@ export function ClientSettings() {
                 className={clientData?.settings?.main_contact_user_id ? 'bg-muted cursor-not-allowed' : ''}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
-              {clientData?.settings?.main_contact_user_id && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <Users className="h-3 w-3" />
-                  Asignado desde{' '}
-                  <Link 
-                    to="/client-admin/users" 
-                    className="text-primary underline hover:no-underline"
-                  >
-                    Equipo Administrativo
-                  </Link>
-                </p>
-              )}
             </div>
           </div>
+          
+          {clientData?.settings?.main_contact_user_id && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              Email asignado desde{' '}
+              <Link 
+                to="/client-admin/users" 
+                className="text-primary underline hover:no-underline"
+              >
+                Equipo Administrativo
+              </Link>
+            </p>
+          )}
         </CardContent>
       </Card>
 
