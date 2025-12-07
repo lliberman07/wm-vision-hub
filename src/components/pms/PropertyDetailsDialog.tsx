@@ -441,12 +441,35 @@ export const PropertyDetailsDialog = ({ open, onOpenChange, property }: Property
 
                     <Separator />
 
-                    {/* Booleanos */}
+                    {/* Booleanos - Solo mostrar los que están activos */}
                     <div className="flex flex-wrap gap-2">
-                      <FeatureBadge value={property.balcon} label="Balcón" />
-                      <FeatureBadge value={property.patio} label="Patio" />
-                      <FeatureBadge value={property.baulera} label="Baulera" />
-                      <FeatureBadge value={property.tiene_amenidades} label="Amenidades" />
+                      {property.balcon && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                          <Check className="h-3.5 w-3.5" />
+                          Balcón
+                        </div>
+                      )}
+                      {property.patio && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                          <Check className="h-3.5 w-3.5" />
+                          Patio
+                        </div>
+                      )}
+                      {property.baulera && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                          <Check className="h-3.5 w-3.5" />
+                          Baulera
+                        </div>
+                      )}
+                      {property.tiene_amenidades && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                          <Check className="h-3.5 w-3.5" />
+                          Amenidades
+                        </div>
+                      )}
+                      {!property.balcon && !property.patio && !property.baulera && !property.tiene_amenidades && (
+                        <p className="text-sm text-muted-foreground">Sin características adicionales</p>
+                      )}
                     </div>
 
                     {/* Amenities list */}
