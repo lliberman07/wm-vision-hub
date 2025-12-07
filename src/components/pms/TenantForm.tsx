@@ -37,7 +37,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface TenantFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess: (newTenantId?: string) => void;
   tenant?: any;
 }
 
@@ -143,16 +143,19 @@ export function TenantForm({ open, onOpenChange, onSuccess, tenant }: TenantForm
         
         if (error) throw error;
         toast.success('Inquilino actualizado');
+        onSuccess(tenant.id);
       } else {
-        const { error } = await supabase
+        const { data: newTenant, error } = await supabase
           .from('pms_tenants_renters')
-          .insert([payload]);
+          .insert([payload])
+          .select('id')
+          .single();
         
         if (error) throw error;
         toast.success('Inquilino creado');
+        onSuccess(newTenant?.id);
       }
 
-      onSuccess();
       onOpenChange(false);
       form.reset();
     } catch (error: any) {
