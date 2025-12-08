@@ -5144,6 +5144,7 @@ export type Database = {
           tenant_slug: string
         }[]
       }
+      get_user_pms_tenant_ids: { Args: { _user_id: string }; Returns: string[] }
       has_granada_module_permission: {
         Args: { _module: string; _permission?: string; _user_id: string }
         Returns: boolean
@@ -5177,12 +5178,20 @@ export type Database = {
         Args: { tenant_uuid?: string; user_uuid: string }
         Returns: boolean
       }
+      is_client_admin_direct: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_contract_active: {
         Args: { contract_id_param: string }
         Returns: boolean
       }
       is_granada_admin: { Args: { user_id: string }; Returns: boolean }
       is_granada_superadmin: { Args: { user_id: string }; Returns: boolean }
+      is_propietario_tenant_owner: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_superadmin_pms: { Args: never; Returns: boolean }
       link_existing_payments_to_schedule: {
         Args: { contract_id_param: string }
@@ -5266,6 +5275,10 @@ export type Database = {
       }
       update_overdue_payment_items: { Args: never; Returns: undefined }
       update_subscription_status: { Args: never; Returns: undefined }
+      user_has_pms_tenant_access: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: boolean
+      }
       validate_contract_number: {
         Args: {
           p_contract_id?: string
