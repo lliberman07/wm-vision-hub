@@ -66,9 +66,6 @@ verify_jwt = false
 [[functions.apply-due-index-adjustments.schedule]]
 cron = "0 3 1 * *"
 
-[functions.fix-prima4302-payment]
-verify_jwt = false
-
 [functions.auto-create-propietario-user]
 verify_jwt = true
 
@@ -76,4 +73,13 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.create-granada-platform-user]
+verify_jwt = true
+
+[functions.send-owner-monthly-report]
+verify_jwt = true
+
+[functions.generate-monthly-reports-batch]
+verify_jwt = true
+
+[functions.send-contract-activation-notification]
 verify_jwt = true
