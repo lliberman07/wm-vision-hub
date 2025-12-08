@@ -217,17 +217,18 @@ export function InviteCollaboratorDialog({
       if (roleError) throw roleError;
 
       // 6. Create pms_client_users entry for collaborator
+      const clientUserData = {
+        user_id: userId,
+        tenant_id: tenantId,
+        email: formData.email,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        user_type: 'GESTOR' as const,
+        is_active: true,
+      };
       const { error: clientUserError } = await supabase
         .from('pms_client_users')
-        .insert({
-          user_id: userId,
-          tenant_id: tenantId,
-          email: formData.email,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          user_type: formData.role === 'GESTOR' ? 'GESTOR' : formData.role as 'CLIENT_ADMIN' | 'GESTOR' | 'PROPIETARIO',
-          is_active: true,
-        });
+        .insert(clientUserData as any);
 
       if (clientUserError) {
         console.warn('Error creating pms_client_users entry:', clientUserError);
