@@ -148,13 +148,18 @@ export const PMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Build role contexts from view result
       // Note: The view returns 1 row per tenant with roles[] array
       // We flatMap to expand into individual role contexts
-      const contexts: PMSRoleContext[] = rolesData.flatMap((row: any) => 
+      const rawContexts: PMSRoleContext[] = rolesData.flatMap((row: any) => 
         (row.roles || []).map((role: string) => ({
           role: role.toUpperCase() as PMSRole,
           tenant_id: row.tenant_id,
           tenant_name: row.name || 'Sin nombre',
           tenant_slug: row.slug || ''
         }))
+      );
+
+      // Deduplicate contexts by role+tenant_id combination
+      const contexts = rawContexts.filter((ctx, index, self) => 
+        index === self.findIndex(c => c.role === ctx.role && c.tenant_id === ctx.tenant_id)
       );
 
       setAllRoleContexts(contexts);
