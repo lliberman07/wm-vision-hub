@@ -337,7 +337,7 @@ export function PaymentScheduleView({ contractId }: PaymentScheduleViewProps) {
                                     onClick={() => handleCellClick(item)}
                                   >
                                     <DollarSign className="h-4 w-4 mr-1" />
-                                    {accumulatedPaid > 0 ? 'Pagar Saldo' : 'Registrar Pago'}
+                                    {isInquilino ? 'Informar Pago' : (accumulatedPaid > 0 ? 'Pagar Saldo' : 'Registrar Pago')}
                                   </Button>
                                 )}
                               </TableCell>
