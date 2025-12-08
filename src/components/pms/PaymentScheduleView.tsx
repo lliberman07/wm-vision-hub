@@ -263,7 +263,7 @@ export function PaymentScheduleView({ contractId }: PaymentScheduleViewProps) {
                           return (
                             <TableRow key={item.id}>
                               <TableCell className="font-medium">
-                                {item.owner.full_name}
+                                {item.owner?.full_name || 'Sin propietario'}
                               </TableCell>
                               <TableCell>{item.item}</TableCell>
                               <TableCell className="text-right">
