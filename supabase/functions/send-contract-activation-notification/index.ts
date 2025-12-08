@@ -4,6 +4,10 @@ import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// URL base configurable - usar FRONTEND_URL si está definida, sino fallback
+const APP_BASE_URL = Deno.env.get("FRONTEND_URL") || "https://wm-real-estate.lovable.app";
+const LOGIN_URL = `${APP_BASE_URL}/pms/login`;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -228,7 +232,7 @@ const handler = async (req: Request): Promise<Response> => {
               <ul>
                 <li><strong>Email:</strong> ${owner.email}</li>
                 <li><strong>Contraseña temporal:</strong> ${tempPassword}</li>
-                <li><strong>Link de acceso:</strong> <a href="https://wm-real-estate.lovable.app/pms/login">https://wm-real-estate.lovable.app/pms/login</a></li>
+                <li><strong>Link de acceso:</strong> <a href="${LOGIN_URL}">${LOGIN_URL}</a></li>
               </ul>
 
               <h3>📊 TU ROL: PROPIETARIO</h3>
@@ -270,7 +274,7 @@ const handler = async (req: Request): Promise<Response> => {
 
               <h3>🔐 ACCESO AL SISTEMA:</h3>
               <p>Ingresa con tus credenciales habituales en:<br>
-              <a href="https://wm-real-estate.lovable.app/pms/login">https://wm-real-estate.lovable.app/pms/login</a></p>
+              <a href="${LOGIN_URL}">${LOGIN_URL}</a></p>
 
               <p>📊 Desde tu panel podrás consultar toda la información del contrato y los pagos asociados.</p>
               
@@ -397,7 +401,7 @@ const handler = async (req: Request): Promise<Response> => {
             <ul>
               <li><strong>Email:</strong> ${tenant.email}</li>
               <li><strong>Contraseña temporal:</strong> ${tempPassword}</li>
-              <li><strong>Link de acceso:</strong> <a href="https://wm-real-estate.lovable.app/pms/login">https://wm-real-estate.lovable.app/pms/login</a></li>
+              <li><strong>Link de acceso:</strong> <a href="${LOGIN_URL}">${LOGIN_URL}</a></li>
             </ul>
 
             <h3>📅 TU ROL: INQUILINO</h3>
@@ -437,7 +441,7 @@ const handler = async (req: Request): Promise<Response> => {
 
             <h3>🔐 ACCESO AL SISTEMA:</h3>
             <p>Ingresa con tus credenciales habituales en:<br>
-            <a href="https://wm-real-estate.lovable.app/pms/login">https://wm-real-estate.lovable.app/pms/login</a></p>
+            <a href="${LOGIN_URL}">${LOGIN_URL}</a></p>
 
             <p>📅 Tu calendario de pagos ya está disponible en tu panel.</p>
             
