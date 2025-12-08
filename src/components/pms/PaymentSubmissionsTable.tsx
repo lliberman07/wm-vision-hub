@@ -165,17 +165,17 @@ export function PaymentSubmissionsTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {submissions.map((submission) => (
+              {submissions.map((submission) => (
                   <TableRow key={submission.id}>
                     <TableCell>
                       {formatDateToDisplay(new Date(submission.created_at))}
                     </TableCell>
-                    <TableCell>{submission.contract.tenant_renter.full_name}</TableCell>
-                    <TableCell>{submission.contract.contract_number}</TableCell>
+                    <TableCell>{submission.contract?.tenant_renter?.full_name || 'N/A'}</TableCell>
+                    <TableCell>{submission.contract?.contract_number || 'N/A'}</TableCell>
                     <TableCell>
-                      {formatDateDisplay(submission.schedule_item.period_date)}
+                      {submission.schedule_item?.period_date ? formatDateDisplay(submission.schedule_item.period_date) : 'N/A'}
                     </TableCell>
-                    <TableCell>{submission.schedule_item.owner.full_name}</TableCell>
+                    <TableCell>{submission.schedule_item?.owner?.full_name || 'N/A'}</TableCell>
                     <TableCell className="text-right font-medium">
                       ${submission.paid_amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                     </TableCell>
