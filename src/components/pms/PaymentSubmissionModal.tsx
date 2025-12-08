@@ -69,6 +69,7 @@ export function PaymentSubmissionModal({
   const [notes, setNotes] = useState("");
   const [contractCurrency, setContractCurrency] = useState<string>('ARS');
   const [exchangeRate, setExchangeRate] = useState("");
+  const [originalExpectedAmount, setOriginalExpectedAmount] = useState<number>(0);
 
   // Hook para obtener tipo de cambio automático
   const { rate: suggestedRate, loading: rateLoading, source: rateSource } = useExchangeRate({
@@ -85,6 +86,27 @@ export function PaymentSubmissionModal({
       setExchangeRate(suggestedRate.toString());
     }
   }, [suggestedRate, paymentCurrency, contractCurrency]);
+
+  // Auto-calcular monto a pagar cuando cambia la moneda de pago o el tipo de cambio
+  useEffect(() => {
+    if (originalExpectedAmount <= 0) return;
+    
+    const rate = parseFloat(exchangeRate);
+    
+    if (paymentCurrency !== contractCurrency && rate && rate > 0) {
+      // Convertir el monto esperado a la moneda de pago
+      const convertedAmount = paymentCurrency === 'ARS' && contractCurrency === 'USD'
+        ? originalExpectedAmount * rate  // USD a ARS: multiplicar
+        : paymentCurrency === 'USD' && contractCurrency === 'ARS'
+        ? originalExpectedAmount / rate  // ARS a USD: dividir
+        : originalExpectedAmount;
+      
+      setPaidAmount(convertedAmount.toFixed(2));
+    } else if (paymentCurrency === contractCurrency) {
+      // Si vuelve a la misma moneda, restaurar el monto original
+      setPaidAmount(originalExpectedAmount.toString());
+    }
+  }, [paymentCurrency, exchangeRate, originalExpectedAmount, contractCurrency]);
 
   useEffect(() => {
     if (open) {
@@ -236,12 +258,14 @@ export function PaymentSubmissionModal({
     setReceiptUrl("");
     setNotes("");
     setExchangeRate("");
+    setOriginalExpectedAmount(0);
   };
 
   const handleItemChange = (itemId: string) => {
     setSelectedItemId(itemId);
     const item = scheduleItems.find((i) => i.id === itemId);
     if (item) {
+      setOriginalExpectedAmount(item.expected_amount);
       setPaidAmount(item.expected_amount.toString());
     }
   };
