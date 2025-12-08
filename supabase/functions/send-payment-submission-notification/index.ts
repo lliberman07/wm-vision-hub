@@ -212,7 +212,7 @@ serve(async (req) => {
 
     // Send email
     const emailResult = await resend.emails.send({
-      from: "Granada PMS <notifications@resend.dev>",
+      from: "Granada PMS <notificaciones@granadaplatform.com>",
       to: allRecipients,
       subject: `Nuevo Pago Informado - Contrato ${contract.contract_number}`,
       html: emailHtml
