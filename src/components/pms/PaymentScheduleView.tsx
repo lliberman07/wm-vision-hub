@@ -19,9 +19,11 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, DollarSign, Eye, FileText } from "lucide-react";
 import { PaymentCellModal } from "./PaymentCellModal";
+import { PaymentSubmissionModal } from "./PaymentSubmissionModal";
 import { PaymentReceiptViewer } from "./PaymentReceiptViewer";
 import { toast } from "sonner";
 import { formatDateDisplay } from "@/utils/dateUtils";
+import { usePMS } from "@/contexts/PMSContext";
 
 interface ScheduleItem {
   id: string;
@@ -58,10 +60,14 @@ interface PaymentScheduleViewProps {
 }
 
 export function PaymentScheduleView({ contractId }: PaymentScheduleViewProps) {
+  const { userRole, currentTenant } = usePMS();
+  const isInquilino = userRole === 'INQUILINO';
+  
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ScheduleItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
@@ -139,7 +145,13 @@ export function PaymentScheduleView({ contractId }: PaymentScheduleViewProps) {
 
   const handleCellClick = (item: ScheduleItem) => {
     setSelectedItem(item);
-    setIsModalOpen(true);
+    if (isInquilino && item.status !== 'paid') {
+      // INQUILINO usa el flujo de submission con aprobación
+      setIsSubmissionModalOpen(true);
+    } else {
+      // Administradores usan el flujo directo
+      setIsModalOpen(true);
+    }
   };
 
   if (loading) {
@@ -343,7 +355,7 @@ export function PaymentScheduleView({ contractId }: PaymentScheduleViewProps) {
         </CardContent>
       </Card>
 
-      {selectedItem && (
+      {selectedItem && !isInquilino && (
         <PaymentCellModal
           open={isModalOpen}
           onOpenChange={setIsModalOpen}
@@ -353,6 +365,20 @@ export function PaymentScheduleView({ contractId }: PaymentScheduleViewProps) {
             setIsModalOpen(false);
           }}
           readOnly={false}
+        />
+      )}
+
+      {isInquilino && currentTenant && (
+        <PaymentSubmissionModal
+          open={isSubmissionModalOpen}
+          onOpenChange={setIsSubmissionModalOpen}
+          contractId={contractId}
+          tenantId={currentTenant.id}
+          onSuccess={() => {
+            fetchScheduleItems();
+            setIsSubmissionModalOpen(false);
+            toast.success('Pago informado. Pendiente de aprobación.');
+          }}
         />
       )}
 
