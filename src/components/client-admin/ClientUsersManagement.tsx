@@ -104,12 +104,23 @@ export function ClientUsersManagement() {
     if (!clientData) return;
 
     try {
-      const { data, error } = await supabase
+      // Para tenant tipo propietario, cargar tanto CLIENT_ADMIN como PROPIETARIO
+      const isPropietario = clientData.tenant_type === 'propietario';
+      
+      let query = supabase
         .from('pms_client_users')
         .select('*')
         .eq('tenant_id', clientData.id)
-        .eq('user_type', 'CLIENT_ADMIN')
         .order('created_at', { ascending: false });
+      
+      if (isPropietario) {
+        // Para propietarios, mostrar tanto CLIENT_ADMIN como PROPIETARIO
+        query = query.in('user_type', ['CLIENT_ADMIN', 'PROPIETARIO']);
+      } else {
+        query = query.eq('user_type', 'CLIENT_ADMIN');
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setUsers(data || []);
