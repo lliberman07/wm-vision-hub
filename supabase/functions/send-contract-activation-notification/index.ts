@@ -513,9 +513,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // 8. Enviar email a Granada SuperAdmins
+    console.log("Starting Granada SuperAdmin notifications...");
+    console.log("Granada SuperAdmins to notify:", JSON.stringify(granadaSuperAdmins));
+    
     if (granadaSuperAdmins && granadaSuperAdmins.length > 0) {
       for (const granadaAdmin of granadaSuperAdmins) {
         try {
+          console.log(`Attempting to send email to Granada SuperAdmin: ${granadaAdmin.email}`);
+          
           const ownersList = owners?.map(op => op.owner?.full_name).filter(Boolean).join(", ") || "N/A";
           const adminName = `${granadaAdmin.first_name || ''} ${granadaAdmin.last_name || ''}`.trim() || granadaAdmin.email;
           
@@ -530,7 +535,7 @@ const handler = async (req: Request): Promise<Response> => {
             `;
           }
 
-          await resend.emails.send({
+          const { data: emailData, error: emailError } = await resend.emails.send({
             from: "Granada Support <support@granadaplatform.com>",
             to: [granadaAdmin.email],
             subject: `🔔 Sistema: Contrato ${contractData.contract_number} Activado`,
@@ -562,16 +567,23 @@ const handler = async (req: Request): Promise<Response> => {
             `,
           });
 
-          superadminNotified = true;
-          console.log(`✅ Email sent to Granada SuperAdmin: ${granadaAdmin.email}`);
+          if (emailError) {
+            console.error(`Resend error for Granada SuperAdmin ${granadaAdmin.email}:`, JSON.stringify(emailError));
+            errors.push({ granadaSuperAdmin: granadaAdmin.email, error: emailError.message || JSON.stringify(emailError) });
+          } else {
+            superadminNotified = true;
+            console.log(`✅ Email sent to Granada SuperAdmin: ${granadaAdmin.email}, id: ${emailData?.id}`);
+          }
         } catch (error: any) {
-          console.error(`Error sending email to Granada SuperAdmin ${granadaAdmin.email}:`, error);
+          console.error(`Exception sending email to Granada SuperAdmin ${granadaAdmin.email}:`, error);
           errors.push({ granadaSuperAdmin: granadaAdmin.email, error: error.message });
         }
       }
     } else {
       console.log("No Granada SuperAdmins found for notification");
     }
+    
+    console.log("Granada SuperAdmin notification completed. superadminNotified:", superadminNotified);
 
     // 9. Registrar en logs
     await supabaseAdmin.from("pms_contract_activation_logs").insert({
