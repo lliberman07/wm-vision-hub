@@ -10,16 +10,16 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.send-contract-activation-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.export-pdf-report]
 verify_jwt = false
 
 [functions.send-owner-monthly-report]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-monthly-reports-batch]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-chatbot]
 verify_jwt = false
@@ -75,11 +75,5 @@ verify_jwt = true
 [functions.create-granada-platform-user]
 verify_jwt = true
 
-[functions.send-owner-monthly-report]
-verify_jwt = true
-
-[functions.generate-monthly-reports-batch]
-verify_jwt = true
-
-[functions.send-contract-activation-notification]
+[functions.send-payment-submission-notification]
 verify_jwt = true

@@ -183,6 +183,37 @@ export function PaymentSubmissionModal({
 
       if (error) throw error;
 
+      // Get submitter name for notification
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user?.id)
+        .single();
+      
+      const submitterName = profile 
+        ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Inquilino'
+        : 'Inquilino';
+
+      // Send notification to CLIENT_ADMIN and property owners
+      try {
+        await supabase.functions.invoke('send-payment-submission-notification', {
+          body: {
+            contractId,
+            tenantId,
+            scheduleItemId: selectedItemId,
+            paidAmount: parseFloat(paidAmount),
+            paymentCurrency,
+            paidDate: formatDateForDB(paidDate),
+            paymentMethod,
+            submittedByName: submitterName
+          }
+        });
+        console.log('Payment notification sent');
+      } catch (notifError) {
+        console.error('Error sending notification:', notifError);
+        // Don't fail the payment submission if notification fails
+      }
+
       toast.success("Pago informado exitosamente");
       onSuccess();
       onOpenChange(false);
