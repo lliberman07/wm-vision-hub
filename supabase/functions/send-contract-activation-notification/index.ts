@@ -28,14 +28,14 @@ const handler = async (req: Request): Promise<Response> => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // 1. Obtener datos del contrato con joins
+    // 1. Obtener datos del contrato con joins (incluyendo settings del tenant)
     const { data: contractData, error: contractError } = await supabaseAdmin
       .from("pms_contracts")
       .select(`
         *,
         property:pms_properties(id, address, code),
         tenant_renter:pms_tenants_renters(id, full_name, email, user_id),
-        tenant:pms_tenants(id, name, slug)
+        tenant:pms_tenants(id, name, slug, admin_email, settings)
       `)
       .eq("id", contract_id)
       .single();
@@ -56,24 +56,49 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error fetching owners:", ownersError);
     }
 
-    // 3. Obtener usuario del tenant (inmobiliaria/administrador)
-    const { data: tenantUsers, error: tenantUsersError } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id, users!inner(email, raw_user_meta_data)")
-      .eq("tenant_id", contractData.tenant_id)
-      .eq("module", "PMS")
-      .eq("status", "approved")
-      .in("role", ["INMOBILIARIA", "ADMINISTRADOR"])
-      .limit(1);
+    // 3. Obtener Contacto Principal del tenant desde pms_client_users
+    let clientAdminEmail: string | null = null;
+    let clientAdminName: string | null = null;
+    
+    const mainContactUserId = contractData.tenant?.settings?.main_contact_user_id;
+    console.log("Main contact user_id from settings:", mainContactUserId);
+    
+    if (mainContactUserId) {
+      // Buscar el CLIENT_ADMIN designado como contacto principal
+      const { data: mainContact, error: mainContactError } = await supabaseAdmin
+        .from("pms_client_users")
+        .select("email, first_name, last_name")
+        .eq("id", mainContactUserId)
+        .eq("is_active", true)
+        .single();
 
-    // 4. Obtener superadmin
-    const { data: superadmins, error: superadminError } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id, users!inner(email)")
-      .eq("module", "WM")
-      .eq("role", "superadmin")
-      .eq("status", "approved")
-      .limit(1);
+      if (mainContact && !mainContactError) {
+        clientAdminEmail = mainContact.email;
+        clientAdminName = `${mainContact.first_name || ''} ${mainContact.last_name || ''}`.trim() || mainContact.email;
+        console.log("Found main contact from pms_client_users:", clientAdminEmail);
+      } else {
+        console.log("Main contact not found in pms_client_users, error:", mainContactError?.message);
+      }
+    }
+
+    // Fallback: usar admin_email del tenant si no hay contacto principal
+    if (!clientAdminEmail && contractData.tenant?.admin_email) {
+      clientAdminEmail = contractData.tenant.admin_email;
+      clientAdminName = contractData.tenant.name || "Administrador";
+      console.log("Using fallback admin_email from tenant:", clientAdminEmail);
+    }
+
+    // 4. Obtener Granada SuperAdmins desde granada_platform_users
+    const { data: granadaSuperAdmins, error: granadaError } = await supabaseAdmin
+      .from("granada_platform_users")
+      .select("user_id, email, first_name, last_name")
+      .eq("role", "GRANADA_SUPERADMIN")
+      .eq("is_active", true);
+
+    if (granadaError) {
+      console.error("Error fetching Granada SuperAdmins:", granadaError);
+    }
+    console.log("Granada SuperAdmins found:", granadaSuperAdmins?.length || 0);
 
     const errors: any[] = [];
     let ownersNotified = 0;
@@ -263,7 +288,6 @@ const handler = async (req: Request): Promise<Response> => {
 
           ownersNotified++;
           ownerEmails.push(owner.email);
-          console.log(`Email sent to owner: ${owner.email}`);
         } catch (error: any) {
           console.error(`Error processing owner ${owner.email}:`, error);
           errors.push({ owner: owner.email, error: error.message });
@@ -430,25 +454,23 @@ const handler = async (req: Request): Promise<Response> => {
         console.log(`✅ Email sent to tenant: ${tenant.email}`);
 
         tenantNotified = true;
-        console.log(`Email sent to tenant: ${tenant.email}`);
       } catch (error: any) {
         console.error(`Error processing tenant:`, error);
         errors.push({ tenant: contractData.tenant_renter.email, error: error.message });
       }
     }
 
-    // 7. Enviar email al tenant (inmobiliaria/administrador)
-    if (tenantUsers && tenantUsers.length > 0) {
+    // 7. Enviar email al Contacto Principal del tenant (CLIENT_ADMIN)
+    if (clientAdminEmail) {
       try {
-        const tenantUser = tenantUsers[0];
         const ownersList = owners?.map(op => op.owner?.full_name).filter(Boolean).join(", ") || "N/A";
 
         await resend.emails.send({
           from: "Granada Support <support@granadaplatform.com>",
-          to: [tenantUser.users.email],
+          to: [clientAdminEmail],
           subject: `📊 Registro: Contrato ${contractData.contract_number} Activado`,
           html: `
-            <h2>Estimado equipo de ${contractData.tenant.name},</h2>
+            <h2>Estimado/a ${clientAdminName},</h2>
             <p>Se ha activado exitosamente el siguiente contrato en el sistema PMS:</p>
             
             <h3>📋 RESUMEN DEL CONTRATO:</h3>
@@ -472,72 +494,79 @@ const handler = async (req: Request): Promise<Response> => {
 
             <p>📊 Puedes gestionar este contrato desde tu panel administrativo.</p>
             
-            <p>Sistema PMS - WM Real Estate</p>
+            <p>Sistema PMS - ${contractData.tenant.name}</p>
           `,
         });
 
         adminNotified = true;
-        console.log(`✅ Resend API called for tenant admin: ${tenantUser.users.email}`);
+        console.log(`✅ Email sent to client admin (main contact): ${clientAdminEmail}`);
       } catch (error: any) {
-        console.error(`Error sending email to tenant admin:`, error);
-        errors.push({ admin: "tenant", error: error.message });
+        console.error(`Error sending email to client admin:`, error);
+        errors.push({ admin: clientAdminEmail, error: error.message });
       }
+    } else {
+      console.log("No client admin email found for tenant notification");
     }
 
-    // 8. Enviar email al superadmin
-    if (superadmins && superadmins.length > 0) {
-      try {
-        const superadmin = superadmins[0];
-        const ownersList = owners?.map(op => op.owner?.full_name).filter(Boolean).join(", ") || "N/A";
-        
-        let usersCreatedInfo = "";
-        if (ownersCreated > 0 || tenantCreated) {
-          usersCreatedInfo = `
-            <h3>👥 USUARIOS CREADOS AUTOMÁTICAMENTE:</h3>
-            <ul>
-              ${ownersCreated > 0 ? `<li>Propietarios: ${ownersCreated} usuario(s) creados</li>` : ""}
-              ${tenantCreated ? `<li>Inquilino: ${contractData.tenant_renter.email} - Rol: Inquilino</li>` : ""}
-            </ul>
-          `;
+    // 8. Enviar email a Granada SuperAdmins
+    if (granadaSuperAdmins && granadaSuperAdmins.length > 0) {
+      for (const granadaAdmin of granadaSuperAdmins) {
+        try {
+          const ownersList = owners?.map(op => op.owner?.full_name).filter(Boolean).join(", ") || "N/A";
+          const adminName = `${granadaAdmin.first_name || ''} ${granadaAdmin.last_name || ''}`.trim() || granadaAdmin.email;
+          
+          let usersCreatedInfo = "";
+          if (ownersCreated > 0 || tenantCreated) {
+            usersCreatedInfo = `
+              <h3>👥 USUARIOS CREADOS AUTOMÁTICAMENTE:</h3>
+              <ul>
+                ${ownersCreated > 0 ? `<li>Propietarios: ${ownersCreated} usuario(s) creados</li>` : ""}
+                ${tenantCreated ? `<li>Inquilino: ${contractData.tenant_renter.email} - Rol: Inquilino</li>` : ""}
+              </ul>
+            `;
+          }
+
+          await resend.emails.send({
+            from: "Granada Support <support@granadaplatform.com>",
+            to: [granadaAdmin.email],
+            subject: `🔔 Sistema: Contrato ${contractData.contract_number} Activado`,
+            html: `
+              <h2>Hola ${adminName},</h2>
+              <p>Notificación del Sistema PMS - Granada Platform</p>
+              
+              <h3>📋 CONTRATO ACTIVADO:</h3>
+              <ul>
+                <li><strong>Número:</strong> ${contractData.contract_number}</li>
+                <li><strong>Tenant:</strong> ${contractData.tenant.name}</li>
+                <li><strong>Propiedad:</strong> ${contractData.property.address}</li>
+                <li><strong>Inquilino:</strong> ${contractData.tenant_renter.full_name}</li>
+                <li><strong>Propietario(s):</strong> ${ownersList}</li>
+                <li><strong>Monto:</strong> $${contractData.monthly_rent} ${contractData.currency}</li>
+                <li><strong>Período:</strong> ${new Date(contractData.start_date).toLocaleDateString()} - ${new Date(contractData.end_date).toLocaleDateString()}</li>
+              </ul>
+
+              ${usersCreatedInfo}
+
+              <h3>📧 NOTIFICACIONES ENVIADAS:</h3>
+              <ul>
+                <li>✓ Propietario(s): ${ownersNotified} email(s) enviados</li>
+                <li>✓ Inquilino: ${tenantNotified ? "Email enviado" : "No enviado"}</li>
+                <li>✓ Contacto Principal: ${adminNotified ? `Email enviado a ${clientAdminEmail}` : "No enviado"}</li>
+              </ul>
+
+              <p>Granada Platform - Sistema PMS</p>
+            `,
+          });
+
+          superadminNotified = true;
+          console.log(`✅ Email sent to Granada SuperAdmin: ${granadaAdmin.email}`);
+        } catch (error: any) {
+          console.error(`Error sending email to Granada SuperAdmin ${granadaAdmin.email}:`, error);
+          errors.push({ granadaSuperAdmin: granadaAdmin.email, error: error.message });
         }
-
-        await resend.emails.send({
-          from: "Granada Support <support@granadaplatform.com>",
-          to: [superadmin.users.email],
-          subject: `🔔 Sistema: Contrato ${contractData.contract_number} Activado`,
-          html: `
-            <h2>Notificación del Sistema PMS</h2>
-            
-            <h3>📋 CONTRATO ACTIVADO:</h3>
-            <ul>
-              <li><strong>Número:</strong> ${contractData.contract_number}</li>
-              <li><strong>Tenant:</strong> ${contractData.tenant.name}</li>
-              <li><strong>Propiedad:</strong> ${contractData.property.address}</li>
-              <li><strong>Inquilino:</strong> ${contractData.tenant_renter.full_name}</li>
-              <li><strong>Propietario(s):</strong> ${ownersList}</li>
-              <li><strong>Monto:</strong> $${contractData.monthly_rent} ${contractData.currency}</li>
-              <li><strong>Período:</strong> ${new Date(contractData.start_date).toLocaleDateString()} - ${new Date(contractData.end_date).toLocaleDateString()}</li>
-            </ul>
-
-            ${usersCreatedInfo}
-
-            <h3>📧 NOTIFICACIONES ENVIADAS:</h3>
-            <ul>
-              <li>✓ Propietario(s): ${ownersNotified} email(s) enviados</li>
-              <li>✓ Inquilino: ${tenantNotified ? "Email enviado" : "No enviado"}</li>
-              <li>✓ Tenant: ${adminNotified ? "Email de registro enviado" : "No enviado"}</li>
-            </ul>
-
-            <p>Sistema PMS - WM Real Estate</p>
-          `,
-        });
-
-        superadminNotified = true;
-        console.log(`✅ Resend API called for superadmin: ${superadmin.users.email}`);
-      } catch (error: any) {
-        console.error(`Error sending email to superadmin:`, error);
-        errors.push({ superadmin: true, error: error.message });
       }
+    } else {
+      console.log("No Granada SuperAdmins found for notification");
     }
 
     // 9. Registrar en logs
@@ -565,7 +594,9 @@ const handler = async (req: Request): Promise<Response> => {
           tenant_notified: tenantNotified,
           tenant_created: tenantCreated,
           admin_notified: adminNotified,
+          admin_email: clientAdminEmail,
           superadmin_notified: superadminNotified,
+          granada_superadmins_notified: granadaSuperAdmins?.length || 0,
           errors,
         },
       }),
