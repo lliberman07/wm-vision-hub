@@ -98,22 +98,26 @@ export function ClientSettings() {
 
   if (!clientData) return null;
 
+  const isPropietario = clientData?.tenant_type === 'propietario';
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold">Datos de la Organización</h2>
-        <p className="text-muted-foreground">Gestiona la información de tu organización</p>
+        <h2 className="text-3xl font-bold">{isPropietario ? 'Mis Datos' : 'Datos de la Organización'}</h2>
+        <p className="text-muted-foreground">
+          {isPropietario ? 'Gestiona tu información personal' : 'Gestiona la información de tu organización'}
+        </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Información de la Organización</CardTitle>
+          <CardTitle>{isPropietario ? 'Información Personal' : 'Información de la Organización'}</CardTitle>
           <CardDescription>Datos fiscales y de contacto</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Razón Social *</Label>
+              <Label>{isPropietario ? 'Nombre Completo *' : 'Razón Social *'}</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -121,11 +125,11 @@ export function ClientSettings() {
             </div>
 
             <div className="space-y-2">
-              <Label>CUIT</Label>
+              <Label>{isPropietario ? 'CUIT/CUIL' : 'CUIT'}</Label>
               <Input
                 value={formData.cuit}
                 onChange={(e) => setFormData({ ...formData, cuit: e.target.value })}
-                placeholder="30-12345678-9"
+                placeholder={isPropietario ? '20-12345678-9' : '30-12345678-9'}
               />
             </div>
           </div>

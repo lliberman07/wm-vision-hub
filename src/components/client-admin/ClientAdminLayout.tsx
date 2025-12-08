@@ -35,43 +35,55 @@ interface ClientAdminLayoutProps {
   children: ReactNode;
 }
 
-const menuItems = [
-  {
-    title: 'Dashboard',
-    icon: LayoutDashboard,
-    path: '/client-admin',
-  },
-  {
-    title: 'Analíticas',
-    icon: BarChart3,
-    path: '/client-admin/analytics',
-  },
-  {
-    title: 'Equipo Administrativo',
-    icon: Users,
-    path: '/client-admin/users',
-  },
-  {
-    title: 'Suscripción',
-    icon: CreditCard,
-    path: '/client-admin/subscription',
-  },
-  {
-    title: 'Comisiones',
-    icon: DollarSign,
-    path: '/client-admin/commissions',
-  },
-  {
-    title: 'Reportes',
-    icon: FileBarChart,
-    path: '/client-admin/reports',
-  },
-  {
-    title: 'Datos de la Organización',
-    icon: Settings,
-    path: '/client-admin/settings',
-  },
-];
+// Menu items with visibility flags
+const getMenuItems = (tenantType: string | undefined) => {
+  const isPropietario = tenantType === 'propietario';
+  
+  return [
+    {
+      title: 'Dashboard',
+      icon: LayoutDashboard,
+      path: '/client-admin',
+      visible: true,
+    },
+    {
+      title: 'Analíticas',
+      icon: BarChart3,
+      path: '/client-admin/analytics',
+      visible: true,
+    },
+    {
+      title: 'Equipo Administrativo',
+      icon: Users,
+      path: '/client-admin/users',
+      visible: true,
+    },
+    {
+      title: 'Suscripción',
+      icon: CreditCard,
+      path: '/client-admin/subscription',
+      visible: true,
+    },
+    {
+      title: 'Comisiones',
+      icon: DollarSign,
+      path: '/client-admin/commissions',
+      visible: !isPropietario, // Solo para inmobiliarias
+    },
+    {
+      title: 'Reportes',
+      icon: FileBarChart,
+      path: '/client-admin/reports',
+      visible: true,
+    },
+    {
+      title: 'Mis Datos',
+      icon: Settings,
+      path: '/client-admin/settings',
+      visible: true,
+    },
+  ].filter(item => item.visible);
+};
 
 export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
   const navigate = useNavigate();
@@ -153,7 +165,7 @@ export function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
           )}
 
           <nav className="space-y-1">
-            {menuItems.map((item) => {
+            {getMenuItems(clientData?.tenant_type).map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               
