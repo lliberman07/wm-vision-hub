@@ -59,7 +59,7 @@ serve(async (req) => {
     // Get tenant renter info
     const { data: tenantRenter, error: renterError } = await supabase
       .from('pms_tenants_renters')
-      .select('email, first_name, last_name, phone, document_id, user_id')
+      .select('email, first_name, last_name, phone, document_number, user_id')
       .eq('id', tenant_renter_id)
       .single();
 
@@ -205,7 +205,7 @@ serve(async (req) => {
         first_name: tenantRenter.first_name,
         last_name: tenantRenter.last_name,
         phone: tenantRenter.phone,
-        cuit_cuil: tenantRenter.document_id,
+        cuit_cuil: tenantRenter.document_number,
         contract_id,
         is_active: true
       });
