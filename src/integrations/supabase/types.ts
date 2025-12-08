@@ -2913,7 +2913,7 @@ export type Database = {
           owner_id: string
           owner_percentage: number
           payment_id: string | null
-          payment_method_id: string
+          payment_method_id: string | null
           period_date: string
           projection_id: string
           status: string
@@ -2933,7 +2933,7 @@ export type Database = {
           owner_id: string
           owner_percentage: number
           payment_id?: string | null
-          payment_method_id: string
+          payment_method_id?: string | null
           period_date: string
           projection_id: string
           status?: string
@@ -2953,7 +2953,7 @@ export type Database = {
           owner_id?: string
           owner_percentage?: number
           payment_id?: string | null
-          payment_method_id?: string
+          payment_method_id?: string | null
           period_date?: string
           projection_id?: string
           status?: string
