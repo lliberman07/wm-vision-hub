@@ -478,20 +478,25 @@ const Contracts = () => {
                               <Clock className="h-4 w-4 mr-1" />
                               Extender
                             </Button>}
-                          {(contract.status === 'active' || contract.status === 'expired') && <Button variant="outline" size="sm" onClick={() => {
-                      setSelectedContract(contract);
-                      setIsRenewOpen(true);
-                    }} className="min-w-[110px] justify-center gap-1">
-                              <RefreshCw className="h-4 w-4" />
-                              Renovación
-                            </Button>}
-                          {contract.status === 'active' && <Button variant="outline" size="sm" onClick={() => {
-                      setSelectedContract(contract);
-                      setIsCancelOpen(true);
-                    }} className="min-w-[110px] justify-center">
-                              <X className="h-4 w-4 mr-1" />
-                              Cancelar
-                            </Button>}
+                          {/* Botones de Renovación y Cancelar solo visibles para roles de gestión */}
+                          {['SUPERADMIN', 'INMOBILIARIA', 'ADMINISTRADOR'].includes(userRole) && (
+                            <>
+                              {(contract.status === 'active' || contract.status === 'expired') && <Button variant="outline" size="sm" onClick={() => {
+                                setSelectedContract(contract);
+                                setIsRenewOpen(true);
+                              }} className="min-w-[110px] justify-center gap-1">
+                                <RefreshCw className="h-4 w-4" />
+                                Renovación
+                              </Button>}
+                              {contract.status === 'active' && <Button variant="outline" size="sm" onClick={() => {
+                                setSelectedContract(contract);
+                                setIsCancelOpen(true);
+                              }} className="min-w-[110px] justify-center">
+                                <X className="h-4 w-4 mr-1" />
+                                Cancelar
+                              </Button>}
+                            </>
+                          )}
                           <Button variant="outline" size="sm" onClick={() => {
                       setSelectedContract(contract);
                       setIsViewOpen(true);
