@@ -97,43 +97,43 @@ export function ReviewPaymentSubmissionDialog({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-sm text-muted-foreground">Inquilino</Label>
-              <p className="font-medium">{submission.contract.tenant_renter.full_name}</p>
+              <p className="font-medium">{submission.contract?.tenant_renter?.full_name || 'N/A'}</p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Contrato</Label>
-              <p className="font-medium">{submission.contract.contract_number}</p>
+              <p className="font-medium">{submission.contract?.contract_number || 'N/A'}</p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Mes</Label>
               <p className="font-medium">
-                {formatDateDisplay(submission.schedule_item.period_date)}
+                {submission.schedule_item?.period_date ? formatDateDisplay(submission.schedule_item.period_date) : 'N/A'}
               </p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Propietario</Label>
-              <p className="font-medium">{submission.schedule_item.owner.full_name}</p>
+              <p className="font-medium">{submission.schedule_item?.owner?.full_name || 'N/A'}</p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Monto Esperado</Label>
               <p className="font-medium">
-                ${submission.schedule_item.expected_amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                ${(submission.schedule_item?.expected_amount || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
               </p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Monto Pagado</Label>
               <p className="font-medium text-green-600">
-                ${submission.paid_amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                ${(submission.paid_amount || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
               </p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Fecha de Pago</Label>
               <p className="font-medium">
-                {formatDateDisplay(submission.paid_date)}
+                {submission.paid_date ? formatDateDisplay(submission.paid_date) : 'N/A'}
               </p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Método de Pago</Label>
-              <p className="font-medium">{submission.payment_method}</p>
+              <p className="font-medium">{submission.payment_method || 'N/A'}</p>
             </div>
             {submission.reference_number && (
               <div className="col-span-2">
