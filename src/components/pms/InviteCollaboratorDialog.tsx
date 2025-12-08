@@ -219,17 +219,14 @@ export function InviteCollaboratorDialog({
       // 6. Create pms_client_users entry for collaborator
       const { error: clientUserError } = await supabase
         .from('pms_client_users')
-        .upsert({
+        .insert({
           user_id: userId,
           tenant_id: tenantId,
           email: formData.email,
           first_name: formData.first_name,
           last_name: formData.last_name,
-          user_type: formData.role === 'GESTOR' ? 'GESTOR' : formData.role,
+          user_type: formData.role === 'GESTOR' ? 'GESTOR' : formData.role as 'CLIENT_ADMIN' | 'GESTOR' | 'PROPIETARIO',
           is_active: true,
-        }, {
-          onConflict: 'user_id,tenant_id',
-          ignoreDuplicates: false
         });
 
       if (clientUserError) {
