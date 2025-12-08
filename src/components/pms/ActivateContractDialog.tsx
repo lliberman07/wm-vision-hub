@@ -178,6 +178,17 @@ export function ActivateContractDialog({
 
       if (error) throw error;
 
+      // Enviar notificaciones en segundo plano (no bloqueante)
+      supabase.functions.invoke('send-contract-activation-notification', {
+        body: { contract_id: contractId }
+      }).then(({ error: notifError }) => {
+        if (notifError) {
+          console.warn('Error enviando notificaciones de activación:', notifError);
+        }
+      }).catch(err => {
+        console.warn('Error enviando notificaciones:', err);
+      });
+
       toast.success('Contrato activado correctamente');
       onOpenChange(false);
       onSuccess();
