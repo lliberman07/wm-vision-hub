@@ -117,12 +117,16 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         console.error('Error fetching user roles:', rolesResult.error);
       }
 
-      // Check if any tenant has INMOBILIARIA or GESTOR role
+      // Check if any tenant has INMOBILIARIA, GESTOR, or PROPIETARIO (with propietario tenant) role
       const adminTenant = rolesResult.data?.find((row: any) => {
         const roles = row.roles || [];
-        return roles.some((role: string) => 
-          role.toUpperCase() === 'INMOBILIARIA' || role.toUpperCase() === 'GESTOR'
-        );
+        const tenantType = row.type; // tenant_type from v_current_user_tenants
+        return roles.some((role: string) => {
+          const upperRole = role.toUpperCase();
+          return upperRole === 'INMOBILIARIA' || 
+                 upperRole === 'GESTOR' ||
+                 (upperRole === 'PROPIETARIO' && tenantType === 'propietario');
+        });
       });
 
       const tenantId = adminTenant?.tenant_id || clientUserResult.data?.tenant_id;
