@@ -3021,12 +3021,16 @@ export type Database = {
       }
       pms_payment_submissions: {
         Row: {
+          amount_in_contract_currency: number | null
+          contract_currency: string | null
           contract_id: string
           created_at: string | null
+          exchange_rate: number | null
           id: string
           notes: string | null
           paid_amount: number
           paid_date: string
+          payment_currency: string | null
           payment_method: string
           receipt_url: string | null
           reference_number: string | null
@@ -3040,12 +3044,16 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          amount_in_contract_currency?: number | null
+          contract_currency?: string | null
           contract_id: string
           created_at?: string | null
+          exchange_rate?: number | null
           id?: string
           notes?: string | null
           paid_amount: number
           paid_date: string
+          payment_currency?: string | null
           payment_method: string
           receipt_url?: string | null
           reference_number?: string | null
@@ -3059,12 +3067,16 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          amount_in_contract_currency?: number | null
+          contract_currency?: string | null
           contract_id?: string
           created_at?: string | null
+          exchange_rate?: number | null
           id?: string
           notes?: string | null
           paid_amount?: number
           paid_date?: string
+          payment_currency?: string | null
           payment_method?: string
           receipt_url?: string | null
           reference_number?: string | null

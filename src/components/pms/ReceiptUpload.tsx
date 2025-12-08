@@ -22,10 +22,16 @@ export function ReceiptUpload({ onUploadComplete, currentUrl }: ReceiptUploadPro
         return;
       }
 
+      // Obtener usuario actual para usar su ID en el path
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Usuario no autenticado');
+      }
+
       const file = event.target.files[0];
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError, data } = await supabase.storage
         .from("payment-receipts")
