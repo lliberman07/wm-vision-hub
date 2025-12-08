@@ -167,8 +167,8 @@ export function PMSLayout({ children }: PMSLayoutProps) {
                           <Settings className="mr-2 h-4 w-4" />
                           Dashboard PMS
                         </DropdownMenuItem>
-                        {/* Remove Panel de Cliente for GRANADA_SUPERADMIN */}
-                        {isClientAdmin && !isGranadaSuperAdmin && (
+                        {/* Remove Panel de Cliente for GRANADA_SUPERADMIN and INQUILINO role */}
+                        {isClientAdmin && !isGranadaSuperAdmin && activeRoleContext?.role !== 'INQUILINO' && (
                           <DropdownMenuItem onClick={() => navigate('/client-admin')}>
                             <Shield className="mr-2 h-4 w-4" />
                             Panel de Cliente

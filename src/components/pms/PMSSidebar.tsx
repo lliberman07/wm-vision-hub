@@ -99,6 +99,9 @@ export function PMSSidebar() {
     })
   })).filter(section => section.items.length > 0);
 
+  // Only show Admin Panel if user has admin access AND active role is not INQUILINO
+  const showAdminPanel = isClientAdmin && activeRole !== 'INQUILINO';
+
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="p-6 border-b flex items-center justify-center">
@@ -110,8 +113,8 @@ export function PMSSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* CLIENT_ADMIN Link */}
-        {isClientAdmin && (
+        {/* CLIENT_ADMIN Link - hidden for INQUILINO role */}
+        {showAdminPanel && (
           <>
             <SidebarGroup>
               <SidebarGroupContent>
