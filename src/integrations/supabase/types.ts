@@ -4866,6 +4866,17 @@ export type Database = {
         Returns: undefined
       }
       deny_user: { Args: { user_id_param: string }; Returns: undefined }
+      diagnose_payment_issues: {
+        Args: { p_tenant_id?: string }
+        Returns: {
+          contract_id: string
+          details: string
+          issue_type: string
+          payment_id: string
+          period_date: string
+          schedule_item_id: string
+        }[]
+      }
       does_role_consume_license: {
         Args: { p_role: string; p_tenant_id: string }
         Returns: boolean
@@ -4878,6 +4889,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      fix_orphaned_payment: { Args: { p_payment_id: string }; Returns: Json }
       generate_contract_monthly_projections: {
         Args: { contract_id_param: string; from_date?: string }
         Returns: undefined
