@@ -4768,7 +4768,7 @@ export type Database = {
       apply_automatic_adjustments: { Args: never; Returns: undefined }
       approve_payment_submission: {
         Args: { submission_id_param: string }
-        Returns: undefined
+        Returns: Json
       }
       approve_subscription_request: {
         Args: { p_request_id: string; p_trial_days?: number }
@@ -4889,6 +4889,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      fix_multicurrency_payments: { Args: never; Returns: Json }
       fix_orphaned_payment: { Args: { p_payment_id: string }; Returns: Json }
       generate_contract_monthly_projections: {
         Args: { contract_id_param: string; from_date?: string }
