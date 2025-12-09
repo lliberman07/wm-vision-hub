@@ -117,7 +117,7 @@ const handler = async (req: Request): Promise<Response> => {
       const priorityEmoji = priority === 'alta' ? '🔴' : priority === 'media' ? '🟡' : '🟢';
       
       const emailResponse = await resend.emails.send({
-        from: "WM Propiedades <onboarding@resend.dev>",
+        from: "Granada Mantenimiento <notifications@granadaplatform.com>",
         to: [assignee_email],
         subject: `🔧 Nueva Solicitud de Mantenimiento - ${maintenance_title}`,
         html: `
@@ -148,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Email al reportante cuando se completa la solicitud
     if (action === 'completed' && reporter_email) {
       const emailResponse = await resend.emails.send({
-        from: "WM Propiedades <onboarding@resend.dev>",
+        from: "Granada Mantenimiento <notifications@granadaplatform.com>",
         to: [reporter_email],
         subject: `✅ Solicitud de Mantenimiento Completada - ${maintenance_title}`,
         html: `

@@ -180,8 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Se requiere magic_link (para recovery) o password (para nuevos usuarios)');
     }
 
-    // TEMPORAL: Usando onboarding@resend.dev hasta verificar dominio granadaplatform.com
-    const fromEmail = "Granada Platform <onboarding@resend.dev>";
+    const fromEmail = "Granada Platform <noreply@granadaplatform.com>";
     console.log("Sending email from:", fromEmail);
     console.log("Sending to:", email);
     console.log("Subject:", template.subject);

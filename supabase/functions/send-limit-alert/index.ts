@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
       : `Estás utilizando ${current_count} de ${limit} ${resourceLabels[resource_type]} disponibles.`;
 
     await resend.emails.send({
-      from: "Granada PMS <notificaciones@granadapms.com>",
+      from: "Granada Platform <notifications@granadaplatform.com>",
       to: [clientAdmin.email],
       subject,
       html: `
