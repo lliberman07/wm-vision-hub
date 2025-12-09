@@ -151,41 +151,52 @@ serve(async (req) => {
 
     auditLog.tenant_id = tenantId;
 
-    console.log(`Generating magic link for: ${userEmail}, isGranada: ${isGranadaUser}`);
-
-    // Get FRONTEND_URL from environment and normalize (remove trailing slashes)
-    const rawFrontendUrl = Deno.env.get('FRONTEND_URL') || 'https://jrzeabjpxkhccopxfwqa.lovableproject.com';
-    const frontendUrl = rawFrontendUrl.replace(/\/+$/, '');
-    
-    // Determine redirect path based on platform
-    const redirectPath = isGranadaUser 
-      ? '/granada-admin/reset-password'
-      : '/pms/reset-password';
- 
-    // Generate magic link using Supabase's built-in method
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email: userEmail,
-      options: {
-        redirectTo: `${frontendUrl}${redirectPath}`,
+    // Generate a secure temporary password
+    const generateTemporaryPassword = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      const specialChars = '!@#$%';
+      let password = '';
+      
+      // Generate 8 random alphanumeric characters
+      for (let i = 0; i < 8; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
       }
+      
+      // Add 1 special character
+      password += specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+      
+      // Add 2 more random characters
+      for (let i = 0; i < 2; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      
+      return password;
+    };
+
+    const temporaryPassword = generateTemporaryPassword();
+    
+    console.log(`Generating temporary password for: ${userEmail}, isGranada: ${isGranadaUser}`);
+
+    // Update user's password using admin API
+    const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+      password: temporaryPassword,
     });
 
-    if (linkError || !linkData) {
-      console.error('Error generating magic link:', linkError);
-      throw new Error('Error al generar el link de recuperación');
+    if (updateError) {
+      console.error('Error updating user password:', updateError);
+      throw new Error('Error al actualizar la contraseña');
     }
 
-    console.log(`Magic link generated successfully for user: ${userId}`);
+    console.log(`Temporary password set successfully for user: ${userId}`);
 
-    // Send email with magic link
+    // Send email with temporary password
     const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
       body: {
         email: userEmail,
         first_name: userData.user.user_metadata?.first_name || 'Usuario',
         is_reset: true,
         platform: isGranadaUser ? 'granada' : 'pms',
-        magic_link: linkData.properties.action_link, // This is the magic link
+        password: temporaryPassword, // Send temporary password instead of magic link
       }
     });
 
@@ -198,7 +209,7 @@ serve(async (req) => {
     auditLog.success = true;
     
     const duration = Date.now() - startTime;
-    console.log(`Password reset magic link sent to ${userEmail} in ${duration}ms`);
+    console.log(`Password reset email sent to ${userEmail} in ${duration}ms`);
 
     // Log the attempt
     await supabase.from('password_reset_attempts').insert({
@@ -215,7 +226,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: 'Link de recuperación enviado por email. Revisa tu bandeja de entrada.'
+        message: 'Nueva contraseña temporal enviada por email. Revisa tu bandeja de entrada.'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
