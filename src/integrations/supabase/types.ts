@@ -5206,6 +5206,10 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
       }
+      is_client_admin_for_tenant: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_contract_active: {
         Args: { contract_id_param: string }
         Returns: boolean
