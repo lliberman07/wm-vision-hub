@@ -3142,6 +3142,7 @@ export type Database = {
           reference_number: string | null
           schedule_item_id: string | null
           status: string | null
+          submission_id: string | null
           tenant_id: string
           updated_at: string | null
         }
@@ -3166,6 +3167,7 @@ export type Database = {
           reference_number?: string | null
           schedule_item_id?: string | null
           status?: string | null
+          submission_id?: string | null
           tenant_id: string
           updated_at?: string | null
         }
@@ -3190,6 +3192,7 @@ export type Database = {
           reference_number?: string | null
           schedule_item_id?: string | null
           status?: string | null
+          submission_id?: string | null
           tenant_id?: string
           updated_at?: string | null
         }
@@ -3206,6 +3209,13 @@ export type Database = {
             columns: ["schedule_item_id"]
             isOneToOne: false
             referencedRelation: "pms_payment_schedule_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pms_payments_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "pms_payment_submissions"
             referencedColumns: ["id"]
           },
           {
