@@ -245,6 +245,10 @@ export function PaymentCalendar({ contractId, currency }: PaymentCalendarProps) 
                                 periodDate={item.period_date}
                                 onClick={() => handleCellClick(item)}
                                 isReimbursement={!!item.expense_id}
+                                currency={item.payment?.currency}
+                                contractCurrency={item.payment?.contract_currency || currency}
+                                exchangeRate={item.payment?.exchange_rate}
+                                amountInContractCurrency={item.payment?.amount_in_contract_currency}
                               />
                             </div>
                           </TableCell>
