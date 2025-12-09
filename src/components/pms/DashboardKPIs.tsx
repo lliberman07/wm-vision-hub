@@ -131,14 +131,9 @@ export function DashboardKPIs() {
 
         const revenueByCurrency = { ARS: 0, USD: 0 };
         revenue.data?.forEach(p => {
-          // Si el pago tiene conversión de moneda, usar amount_in_contract_currency
-          if (p.amount_in_contract_currency && p.contract_currency && p.currency !== p.contract_currency) {
-            revenueByCurrency[p.contract_currency as 'ARS' | 'USD'] += p.amount_in_contract_currency;
-          } else {
-            // Si no hay conversión, usar la moneda del pago
-            const currency = p.currency || contractCurrencyMap.get(p.contract_id) || 'ARS';
-            revenueByCurrency[currency as 'ARS' | 'USD'] += p.paid_amount || 0;
-          }
+          // Siempre usar la moneda real en que se recibió el pago
+          const currency = p.currency || 'ARS';
+          revenueByCurrency[currency as 'ARS' | 'USD'] += p.paid_amount || 0;
         });
 
         setData({
