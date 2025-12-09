@@ -26,6 +26,9 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, first_name, password, is_reset = false, platform = 'pms', magic_link }: WelcomeEmailRequest = await req.json();
 
+    console.log("=== SEND-WELCOME-EMAIL START ===");
+    console.log("Request params:", { email, first_name, is_reset, platform, has_password: !!password, has_magic_link: !!magic_link });
+
     // Get frontend URL from environment
     const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://jrzeabjpxkhccopxfwqa.lovableproject.com';
 
@@ -177,14 +180,35 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Se requiere magic_link (para recovery) o password (para nuevos usuarios)');
     }
 
+    // TEMPORAL: Usando onboarding@resend.dev hasta verificar dominio granadaplatform.com
+    const fromEmail = "Granada Platform <onboarding@resend.dev>";
+    console.log("Sending email from:", fromEmail);
+    console.log("Sending to:", email);
+    console.log("Subject:", template.subject);
+
     const emailResponse = await resend.emails.send({
-      from: "Granada Platform <noreply@granadaplatform.com>",
+      from: fromEmail,
       to: [email],
       subject: template.subject,
       html: emailHtml,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Resend API Response:", JSON.stringify(emailResponse, null, 2));
+
+    // Check if there's an error in the response
+    if (emailResponse.error) {
+      console.error("Resend API Error:", JSON.stringify(emailResponse.error, null, 2));
+      return new Response(
+        JSON.stringify({ error: emailResponse.error }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    console.log("=== SEND-WELCOME-EMAIL SUCCESS ===");
+    console.log("Email ID:", emailResponse.data?.id);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
@@ -194,7 +218,10 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error in send-welcome-email function:", error);
+    console.error("=== SEND-WELCOME-EMAIL ERROR ===");
+    console.error("Error type:", error.constructor.name);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
