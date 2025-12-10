@@ -18,69 +18,28 @@ import {
   ClipboardCheck,
   CheckCircle2
 } from "lucide-react";
-
-const benefits = [
-  {
-    icon: Building2,
-    title: "Gestión Centralizada",
-    description: "Administrá todas tus propiedades, contratos y pagos desde una única plataforma. Sin papeles, sin planillas dispersas."
-  },
-  {
-    icon: Users,
-    title: "Portal para Clientes",
-    description: "Ofrecé a tus propietarios un portal personalizado donde ven reportes, gastos y el estado de sus propiedades en tiempo real."
-  },
-  {
-    icon: TrendingUp,
-    title: "Automatización Total",
-    description: "Generá recibos, reportes mensuales y alertas automáticas. Enfocate en crecer, no en tareas repetitivas."
-  },
-  {
-    icon: Shield,
-    title: "Red de Proveedores",
-    description: "Accedé a una red de proveedores verificados para mantenimientos. Cotizá, aprobá y seguí todo en un solo lugar."
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Valor Agregado Continuo",
-    description: "No solo gestiones propiedades con contratos activos. Administrá gastos mensuales (expensas, impuestos, servicios) y mantenimientos incluso cuando están desocupadas. Fidelizá propietarios ofreciendo servicio integral."
-  }
-];
-
-const modules = [
-  {
-    icon: Home,
-    title: "Propiedades",
-    description: "Registro completo con fotos, documentos y historial de cada inmueble."
-  },
-  {
-    icon: FileText,
-    title: "Contratos",
-    description: "Creá contratos con ajustes por IPC/ICL, renovaciones y seguimiento automático."
-  },
-  {
-    icon: CreditCard,
-    title: "Pagos",
-    description: "Calendario de vencimientos, carga de comprobantes y conciliación bancaria."
-  },
-  {
-    icon: Wrench,
-    title: "Mantenimientos",
-    description: "Gestioná reparaciones, aprobaciones de propietarios y seguimiento de proveedores."
-  },
-  {
-    icon: BarChart3,
-    title: "Reportes",
-    description: "Informes mensuales automáticos para propietarios con desglose de ingresos y gastos."
-  },
-  {
-    icon: UserCog,
-    title: "Multi-tenant",
-    description: "Roles y permisos granulares. Cada inmobiliaria con su espacio aislado y seguro."
-  }
-];
+import { useGranadaLanguage } from "@/contexts/GranadaLanguageContext";
 
 export default function InmobiliariasAdmin() {
+  const { t } = useGranadaLanguage();
+
+  const benefits = [
+    { icon: Building2, titleKey: 'inmobiliarias.benefit1_title', descriptionKey: 'inmobiliarias.benefit1_desc' },
+    { icon: Users, titleKey: 'inmobiliarias.benefit2_title', descriptionKey: 'inmobiliarias.benefit2_desc' },
+    { icon: TrendingUp, titleKey: 'inmobiliarias.benefit3_title', descriptionKey: 'inmobiliarias.benefit3_desc' },
+    { icon: Shield, titleKey: 'inmobiliarias.benefit4_title', descriptionKey: 'inmobiliarias.benefit4_desc' },
+    { icon: ClipboardCheck, titleKey: 'inmobiliarias.benefit5_title', descriptionKey: 'inmobiliarias.benefit5_desc' }
+  ];
+
+  const modules = [
+    { icon: Home, titleKey: 'inmobiliarias.module1_title', descriptionKey: 'inmobiliarias.module1_desc' },
+    { icon: FileText, titleKey: 'inmobiliarias.module2_title', descriptionKey: 'inmobiliarias.module2_desc' },
+    { icon: CreditCard, titleKey: 'inmobiliarias.module3_title', descriptionKey: 'inmobiliarias.module3_desc' },
+    { icon: Wrench, titleKey: 'inmobiliarias.module4_title', descriptionKey: 'inmobiliarias.module4_desc' },
+    { icon: BarChart3, titleKey: 'inmobiliarias.module5_title', descriptionKey: 'inmobiliarias.module5_desc' },
+    { icon: UserCog, titleKey: 'inmobiliarias.module6_title', descriptionKey: 'inmobiliarias.module6_desc' }
+  ];
+
   return (
     <div className="granada-theme min-h-screen bg-background">
       <GranadaHeader />
@@ -91,21 +50,20 @@ export default function InmobiliariasAdmin() {
           <div className="container max-w-5xl">
             <div className="text-center space-y-6">
               <Badge className="mb-4" variant="secondary">
-                Para Inmobiliarias y Administradores
+                {t('inmobiliarias.badge')}
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                Potenciá tu Inmobiliaria con Granada
+                {t('inmobiliarias.title')}
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Centralizá toda la gestión de propiedades, contratos y pagos en una plataforma profesional. 
-                Ofrecé un servicio premium a tus clientes con reportes automáticos y transparencia total.
+                {t('inmobiliarias.subtitle')}
               </p>
               <div className="flex flex-wrap gap-4 justify-center pt-4">
                 <Button asChild size="lg" className="text-lg px-8">
-                  <Link to="/granada-platform/planes">Ver Planes</Link>
+                  <Link to="/granada-platform/planes">{t('inmobiliarias.view_plans')}</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                  <Link to="/granada-platform/contacto">Solicitar Demo</Link>
+                  <Link to="/granada-platform/contacto">{t('inmobiliarias.request_demo')}</Link>
                 </Button>
               </div>
             </div>
@@ -117,17 +75,17 @@ export default function InmobiliariasAdmin() {
           <div className="container max-w-6xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                ¿Por qué Granada para tu Inmobiliaria?
+                {t('inmobiliarias.why_granada')}
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Dejá atrás las planillas de Excel, los WhatsApp desorganizados y las capturas de pantalla perdidas.
+                {t('inmobiliarias.why_granada_subtitle')}
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
               {benefits.map((benefit, index) => (
                 <Card 
-                  key={benefit.title} 
+                  key={benefit.titleKey} 
                   className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${
                     index === benefits.length - 1 && benefits.length % 2 !== 0 
                       ? 'md:col-span-2 md:max-w-2xl md:mx-auto' 
@@ -138,11 +96,11 @@ export default function InmobiliariasAdmin() {
                     <div className="mb-4 p-3 bg-primary/10 rounded-lg w-fit">
                       <benefit.icon className="h-8 w-8 text-primary" />
                     </div>
-                    <CardTitle className="text-xl">{benefit.title}</CardTitle>
+                    <CardTitle className="text-xl">{t(benefit.titleKey)}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      {benefit.description}
+                      {t(benefit.descriptionKey)}
                     </p>
                   </CardContent>
                 </Card>
@@ -156,13 +114,13 @@ export default function InmobiliariasAdmin() {
           <div className="container max-w-5xl">
             <div className="text-center mb-8">
               <Badge className="mb-4" variant="outline">
-                Diferenciador Clave
+                {t('inmobiliarias.differentiator_badge')}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Administrá Propiedades Desocupadas
+                {t('inmobiliarias.differentiator_title')}
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Ofrecé valor agregado continuo a tus propietarios, no solo cuando hay contratos activos.
+                {t('inmobiliarias.differentiator_subtitle')}
               </p>
             </div>
 
@@ -172,24 +130,24 @@ export default function InmobiliariasAdmin() {
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold flex items-center gap-2">
                       <Home className="h-6 w-6 text-primary" />
-                      El Problema Tradicional
+                      {t('inmobiliarias.problem_title')}
                     </h3>
                     <ul className="space-y-2 text-muted-foreground">
                       <li className="flex items-start gap-2">
                         <span className="text-destructive mt-1">✗</span>
-                        <span>Software que solo funciona con contratos activos</span>
+                        <span>{t('inmobiliarias.problem1')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-destructive mt-1">✗</span>
-                        <span>Propiedades vacías = pérdida de visibilidad y control</span>
+                        <span>{t('inmobiliarias.problem2')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-destructive mt-1">✗</span>
-                        <span>Gastos mensuales dispersos en planillas o emails</span>
+                        <span>{t('inmobiliarias.problem3')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-destructive mt-1">✗</span>
-                        <span>Propietarios sin reportes durante vacancia</span>
+                        <span>{t('inmobiliarias.problem4')}</span>
                       </li>
                     </ul>
                   </div>
@@ -197,35 +155,35 @@ export default function InmobiliariasAdmin() {
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold flex items-center gap-2">
                       <TrendingUp className="h-6 w-6 text-primary" />
-                      La Solución Granada
+                      {t('inmobiliarias.solution_title')}
                     </h3>
                     <ul className="space-y-2">
                       <li className="flex items-start gap-2">
                         <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-medium">Administrá propiedades sin contrato</p>
-                          <p className="text-sm text-muted-foreground">Registrá gastos mensuales (expensas, impuestos, servicios)</p>
+                          <p className="font-medium">{t('inmobiliarias.solution1_title')}</p>
+                          <p className="text-sm text-muted-foreground">{t('inmobiliarias.solution1_desc')}</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-2">
                         <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-medium">Gestioná mantenimientos y reparaciones</p>
-                          <p className="text-sm text-muted-foreground">Con aprobación de propietarios y seguimiento</p>
+                          <p className="font-medium">{t('inmobiliarias.solution2_title')}</p>
+                          <p className="text-sm text-muted-foreground">{t('inmobiliarias.solution2_desc')}</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-2">
                         <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-medium">Reportes mensuales automáticos</p>
-                          <p className="text-sm text-muted-foreground">Incluso durante períodos de vacancia</p>
+                          <p className="font-medium">{t('inmobiliarias.solution3_title')}</p>
+                          <p className="text-sm text-muted-foreground">{t('inmobiliarias.solution3_desc')}</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-2">
                         <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-medium">Búsqueda de inquilinos en paralelo</p>
-                          <p className="text-sm text-muted-foreground">Mientras administrás los gastos de la propiedad</p>
+                          <p className="font-medium">{t('inmobiliarias.solution4_title')}</p>
+                          <p className="text-sm text-muted-foreground">{t('inmobiliarias.solution4_desc')}</p>
                         </div>
                       </li>
                     </ul>
@@ -234,8 +192,7 @@ export default function InmobiliariasAdmin() {
 
                 <div className="mt-8 p-6 bg-primary/5 rounded-lg border border-primary/20">
                   <p className="text-center text-lg font-medium">
-                    <strong>Resultado:</strong> Fidelizás propietarios con servicio integral continuo, 
-                    no solo cuando hay alquiler activo. Te diferenciás de la competencia.
+                    <strong>{t('inmobiliarias.result')}</strong> {t('inmobiliarias.result_desc')}
                   </p>
                 </div>
               </CardContent>
@@ -243,30 +200,28 @@ export default function InmobiliariasAdmin() {
           </div>
         </section>
 
-        {/* Módulos de la Plataforma */}
-
         {/* Módulos Destacados */}
         <section className="py-20 px-4 bg-muted/30">
           <div className="container max-w-6xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Módulos que Potencian tu Gestión
+                {t('inmobiliarias.modules_title')}
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Todo lo que necesitás para administrar propiedades de forma profesional, en un solo lugar.
+                {t('inmobiliarias.modules_subtitle')}
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {modules.map((module) => (
-                <Card key={module.title} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <Card key={module.titleKey} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <CardContent className="p-6">
                     <div className="mb-4 p-3 bg-primary/10 rounded-lg w-fit">
                       <module.icon className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2">{module.title}</h3>
+                    <h3 className="font-semibold text-lg mb-2">{t(module.titleKey)}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {module.description}
+                      {t(module.descriptionKey)}
                     </p>
                   </CardContent>
                 </Card>
@@ -281,18 +236,17 @@ export default function InmobiliariasAdmin() {
             <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
               <CardContent className="p-12 text-center space-y-6">
                 <h2 className="text-3xl md:text-4xl font-bold">
-                  Empezá a profesionalizar tu gestión hoy
+                  {t('inmobiliarias.cta_title')}
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Crecé en propiedades sin crecer en problemas. Granada escala con vos, 
-                  desde las primeras 5 propiedades hasta cientos de unidades.
+                  {t('inmobiliarias.cta_subtitle')}
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center pt-4">
                   <Button asChild size="lg" className="text-lg px-8">
-                    <Link to="/granada-platform/planes">Ver Planes y Precios</Link>
+                    <Link to="/granada-platform/planes">{t('inmobiliarias.view_plans_prices')}</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                    <Link to="/granada-platform/contacto">Agendar Demo Gratuita</Link>
+                    <Link to="/granada-platform/contacto">{t('inmobiliarias.schedule_demo')}</Link>
                   </Button>
                 </div>
               </CardContent>

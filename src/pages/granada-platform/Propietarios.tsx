@@ -15,73 +15,48 @@ import {
   Shield,
   Home
 } from "lucide-react";
-
-const pathways = [
-  {
-    icon: UserCheck,
-    title: "Auto-Gestión",
-    subtitle: "Administrá vos mismo",
-    description: "Accedé a tu portal Granada para gestionar tus propiedades de forma directa. Creá contratos, cargá pagos, aprobá mantenimientos y generá reportes.",
-    features: [
-      "Control total de tus alquileres",
-      "Sin comisiones de administración",
-      "Todas las herramientas profesionales",
-      "Soporte técnico incluido"
-    ]
-  },
-  {
-    icon: Building2,
-    title: "Delegación",
-    subtitle: "Dejá que profesionales lo hagan",
-    description: "Asignale la gestión a una Inmobiliaria que use Granada. Vos monitoreás todo en tiempo real desde tu portal, sin perder visibilidad.",
-    features: [
-      "Inmobiliarias profesionales verificadas",
-      "Transparencia total en tiempo real",
-      "Reportes mensuales automáticos",
-      "Menos estrés, más tranquilidad"
-    ]
-  }
-];
-
-const benefits = [
-  {
-    icon: BarChart3,
-    title: "Reportes Automáticos",
-    description: "Recibí cada mes un informe detallado con ingresos, gastos y el estado de tu propiedad."
-  },
-  {
-    icon: DollarSign,
-    title: "Historial de Pagos",
-    description: "Consultá todos los pagos históricos, comprobantes y estado de cuenta en un solo lugar."
-  },
-  {
-    icon: CheckCircle2,
-    title: "Aprobación de Gastos",
-    description: "Revisá y aprobá mantenimientos y gastos extraordinarios desde tu portal."
-  },
-  {
-    icon: FileText,
-    title: "Documentación Central",
-    description: "Contratos, recibos, fotos y documentos de tu propiedad siempre disponibles."
-  },
-  {
-    icon: Clock,
-    title: "Actualizaciones en Tiempo Real",
-    description: "Seguí el estado de tu propiedad y contratos sin llamadas ni mensajes."
-  },
-  {
-    icon: Shield,
-    title: "Seguridad y Privacidad",
-    description: "Tus datos protegidos con encriptación y acceso exclusivo para vos."
-  },
-  {
-    icon: Home,
-    title: "Administración Continua",
-    description: "Tu propiedad está gestionada profesionalmente incluso cuando está desocupada. Seguimiento de expensas, impuestos, servicios y mantenimientos mientras se buscan nuevos inquilinos."
-  }
-];
+import { useGranadaLanguage } from "@/contexts/GranadaLanguageContext";
 
 export default function Propietarios() {
+  const { t } = useGranadaLanguage();
+
+  const pathways = [
+    {
+      icon: UserCheck,
+      titleKey: 'propietarios.self_title',
+      subtitleKey: 'propietarios.self_subtitle',
+      descriptionKey: 'propietarios.self_desc',
+      features: [
+        'propietarios.self_feature1',
+        'propietarios.self_feature2',
+        'propietarios.self_feature3',
+        'propietarios.self_feature4'
+      ]
+    },
+    {
+      icon: Building2,
+      titleKey: 'propietarios.delegate_title',
+      subtitleKey: 'propietarios.delegate_subtitle',
+      descriptionKey: 'propietarios.delegate_desc',
+      features: [
+        'propietarios.delegate_feature1',
+        'propietarios.delegate_feature2',
+        'propietarios.delegate_feature3',
+        'propietarios.delegate_feature4'
+      ]
+    }
+  ];
+
+  const benefits = [
+    { icon: BarChart3, titleKey: 'propietarios.benefit1_title', descriptionKey: 'propietarios.benefit1_desc' },
+    { icon: DollarSign, titleKey: 'propietarios.benefit2_title', descriptionKey: 'propietarios.benefit2_desc' },
+    { icon: CheckCircle2, titleKey: 'propietarios.benefit3_title', descriptionKey: 'propietarios.benefit3_desc' },
+    { icon: FileText, titleKey: 'propietarios.benefit4_title', descriptionKey: 'propietarios.benefit4_desc' },
+    { icon: Clock, titleKey: 'propietarios.benefit5_title', descriptionKey: 'propietarios.benefit5_desc' },
+    { icon: Shield, titleKey: 'propietarios.benefit6_title', descriptionKey: 'propietarios.benefit6_desc' },
+    { icon: Home, titleKey: 'propietarios.benefit7_title', descriptionKey: 'propietarios.benefit7_desc' }
+  ];
+
   return (
     <div className="granada-theme min-h-screen bg-background">
       <GranadaHeader />
@@ -92,14 +67,13 @@ export default function Propietarios() {
           <div className="container max-w-5xl">
             <div className="text-center space-y-6">
               <Badge className="mb-4" variant="secondary">
-                Para Propietarios
+                {t('propietarios.badge')}
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                Gestioná o Delegá tus Propiedades con Transparencia Total
+                {t('propietarios.title')}
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Elegí tu camino: administrá vos mismo con todas las herramientas profesionales, 
-                o delegá en una inmobiliaria y monitoreá todo en tiempo real.
+                {t('propietarios.subtitle')}
               </p>
             </div>
           </div>
@@ -110,34 +84,34 @@ export default function Propietarios() {
           <div className="container max-w-6xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Dos Formas de Usar Granada
+                {t('propietarios.two_ways_title')}
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                La tecnología es la misma. Vos elegís el nivel de involucramiento.
+                {t('propietarios.two_ways_subtitle')}
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
               {pathways.map((pathway) => (
-                <Card key={pathway.title} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2">
+                <Card key={pathway.titleKey} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2">
                   <CardHeader className="pb-4">
                     <div className="mb-4 p-4 bg-primary/10 rounded-xl w-fit mx-auto">
                       <pathway.icon className="h-12 w-12 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl text-center">{pathway.title}</CardTitle>
+                    <CardTitle className="text-2xl text-center">{t(pathway.titleKey)}</CardTitle>
                     <p className="text-center text-muted-foreground font-medium">
-                      {pathway.subtitle}
+                      {t(pathway.subtitleKey)}
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <p className="text-muted-foreground text-center">
-                      {pathway.description}
+                      {t(pathway.descriptionKey)}
                     </p>
                     <ul className="space-y-3">
-                      {pathway.features.map((feature, index) => (
+                      {pathway.features.map((featureKey, index) => (
                         <li key={index} className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span className="text-sm">{feature}</span>
+                          <span className="text-sm">{t(featureKey)}</span>
                         </li>
                       ))}
                     </ul>
@@ -156,47 +130,44 @@ export default function Propietarios() {
                 <div className="flex items-center gap-3 mb-2">
                   <Home className="h-8 w-8 text-primary" />
                   <CardTitle className="text-2xl">
-                    Tu Propiedad Siempre Gestionada
+                    {t('propietarios.vacancy_title')}
                   </CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-lg">
-                  <strong>Incluso cuando tu propiedad está desocupada</strong>, seguís teniendo gastos mensuales:
-                  expensas, impuestos, servicios, y posibles reparaciones.
+                  <strong>{t('propietarios.vacancy_intro')}</strong>{t('propietarios.vacancy_intro_detail')}
                 </p>
                 <p className="text-muted-foreground">
-                  Con Granada, tu inmobiliaria (o vos mismo) puede registrar y administrar todos estos gastos
-                  mientras se busca un nuevo inquilino. <strong>No perdés visibilidad ni control</strong> en los
-                  períodos de vacancia.
+                  {t('propietarios.vacancy_desc')} <strong>{t('propietarios.vacancy_highlight')}</strong>{t('propietarios.vacancy_highlight_detail')}
                 </p>
                 <div className="grid md:grid-cols-2 gap-4 pt-4">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold">Registro de gastos mensuales</p>
-                      <p className="text-sm text-muted-foreground">Expensas, ABL, servicios</p>
+                      <p className="font-semibold">{t('propietarios.vacancy_item1_title')}</p>
+                      <p className="text-sm text-muted-foreground">{t('propietarios.vacancy_item1_desc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold">Mantenimientos y reparaciones</p>
-                      <p className="text-sm text-muted-foreground">Con aprobación y seguimiento</p>
+                      <p className="font-semibold">{t('propietarios.vacancy_item2_title')}</p>
+                      <p className="text-sm text-muted-foreground">{t('propietarios.vacancy_item2_desc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold">Reportes mensuales</p>
-                      <p className="text-sm text-muted-foreground">Incluso sin inquilino activo</p>
+                      <p className="font-semibold">{t('propietarios.vacancy_item3_title')}</p>
+                      <p className="text-sm text-muted-foreground">{t('propietarios.vacancy_item3_desc')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold">Búsqueda en paralelo</p>
-                      <p className="text-sm text-muted-foreground">Mientras gestionan tus gastos</p>
+                      <p className="font-semibold">{t('propietarios.vacancy_item4_title')}</p>
+                      <p className="text-sm text-muted-foreground">{t('propietarios.vacancy_item4_desc')}</p>
                     </div>
                   </div>
                 </div>
@@ -210,17 +181,17 @@ export default function Propietarios() {
           <div className="container max-w-6xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Tu Portal de Propietario
+                {t('propietarios.portal_title')}
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Todo lo que necesitás saber sobre tu propiedad, en un solo lugar.
+                {t('propietarios.portal_subtitle')}
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {benefits.map((benefit, index) => (
                 <Card 
-                  key={benefit.title} 
+                  key={benefit.titleKey} 
                   className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${
                     index === benefits.length - 1 && benefits.length % 3 !== 0 
                       ? 'md:col-span-2 lg:col-span-3 md:max-w-md md:mx-auto' 
@@ -231,9 +202,9 @@ export default function Propietarios() {
                     <div className="mb-4 p-3 bg-primary/10 rounded-lg w-fit">
                       <benefit.icon className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2">{benefit.title}</h3>
+                    <h3 className="font-semibold text-lg mb-2">{t(benefit.titleKey)}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {benefit.description}
+                      {t(benefit.descriptionKey)}
                     </p>
                   </CardContent>
                 </Card>
@@ -248,18 +219,17 @@ export default function Propietarios() {
             <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
               <CardContent className="p-12 text-center space-y-6">
                 <h2 className="text-3xl md:text-4xl font-bold">
-                  Empezá a gestionar con claridad
+                  {t('propietarios.cta_title')}
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Dejá atrás los papeles perdidos y las dudas. Con Granada, todo está claro, 
-                  ordenado y disponible cuando lo necesitás.
+                  {t('propietarios.cta_subtitle')}
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center pt-4">
                   <Button asChild size="lg" className="text-lg px-8">
-                    <Link to="/granada-platform/contacto">Solicitar Acceso</Link>
+                    <Link to="/granada-platform/contacto">{t('propietarios.cta_access')}</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                    <Link to="/granada-platform/inmobiliarias-admin">¿Sos Inmobiliaria?</Link>
+                    <Link to="/granada-platform/inmobiliarias-admin">{t('propietarios.cta_agency')}</Link>
                   </Button>
                 </div>
               </CardContent>

@@ -6,18 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useGranadaLanguage } from '@/contexts/GranadaLanguageContext';
 import { DynamicContactForm } from '@/components/DynamicContactForm';
 
 export default function Contacto() {
   const { toast } = useToast();
-  const { language } = useLanguage();
+  const { t, language } = useGranadaLanguage();
   const [loading, setLoading] = useState(false);
 
   const handleFormSubmit = async (data: any) => {
     setLoading(true);
     try {
-      // 1. Guardar en base de datos con source: 'granada'
       const { error: dbError } = await supabase
         .from('contact_submissions')
         .insert({
@@ -36,7 +35,6 @@ export default function Contacto() {
 
       if (dbError) throw dbError;
 
-      // 2. Enviar email de confirmación
       const { error: emailError } = await supabase.functions.invoke(
         'send-contact-confirmation',
         {
@@ -52,19 +50,16 @@ export default function Contacto() {
 
       if (emailError) console.error('Email error:', emailError);
 
-      // 3. Mostrar éxito
       toast({
-        title: language === 'es' ? '¡Mensaje enviado!' : 'Message sent!',
-        description: language === 'es' 
-          ? 'Te contactaremos en las próximas 24-48 horas.'
-          : 'We will contact you within 24-48 hours.',
+        title: t('contacto.toast_success'),
+        description: t('contacto.toast_success_desc'),
       });
 
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: 'Error',
-        description: 'No se pudo enviar el mensaje. Intenta nuevamente.',
+        title: t('contacto.toast_error'),
+        description: t('contacto.toast_error_desc'),
         variant: 'destructive'
       });
     } finally {
@@ -79,17 +74,16 @@ export default function Contacto() {
       <main className="container py-12">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <Badge className="mb-4">Contáctanos</Badge>
-            <h1 className="text-4xl font-bold mb-4">¿Cómo podemos ayudarte?</h1>
+            <Badge className="mb-4">{t('contacto.badge')}</Badge>
+            <h1 className="text-4xl font-bold mb-4">{t('contacto.title')}</h1>
             <p className="text-muted-foreground text-lg">
-              Estamos aquí para responder tus consultas sobre Granada Platform
+              {t('contacto.subtitle')}
             </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 mb-16">
-            {/* Formulario de contacto */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">Envíanos un mensaje</h2>
+              <h2 className="text-2xl font-bold mb-6">{t('contacto.form_title')}</h2>
               <DynamicContactForm 
                 source="granada" 
                 onSubmit={handleFormSubmit}
@@ -97,15 +91,14 @@ export default function Contacto() {
               />
             </div>
 
-            {/* Información de contacto */}
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold mb-6">Otras formas de contacto</h2>
+              <h2 className="text-2xl font-bold mb-6">{t('contacto.info_title')}</h2>
               
               <Card>
                 <CardHeader>
                   <Mail className="h-8 w-8 text-primary mb-2" />
-                  <CardTitle>Email</CardTitle>
-                  <CardDescription>Escríbenos y te responderemos pronto</CardDescription>
+                  <CardTitle>{t('contacto.email')}</CardTitle>
+                  <CardDescription>{t('contacto.email_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <a href="mailto:contacto@granada-platform.com" className="text-primary hover:underline">
@@ -117,8 +110,8 @@ export default function Contacto() {
               <Card>
                 <CardHeader>
                   <Phone className="h-8 w-8 text-primary mb-2" />
-                  <CardTitle>Teléfono</CardTitle>
-                  <CardDescription>Llámanos en horario de atención</CardDescription>
+                  <CardTitle>{t('contacto.phone')}</CardTitle>
+                  <CardDescription>{t('contacto.phone_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <a href="tel:+5491112345678" className="text-primary hover:underline">
@@ -130,8 +123,8 @@ export default function Contacto() {
               <Card>
                 <CardHeader>
                   <MapPin className="h-8 w-8 text-primary mb-2" />
-                  <CardTitle>Oficina</CardTitle>
-                  <CardDescription>Visítanos en nuestra ubicación</CardDescription>
+                  <CardTitle>{t('contacto.office')}</CardTitle>
+                  <CardDescription>{t('contacto.office_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm">
@@ -143,13 +136,13 @@ export default function Contacto() {
               <Card>
                 <CardHeader>
                   <Clock className="h-8 w-8 text-primary mb-2" />
-                  <CardTitle>Horarios</CardTitle>
-                  <CardDescription>Estamos disponibles</CardDescription>
+                  <CardTitle>{t('contacto.hours')}</CardTitle>
+                  <CardDescription>{t('contacto.hours_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm">
-                    Lunes a Viernes: 9:00 - 18:00<br />
-                    Sábados: 9:00 - 13:00
+                    {t('contacto.hours_weekdays')}<br />
+                    {t('contacto.hours_saturday')}
                   </p>
                 </CardContent>
               </Card>
