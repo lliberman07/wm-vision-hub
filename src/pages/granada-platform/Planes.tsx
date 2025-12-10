@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { GranadaHeader } from "@/components/granada/GranadaHeader";
 import { GranadaFooter } from "@/components/granada/GranadaFooter";
 import { Button } from "@/components/ui/button";
@@ -13,127 +14,93 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const plans = [
-  {
-    name: "Básico",
-    color: "text-[hsl(var(--granada-red))]",
-    slug: "basic",
-    description: "Plan ideal para pequeños propietarios o administradores individuales",
-    priceMonthly: 15000,
-    priceYearly: 150000,
-    maxProperties: 1,
-    maxContracts: 2,
-    maxUsers: 2,
-    maxBranches: 0,
-    features: [
-      { text: "Hasta 1 propiedad", included: true },
-      { text: "Hasta 2 contratos simultáneos", included: true },
-      { text: "2 usuarios activos", included: true },
-      { text: "Reportes básicos", included: true },
-      { text: "5 GB almacenamiento", included: true },
-      { text: "Soporte por email", included: true },
-      { text: "Reportes avanzados", included: false },
-      { text: "Analytics avanzados", included: false },
-      { text: "API access", included: false },
-      { text: "Operaciones masivas", included: false },
-    ],
-    cta: "Solicitar Plan Básico"
-  },
-  {
-    name: "Profesional",
-    color: "text-[hsl(var(--granada-navy))]",
-    slug: "professional",
-    description: "Para inmobiliarias o administradoras medianas con múltiples propiedades",
-    priceMonthly: 50000,
-    priceYearly: 500000,
-    maxProperties: 5,
-    maxContracts: 10,
-    maxUsers: 5,
-    maxBranches: 2,
-    features: [
-      { text: "Hasta 5 propiedades", included: true },
-      { text: "Hasta 10 contratos simultáneos", included: true },
-      { text: "5 usuarios activos", included: true },
-      { text: "Hasta 2 sucursales", included: true },
-      { text: "Reportes avanzados", included: true },
-      { text: "Analytics avanzados", included: true },
-      { text: "API access (1000 calls/día)", included: true },
-      { text: "Operaciones masivas", included: true },
-      { text: "Branding personalizado", included: true },
-      { text: "25 GB almacenamiento", included: true },
-      { text: "Notificaciones personalizadas", included: true },
-      { text: "Soporte prioritario", included: false },
-    ],
-    cta: "Solicitar Plan Profesional"
-  },
-  {
-    name: "Enterprise",
-    color: "text-[hsl(var(--granada-gold))]",
-    slug: "enterprise",
-    description: "Solución completa para grandes inmobiliarias y corporativos",
-    priceMonthly: 120000,
-    priceYearly: 1200000,
-    maxProperties: 15,
-    maxContracts: 30,
-    maxUsers: 5,
-    maxBranches: 10,
-    features: [
-      { text: "Hasta 15 propiedades", included: true },
-      { text: "Hasta 30 contratos simultáneos", included: true },
-      { text: "5 usuarios activos", included: true },
-      { text: "Hasta 10 sucursales", included: true },
-      { text: "Reportes avanzados ilimitados", included: true },
-      { text: "Analytics avanzados con BI", included: true },
-      { text: "API access ilimitado", included: true },
-      { text: "Operaciones masivas", included: true },
-      { text: "Branding personalizado", included: true },
-      { text: "100 GB almacenamiento", included: true },
-      { text: "Notificaciones personalizadas", included: true },
-      { text: "Soporte prioritario 24/7", included: true },
-      { text: "Whitelabel (sin marca Granada)", included: true },
-    ],
-    cta: "Solicitar Plan Enterprise"
-  }
-];
-
-const calculateYearlySavings = (monthlyPrice: number) => {
-  const yearlyWithoutDiscount = monthlyPrice * 12;
-  const discountAmount = yearlyWithoutDiscount * 0.17;
-  return {
-    yearlyWithoutDiscount,
-    discountAmount,
-    percentageSaved: 17
-  };
-};
-
-const faqs = [
-  {
-    question: "¿Puedo cambiar de plan en cualquier momento?",
-    answer: "Sí, podés upgradear o downgradear tu plan cuando quieras. Los cambios se aplican en el siguiente período de facturación."
-  },
-  {
-    question: "¿Qué incluye cada plan?",
-    answer: "Plan Básico: ideal para pequeños propietarios con hasta 1 propiedad y 2 contratos. Plan Profesional: para inmobiliarias medianas con hasta 5 propiedades, 10 contratos y funcionalidades avanzadas. Plan Enterprise: solución completa con hasta 15 propiedades, 30 contratos y soporte prioritario 24/7."
-  },
-  {
-    question: "¿Los precios incluyen IVA?",
-    answer: "No, los precios mostrados no incluyen IVA. Se factura mensualmente con todos los comprobantes fiscales correspondientes."
-  },
-  {
-    question: "¿Qué pasa si supero el límite de propiedades o contratos?",
-    answer: "Te avisamos cuando te acerques al límite. Podés upgradear tu plan en cualquier momento para seguir agregando propiedades y contratos sin interrupciones."
-  },
-  {
-    question: "¿Cómo funciona el soporte técnico?",
-    answer: "Plan Básico: soporte por email. Plan Profesional: soporte por email con prioridad. Plan Enterprise: soporte prioritario 24/7 con atención personalizada."
-  }
-];
-
-import { useState } from "react";
-
 export default function Planes() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
-  const { t } = useGranadaLanguage();
+  const { t, language } = useGranadaLanguage();
+
+  const plans = [
+    {
+      nameKey: 'planes.plan_basic',
+      color: "text-[hsl(var(--granada-red))]",
+      slug: "basic",
+      descriptionKey: 'planes.plan_basic_desc',
+      priceMonthly: 15000,
+      priceYearly: 150000,
+      features: [
+        { textKey: 'planes.feature_properties', value: 1, included: true },
+        { textKey: 'planes.feature_contracts', value: 2, included: true },
+        { textKey: 'planes.feature_users', value: 2, included: true },
+        { textKey: 'planes.feature_basic_reports', included: true },
+        { textKey: 'planes.feature_storage', value: 5, included: true },
+        { textKey: 'planes.feature_email_support', included: true },
+        { textKey: 'planes.feature_advanced_reports', included: false },
+        { textKey: 'planes.feature_analytics', included: false },
+        { textKey: 'planes.feature_api', value: 0, included: false },
+        { textKey: 'planes.feature_bulk', included: false },
+      ]
+    },
+    {
+      nameKey: 'planes.plan_professional',
+      color: "text-[hsl(var(--granada-navy))]",
+      slug: "professional",
+      descriptionKey: 'planes.plan_professional_desc',
+      priceMonthly: 50000,
+      priceYearly: 500000,
+      features: [
+        { textKey: 'planes.feature_properties_plural', value: 5, included: true },
+        { textKey: 'planes.feature_contracts', value: 10, included: true },
+        { textKey: 'planes.feature_users', value: 5, included: true },
+        { textKey: 'planes.feature_branches', value: 2, included: true },
+        { textKey: 'planes.feature_advanced_reports', included: true },
+        { textKey: 'planes.feature_analytics', included: true },
+        { textKey: 'planes.feature_api', value: 1000, included: true },
+        { textKey: 'planes.feature_bulk', included: true },
+        { textKey: 'planes.feature_branding', included: true },
+        { textKey: 'planes.feature_storage', value: 25, included: true },
+        { textKey: 'planes.feature_notifications', included: true },
+        { textKey: 'planes.feature_priority_support', included: false },
+      ]
+    },
+    {
+      nameKey: 'planes.plan_enterprise',
+      color: "text-[hsl(var(--granada-gold))]",
+      slug: "enterprise",
+      descriptionKey: 'planes.plan_enterprise_desc',
+      priceMonthly: 120000,
+      priceYearly: 1200000,
+      features: [
+        { textKey: 'planes.feature_properties_plural', value: 15, included: true },
+        { textKey: 'planes.feature_contracts', value: 30, included: true },
+        { textKey: 'planes.feature_users', value: 5, included: true },
+        { textKey: 'planes.feature_branches', value: 10, included: true },
+        { textKey: 'planes.feature_advanced_reports_unlimited', included: true },
+        { textKey: 'planes.feature_analytics_bi', included: true },
+        { textKey: 'planes.feature_api_unlimited', included: true },
+        { textKey: 'planes.feature_bulk', included: true },
+        { textKey: 'planes.feature_branding', included: true },
+        { textKey: 'planes.feature_storage', value: 100, included: true },
+        { textKey: 'planes.feature_notifications', included: true },
+        { textKey: 'planes.feature_priority_support_24', included: true },
+        { textKey: 'planes.feature_whitelabel', included: true },
+      ]
+    }
+  ];
+
+  const faqs = [
+    { questionKey: 'planes.faq1_q', answerKey: 'planes.faq1_a' },
+    { questionKey: 'planes.faq2_q', answerKey: 'planes.faq2_a' },
+    { questionKey: 'planes.faq3_q', answerKey: 'planes.faq3_a' },
+    { questionKey: 'planes.faq4_q', answerKey: 'planes.faq4_a' },
+    { questionKey: 'planes.faq5_q', answerKey: 'planes.faq5_a' }
+  ];
+
+  const formatFeatureText = (textKey: string, value?: number): string => {
+    let text = t(textKey);
+    if (value !== undefined) {
+      text = text.replace('{n}', value.toString());
+    }
+    return text;
+  };
 
   return (
     <div className="granada-theme min-h-screen bg-background">
@@ -203,18 +170,18 @@ export default function Planes() {
 
                 return (
                 <Card 
-                  key={plan.name} 
+                  key={plan.nameKey} 
                   className="hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 flex flex-col h-full"
                 >
                   <CardHeader className="pb-4">
-                    <CardTitle className={`text-2xl mb-2 ${plan.color}`}>{plan.name}</CardTitle>
+                    <CardTitle className={`text-2xl mb-2 ${plan.color}`}>{t(plan.nameKey)}</CardTitle>
                     <div className="mt-2">
                       <div className="flex items-baseline gap-2 flex-wrap">
                         <span className={`text-3xl font-bold ${plan.color}`}>
                           ${displayPrice.toLocaleString('es-AR')}
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          /{billingPeriod === "monthly" ? "mes" : "año"}
+                          /{billingPeriod === "monthly" ? t('planes.monthly').toLowerCase() : t('planes.yearly').toLowerCase()}
                         </span>
                         {billingPeriod === "yearly" && (
                           <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-xs border-0">
@@ -229,7 +196,7 @@ export default function Planes() {
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-3">
-                      {plan.description}
+                      {t(plan.descriptionKey)}
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-0 flex-1 flex flex-col">
@@ -242,7 +209,7 @@ export default function Planes() {
                             <X className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                           )}
                           <span className={`text-sm ${!feature.included && 'text-muted-foreground'}`}>
-                            {feature.text}
+                            {formatFeatureText(feature.textKey, feature.value)}
                           </span>
                         </li>
                       ))}
@@ -253,7 +220,7 @@ export default function Planes() {
                       variant="outline"
                       size="lg"
                     >
-                      <Link to={`/subscription-request?plan=${plan.slug}`}>{plan.cta}</Link>
+                      <Link to={`/subscription-request?plan=${plan.slug}`}>{t('planes.request_plan')} {t(plan.nameKey)}</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -261,7 +228,7 @@ export default function Planes() {
             })}
             </div>
             <p className="text-center text-sm text-muted-foreground mt-8 font-bold">
-              Los valores expresados no incluyen IVA
+              {t('planes.vat_note')}
             </p>
           </div>
         </section>
@@ -279,10 +246,10 @@ export default function Planes() {
               {faqs.map((faq, index) => (
                 <AccordionItem key={index} value={`item-${index}`}>
                   <AccordionTrigger className="text-left">
-                    {faq.question}
+                    {t(faq.questionKey)}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    {faq.answer}
+                    {t(faq.answerKey)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
