@@ -4797,20 +4797,20 @@ export type Database = {
       cancel_contract:
         | {
             Args: {
-              p_cancelled_by?: string
-              p_contract_id: string
-              p_reason?: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
               cancellation_date_param: string
               cancellation_reason_param: string
               cancelled_by_param: string
               contract_id_param: string
             }
             Returns: undefined
+          }
+        | {
+            Args: {
+              p_cancelled_by?: string
+              p_contract_id: string
+              p_reason?: string
+            }
+            Returns: Json
           }
       check_email_exists_globally: {
         Args: {
