@@ -5057,60 +5057,43 @@ export type Database = {
       get_tenant_annual_commission_projection: {
         Args: { p_tenant_id: string }
         Returns: {
-          projection_month: string
-          properties_with_contract: number
-          properties_without_contract: number
-          total_commission: number
-          with_contract_commission: number
-          without_contract_commission: number
+          active_contracts_count: number
+          avg_monthly_commission: number
+          from_active_contracts: number
+          from_properties_without_contract: number
+          projection_details: Json
+          properties_without_contract_count: number
+          total_projection: number
         }[]
       }
-      get_tenant_commission_history:
-        | {
-            Args: { p_months_back?: number; p_tenant_id: string }
-            Returns: {
-              avg_commission_percentage: number
-              commission_with_contract: number
-              commission_without_contract: number
-              period_month: string
-              properties_with_contract: number
-              properties_without_contract: number
-              total_commission_ars: number
-            }[]
-          }
-        | {
-            Args: {
-              p_end_date?: string
-              p_start_date?: string
-              p_tenant_id: string
-            }
-            Returns: {
-              commission_amount: number
-              commission_type: string
-              contract_id: string
-              currency: string
-              payment_status: string
-              period_month: string
-              property_code: string
-              property_id: string
-            }[]
-          }
+      get_tenant_commission_history: {
+        Args: { p_months_back?: number; p_tenant_id: string }
+        Returns: {
+          avg_commission_percentage: number
+          commission_with_contract: number
+          commission_without_contract: number
+          period_month: string
+          properties_with_contract: number
+          properties_without_contract: number
+          total_commission_ars: number
+        }[]
+      }
       get_tenant_commission_report: {
         Args: { p_tenant_id: string }
         Returns: {
-          calculated_commission: number
-          commission_rate: number
+          commission_amount_ars: number
           commission_type: string
+          commission_value: number
           contract_id: string
-          currency: string
-          fixed_commission: number
+          contract_number: string
           has_active_contract: boolean
+          is_within_subscription_limit: boolean
           monthly_rent: number
-          owner_names: string
           property_address: string
           property_code: string
           property_id: string
           property_status: string
+          rent_currency: string
         }[]
       }
       get_tenant_consuming_users_count: {
