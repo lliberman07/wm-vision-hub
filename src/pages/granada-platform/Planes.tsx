@@ -153,28 +153,35 @@ export default function Planes() {
               </p>
               
               {/* Toggle Mensual/Anual */}
-              <div className="flex items-center justify-center gap-4 pt-6">
-                <span className={`font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>
-                  Mensual
+              <div className="flex flex-col items-center gap-3 pt-6">
+                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  Suscripción con Pago
                 </span>
-                <button
-                  onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
-                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                    billingPeriod === "yearly" ? "bg-primary" : "bg-muted"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-6 w-6 transform rounded-full bg-background transition-transform ${
-                      billingPeriod === "yearly" ? "translate-x-7" : "translate-x-1"
+                <div className="flex items-center gap-4">
+                  <span className={`font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>
+                    Mensual
+                  </span>
+                  <button
+                    onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
+                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                      billingPeriod === "yearly" ? "bg-gradient-to-r from-green-500 to-emerald-600" : "bg-muted"
                     }`}
-                  />
-                </button>
-                <span className={`font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
-                  Anual
-                  <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary">
-                    -17%
-                  </Badge>
-                </span>
+                  >
+                    <span
+                      className={`inline-block h-6 w-6 transform rounded-full bg-background transition-transform shadow-md ${
+                        billingPeriod === "yearly" ? "translate-x-7" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className={`font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
+                    Anual
+                  </span>
+                  {billingPeriod === "yearly" && (
+                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold border-0 animate-pulse">
+                      17% OFF
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -200,17 +207,22 @@ export default function Planes() {
                   <CardHeader className="pb-4">
                     <CardTitle className={`text-2xl mb-2 ${plan.color}`}>{plan.name}</CardTitle>
                     <div className="mt-2">
-                      <div className="flex items-baseline gap-1">
+                      <div className="flex items-baseline gap-2 flex-wrap">
                         <span className={`text-3xl font-bold ${plan.color}`}>
                           ${displayPrice.toLocaleString('es-AR')}
                         </span>
                         <span className="text-sm text-muted-foreground">
                           /{billingPeriod === "monthly" ? "mes" : "año"}
                         </span>
+                        {billingPeriod === "yearly" && (
+                          <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-xs border-0">
+                            -17%
+                          </Badge>
+                        )}
                       </div>
                       {yearlyEquivalent && (
                         <p className="text-sm text-muted-foreground mt-1 font-bold">
-                          Equivalente a ${yearlyEquivalent.toLocaleString('es-AR')}/mes
+                          Equivalente a ${Math.round(yearlyEquivalent).toLocaleString('es-AR')}/mes
                         </p>
                       )}
                     </div>
