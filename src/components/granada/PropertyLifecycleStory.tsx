@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useGranadaLanguage } from "@/contexts/GranadaLanguageContext";
 import {
   Home,
   Search,
@@ -10,59 +11,54 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-interface Step {
-  number: number;
-  title: string;
-  description: string;
-  icon: React.ElementType;
-}
-
-const steps: Step[] = [
-  {
-    number: 1,
-    title: "Captar y preparar la propiedad",
-    description: "Cargás la propiedad con datos clave: ubicación, tipo de alquiler, valor, moneda, inventario, fotos, documentación. Definís Propietario, Inmobiliaria/Administrador y distribución de fondos.",
-    icon: Home,
-  },
-  {
-    number: 2,
-    title: "Publicación y selección de inquilino",
-    description: "Integrás Granada con portales, recibís interesados, registrás candidatos, requisitos y decisiones. Todo el contexto en el sistema.",
-    icon: Search,
-  },
-  {
-    number: 3,
-    title: "Contrato y firmas",
-    description: "Generás el contrato desde Granada con todos los datos clave. Gestionás firmas digitales o presenciales, todo documentado.",
-    icon: FileText,
-  },
-  {
-    number: 4,
-    title: "Pagos y cobros mensuales",
-    description: "Granada calcula importes, genera recordatorios, registra pagos/atrasos, distribuye montos según honorarios, comisiones, retenciones.",
-    icon: CreditCard,
-  },
-  {
-    number: 5,
-    title: "Gastos, mantenimientos y proveedores",
-    description: "Creás órdenes de trabajo, asignás proveedores, registrás presupuestos. El propietario aprueba y todo queda asociado.",
-    icon: Wrench,
-  },
-  {
-    number: 6,
-    title: "Reportes y relación con el propietario",
-    description: "Cada mes: reporte claro de alquileres, gastos, comisiones y saldo neto. Portal de Propietario para más detalle.",
-    icon: FileBarChart,
-  },
-  {
-    number: 7,
-    title: "Renovaciones, actualizaciones y cierre",
-    description: "Granada avisa vencimientos, opciones de renovación, índices de actualización. Todo el historial disponible.",
-    icon: RefreshCw,
-  },
-];
-
 export function PropertyLifecycleStory() {
+  const { t } = useGranadaLanguage();
+
+  const steps = [
+    {
+      number: 1,
+      titleKey: 'lifecycle.step1_title',
+      descKey: 'lifecycle.step1_desc',
+      icon: Home,
+    },
+    {
+      number: 2,
+      titleKey: 'lifecycle.step2_title',
+      descKey: 'lifecycle.step2_desc',
+      icon: Search,
+    },
+    {
+      number: 3,
+      titleKey: 'lifecycle.step3_title',
+      descKey: 'lifecycle.step3_desc',
+      icon: FileText,
+    },
+    {
+      number: 4,
+      titleKey: 'lifecycle.step4_title',
+      descKey: 'lifecycle.step4_desc',
+      icon: CreditCard,
+    },
+    {
+      number: 5,
+      titleKey: 'lifecycle.step5_title',
+      descKey: 'lifecycle.step5_desc',
+      icon: Wrench,
+    },
+    {
+      number: 6,
+      titleKey: 'lifecycle.step6_title',
+      descKey: 'lifecycle.step6_desc',
+      icon: FileBarChart,
+    },
+    {
+      number: 7,
+      titleKey: 'lifecycle.step7_title',
+      descKey: 'lifecycle.step7_desc',
+      icon: RefreshCw,
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {steps.map((step) => (
@@ -83,10 +79,10 @@ export function PropertyLifecycleStory() {
               <step.icon className="h-6 w-6 text-primary" />
             </div>
             <h3 className="font-semibold text-lg mb-3 group-hover:text-primary transition-colors">
-              {step.title}
+              {t(step.titleKey)}
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-              {step.description}
+              {t(step.descKey)}
             </p>
           </CardContent>
         </Card>

@@ -112,11 +112,10 @@ export default function GranadaHome() {
         <div className="container">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">
-              Del aviso al contrato renovado, en una sola plataforma
+              {t('lifecycle.title')}
             </h2>
             <p className="text-xl text-muted-foreground">
-              Granada ordena la relación entre Propietario, Propiedad, Inquilino, Contrato, Firmas, Pagos, 
-              Cobros, Renovaciones y Proveedores. Un flujo claro, sin depender de 20 Excels y 15 grupos de WhatsApp.
+              {t('lifecycle.subtitle')}
             </p>
           </div>
 
