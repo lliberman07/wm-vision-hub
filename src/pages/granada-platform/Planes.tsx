@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Check, X } from "lucide-react";
+import { useGranadaLanguage } from "@/contexts/GranadaLanguageContext";
 import {
   Accordion,
   AccordionContent,
@@ -132,6 +133,7 @@ import { useState } from "react";
 
 export default function Planes() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const { t } = useGranadaLanguage();
 
   return (
     <div className="granada-theme min-h-screen bg-background">
@@ -143,23 +145,23 @@ export default function Planes() {
           <div className="container max-w-5xl">
             <div className="text-center space-y-6">
               <Badge className="mb-4" variant="secondary">
-                Planes y Precios
+                {t('planes.badge')}
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                Planes flexibles que crecen con vos
+                {t('planes.title')}
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Empezá con plan mensual o ahorrá 17% con facturación anual. Sin sorpresas ni costos ocultos.
+                {t('planes.subtitle')}
               </p>
               
               {/* Toggle Mensual/Anual */}
               <div className="flex flex-col items-center gap-3 pt-6">
                 <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                  Suscripción con Pago
+                  {t('planes.billing_label')}
                 </span>
                 <div className="flex items-center gap-4">
                   <span className={`font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>
-                    Mensual
+                    {t('planes.monthly')}
                   </span>
                   <button
                     onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
@@ -174,11 +176,11 @@ export default function Planes() {
                     />
                   </button>
                   <span className={`font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
-                    Anual
+                    {t('planes.yearly')}
                   </span>
                   {billingPeriod === "yearly" && (
                     <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold border-0 animate-pulse">
-                      17% OFF
+                      17% {t('planes.off')}
                     </Badge>
                   )}
                 </div>
@@ -222,7 +224,7 @@ export default function Planes() {
                       </div>
                       {yearlyEquivalent && (
                         <p className="text-sm text-muted-foreground mt-1 font-bold">
-                          Equivalente a ${Math.round(yearlyEquivalent).toLocaleString('es-AR')}/mes
+                          {t('planes.equivalent')} ${Math.round(yearlyEquivalent).toLocaleString('es-AR')}{t('planes.per_month')}
                         </p>
                       )}
                     </div>
@@ -269,7 +271,7 @@ export default function Planes() {
           <div className="container max-w-3xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Preguntas Frecuentes
+                {t('planes.faq_title')}
               </h2>
             </div>
 
@@ -294,18 +296,17 @@ export default function Planes() {
             <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
               <CardContent className="p-12 text-center space-y-6">
                 <h2 className="text-3xl md:text-4xl font-bold">
-                  ¿No estás seguro qué plan elegir?
+                  {t('planes.cta_title')}
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Hablá con nuestro equipo. Te ayudamos a encontrar el plan perfecto 
-                  para tu inmobiliaria sin compromiso.
+                  {t('planes.cta_subtitle')}
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center pt-4">
                   <Button asChild size="lg" className="text-lg px-8">
-                    <Link to="/granada-platform/contacto">Agendar Consultoría Gratuita</Link>
+                    <Link to="/granada-platform/contacto">{t('planes.cta_demo')}</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                    <Link to="/granada-platform">Ver Demo</Link>
+                    <Link to="/granada-platform">{t('planes.cta_trial')}</Link>
                   </Button>
                 </div>
               </CardContent>

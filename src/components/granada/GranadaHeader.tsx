@@ -4,20 +4,23 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useState } from "react";
 import granadaLogo from "@/assets/granada-logo-new.jpg";
+import { GranadaLanguageSelector } from "./GranadaLanguageSelector";
+import { useGranadaLanguage } from "@/contexts/GranadaLanguageContext";
 
 export function GranadaHeader() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useGranadaLanguage();
 
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
-    { label: "Inicio", path: "/granada-platform" },
-    { label: "Inmobiliarias y Admin", path: "/granada-platform/inmobiliarias-admin" },
-    { label: "Propietarios", path: "/granada-platform/propietarios" },
-    { label: "Planes", path: "/granada-platform/planes" },
-    { label: "Proveedores", path: "/granada-platform/proveedores" },
-    { label: "Contacto", path: "/granada-platform/contacto" },
+    { label: t('nav.home'), path: "/granada-platform" },
+    { label: t('nav.inmobiliarias'), path: "/granada-platform/inmobiliarias-admin" },
+    { label: t('nav.propietarios'), path: "/granada-platform/propietarios" },
+    { label: t('nav.planes'), path: "/granada-platform/planes" },
+    { label: t('nav.proveedores'), path: "/granada-platform/proveedores" },
+    { label: t('nav.contacto'), path: "/granada-platform/contacto" },
   ];
 
   return (
@@ -45,8 +48,9 @@ export function GranadaHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <GranadaLanguageSelector />
           <Button variant="outline" asChild>
-            <Link to="/pms/login">Acceso PMS</Link>
+            <Link to="/pms/login">{t('nav.access_pms')}</Link>
           </Button>
 
           {/* Mobile Menu */}
