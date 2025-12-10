@@ -9,6 +9,7 @@ import { UserProfileProvider } from "@/contexts/UserProfileContext";
 import { PMSProvider } from "@/contexts/PMSContext";
 import { ClientProvider } from "@/contexts/ClientContext";
 import { GranadaAuthProvider } from "@/contexts/GranadaAuthContext";
+import { GranadaLanguageProvider } from "@/contexts/GranadaLanguageContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import GranadaProtectedRoute from "@/components/GranadaProtectedRoute";
@@ -78,7 +79,8 @@ const App = () => {
       <LanguageProvider>
         <AuthProvider>
           <UserProfileProvider>
-            <GranadaAuthProvider>
+              <GranadaAuthProvider>
+              <GranadaLanguageProvider>
               <PMSProvider>
                 <ClientProvider>
                 <Toaster />
@@ -165,6 +167,7 @@ const App = () => {
           </BrowserRouter>
               </ClientProvider>
             </PMSProvider>
+          </GranadaLanguageProvider>
           </GranadaAuthProvider>
           </UserProfileProvider>
         </AuthProvider>

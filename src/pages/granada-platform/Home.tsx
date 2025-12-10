@@ -6,6 +6,7 @@ import { GranadaFooter } from "@/components/granada/GranadaFooter";
 import { PropertyLifecycleStory } from "@/components/granada/PropertyLifecycleStory";
 import { RoleViewsSection } from "@/components/granada/RoleViewsSection";
 import { FinalCTASection } from "@/components/granada/FinalCTASection";
+import { useGranadaLanguage } from "@/contexts/GranadaLanguageContext";
 import {
   CheckCircle2,
   Shield,
@@ -13,6 +14,26 @@ import {
 } from "lucide-react";
 
 export default function GranadaHome() {
+  const { t } = useGranadaLanguage();
+  
+  const heroItems = [
+    {
+      icon: CheckCircle2,
+      titleKey: 'home.benefit1',
+      descKey: 'home.benefit1_desc',
+    },
+    {
+      icon: Shield,
+      titleKey: 'home.benefit2',
+      descKey: 'home.benefit2_desc',
+    },
+    {
+      icon: TrendingUp,
+      titleKey: 'home.benefit3',
+      descKey: 'home.benefit3_desc',
+    },
+  ];
+  
   return (
     <div className="granada-theme min-h-screen bg-background">
       <GranadaHeader />
@@ -23,17 +44,15 @@ export default function GranadaHome() {
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="mb-6 bg-accent hover:bg-accent/90 text-lg px-4 py-2" variant="secondary">
-              Property Management System
+              {t('home.badge')}
             </Badge>
             
             <h1 className="text-5xl md:text-6xl font-bold mb-6 text-primary-foreground">
-              La forma simple de administrar propiedades complejas
+              {t('home.title')}
             </h1>
             
             <p className="text-xl md:text-2xl mb-12 text-primary-foreground/90 leading-relaxed">
-              Granada es un Property Management System que conecta Propietarios, Propiedades, Inquilinos, 
-              Contratos, Pagos y Proveedores en una sola plataforma, para que la gestión sea predecible, 
-              trazable y sin dolores de cabeza.
+              {t('home.subtitle')}
             </p>
 
             {/* 3 Bullets con íconos */}
@@ -41,18 +60,15 @@ export default function GranadaHome() {
               {[
                 {
                   icon: CheckCircle2,
-                  title: "Todo el ciclo de alquiler en un solo lugar",
-                  description: "Desde la captación y publicación hasta la renovación del contrato o la salida del inquilino",
+                  title: t('home.benefit1'),
                 },
                 {
                   icon: Shield,
-                  title: "Transparencia para propietarios e inquilinos",
-                  description: "Cada pago, gasto y evento queda registrado y disponible en su propio portal",
+                  title: t('home.benefit2'),
                 },
                 {
                   icon: TrendingUp,
-                  title: "Herramienta para Inmobiliarias y Property Managers",
-                  description: "Pensado para que puedas escalar tu cartera de propiedades sin perder el control",
+                  title: t('home.benefit3'),
                 },
               ].map((item, index) => (
                 <div key={index} className="bg-primary-foreground/10 backdrop-blur border border-primary-foreground/20 rounded-lg p-6 text-left hover:bg-primary-foreground/15 transition-all">
@@ -60,9 +76,6 @@ export default function GranadaHome() {
                   <h3 className="font-semibold text-lg mb-2 text-primary-foreground">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-primary-foreground/80">
-                    {item.description}
-                  </p>
                 </div>
               ))}
             </div>
@@ -71,7 +84,7 @@ export default function GranadaHome() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Button size="lg" className="text-lg px-8" asChild>
                 <Link to="/granada-platform/inmobiliarias-admin">
-                  Soy Inmobiliaria / Admin y quiero ver Granada
+                  {t('home.cta_inmobiliaria')}
                 </Link>
               </Button>
               <Button 
@@ -81,14 +94,14 @@ export default function GranadaHome() {
                 asChild
               >
                 <Link to="/granada-platform/propietarios">
-                  Soy Propietario y quiero saber cómo funciona
+                  {t('home.cta_propietario')}
                 </Link>
               </Button>
             </div>
 
             {/* Tagline */}
             <p className="text-sm text-primary-foreground/70">
-              Granada Platform · Property Management System para alquileres anuales, temporarios y mixtos
+              Granada Platform · Property Management System
             </p>
           </div>
         </div>
