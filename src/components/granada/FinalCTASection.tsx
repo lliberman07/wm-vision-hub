@@ -45,8 +45,8 @@ export function FinalCTASection() {
 
         <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {ctaCards.map((card) => (
-            <Card key={card.title} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-              <CardHeader>
+            <Card key={card.title} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full">
+              <CardHeader className="flex-1">
                 <div className="mb-4 p-3 bg-primary/10 rounded-lg w-fit">
                   <card.icon className="h-8 w-8 text-primary" />
                 </div>
@@ -55,7 +55,7 @@ export function FinalCTASection() {
                   {card.description}
                 </p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0 mt-auto">
                 <Button asChild className="w-full" size="lg">
                   <Link to={card.buttonLink}>{card.buttonText}</Link>
                 </Button>
