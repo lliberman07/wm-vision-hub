@@ -273,10 +273,12 @@ const handler = async (req: Request): Promise<Response> => {
     const now = new Date();
     let startDate = new Date();
     let endDate = new Date();
+    let trialEndDate: Date | null = null;
     let subscriptionStatus = 'active';
 
     if (activation_type === 'trial') {
-      endDate = new Date(now.getTime() + trial_days * 24 * 60 * 60 * 1000);
+      trialEndDate = new Date(now.getTime() + trial_days * 24 * 60 * 60 * 1000);
+      endDate = trialEndDate;
       subscriptionStatus = 'trial';
     } else if (activation_type === 'scheduled' && activation_date) {
       startDate = new Date(activation_date);
@@ -289,17 +291,23 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // 6. Create subscription
+    const subscriptionData: any = {
+      tenant_id: newTenant.id,
+      plan_id: request.requested_plan_id,
+      status: subscriptionStatus,
+      billing_cycle: request.billing_cycle,
+      current_period_start: startDate.toISOString().split('T')[0],
+      current_period_end: endDate.toISOString().split('T')[0],
+      cancel_at_period_end: false,
+    };
+
+    if (trialEndDate) {
+      subscriptionData.trial_end_date = trialEndDate.toISOString().split('T')[0];
+    }
+
     const { data: newSubscription, error: subscriptionError } = await supabaseAdmin
       .from("tenant_subscriptions")
-      .insert({
-        tenant_id: newTenant.id,
-        plan_id: request.requested_plan_id,
-        status: subscriptionStatus,
-        billing_cycle: request.billing_cycle,
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        is_trial: activation_type === 'trial',
-      })
+      .insert(subscriptionData)
       .select()
       .single();
 
