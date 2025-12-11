@@ -108,41 +108,42 @@ export default function Planes() {
       
       <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-primary/5 to-background py-20 px-4">
-          <div className="container max-w-5xl">
+        <section className="relative py-20 px-4 overflow-hidden bg-gradient-to-br from-secondary via-secondary/90 to-primary">
+          <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
+          <div className="container max-w-5xl relative z-10">
             <div className="text-center space-y-6">
-              <Badge className="mb-4" variant="secondary">
+              <Badge className="mb-4 bg-accent hover:bg-accent/90" variant="secondary">
                 {t('planes.badge')}
               </Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-white">
                 {t('planes.title')}
               </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              <p className="text-xl text-white/80 max-w-3xl mx-auto">
                 {t('planes.subtitle')}
               </p>
               
               {/* Toggle Mensual/Anual */}
               <div className="flex flex-col items-center gap-3 pt-6">
-                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                <span className="text-sm font-medium text-white/70 uppercase tracking-wider">
                   {t('planes.billing_label')}
                 </span>
                 <div className="flex items-center gap-4">
-                  <span className={`font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>
+                  <span className={`font-medium ${billingPeriod === "monthly" ? "text-white" : "text-white/60"}`}>
                     {t('planes.monthly')}
                   </span>
                   <button
                     onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
                     className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                      billingPeriod === "yearly" ? "bg-gradient-to-r from-green-500 to-emerald-600" : "bg-muted"
+                      billingPeriod === "yearly" ? "bg-gradient-to-r from-green-500 to-emerald-600" : "bg-white/20"
                     }`}
                   >
                     <span
-                      className={`inline-block h-6 w-6 transform rounded-full bg-background transition-transform shadow-md ${
+                      className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-md ${
                         billingPeriod === "yearly" ? "translate-x-7" : "translate-x-1"
                       }`}
                     />
                   </button>
-                  <span className={`font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
+                  <span className={`font-medium ${billingPeriod === "yearly" ? "text-white" : "text-white/60"}`}>
                     {t('planes.yearly')}
                   </span>
                   {billingPeriod === "yearly" && (

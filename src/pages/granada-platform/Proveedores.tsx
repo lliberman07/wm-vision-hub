@@ -68,16 +68,17 @@ export default function Proveedores() {
       
       <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-primary/5 to-background py-20 px-4">
-          <div className="container max-w-5xl">
+        <section className="relative py-20 px-4 overflow-hidden bg-gradient-to-br from-secondary via-secondary/90 to-primary">
+          <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
+          <div className="container max-w-5xl relative z-10">
             <div className="text-center space-y-6">
-              <Badge className="mb-4" variant="secondary">
+              <Badge className="mb-4 bg-accent hover:bg-accent/90" variant="secondary">
                 {t('proveedores.badge')}
               </Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-white">
                 {t('proveedores.title')}
               </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              <p className="text-xl text-white/80 max-w-3xl mx-auto">
                 {t('proveedores.subtitle')}
               </p>
             </div>
