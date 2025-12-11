@@ -279,6 +279,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Map billing_cycle: 'annual' -> 'yearly' for database enum
     const dbBillingCycle = request.billing_cycle === 'annual' ? 'yearly' : request.billing_cycle;
     const isYearly = request.billing_cycle === 'annual' || request.billing_cycle === 'yearly';
+    console.log("Billing cycle mapping:", request.billing_cycle, "->", dbBillingCycle);
 
     if (activation_type === 'trial') {
       trialEndDate = new Date(now.getTime() + trial_days * 24 * 60 * 60 * 1000);
