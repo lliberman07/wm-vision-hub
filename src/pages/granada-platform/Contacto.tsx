@@ -71,15 +71,26 @@ export default function Contacto() {
     <div className="granada-theme min-h-screen bg-background">
       <GranadaHeader />
       
-      <main className="container py-12">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <Badge className="mb-4">{t('contacto.badge')}</Badge>
-            <h1 className="text-4xl font-bold mb-4">{t('contacto.title')}</h1>
-            <p className="text-muted-foreground text-lg">
+      {/* Hero Section */}
+      <section className="relative py-20 px-4 overflow-hidden bg-gradient-to-br from-secondary via-secondary/90 to-primary">
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
+        <div className="container max-w-5xl relative z-10">
+          <div className="text-center space-y-6">
+            <Badge className="mb-4 bg-accent hover:bg-accent/90" variant="secondary">
+              {t('contacto.badge')}
+            </Badge>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-white">
+              {t('contacto.title')}
+            </h1>
+            <p className="text-xl text-white/80 max-w-3xl mx-auto">
               {t('contacto.subtitle')}
             </p>
           </div>
+        </div>
+      </section>
+
+      <main className="container py-12">
+        <div className="max-w-6xl mx-auto">
 
           <div className="grid lg:grid-cols-2 gap-12 mb-16">
             <div>
