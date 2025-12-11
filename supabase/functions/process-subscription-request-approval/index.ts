@@ -298,7 +298,7 @@ const handler = async (req: Request): Promise<Response> => {
     // 6. Create subscription
     const subscriptionData: any = {
       tenant_id: newTenant.id,
-      plan_id: request.requested_plan_id,
+      plan_id: request.requested_plan_id.id,
       status: subscriptionStatus,
       billing_cycle: dbBillingCycle,
       current_period_start: startDate.toISOString().split('T')[0],
