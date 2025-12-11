@@ -275,6 +275,10 @@ const handler = async (req: Request): Promise<Response> => {
     let endDate = new Date();
     let trialEndDate: Date | null = null;
     let subscriptionStatus = 'active';
+    
+    // Map billing_cycle: 'annual' -> 'yearly' for database enum
+    const dbBillingCycle = request.billing_cycle === 'annual' ? 'yearly' : request.billing_cycle;
+    const isYearly = request.billing_cycle === 'annual' || request.billing_cycle === 'yearly';
 
     if (activation_type === 'trial') {
       trialEndDate = new Date(now.getTime() + trial_days * 24 * 60 * 60 * 1000);
@@ -283,11 +287,11 @@ const handler = async (req: Request): Promise<Response> => {
     } else if (activation_type === 'scheduled' && activation_date) {
       startDate = new Date(activation_date);
       endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + (request.billing_cycle === 'annual' ? 12 : 1));
+      endDate.setMonth(endDate.getMonth() + (isYearly ? 12 : 1));
       subscriptionStatus = 'pending';
     } else {
       // Direct activation
-      endDate.setMonth(endDate.getMonth() + (request.billing_cycle === 'annual' ? 12 : 1));
+      endDate.setMonth(endDate.getMonth() + (isYearly ? 12 : 1));
     }
 
     // 6. Create subscription
@@ -295,7 +299,7 @@ const handler = async (req: Request): Promise<Response> => {
       tenant_id: newTenant.id,
       plan_id: request.requested_plan_id,
       status: subscriptionStatus,
-      billing_cycle: request.billing_cycle,
+      billing_cycle: dbBillingCycle,
       current_period_start: startDate.toISOString().split('T')[0],
       current_period_end: endDate.toISOString().split('T')[0],
       cancel_at_period_end: false,
