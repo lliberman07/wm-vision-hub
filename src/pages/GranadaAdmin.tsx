@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate, Routes, Route, Link } from 'react-router-dom';
 import { useGranadaAuth } from '@/contexts/GranadaAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +15,7 @@ import { SubscriptionPlansManagement } from '@/components/granada/SubscriptionPl
 import { GranadaSubscriptionAnalyticsDashboard } from '@/components/granada/GranadaSubscriptionAnalyticsDashboard';
 import { GranadaContactsManagement } from '@/components/granada/GranadaContactsManagement';
 import { SubscriptionRequestsManagement } from '@/components/granada/SubscriptionRequestsManagement';
+import { ExportPresentationButton } from '@/components/granada/ExportPresentationButton';
 import {
   Building2,
   CreditCard,
@@ -127,9 +127,12 @@ function GranadaDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold">Dashboard</h2>
-        <p className="text-muted-foreground">Panel de control de Granada Platform</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold">Dashboard</h2>
+          <p className="text-muted-foreground">Panel de control de Granada Platform</p>
+        </div>
+        <ExportPresentationButton />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
