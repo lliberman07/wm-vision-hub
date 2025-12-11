@@ -121,44 +121,48 @@ export default function Planes() {
               <p className="text-xl text-white/80 max-w-3xl mx-auto">
                 {t('planes.subtitle')}
               </p>
-              
-              {/* Toggle Mensual/Anual */}
-              <div className="flex flex-col items-center gap-3 pt-6">
-                <span className="text-sm font-medium text-white/70 uppercase tracking-wider">
-                  {t('planes.billing_label')}
+            </div>
+          </div>
+        </section>
+
+        {/* Toggle Mensual/Anual - Fuera del gradiente */}
+        <section className="py-8 px-4 bg-background">
+          <div className="container max-w-5xl">
+            <div className="flex flex-col items-center gap-3">
+              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                {t('planes.billing_label')}
+              </span>
+              <div className="flex items-center gap-4">
+                <span className={`font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>
+                  {t('planes.monthly')}
                 </span>
-                <div className="flex items-center gap-4">
-                  <span className={`font-medium ${billingPeriod === "monthly" ? "text-white" : "text-white/60"}`}>
-                    {t('planes.monthly')}
-                  </span>
-                  <button
-                    onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
-                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                      billingPeriod === "yearly" ? "bg-gradient-to-r from-green-500 to-emerald-600" : "bg-white/20"
+                <button
+                  onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                    billingPeriod === "yearly" ? "bg-gradient-to-r from-green-500 to-emerald-600" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-background transition-transform shadow-md ${
+                      billingPeriod === "yearly" ? "translate-x-7" : "translate-x-1"
                     }`}
-                  >
-                    <span
-                      className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-md ${
-                        billingPeriod === "yearly" ? "translate-x-7" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                  <span className={`font-medium ${billingPeriod === "yearly" ? "text-white" : "text-white/60"}`}>
-                    {t('planes.yearly')}
-                  </span>
-                  {billingPeriod === "yearly" && (
-                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold border-0 animate-pulse">
-                      17% {t('planes.off')}
-                    </Badge>
-                  )}
-                </div>
+                  />
+                </button>
+                <span className={`font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
+                  {t('planes.yearly')}
+                </span>
+                {billingPeriod === "yearly" && (
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold border-0 animate-pulse">
+                    17% {t('planes.off')}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </section>
 
         {/* Comparador de Planes */}
-        <section className="-mt-8 pb-20 px-4">
+        <section className="pb-20 px-4 bg-background">
           <div className="container max-w-7xl">
             <div className="grid md:grid-cols-3 gap-6">
               {plans.map((plan) => {
@@ -235,7 +239,7 @@ export default function Planes() {
         </section>
 
         {/* FAQ */}
-        <section className="py-20 px-4 bg-muted/30">
+        <section className="py-20 px-4 bg-background">
           <div className="container max-w-3xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
