@@ -92,17 +92,13 @@ export function ExchangeRatesAnalytics() {
     setLoading(true);
     try {
       // Obtener datos de los últimos 6 meses
-      const isSuperAdmin = userRole === 'SUPERADMIN';
+      // Siempre filtrar por tenant_id para evitar duplicados (el TC es el mismo para todos los tenants)
       let query = supabase
         .from('pms_exchange_rates')
         .select('date, buy_rate, sell_rate, source_type')
         .eq('source_type', 'oficial')
+        .eq('tenant_id', currentTenant.id)
         .gte('date', new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
-
-      // Filter by tenant_id only if NOT SUPERADMIN
-      if (!isSuperAdmin && currentTenant?.id) {
-        query = query.eq('tenant_id', currentTenant.id);
-      }
 
       const { data: rates, error } = await query.order('date', { ascending: false });
 
