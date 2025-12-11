@@ -7,7 +7,6 @@ import { PropertyLifecycleStory } from "@/components/granada/PropertyLifecycleSt
 import { RoleViewsSection } from "@/components/granada/RoleViewsSection";
 import { FinalCTASection } from "@/components/granada/FinalCTASection";
 import { useGranadaLanguage } from "@/contexts/GranadaLanguageContext";
-import granadaHeroBackground from "@/assets/granada-hero-background.jpg";
 import {
   CheckCircle2,
   Shield,
@@ -40,11 +39,8 @@ export default function GranadaHome() {
       <GranadaHeader />
       
       {/* BLOQUE 1 - Hero Holístico */}
-      <section 
-        className="relative py-20 px-4 overflow-hidden bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${granadaHeroBackground})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-secondary/80 via-secondary/70 to-primary/60" />
+      <section className="relative py-20 px-4 overflow-hidden bg-gradient-to-br from-secondary via-secondary/90 to-primary">
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="mb-6 bg-accent hover:bg-accent/90 text-lg px-4 py-2" variant="secondary">
