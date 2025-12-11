@@ -334,13 +334,13 @@ const handler = async (req: Request): Promise<Response> => {
       const { data: plan } = await supabaseAdmin
         .from("subscription_plans")
         .select("*")
-        .eq("id", request.requested_plan_id)
+        .eq("id", request.requested_plan_id.id)
         .single();
 
       if (plan) {
         const amount = request.billing_cycle === 'annual' 
-          ? plan.annual_price 
-          : plan.monthly_price;
+          ? plan.price_yearly 
+          : plan.price_monthly;
 
         const dueDate = new Date(startDate);
         dueDate.setDate(dueDate.getDate() + 7); // 7 days to pay
