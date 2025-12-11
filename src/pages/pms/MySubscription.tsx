@@ -33,7 +33,6 @@ interface SubscriptionData {
     name: string;
     price_monthly: number;
     price_yearly: number;
-    currency: string;
     max_users: number | null;
     max_properties: number | null;
     max_contracts: number | null;
@@ -123,7 +122,6 @@ export default function MySubscription() {
             name,
             price_monthly,
             price_yearly,
-            currency,
             max_users,
             max_properties,
             max_contracts,
@@ -607,7 +605,7 @@ export default function MySubscription() {
               planName={baseSubscription.subscription_plans.name}
               priceMonthly={baseSubscription.subscription_plans.price_monthly}
               priceYearly={baseSubscription.subscription_plans.price_yearly}
-              currency={baseSubscription.subscription_plans.currency || 'ARS'}
+              currency="ARS"
               currentPeriodEnd={baseSubscription.current_period_end}
               onSuccess={loadSubscriptionData}
             />
