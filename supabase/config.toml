@@ -89,3 +89,6 @@ verify_jwt = false
 
 [[functions.suspend-expired-trials.schedule]]
 cron = "0 4 * * *"
+
+[functions.process-subscription-renewal]
+verify_jwt = true
