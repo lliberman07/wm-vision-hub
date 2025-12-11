@@ -299,7 +299,6 @@ const handler = async (req: Request): Promise<Response> => {
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate.toISOString().split('T')[0],
         is_trial: activation_type === 'trial',
-        created_by: user.id,
       })
       .select()
       .single();
