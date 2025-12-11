@@ -77,3 +77,15 @@ verify_jwt = true
 
 [functions.send-payment-submission-notification]
 verify_jwt = true
+
+[functions.generate-renewal-invoices]
+verify_jwt = false
+
+[[functions.generate-renewal-invoices.schedule]]
+cron = "0 3 * * *"
+
+[functions.suspend-expired-trials]
+verify_jwt = false
+
+[[functions.suspend-expired-trials.schedule]]
+cron = "0 4 * * *"
