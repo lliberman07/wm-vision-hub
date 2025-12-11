@@ -13,7 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { PaymentReceiptUpload } from '@/components/subscription/PaymentReceiptUpload';
 import { SubscriptionChangeDialog } from '@/components/client-admin/SubscriptionChangeDialog';
 import { RemovePackDialog } from '@/components/subscription/RemovePackDialog';
-import { Calendar, AlertTriangle, CheckCircle2, Clock, Upload, Building2, Users, FileText, Package, TrendingUp, Trash2 } from 'lucide-react';
+import { SubscriptionRenewalDialog } from '@/components/subscription/SubscriptionRenewalDialog';
+import { Calendar, AlertTriangle, CheckCircle2, Clock, Upload, Building2, Users, FileText, Package, TrendingUp, Trash2, RefreshCw } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 interface SubscriptionData {
@@ -26,10 +27,13 @@ interface SubscriptionData {
   billing_cycle: string;
   is_addon: boolean;
   subscription_code: string | null;
+  renewal_required: boolean;
+  contract_invoice_count: number;
   subscription_plans: {
     name: string;
     price_monthly: number;
     price_yearly: number;
+    currency: string;
     max_users: number | null;
     max_properties: number | null;
     max_contracts: number | null;
@@ -94,6 +98,8 @@ export default function MySubscription() {
     open: false,
     subscription: null
   });
+  const [renewalDialogOpen, setRenewalDialogOpen] = useState(false);
+  
   const baseSubscription = subscriptions.find(s => !s.is_addon);
   const addonSubscriptions = subscriptions.filter(s => s.is_addon);
   useEffect(() => {
@@ -111,10 +117,13 @@ export default function MySubscription() {
       } = await supabase.from('tenant_subscriptions').select(`
           *,
           subscription_code,
+          renewal_required,
+          contract_invoice_count,
           subscription_plans (
             name,
             price_monthly,
             price_yearly,
+            currency,
             max_users,
             max_properties,
             max_contracts,
@@ -260,6 +269,8 @@ export default function MySubscription() {
   }
   const daysRemaining = baseSubscription.trial_end ? differenceInDays(new Date(baseSubscription.trial_end), new Date()) : null;
   const isTrialExpiringSoon = daysRemaining !== null && daysRemaining <= 3 && daysRemaining >= 0;
+  const requiresRenewal = baseSubscription.renewal_required;
+  const invoiceCount = baseSubscription.contract_invoice_count || 0;
   return <PMSPageWrapper>
       <PMSLayout>
         <div className="space-y-6">
@@ -293,6 +304,33 @@ export default function MySubscription() {
                 Sube tu comprobante de pago para continuar con acceso completo.
               </AlertDescription>
             </Alert>}
+
+          {/* Alert de Renovación Requerida */}
+          {requiresRenewal && <Alert className="border-primary bg-primary/5">
+              <RefreshCw className="h-4 w-4 text-primary" />
+              <AlertTitle className="text-primary">¡Es momento de renovar tu suscripción!</AlertTitle>
+              <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <span>
+                  Has completado {invoiceCount} de 12 facturas de tu ciclo actual. 
+                  Renueva para continuar disfrutando del servicio.
+                </span>
+                <Button size="sm" onClick={() => setRenewalDialogOpen(true)}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Renovar Ahora
+                </Button>
+              </AlertDescription>
+            </Alert>}
+
+          {/* Alert de Próxima Renovación (factura 11 o 12) */}
+          {!requiresRenewal && invoiceCount >= 11 && baseSubscription.billing_cycle === 'monthly' && (
+            <Alert className="border-yellow-500 bg-yellow-50/50">
+              <Calendar className="h-4 w-4 text-yellow-600" />
+              <AlertTitle className="text-yellow-700">Próxima renovación</AlertTitle>
+              <AlertDescription className="text-yellow-600">
+                Estás en la factura {invoiceCount} de 12. Al finalizar este ciclo, deberás renovar tu suscripción.
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Capacidad Actual Agregada */}
           {usageLimits && <Card>
@@ -559,6 +597,21 @@ export default function MySubscription() {
           max_users: removePackDialog.subscription.subscription_plans.max_users,
           max_branches: removePackDialog.subscription.subscription_plans.max_branches
         }} tenantId={currentTenant!.id} onSuccess={loadSubscriptionData} />}
+
+          {/* Renewal Dialog */}
+          {baseSubscription && (
+            <SubscriptionRenewalDialog
+              open={renewalDialogOpen}
+              onOpenChange={setRenewalDialogOpen}
+              subscriptionId={baseSubscription.id}
+              planName={baseSubscription.subscription_plans.name}
+              priceMonthly={baseSubscription.subscription_plans.price_monthly}
+              priceYearly={baseSubscription.subscription_plans.price_yearly}
+              currency={baseSubscription.subscription_plans.currency || 'ARS'}
+              currentPeriodEnd={baseSubscription.current_period_end}
+              onSuccess={loadSubscriptionData}
+            />
+          )}
         </div>
       </PMSLayout>
     </PMSPageWrapper>;

@@ -4468,6 +4468,8 @@ export type Database = {
           cancel_scheduled_at: string | null
           cancelled_at: string | null
           cancelled_reason: string | null
+          contract_invoice_count: number | null
+          contract_start_date: string | null
           created_at: string
           current_period_end: string
           current_period_start: string
@@ -4476,6 +4478,7 @@ export type Database = {
           is_addon: boolean | null
           parent_subscription_id: string | null
           plan_id: string
+          renewal_required: boolean | null
           status: Database["public"]["Enums"]["subscription_status"]
           subscription_code: string | null
           tenant_id: string
@@ -4490,6 +4493,8 @@ export type Database = {
           cancel_scheduled_at?: string | null
           cancelled_at?: string | null
           cancelled_reason?: string | null
+          contract_invoice_count?: number | null
+          contract_start_date?: string | null
           created_at?: string
           current_period_end: string
           current_period_start: string
@@ -4498,6 +4503,7 @@ export type Database = {
           is_addon?: boolean | null
           parent_subscription_id?: string | null
           plan_id: string
+          renewal_required?: boolean | null
           status?: Database["public"]["Enums"]["subscription_status"]
           subscription_code?: string | null
           tenant_id: string
@@ -4512,6 +4518,8 @@ export type Database = {
           cancel_scheduled_at?: string | null
           cancelled_at?: string | null
           cancelled_reason?: string | null
+          contract_invoice_count?: number | null
+          contract_start_date?: string | null
           created_at?: string
           current_period_end?: string
           current_period_start?: string
@@ -4520,6 +4528,7 @@ export type Database = {
           is_addon?: boolean | null
           parent_subscription_id?: string | null
           plan_id?: string
+          renewal_required?: boolean | null
           status?: Database["public"]["Enums"]["subscription_status"]
           subscription_code?: string | null
           tenant_id?: string
