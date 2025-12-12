@@ -58,7 +58,7 @@ const menuItems = [
   {
     title: 'Clientes',
     icon: Building2,
-    path: '/granada-admin/clients',
+    path: '/granada-admin/subscriptions',
   },
   {
     title: 'Usuarios Clientes',
@@ -74,11 +74,6 @@ const menuItems = [
     title: 'Planes',
     icon: CreditCard,
     path: '/granada-admin/subscription-plans',
-  },
-  {
-    title: 'Suscripciones',
-    icon: BarChart3,
-    path: '/granada-admin/subscriptions',
   },
   {
     title: 'Pagos',

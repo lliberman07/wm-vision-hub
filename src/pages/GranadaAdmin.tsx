@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { GranadaAdminLayout } from '@/components/granada/GranadaAdminLayout';
-import { ClientsManagement } from '@/components/granada/ClientsManagement';
+
 import { ClientUsersManagement } from '@/components/granada/ClientUsersManagement';
 import { PlatformUsersManagement } from '@/components/granada/PlatformUsersManagement';
 import { UnifiedSubscriptionsManagement } from '@/components/granada/UnifiedSubscriptionsManagement';
@@ -61,10 +61,10 @@ function GranadaDashboard() {
       iconColor: granadaColors[2],
     },
     {
-      title: 'Clientes Suscriptores',
-      description: 'Gestionar inmobiliarias, administradores y propietarios',
+      title: 'Clientes',
+      description: 'Gestión unificada de clientes, planes y suscripciones',
       icon: Building2,
-      path: '/granada-admin/clients',
+      path: '/granada-admin/subscriptions',
       iconColor: granadaColors[3],
     },
     {
@@ -87,13 +87,6 @@ function GranadaDashboard() {
       icon: CreditCard,
       path: '/granada-admin/subscription-plans',
       iconColor: granadaColors[2],
-    },
-    {
-      title: 'Suscripciones',
-      description: 'Gestión integral de suscripciones, trials y cambios',
-      icon: CreditCard,
-      path: '/granada-admin/subscriptions',
-      iconColor: granadaColors[3],
     },
     {
       title: 'Pagos',
@@ -246,7 +239,6 @@ export default function GranadaAdmin() {
         <Route path="/analytics" element={<GranadaSubscriptionAnalyticsDashboard />} />
         <Route path="/subscription-requests" element={<SubscriptionRequestsManagement />} />
         <Route path="/contacts" element={<GranadaContactsManagement />} />
-        <Route path="/clients" element={<ClientsManagement />} />
         <Route path="/client-users" element={<ClientUsersManagement />} />
         <Route path="/platform-users" element={<PlatformUsersManagement />} />
         <Route path="/subscription-plans" element={<SubscriptionPlansManagement />} />
