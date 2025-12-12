@@ -4682,6 +4682,22 @@ export type Database = {
           source: string | null
           type: string | null
         }
+        Insert: {
+          id?: string | null
+          loaded_at?: string | null
+          pct?: number | null
+          period_date?: never
+          source?: string | null
+          type?: never
+        }
+        Update: {
+          id?: string | null
+          loaded_at?: string | null
+          pct?: number | null
+          period_date?: never
+          source?: string | null
+          type?: never
+        }
         Relationships: []
       }
       pms_indices: {
