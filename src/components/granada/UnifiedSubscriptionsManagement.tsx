@@ -46,6 +46,7 @@ import {
   Ban,
   Play,
   RefreshCw,
+  Building2,
 } from 'lucide-react';
 import { formatDistanceToNow, differenceInDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -109,14 +110,39 @@ interface Tenant {
   id: string;
   name: string;
   client_type: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface ClientWithSubscription {
+  id: string;
+  name: string;
+  client_type: string;
+  is_active: boolean;
+  created_at: string;
+  subscription: {
+    id: string;
+    status: string;
+    billing_cycle: string;
+    current_period_start: string;
+    current_period_end: string;
+    trial_end_date: string | null;
+    plan: {
+      id: string;
+      name: string;
+      price_monthly: number;
+      price_yearly: number;
+    };
+  } | null;
 }
 
 export function UnifiedSubscriptionsManagement() {
   const { user } = useGranadaAuth();
-  const [activeTab, setActiveTab] = useState('active');
+  const [activeTab, setActiveTab] = useState('all');
   const [loading, setLoading] = useState(true);
   
   // Data states
+  const [clients, setClients] = useState<ClientWithSubscription[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -126,8 +152,9 @@ export function UnifiedSubscriptionsManagement() {
   const [activeCount, setActiveCount] = useState(0);
   const [trialsCount, setTrialsCount] = useState(0);
   const [pendingChangesCount, setPendingChangesCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
-  
+  const [totalClientsCount, setTotalClientsCount] = useState(0);
+  const [noSubscriptionCount, setNoSubscriptionCount] = useState(0);
+
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newSubscription, setNewSubscription] = useState<{
@@ -154,6 +181,7 @@ export function UnifiedSubscriptionsManagement() {
     setLoading(true);
     try {
       await Promise.all([
+        fetchClientsWithSubscriptions(),
         fetchSubscriptions(),
         fetchChangeRequests(),
         fetchPlans(),
@@ -166,6 +194,73 @@ export function UnifiedSubscriptionsManagement() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchClientsWithSubscriptions = async () => {
+    // Fetch all tenants
+    const { data: tenantsData, error: tenantsError } = await supabase
+      .from('pms_tenants')
+      .select('id, name, client_type, is_active, created_at')
+      .order('name');
+
+    if (tenantsError) {
+      console.error('Error fetching tenants:', tenantsError);
+      toast.error('Error al cargar clientes');
+      return;
+    }
+
+    // Fetch all subscriptions with plan info
+    const { data: subsData, error: subsError } = await supabase
+      .from('tenant_subscriptions')
+      .select(`
+        id,
+        tenant_id,
+        status,
+        billing_cycle,
+        current_period_start,
+        current_period_end,
+        trial_end_date,
+        plan:subscription_plans!tenant_subscriptions_plan_id_fkey(id, name, price_monthly, price_yearly)
+      `)
+      .in('status', ['active', 'trial', 'suspended', 'past_due']);
+
+    if (subsError) {
+      console.error('Error fetching subscriptions:', subsError);
+    }
+
+    // Create a map of tenant_id to subscription
+    const subscriptionMap = new Map<string, typeof subsData[0]>();
+    (subsData || []).forEach(sub => {
+      // Only keep the most recent/active subscription per tenant
+      const existing = subscriptionMap.get(sub.tenant_id);
+      if (!existing || (sub.status === 'active' && existing.status !== 'active')) {
+        subscriptionMap.set(sub.tenant_id, sub);
+      }
+    });
+
+    // Combine tenants with their subscriptions
+    const clientsWithSubs: ClientWithSubscription[] = (tenantsData || []).map(tenant => ({
+      id: tenant.id,
+      name: tenant.name,
+      client_type: tenant.client_type,
+      is_active: tenant.is_active,
+      created_at: tenant.created_at,
+      subscription: subscriptionMap.has(tenant.id) 
+        ? {
+            id: subscriptionMap.get(tenant.id)!.id,
+            status: subscriptionMap.get(tenant.id)!.status,
+            billing_cycle: subscriptionMap.get(tenant.id)!.billing_cycle,
+            current_period_start: subscriptionMap.get(tenant.id)!.current_period_start,
+            current_period_end: subscriptionMap.get(tenant.id)!.current_period_end,
+            trial_end_date: subscriptionMap.get(tenant.id)!.trial_end_date,
+            plan: subscriptionMap.get(tenant.id)!.plan as { id: string; name: string; price_monthly: number; price_yearly: number; },
+          }
+        : null,
+    }));
+
+    setClients(clientsWithSubs);
+    setTotalClientsCount(clientsWithSubs.length);
+    setNoSubscriptionCount(clientsWithSubs.filter(c => !c.subscription).length);
   };
 
   const fetchSubscriptions = async () => {
@@ -225,7 +320,7 @@ export function UnifiedSubscriptionsManagement() {
   const fetchTenants = async () => {
     const { data, error } = await supabase
       .from('pms_tenants')
-      .select('id, name, client_type')
+      .select('id, name, client_type, is_active, created_at')
       .order('name');
 
     if (error) {
@@ -237,7 +332,7 @@ export function UnifiedSubscriptionsManagement() {
   };
 
   const fetchKPIs = async () => {
-    const [activeRes, trialsRes, changesRes, totalRes] = await Promise.all([
+    const [activeRes, trialsRes, changesRes] = await Promise.all([
       supabase
         .from('tenant_subscriptions')
         .select('*', { count: 'exact', head: true })
@@ -250,15 +345,11 @@ export function UnifiedSubscriptionsManagement() {
         .from('subscription_change_requests')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending'),
-      supabase
-        .from('tenant_subscriptions')
-        .select('*', { count: 'exact', head: true }),
     ]);
 
     setActiveCount(activeRes.count || 0);
     setTrialsCount(trialsRes.count || 0);
     setPendingChangesCount(changesRes.count || 0);
-    setTotalCount(totalRes.count || 0);
   };
 
   const handleCreateSubscription = async () => {
@@ -655,9 +746,9 @@ export function UnifiedSubscriptionsManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Suscripciones</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Gestión de Clientes</h1>
           <p className="text-muted-foreground">
-            Administración integral de suscripciones, trials y cambios de plan
+            Vista unificada de clientes, suscripciones y planes
           </p>
         </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -786,19 +877,53 @@ export function UnifiedSubscriptionsManagement() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-5">
+        <Card
+          className="cursor-pointer hover:bg-accent transition-colors"
+          onClick={() => setActiveTab('all')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Suscripciones Activas</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Clientes</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalClientsCount}</div>
+            <p className="text-xs text-muted-foreground">Todos los clientes</p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="cursor-pointer hover:bg-accent transition-colors"
+          onClick={() => setActiveTab('active')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Con Suscripción</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeCount}</div>
-            <p className="text-xs text-muted-foreground">Incluye trials activos</p>
+            <p className="text-xs text-muted-foreground">Activas + Trials</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer hover:bg-accent transition-colors"
+          onClick={() => setActiveTab('no-subscription')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Sin Suscripción</CardTitle>
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{noSubscriptionCount}</div>
+            <p className="text-xs text-muted-foreground">Clientes sin plan</p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="cursor-pointer hover:bg-accent transition-colors"
+          onClick={() => setActiveTab('trials')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Trials Activos</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -831,25 +956,22 @@ export function UnifiedSubscriptionsManagement() {
             <p className="text-xs text-muted-foreground">Requieren atención</p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Histórico</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalCount}</div>
-            <p className="text-xs text-muted-foreground">Todas las suscripciones</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="active">Suscripciones Activas</TabsTrigger>
-          <TabsTrigger value="billing">Por Ciclo</TabsTrigger>
-          <TabsTrigger value="trials">Trials Activos</TabsTrigger>
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="all">Todos los Clientes</TabsTrigger>
+          <TabsTrigger value="active">Con Suscripción</TabsTrigger>
+          <TabsTrigger value="no-subscription">
+            Sin Suscripción
+            {noSubscriptionCount > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {noSubscriptionCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="trials">Trials</TabsTrigger>
           <TabsTrigger value="changes">
             Cambios Pendientes
             {pendingChangesCount > 0 && (
@@ -858,8 +980,258 @@ export function UnifiedSubscriptionsManagement() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="suspended">Suspendidas</TabsTrigger>
           <TabsTrigger value="history">Historial</TabsTrigger>
         </TabsList>
+
+        {/* Tab: Todos los Clientes */}
+        <TabsContent value="all" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Todos los Clientes</CardTitle>
+              <CardDescription>
+                {clients.length} clientes registrados
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Ciclo</TableHead>
+                    <TableHead>Vencimiento</TableHead>
+                    <TableHead>Monto</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {clients.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        No hay clientes registrados
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    clients.map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {client.name}
+                            {!client.is_active && (
+                              <Badge variant="outline" className="text-xs">Inactivo</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{client.client_type}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {client.subscription?.plan?.name || (
+                            <span className="text-muted-foreground">Sin plan</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {client.subscription 
+                            ? getStatusBadge(client.subscription.status)
+                            : <Badge variant="outline">Sin suscripción</Badge>
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {client.subscription?.billing_cycle === 'monthly' ? 'Mensual' : 
+                           client.subscription?.billing_cycle === 'yearly' ? 'Anual' : '-'}
+                        </TableCell>
+                        <TableCell>
+                          {client.subscription?.current_period_end 
+                            ? format(new Date(client.subscription.current_period_end), 'dd/MM/yyyy')
+                            : '-'
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {client.subscription?.plan
+                            ? `$${client.subscription.billing_cycle === 'monthly'
+                                ? client.subscription.plan.price_monthly
+                                : client.subscription.plan.price_yearly}`
+                            : '-'
+                          }
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            {!client.subscription ? (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => {
+                                  setNewSubscription({
+                                    ...newSubscription,
+                                    tenant_id: client.id,
+                                  });
+                                  setCreateDialogOpen(true);
+                                }}
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                Asignar plan
+                              </Button>
+                            ) : (
+                              <>
+                                {client.subscription.status === 'active' ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleToggleStatus(client.subscription!.id, client.subscription!.status)}
+                                  >
+                                    <Ban className="h-4 w-4 mr-1" />
+                                    Suspender
+                                  </Button>
+                                ) : client.subscription.status === 'suspended' ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleToggleStatus(client.subscription!.id, client.subscription!.status)}
+                                  >
+                                    <Play className="h-4 w-4 mr-1" />
+                                    Activar
+                                  </Button>
+                                ) : null}
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Sin Suscripción */}
+        <TabsContent value="no-subscription" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Clientes sin Suscripción</CardTitle>
+              <CardDescription>
+                {clients.filter(c => !c.subscription).length} clientes sin plan asignado
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Fecha Registro</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {clients.filter(c => !c.subscription).length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        Todos los clientes tienen suscripción asignada
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    clients.filter(c => !c.subscription).map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium">{client.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{client.client_type}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {client.is_active 
+                            ? <Badge variant="default">Activo</Badge>
+                            : <Badge variant="outline">Inactivo</Badge>
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(client.created_at), 'dd/MM/yyyy')}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => {
+                              setNewSubscription({
+                                ...newSubscription,
+                                tenant_id: client.id,
+                              });
+                              setCreateDialogOpen(true);
+                            }}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Asignar plan
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Suspendidas */}
+        <TabsContent value="suspended" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Suscripciones Suspendidas</CardTitle>
+              <CardDescription>
+                {clients.filter(c => c.subscription?.status === 'suspended').length} suscripciones suspendidas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Ciclo</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {clients.filter(c => c.subscription?.status === 'suspended').length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        No hay suscripciones suspendidas
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    clients.filter(c => c.subscription?.status === 'suspended').map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium">{client.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{client.client_type}</Badge>
+                        </TableCell>
+                        <TableCell>{client.subscription?.plan?.name}</TableCell>
+                        <TableCell>
+                          {client.subscription?.billing_cycle === 'monthly' ? 'Mensual' : 'Anual'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleToggleStatus(client.subscription!.id, 'suspended')}
+                          >
+                            <Play className="h-4 w-4 mr-1" />
+                            Reactivar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Tab: Suscripciones Activas */}
         <TabsContent value="active" className="space-y-4">
