@@ -109,7 +109,7 @@ interface Plan {
 interface Tenant {
   id: string;
   name: string;
-  client_type: string;
+  tenant_type: string;
   is_active: boolean;
   created_at: string;
 }
@@ -117,7 +117,7 @@ interface Tenant {
 interface ClientWithSubscription {
   id: string;
   name: string;
-  client_type: string;
+  tenant_type: string;
   is_active: boolean;
   created_at: string;
   subscription: {
@@ -200,7 +200,7 @@ export function UnifiedSubscriptionsManagement() {
     // Fetch all tenants
     const { data: tenantsData, error: tenantsError } = await supabase
       .from('pms_tenants')
-      .select('id, name, client_type, is_active, created_at')
+      .select('id, name, tenant_type, is_active, created_at')
       .order('name');
 
     if (tenantsError) {
@@ -242,7 +242,7 @@ export function UnifiedSubscriptionsManagement() {
     const clientsWithSubs: ClientWithSubscription[] = (tenantsData || []).map(tenant => ({
       id: tenant.id,
       name: tenant.name,
-      client_type: tenant.client_type,
+      tenant_type: tenant.tenant_type,
       is_active: tenant.is_active,
       created_at: tenant.created_at,
       subscription: subscriptionMap.has(tenant.id) 
@@ -320,7 +320,7 @@ export function UnifiedSubscriptionsManagement() {
   const fetchTenants = async () => {
     const { data, error } = await supabase
       .from('pms_tenants')
-      .select('id, name, client_type, is_active, created_at')
+      .select('id, name, tenant_type, is_active, created_at')
       .order('name');
 
     if (error) {
@@ -1026,7 +1026,7 @@ export function UnifiedSubscriptionsManagement() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{client.client_type}</Badge>
+                          <Badge variant="outline">{client.tenant_type}</Badge>
                         </TableCell>
                         <TableCell>
                           {client.subscription?.plan?.name || (
@@ -1140,7 +1140,7 @@ export function UnifiedSubscriptionsManagement() {
                       <TableRow key={client.id}>
                         <TableCell className="font-medium">{client.name}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">{client.client_type}</Badge>
+                          <Badge variant="outline">{client.tenant_type}</Badge>
                         </TableCell>
                         <TableCell>
                           {client.is_active 
@@ -1208,7 +1208,7 @@ export function UnifiedSubscriptionsManagement() {
                       <TableRow key={client.id}>
                         <TableCell className="font-medium">{client.name}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">{client.client_type}</Badge>
+                          <Badge variant="outline">{client.tenant_type}</Badge>
                         </TableCell>
                         <TableCell>{client.subscription?.plan?.name}</TableCell>
                         <TableCell>
